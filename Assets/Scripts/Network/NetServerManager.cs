@@ -56,6 +56,352 @@ public class NetServerManager : SingletonMono<NetServerManager>
 
     private void RegisterServerEvents()
     {
+        Debug.Log("[NetServerManager] 注册网络模式下的事件处理器");
+        
+        // 注册连续模式相关的请求处理器
+        CommunicateEvent.RegisterRequest<int, bool>(CommunicateEvent.EVENT_IS_IN_CONTINUOUS_MODE, _ => IsInContinuousMode());
+        CommunicateEvent.RegisterRequest<int, float>(CommunicateEvent.EVENT_GET_CONTINUOUS_MODE_REMAINING_TIME, _ => GetContinuousModeRemainingTime());
+        CommunicateEvent.RegisterRequest<int, int>(CommunicateEvent.EVENT_GET_CURRENT_SCENE_BAIT_COUNT, _ => GetCurrentSceneBaitCount());
+        
+        // 注册玩家数据相关的请求处理器
+        CommunicateEvent.RegisterRequest<int, Dictionary<int, int>>(CommunicateEvent.EVENT_GET_INVENTORY, _ => GetPlayerInventory());
+        CommunicateEvent.RegisterRequest<int, Dictionary<int, int>>(CommunicateEvent.EVENT_GET_FISH_INVENTORY, _ => GetPlayerFishInventory());
+        CommunicateEvent.RegisterRequest<int, int>(CommunicateEvent.EVENT_GET_FISH_BAG_CAPACITY, _ => GetFishBagCapacity());
+        CommunicateEvent.RegisterRequest<int, int>(CommunicateEvent.EVENT_GET_GOLD, _ => GetPlayerGold());
+        
+        // 注册装备相关的请求处理器
+        CommunicateEvent.RegisterRequest<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, slotType => GetEquippedItem(slotType));
+        CommunicateEvent.RegisterRequest<int, int>(CommunicateEvent.EVENT_GET_CHARACTER_LEVEL, _ => GetCharacterLevel());
+        CommunicateEvent.RegisterRequest<int, PlayerData>(CommunicateEvent.EVENT_GET_PLAYER_DATA, _ => GetPlayerData());
+
+        // 注册 CharacterServerManager 相关的请求处理器
+        CommunicateEvent.RegisterRequest<int, PlayerCharacterData>("CharacterServerManager_GetPlayerData", _ => GetPlayerCharacterData());
+        CommunicateEvent.RegisterRequest<int, int>("CharacterServerManager_GetExpToNextLevel", _ => GetExpToNextLevel());
+    }
+    
+    private bool isInContinuousMode = false;
+    private float continuousModeRemainingTime = 0f;
+    private int currentSceneBaitCount = 0;
+    
+    // 玩家数据
+    private Dictionary<int, int> playerInventory = new Dictionary<int, int>();
+    private Dictionary<int, int> fishInventory = new Dictionary<int, int>();
+    private int fishBagCapacity = 20;
+    private int playerGold = 0;
+    
+    // 玩家装备数据
+    private int equippedRodId = 1;       // 默认普通钓竿
+    private int equippedLineId = 1;      // 默认普通钓线
+    private int equippedHookId = 1;      // 默认普通钓钩
+    private int equippedSkill1Id = 0;    // 技能1槽位
+    private int equippedSkill2Id = 0;    // 技能2槽位
+    private int equippedCharacterId = 3401; // 默认人物
+    private int characterLevel = 1;      // 人物等级
+    
+    private bool IsInContinuousMode()
+    {
+        return isInContinuousMode;
+    }
+    
+    private float GetContinuousModeRemainingTime()
+    {
+        return continuousModeRemainingTime;
+    }
+    
+    private int GetCurrentSceneBaitCount()
+    {
+        return currentSceneBaitCount;
+    }
+    
+    private Dictionary<int, int> GetPlayerInventory()
+    {
+        return playerInventory;
+    }
+    
+    private Dictionary<int, int> GetPlayerFishInventory()
+    {
+        return fishInventory;
+    }
+    
+    private int GetFishBagCapacity()
+    {
+        return fishBagCapacity;
+    }
+    
+    private int GetPlayerGold()
+    {
+        return playerGold;
+    }
+    
+    private int GetEquippedItem(EquipmentSlotType slotType)
+    {
+        EquipmentSlotType slot = slotType;
+        switch (slot)
+        {
+            case EquipmentSlotType.FishingRod:
+                return equippedRodId;
+            case EquipmentSlotType.FishingLine:
+                return equippedLineId;
+            case EquipmentSlotType.FishingHook:
+                return equippedHookId;
+            case EquipmentSlotType.Skill1:
+                return equippedSkill1Id;
+            case EquipmentSlotType.Skill2:
+                return equippedSkill2Id;
+            case EquipmentSlotType.Character:
+                return equippedCharacterId;
+            default:
+                return 0;
+        }
+    }
+    
+    private int GetCharacterLevel()
+    {
+        return characterLevel;
+    }
+    
+    private PlayerData GetPlayerData()
+    {
+        return new PlayerData
+        {
+            playerId = 1,
+            nickname = "Player",
+            gold = playerGold,
+            level = 1,
+            experience = 0,
+            currentSceneId = 1,
+            maxFishBagCapacity = fishBagCapacity
+        };
+    }
+    
+    private PlayerCharacterData GetPlayerCharacterData()
+    {
+        return new PlayerCharacterData
+        {
+            equippedCharacterId = equippedCharacterId,
+            isEquipped = equippedCharacterId > 0,
+            currentLevel = characterLevel,
+            currentExp = 0
+        };
+    }
+    
+    private int GetExpToNextLevel()
+    {
+        // 返回下一级所需经验（简化实现，实际应该从配置读取）
+        return 100;
+    }
+    
+    private IEnumerator FetchGameState()
+    {
+        if (!isConnected)
+            yield break;
+            
+        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/game/continuous-mode/status"))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    var data = JsonUtility.FromJson<ContinuousModeStatus>(json);
+                    if (data != null)
+                    {
+                        isInContinuousMode = data.isInContinuousMode;
+                        continuousModeRemainingTime = data.remainingTime;
+                        Debug.Log("[NetServerManager] 更新连续模式状态: " + isInContinuousMode + ", 剩余时间: " + continuousModeRemainingTime);
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError("[NetServerManager] 解析游戏状态失败: " + ex.Message);
+                }
+            }
+        }
+    }
+    
+    private IEnumerator FetchBaitCount()
+    {
+        if (!isConnected)
+            yield break;
+            
+        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/game/bait/count"))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    var data = JsonUtility.FromJson<BaitCountResponse>(json);
+                    if (data != null)
+                    {
+                        currentSceneBaitCount = data.baitCount;
+                        Debug.Log("[NetServerManager] 更新鱼饵数量: " + currentSceneBaitCount);
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError("[NetServerManager] 解析鱼饵数量失败: " + ex.Message);
+                }
+            }
+        }
+    }
+    
+    private IEnumerator FetchPlayerData()
+    {
+        if (!isConnected)
+            yield break;
+            
+        // 获取玩家金币
+        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/player/gold/1"))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    var data = JsonUtility.FromJson<GoldResponse>(json);
+                    if (data != null)
+                    {
+                        playerGold = data.gold;
+                        Debug.Log("[NetServerManager] 更新玩家金币: " + playerGold);
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError("[NetServerManager] 解析金币数据失败: " + ex.Message);
+                }
+            }
+        }
+        
+        // 获取玩家背包
+        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/player/inventory/1"))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    var data = JsonUtility.FromJson<InventoryResponse>(json);
+                    if (data != null && data.items != null)
+                    {
+                        playerInventory.Clear();
+                        foreach (var item in data.items)
+                        {
+                            playerInventory[item.key] = item.value;
+                        }
+                        Debug.Log("[NetServerManager] 更新玩家背包: " + playerInventory.Count + " 件物品");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError("[NetServerManager] 解析背包数据失败: " + ex.Message);
+                }
+            }
+        }
+        
+        // 获取玩家鱼篓
+        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/player/fish-inventory/1"))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    var data = JsonUtility.FromJson<InventoryResponse>(json);
+                    if (data != null && data.items != null)
+                    {
+                        fishInventory.Clear();
+                        foreach (var item in data.items)
+                        {
+                            fishInventory[item.key] = item.value;
+                        }
+                        Debug.Log("[NetServerManager] 更新玩家鱼篓: " + fishInventory.Count + " 条鱼");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError("[NetServerManager] 解析鱼篓数据失败: " + ex.Message);
+                }
+            }
+        }
+        
+        // 获取鱼篓容量
+        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/player/fish-bag-capacity/1"))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    var data = JsonUtility.FromJson<CapacityResponse>(json);
+                    if (data != null)
+                    {
+                        fishBagCapacity = data.capacity;
+                        Debug.Log("[NetServerManager] 更新鱼篓容量: " + fishBagCapacity);
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError("[NetServerManager] 解析鱼篓容量失败: " + ex.Message);
+                }
+            }
+        }
+    }
+    
+    [System.Serializable]
+    private class ContinuousModeStatus
+    {
+        public bool isInContinuousMode;
+        public float remainingTime;
+    }
+    
+    [System.Serializable]
+    private class BaitCountResponse
+    {
+        public int baitCount;
+    }
+    
+    [System.Serializable]
+    private class GoldResponse
+    {
+        public int gold;
+    }
+    
+    [System.Serializable]
+    private class InventoryResponse
+    {
+        public List<KeyValuePair> items;
+    }
+    
+    [System.Serializable]
+    private class KeyValuePair
+    {
+        public int key;
+        public int value;
+    }
+    
+    [System.Serializable]
+    private class CapacityResponse
+    {
+        public int capacity;
     }
 
     private void StartConnect()
@@ -86,6 +432,11 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 networkState = NetUtils.NetworkState.Connected;
                 isConnected = true;
                 missedHeartbeats = 0;
+                
+                // 连接成功后获取游戏状态
+                StartCoroutine(FetchGameState());
+                StartCoroutine(FetchBaitCount());
+                StartCoroutine(FetchPlayerData());
             }
             else
             {
@@ -321,7 +672,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         StartCoroutine(SendRequest<object>("/api/fishing", requestData));
     }
 
-    public void OnServerFishingResult(SimulationServer.FishingResult result)
+    public void OnServerFishingResult(FishingResult result)
     {
         if (!_isEnabled)
             return;
@@ -403,5 +754,20 @@ public class NetServerManager : SingletonMono<NetServerManager>
     private class HeartbeatRequest
     {
         public long clientTime;
+    }
+
+    /// <summary>
+    /// 玩家数据类
+    /// </summary>
+    [System.Serializable]
+    public class PlayerData
+    {
+        public int playerId;
+        public string nickname;
+        public int gold;
+        public int level;
+        public int experience;
+        public int currentSceneId;
+        public int maxFishBagCapacity;
     }
 }

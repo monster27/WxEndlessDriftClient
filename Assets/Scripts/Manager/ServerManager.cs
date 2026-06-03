@@ -152,7 +152,7 @@ public class ServerManager : SingletonMono<ServerManager>
         UIManager.Instance?.ShowCatchResult(itemName, weight, icon);
     }
 
-    public void OnServerFishingResult(SimulationServer.FishingResult result)
+    public void OnServerFishingResult(FishingResult result)
     {
         if (!_isEnabled)
             return;

@@ -1,3 +1,8 @@
+// ========================================================
+// 模拟服务器已被移除 - 客户端现在仅使用网络服务器模式
+// 此文件中的所有代码已被注释，以支持纯在线模式
+// ========================================================
+/*
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -85,14 +90,14 @@ public class PlayerInventoryServerManager
     }
 
     /// <summary>
-/// 通过广告解锁技能
-/// </summary>
-private void OnSkillUnlockByAd(int skillId)
-{
-    if (!CheckServerConnection())
-        return;
+    /// 通过广告解锁技能
+    /// </summary>
+    private void OnSkillUnlockByAd(int skillId)
+    {
+        if (!CheckServerConnection())
+            return;
 
-    Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnSkillUnlockByAd 开始 - skillId={0}</color>", skillId);
+        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnSkillUnlockByAd 开始 - skillId={0}</color>", skillId);
 
         if (skillObtainStatus == null)
         {
@@ -110,14 +115,14 @@ private void OnSkillUnlockByAd(int skillId)
     }
 
     /// <summary>
-/// 解锁技能
-/// </summary>
-private void OnSkillUnlock(int skillId)
-{
-    if (!CheckServerConnection())
-        return;
+    /// 解锁技能
+    /// </summary>
+    private void OnSkillUnlock(int skillId)
+    {
+        if (!CheckServerConnection())
+            return;
 
-    Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnSkillUnlock 开始 - skillId={0}</color>", skillId);
+        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnSkillUnlock 开始 - skillId={0}</color>", skillId);
 
         if (skillObtainStatus == null)
         {
@@ -135,14 +140,14 @@ private void OnSkillUnlock(int skillId)
     }
 
     /// <summary>
-/// 通过广告升级技能
-/// </summary>
-private void OnSkillUpgradeByAd(int skillId)
-{
-    if (!CheckServerConnection())
-        return;
+    /// 通过广告升级技能
+    /// </summary>
+    private void OnSkillUpgradeByAd(int skillId)
+    {
+        if (!CheckServerConnection())
+            return;
 
-    Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnSkillUpgradeByAd 开始 - skillId={0}</color>", skillId);
+        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnSkillUpgradeByAd 开始 - skillId={0}</color>", skillId);
 
         // 检查技能是否已获取
         var status = GetSkillObtainStatus(skillId);
@@ -161,14 +166,14 @@ private void OnSkillUpgradeByAd(int skillId)
     }
 
     /// <summary>
-/// 通过金币升级技能
-/// </summary>
-private void OnSkillUpgradeByGold(int skillId)
-{
-    if (!CheckServerConnection())
-        return;
+    /// 通过金币升级技能
+    /// </summary>
+    private void OnSkillUpgradeByGold(int skillId)
+    {
+        if (!CheckServerConnection())
+            return;
 
-    Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnSkillUpgradeByGold 开始 - skillId={0}</color>", skillId);
+        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnSkillUpgradeByGold 开始 - skillId={0}</color>", skillId);
 
         var status = GetSkillObtainStatus(skillId);
         if (status != FishingComponentObtainStatus.Obtained)
@@ -195,14 +200,14 @@ private void OnSkillUpgradeByGold(int skillId)
     }
 
     /// <summary>
-/// 通过广告升级装备
-/// </summary>
-private void OnEquipUpgradeByAd(int equipId)
-{
-    if (!CheckServerConnection())
-        return;
+    /// 通过广告升级装备
+    /// </summary>
+    private void OnEquipUpgradeByAd(int equipId)
+    {
+        if (!CheckServerConnection())
+            return;
 
-    Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipUpgradeByAd 开始 - equipId={0}</color>", equipId);
+        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipUpgradeByAd 开始 - equipId={0}</color>", equipId);
 
         int currentLevel = GetComponentLevel(equipId);
         SetComponentLevel(equipId, currentLevel + 1);
@@ -213,14 +218,14 @@ private void OnEquipUpgradeByAd(int equipId)
     }
 
     /// <summary>
-/// 通过金币升级装备
-/// </summary>
-private void OnEquipUpgradeByGold(int equipId)
-{
-    if (!CheckServerConnection())
-        return;
+    /// 通过金币升级装备
+    /// </summary>
+    private void OnEquipUpgradeByGold(int equipId)
+    {
+        if (!CheckServerConnection())
+            return;
 
-    Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipUpgradeByGold 开始 - equipId={0}</color>", equipId);
+        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipUpgradeByGold 开始 - equipId={0}</color>", equipId);
 
         int currentLevel = GetComponentLevel(equipId);
         int cost = currentLevel * 50;
@@ -248,14 +253,14 @@ private void OnEquipUpgradeByGold(int equipId)
     }
 
     /// <summary>
-/// 通过广告解锁装备
-/// </summary>
-private void OnEquipUnlock(int equipId)
-{
-    if (!CheckServerConnection())
-        return;
+    /// 通过广告解锁装备
+    /// </summary>
+    private void OnEquipUnlock(int equipId)
+    {
+        if (!CheckServerConnection())
+            return;
 
-    Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipUnlock 开始 - equipId={0}</color>", equipId);
+        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipUnlock 开始 - equipId={0}</color>", equipId);
 
         // 添加装备到背包
         playerInventory[equipId] = 1;  // 使用 [] 而不是 Add，确保覆盖
@@ -654,52 +659,52 @@ private void OnEquipUnlock(int equipId)
     }
 
     private bool CheckServerConnection()
-{
-    if (ManagerManager.Instance != null && !ManagerManager.Instance.isOfflineMode)
     {
-        return false;
-    }
-    return true;
-}
-
-/// <summary>
-/// 处理View层发送的装备物品请求
-/// </summary>
-/// <param name="request">(槽位类型, 物品ID)</param>
-private void OnEquipItemRequest((EquipmentSlotType, int) request)
-{
-    if (!CheckServerConnection())
-        return;
-
-    var (slotType, itemId) = request;
-    Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipItemRequest - slot={0}, itemId={1}</color>", slotType, itemId);
-    EquipItem(slotType, itemId);
-
-    if (slotType == EquipmentSlotType.Character)
-    {
-        if (CharacterServerManager.Instance != null)
+        if (ManagerManager.Instance != null && !ManagerManager.Instance.isOfflineMode)
         {
-            CharacterServerManager.Instance.EquipCharacter(itemId);
+            return false;
         }
-        if (PlayerAniManager.Instance != null)
-        {
-            PlayerAniManager.Instance.SwitchCharacter(itemId);
-        }
+        return true;
     }
-}
 
     /// <summary>
-/// 处理View层发送的装备鱼饵请求
-/// </summary>
-/// <param name="itemId">鱼饵ID</param>
-private void OnEquipBaitRequest(int itemId)
-{
-    if (!CheckServerConnection())
-        return;
+    /// 处理View层发送的装备物品请求
+    /// </summary>
+    /// <param name="request">(槽位类型, 物品ID)</param>
+    private void OnEquipItemRequest((EquipmentSlotType, int) request)
+    {
+        if (!CheckServerConnection())
+            return;
 
-    Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipBaitRequest - itemId={0}</color>", itemId);
-    EquipItem(EquipmentSlotType.Bait, itemId);
-}
+        var (slotType, itemId) = request;
+        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipItemRequest - slot={0}, itemId={1}</color>", slotType, itemId);
+        EquipItem(slotType, itemId);
+
+        if (slotType == EquipmentSlotType.Character)
+        {
+            if (CharacterServerManager.Instance != null)
+            {
+                CharacterServerManager.Instance.EquipCharacter(itemId);
+            }
+            if (PlayerAniManager.Instance != null)
+            {
+                PlayerAniManager.Instance.SwitchCharacter(itemId);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 处理View层发送的装备鱼饵请求
+    /// </summary>
+    /// <param name="itemId">鱼饵ID</param>
+    private void OnEquipBaitRequest(int itemId)
+    {
+        if (!CheckServerConnection())
+            return;
+
+        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipBaitRequest - itemId={0}</color>", itemId);
+        EquipItem(EquipmentSlotType.Bait, itemId);
+    }
 
     /// <summary>
     /// 装备物品到指定槽位
@@ -1061,3 +1066,4 @@ private void OnEquipBaitRequest(int itemId)
         return new Dictionary<int, int>(componentLevels);
     }
 }
+*/

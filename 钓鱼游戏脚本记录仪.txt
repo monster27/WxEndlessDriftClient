@@ -1,3 +1,6 @@
+2026.6.3
+给我检索一下有关SimulationServer的功能，我已经把部分的功能迁移到E:\TuanjieProject\WxEndlessDriftServer里面去了，查看一下还有没有其他的功能有没有什么问题，E:\TuanjieProject\WxEndlessDriftServe这个文件夹里面就是服务器的功能，把有关什么Simulation的去掉，这个就是完整的服务器功能，同时检索一下这个工程里面的代码，把有关SimulationServer的去掉，不需要任何模拟服务器的功能，把离线模式去掉，把ManagerManager里面有关离线模式的去掉，只留网络服务器的代码，同时把SimulationServer的所有代码都注释掉
+
 2026.6.2
 不对你找的不对，我让你找，SimulationServer这个文件夹下面的所有的类的方法和数据，有没有在客户端直接调用的，而不是通过通讯调用的，我要把功能分离，所以先给我找对应的内容有没有不合适的，然后先给我列表，我看看有没有需要优化的，然后再说
 

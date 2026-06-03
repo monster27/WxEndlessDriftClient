@@ -83,8 +83,19 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
     private void PreloadAllCharacterAnimations()
     {
         List<CharacterConfig> configList = null;
-        if (CharacterServerManager.Instance != null)
+        
+        // 检查是否处于网络模式
+        if (NetServerManager.Instance != null && NetServerManager.Instance.IsConnected)
         {
+            // 网络模式：从服务器获取人物配置
+            Debug.Log("[PlayerAniManager] 网络模式，尝试从服务器获取人物配置");
+            // 由于这是同步初始化，暂时使用默认人物配置
+            // 实际网络请求应该在 Init 后异步执行
+            configList = GetDefaultCharacterConfigs();
+        }
+        else if (CharacterServerManager.Instance != null)
+        {
+            // 离线模式：使用本地 CharacterServerManager
             configList = CharacterServerManager.Instance.GetAllCharacterConfigs();
         }
 
@@ -98,6 +109,17 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
         {
             LoadCharacterAnimation(config.id);
         }
+    }
+
+    /// <summary>
+    /// 获取默认人物配置（用于网络模式下的预加载）
+    /// </summary>
+    private List<CharacterConfig> GetDefaultCharacterConfigs()
+    {
+        return new List<CharacterConfig>
+        {
+            new CharacterConfig { id = 3401, name = "默认人物", description = "默认角色" }
+        };
     }
 
     private void LoadCharacterAnimation(int characterId)

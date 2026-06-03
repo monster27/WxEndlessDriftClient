@@ -211,6 +211,10 @@ public static partial class CommunicateEvent
     /// <returns>剩余时间 (float)</returns>
     public const string EVENT_GET_CONTINUOUS_MODE_REMAINING_TIME = "VIEW_EVENT_GET_CONTINUOUS_MODE_REMAINING_TIME";
 
+    /// <summary>【View层数据请求】请求获取玩家数据</summary>
+    /// <returns>玩家数据 (PlayerData)</returns>
+    public const string EVENT_GET_PLAYER_DATA = "VIEW_EVENT_GET_PLAYER_DATA";
+
     #endregion
 
     #region MANAGER - Manager层发送到View的数据事件

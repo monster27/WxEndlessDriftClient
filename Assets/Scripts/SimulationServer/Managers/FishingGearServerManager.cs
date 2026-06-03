@@ -1,3 +1,8 @@
+// ========================================================
+// 模拟服务器已被移除 - 客户端现在仅使用网络服务器模式
+// 此文件中的所有代码已被注释，以支持纯在线模式
+// ========================================================
+/*
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
@@ -218,3 +223,4 @@ public class GearStats
     public float shinyRate = 1.0f;
     public float qualityRate = 1.0f;
 }
+*/

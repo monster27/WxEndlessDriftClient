@@ -1,90 +1,105 @@
-﻿// 权重数据存储类
+// ========================================================
+// 模拟服务器已被移除 - 客户端现在仅使用网络服务器模式
+// 此文件中的所有代码已被注释，以支持纯在线模式
+// ========================================================
+/*
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
-[System.Serializable]
-public class WeightData<T>
-{
-    public T item;
-    public float weight;
-
-    public WeightData(T item, float weight)
-    {
-        this.item = item;
-        this.weight = weight;
-    }
-}
-
-// 权重池子核心类
-[System.Serializable]
+/// <summary>
+/// 权重池工具类
+/// 用于根据权重随机选择元素
+/// </summary>
 public class WeightPool<T>
 {
-    [SerializeField] private List<WeightData<T>> dataList = new List<WeightData<T>>();
-    private float totalWeight;
+    private List<WeightedItem> items = new List<WeightedItem>();
+    private int totalWeight = 0;
+    private System.Random random = new System.Random();
 
-    // 添加权重数据
-    public void Add(T item, float weight)
+    /// <summary>
+    /// 添加元素到权重池
+    /// </summary>
+    /// <param name="item">元素</param>
+    /// <param name="weight">权重</param>
+    public void Add(T item, int weight)
     {
-        if (weight <= 0) return;
-        dataList.Add(new WeightData<T>(item, weight));
+        if (weight <= 0)
+        {
+            Debug.LogWarning("[WeightPool] 权重必须大于0");
+            return;
+        }
+
+        items.Add(new WeightedItem(item, weight));
         totalWeight += weight;
     }
 
-    // 批量添加
-    public void AddRange(params (T item, float weight)[] items)
-    {
-        foreach (var item in items)
-            Add(item.item, item.weight);
-    }
-
-    // 移除
-    public void Remove(T item)
-    {
-        var target = dataList.Find(d => d.item.Equals(item));
-        if (target != null)
-        {
-            totalWeight -= target.weight;
-            dataList.Remove(target);
-        }
-    }
-
-    // 随机获取（核心）
+    /// <summary>
+    /// 根据权重随机获取一个元素
+    /// </summary>
+    /// <returns>随机选中的元素</returns>
     public T Get()
     {
-        if (dataList.Count == 0) return default;
-
-        float random = Random.Range(0, totalWeight);
-        float current = 0;
-
-        foreach (var data in dataList)
+        if (items.Count == 0)
         {
-            current += data.weight;
-            if (random <= current)
-                return data.item;
+            Debug.LogWarning("[WeightPool] 权重池为空");
+            return default(T);
         }
 
-        return dataList.Last().item;
+        int randomWeight = random.Next(0, totalWeight);
+        int currentWeight = 0;
+
+        foreach (var item in items)
+        {
+            currentWeight += item.weight;
+            if (randomWeight < currentWeight)
+            {
+                return item.value;
+            }
+        }
+
+        return items[items.Count - 1].value;
     }
 
-    // 清空
+    /// <summary>
+    /// 清空权重池
+    /// </summary>
     public void Clear()
     {
-        dataList.Clear();
+        items.Clear();
         totalWeight = 0;
     }
 
-    // 获取所有数据
-    public List<WeightData<T>> GetAll() => dataList;
-
-    // 修改权重
-    public void UpdateWeight(T item, float newWeight)
+    /// <summary>
+    /// 获取权重池中的元素数量
+    /// </summary>
+    /// <returns>元素数量</returns>
+    public int Count()
     {
-        var target = dataList.Find(d => d.item.Equals(item));
-        if (target != null)
+        return items.Count;
+    }
+
+    /// <summary>
+    /// 获取总权重
+    /// </summary>
+    /// <returns>总权重</returns>
+    public int GetTotalWeight()
+    {
+        return totalWeight;
+    }
+
+    /// <summary>
+    /// 内部加权项结构
+    /// </summary>
+    private struct WeightedItem
+    {
+        public T value;
+        public int weight;
+
+        public WeightedItem(T value, int weight)
         {
-            totalWeight = totalWeight - target.weight + newWeight;
-            target.weight = newWeight;
+            this.value = value;
+            this.weight = weight;
         }
     }
 }
+*/

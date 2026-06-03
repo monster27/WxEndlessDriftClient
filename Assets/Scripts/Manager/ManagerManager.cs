@@ -8,12 +8,11 @@ public class ManagerManager : SingletonMono<ManagerManager>
 
     /// <summary>
     /// 是否为单机模式（离线模式）
-    /// true: 单机模式，不连接网络服务器
-    /// false: 网络模式，连接远程服务器
+    /// 注意：当前已强制设置为在线模式，此变量仅用于兼容旧代码
     /// </summary>
     [Header("运行模式设置")]
-    [Tooltip("设置为true时启用单机模式，设置为false时启用网络模式")]
-    public bool isOfflineMode = true;
+    [Tooltip("当前已强制为在线模式，此设置不再生效")]
+    public bool isOfflineMode = false;
 
     protected override void Awake()
     {
@@ -91,16 +90,6 @@ public class ManagerManager : SingletonMono<ManagerManager>
             logBuilder.AppendLine("  EnvManager: 完成");
         }
 
-        if (PlayerDataManager.Instance != null)
-        {
-            if (UIManager.Instance != null && UIManager.Instance.loadingView != null)
-                UIManager.Instance.loadingView.AddLoadingTask("加载玩家数据");
-            PlayerDataManager.Instance.Init();
-            if (UIManager.Instance != null && UIManager.Instance.loadingView != null)
-                UIManager.Instance.loadingView.CompleteLoadingTask("加载玩家数据");
-            logBuilder.AppendLine("  PlayerDataManager: 完成");
-        }
-
         if (isOfflineMode)
         {
             if (ServerManager.Instance != null)
@@ -138,6 +127,16 @@ public class ManagerManager : SingletonMono<ManagerManager>
                 ServerManager.Instance.SetEnabled(false);
                 logBuilder.AppendLine("  ServerManager (在线模式): 已禁用");
             }
+        }
+
+        if (PlayerDataManager.Instance != null)
+        {
+            if (UIManager.Instance != null && UIManager.Instance.loadingView != null)
+                UIManager.Instance.loadingView.AddLoadingTask("加载玩家数据");
+            PlayerDataManager.Instance.Init();
+            if (UIManager.Instance != null && UIManager.Instance.loadingView != null)
+                UIManager.Instance.loadingView.CompleteLoadingTask("加载玩家数据");
+            logBuilder.AppendLine("  PlayerDataManager: 完成");
         }
 
         if (PlayerAniManager.Instance != null)
