@@ -1,0 +1,450 @@
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections.Generic;
+
+public class InfoFishEquipView : MonoBehaviour
+{
+    public Button maskBtn;
+    public Button closeBtn;
+
+    public GameObject rodTitleObj;
+    public GameObject lineTitleObj;
+    public GameObject hookTitleObj;
+
+    public Image longIcon;
+    public Image shortIcon;
+
+    public Text equipNameText;
+    public Text currentLevelText;
+    public Text nextLevelDescText;
+
+    public Text upgradeCostValueText;
+    public Button upgradeBtn;
+    public Button adUpgradeBtn;
+
+    public GameObject ownerUseObj;
+    public GameObject ownerUnUseObj;
+    public GameObject lockedObj;
+
+    public GameObject upgradeCostObj;
+    public GameObject adUpgradeObj;
+    public GameObject unlockObj;
+    public Button unlockBtn;
+    public Button watchAdBtn;
+    public Button watchAd2Btn;
+    public Button equipBtn;
+
+    private FishingEquipType currentType = FishingEquipType.Rod;
+    private int currentEquipId = 0;
+    private System.Action<string, object[]> callback;
+    private int currentGold = 0;
+
+    void Start()
+    {
+        if (maskBtn != null) maskBtn.onClick.AddListener(OnMaskClick);
+        if (closeBtn != null) closeBtn.onClick.AddListener(OnCloseClick);
+        if (upgradeBtn != null) upgradeBtn.onClick.AddListener(OnUpgradeClick);
+        if (adUpgradeBtn != null) adUpgradeBtn.onClick.AddListener(OnAdUpgradeClick);
+        if (unlockBtn != null) unlockBtn.onClick.AddListener(OnUnlockClick);
+        if (watchAdBtn != null) watchAdBtn.onClick.AddListener(OnWatchAdClick);
+        if (watchAd2Btn != null) watchAdBtn.onClick.AddListener(OnWatchAdClick);
+        if (equipBtn != null) equipBtn.onClick.AddListener(OnEquipClick);
+    }
+
+    void OnEnable()
+    {
+        RegisterDataEvents();
+    }
+
+    void OnDisable()
+    {
+        UnregisterDataEvents();
+    }
+
+    void OnDestroy()
+    {
+        UnregisterDataEvents();
+    }
+
+    private void RegisterDataEvents()
+    {
+        CommunicateEvent.Register<int>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
+        CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipChanged);
+        CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_ITEM_QUANTITY_CHANGED, OnItemQuantityChanged);
+    }
+
+    private void UnregisterDataEvents()
+    {
+        CommunicateEvent.Unregister<int>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
+        CommunicateEvent.Unregister<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipChanged);
+        CommunicateEvent.Unregister<(int, int)>(CommunicateEvent.EVENT_ITEM_QUANTITY_CHANGED, OnItemQuantityChanged);
+    }
+
+    private void OnGoldChanged(int gold)
+    {
+        currentGold = gold;
+        UpdateUpgradeCostDisplay();
+    }
+
+    private void OnEquipChanged((int, int) data)
+    {
+        int slotType = data.Item1;
+        int itemId = data.Item2;
+        EquipmentSlotType currentSlotType = GetSlotType();
+        if ((int)currentSlotType == slotType)
+        {
+            UpdateStateDisplay();
+        }
+    }
+
+    private void OnItemQuantityChanged((int, int) data)
+    {
+        int itemId = data.Item1;
+        int quantity = data.Item2;
+        if (itemId == currentEquipId)
+        {
+            UpdateStateDisplay();
+        }
+    }
+
+    public void SetCallback(System.Action<string, object[]> cb)
+    {
+        callback = cb;
+    }
+
+    public void Init()
+    {
+    }
+
+    public void Show(FishingEquipType type, int equipId)
+    {
+        currentType = type;
+        currentEquipId = equipId;
+        UpdateDisplay();
+        gameObject.SetActive(true);
+    }
+
+    public void Hide()
+    {
+        gameObject.SetActive(false);
+    }
+
+    private void UpdateDisplay()
+    {
+        UpdateTitleDisplay();
+        UpdateIconDisplay();
+        UpdateTextInfo();
+        UpdateStateDisplay();
+        UpdateUpgradeCostDisplay();
+    }
+
+    private void UpdateTitleDisplay()
+    {
+        if (rodTitleObj != null) rodTitleObj.SetActive(currentType == FishingEquipType.Rod);
+        if (lineTitleObj != null) lineTitleObj.SetActive(currentType == FishingEquipType.Line);
+        if (hookTitleObj != null) hookTitleObj.SetActive(currentType == FishingEquipType.Hook);
+    }
+
+    private void UpdateIconDisplay()
+    {
+        if (currentEquipId <= 0) return;
+
+        string iconPath = GetIconPath(currentType, currentEquipId);
+        Sprite icon = Resources.Load<Sprite>(iconPath);
+
+        bool useLongIcon = currentType == FishingEquipType.Rod;
+
+        if (longIcon != null)
+        {
+            longIcon.gameObject.SetActive(useLongIcon);
+            if (useLongIcon && icon != null)
+            {
+                longIcon.sprite = icon;
+                longIcon.color = Color.white;
+            }
+        }
+
+        if (shortIcon != null)
+        {
+            shortIcon.gameObject.SetActive(!useLongIcon);
+            if (!useLongIcon && icon != null)
+            {
+                shortIcon.sprite = icon;
+                shortIcon.color = Color.white;
+            }
+        }
+    }
+
+    private string GetIconPath(FishingEquipType type, int equipId)
+    {
+        switch (type)
+        {
+            case FishingEquipType.Rod:
+                return $"UI/Icon/Equipment/Rod/{equipId}";
+            case FishingEquipType.Line:
+                return $"UI/Icon/Equipment/Line/{equipId}";
+            case FishingEquipType.Hook:
+                return $"UI/Icon/Equipment/Hook/{equipId}";
+            default:
+                return $"UI/Icon/Equipment/Rod/{equipId}";
+        }
+    }
+
+    private void UpdateTextInfo()
+    {
+        if (currentEquipId <= 0) return;
+
+        string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
+        if (componentName != "未知组件")
+        {
+            if (equipNameText != null)
+            {
+                equipNameText.text = componentName;
+            }
+        }
+
+        int level = GetEquipLevel();
+
+        if (currentLevelText != null)
+        {
+            currentLevelText.text = $"当前等级: {level}";
+        }
+
+        if (nextLevelDescText != null)
+        {
+            if (level >= 10)
+            {
+                nextLevelDescText.text = "已满级";
+            }
+            else
+            {
+                nextLevelDescText.text = "升级后效果提升";
+            }
+        }
+    }
+
+    private void UpdateStateDisplay()
+    {
+        EquipState state = GetEquipState();
+
+        if (ownerUseObj != null)
+        {
+            ownerUseObj.SetActive(state == EquipState.OwnerUse);
+        }
+        if (ownerUnUseObj != null)
+        {
+            ownerUnUseObj.SetActive(state == EquipState.OwnerUnUse);
+        }
+        if (lockedObj != null)
+        {
+            lockedObj.SetActive(state == EquipState.Locked);
+        }
+
+        bool isUnlocked = state != EquipState.Locked;
+
+        if (upgradeCostObj != null)
+        {
+            upgradeCostObj.SetActive(isUnlocked);
+        }
+        if (adUpgradeObj != null)
+        {
+            adUpgradeObj.SetActive(isUnlocked);
+        }
+        if (unlockObj != null)
+        {
+            unlockObj.SetActive(state == EquipState.Locked);
+        }
+
+        if (upgradeBtn != null)
+        {
+            upgradeBtn.gameObject.SetActive(isUnlocked);
+        }
+        if (adUpgradeBtn != null)
+        {
+            adUpgradeBtn.gameObject.SetActive(isUnlocked);
+        }
+        if (unlockBtn != null)
+        {
+            unlockBtn.gameObject.SetActive(state == EquipState.Locked);
+        }
+    }
+
+    private void UpdateUpgradeCostDisplay()
+    {
+        int level = GetEquipLevel();
+        int cost = CalculateUpgradeCost(level);
+        bool canAfford = CanAffordUpgrade(cost);
+
+        if (upgradeCostValueText != null)
+        {
+            upgradeCostValueText.text = cost.ToString();
+            upgradeCostValueText.color = canAfford ? Color.black : Color.red;
+        }
+
+        
+    }
+
+    private EquipState GetEquipState()
+    {
+        EquipmentSlotType slotType = GetSlotType();
+        int equippedId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, slotType);
+
+        if (equippedId == currentEquipId)
+        {
+            return EquipState.OwnerUse;
+        }
+
+        var inventory = CommunicateEvent.Request<int, Dictionary<int, int>>(CommunicateEvent.EVENT_GET_INVENTORY, 0);
+        if (inventory.ContainsKey(currentEquipId))
+        {
+            return EquipState.OwnerUnUse;
+        }
+
+        return EquipState.Locked;
+    }
+
+    private EquipmentSlotType GetSlotType()
+    {
+        switch (currentType)
+        {
+            case FishingEquipType.Rod:
+                return EquipmentSlotType.FishingRod;
+            case FishingEquipType.Line:
+                return EquipmentSlotType.FishingLine;
+            case FishingEquipType.Hook:
+                return EquipmentSlotType.FishingHook;
+            default:
+                return EquipmentSlotType.FishingRod;
+        }
+    }
+
+    private int GetEquipLevel()
+    {
+        return CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, currentEquipId);
+    }
+
+    private int CalculateUpgradeCost(int currentLevel)
+    {
+        return currentLevel * 50;
+    }
+
+    private bool CanAffordUpgrade(int cost)
+    {
+        return currentGold >= cost;
+    }
+
+    private void OnMaskClick()
+    {
+        callback?.Invoke("Back", new object[] { currentType });
+    }
+
+    private void OnCloseClick()
+    {
+        callback?.Invoke("Back", new object[] { currentType });
+    }
+
+    private void OnUpgradeClick()
+    {
+        Debug.Log($"[InfoFishEquipView] OnUpgradeClick - currentEquipId={currentEquipId}");
+        
+        int level = GetEquipLevel();
+        int cost = CalculateUpgradeCost(level);
+
+        // 先检查金币是否足够
+        if (currentGold < cost)
+        {
+            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "金币不足！");
+            Debug.LogWarning($"[InfoFishEquipView] 金币不足, 当前: {currentGold}, 需要: {cost}");
+            return;
+        }
+
+        // 检查是否已经满级
+        if (level >= 10)
+        {
+            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "装备已满级！");
+            return;
+        }
+
+        // 执行升级
+        CommunicateEvent.Modify("Equip_UpgradeByGold", currentEquipId);
+
+        // 更新UI
+        UpdateDisplay();
+
+        // 显示升级成功提示
+        string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
+        string successInfo = componentName != "未知组件" ? $"{componentName} 升级成功！" : "装备升级成功！";
+        CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+    }
+
+    private void OnAdUpgradeClick()
+    {
+        int level = GetEquipLevel();
+
+        // 检查是否已经满级（看广告升级有限制）
+        if (level >= 10)
+        {
+            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "装备已满级！");
+            return;
+        }
+
+        string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
+        string info = componentName != "未知组件" ? $"看广告升级装备: {componentName}" : "看广告升级装备";
+        callback?.Invoke("OpenAd", new object[] { info, currentEquipId, "看广告升级", (System.Action)(() =>
+        {
+            Debug.Log($"[InfoFishEquipView] 广告升级完成 - currentEquipId={currentEquipId}");
+            CommunicateEvent.Modify("Equip_UpgradeByAd", currentEquipId);
+            UpdateDisplay();
+
+            // 显示升级成功提示
+            string successInfo = componentName != "未知组件" ? $"{componentName} 升级成功！" : "装备升级成功！";
+            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+        })});
+    }
+
+    private void OnUnlockClick()
+    {
+        string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
+        string info = componentName != "未知组件" ? $"看广告解锁装备: {componentName}" : "看广告解锁装备";
+        callback?.Invoke("OpenAd", new object[] { info, currentEquipId, "看广告解锁", (System.Action)(() =>
+        {
+            CommunicateEvent.Modify("Equip_Unlock", currentEquipId);
+            UpdateDisplay();
+
+            // 显示解锁成功提示
+            string successInfo = componentName != "未知组件" ? $"恭喜解锁 {componentName}！" : "恭喜解锁装备！";
+            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+        })});
+    }
+
+    private void OnWatchAdClick()
+    {
+        Debug.Log($"[InfoFishEquipView] OnWatchAdClick - currentEquipId={currentEquipId}");
+        string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
+        string info = componentName != "未知组件" ? $"看广告获取装备: {componentName}" : "看广告获取装备";
+        callback?.Invoke("OpenAd", new object[] { info, currentEquipId, "看广告获取", (System.Action)(() =>
+        {
+            CommunicateEvent.Modify("Equip_Unlock", currentEquipId);
+            UpdateDisplay();
+
+            // 显示获取成功提示
+            string successInfo = componentName != "未知组件" ? $"成功获取 {componentName}！" : "成功获取装备！";
+            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+        })});
+    }
+
+    private void OnEquipClick()
+    {
+        Debug.Log($"[InfoFishEquipView] OnEquipClick - currentType={currentType}, currentEquipId={currentEquipId}");
+
+        EquipmentSlotType slotType = GetSlotType();
+        CommunicateEvent.Modify<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_ITEM, (slotType, currentEquipId));
+        Debug.Log($"[InfoFishEquipView] OnEquipClick - 已发送装备请求 {slotType} 为 {currentEquipId}");
+
+        UpdateDisplay();
+
+        string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
+        string successInfo = componentName != "未知组件" ? $"已装备 {componentName}！" : "已装备装备！";
+        CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+    }
+}

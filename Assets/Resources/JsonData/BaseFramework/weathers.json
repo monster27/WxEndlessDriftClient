@@ -1,0 +1,116 @@
+{
+    "weathers": [
+        {
+            "id": 301,
+            "name": "晴天",
+            "description": "阳光明媚，钓鱼好天气",
+            "percentage": 20,
+            "weight": 200
+        },
+        {
+            "id": 302,
+            "name": "多云天",
+            "description": "云层较多，阳光柔和",
+            "percentage": 12,
+            "weight": 120
+        },
+        {
+            "id": 303,
+            "name": "阴天",
+            "description": "天色阴沉，鱼群活跃",
+            "percentage": 10,
+            "weight": 100
+        },
+        {
+            "id": 304,
+            "name": "微风天",
+            "description": "微风拂面，水面微澜",
+            "percentage": 10,
+            "weight": 100
+        },
+        {
+            "id": 305,
+            "name": "小到中雨",
+            "description": "细雨绵绵，适合钓鱼",
+            "percentage": 8,
+            "weight": 80
+        },
+        {
+            "id": 306,
+            "name": "薄雾",
+            "description": "薄雾笼罩，神秘感十足",
+            "percentage": 6,
+            "weight": 60
+        },
+        {
+            "id": 307,
+            "name": "明月天",
+            "description": "明月当空，夜钓好时机",
+            "percentage": 5,
+            "weight": 50
+        },
+        {
+            "id": 308,
+            "name": "雷阵雨天",
+            "description": "雷声隆隆，大鱼活跃",
+            "percentage": 5,
+            "weight": 50
+        },
+        {
+            "id": 309,
+            "name": "阵风天",
+            "description": "阵风强劲，考验技术",
+            "percentage": 5,
+            "weight": 50
+        },
+        {
+            "id": 310,
+            "name": "暴雨",
+            "description": "暴雨倾盆，稀有鱼出没",
+            "percentage": 4,
+            "weight": 40
+        },
+        {
+            "id": 311,
+            "name": "大雾天",
+            "description": "浓雾弥漫，能见度低",
+            "percentage": 4,
+            "weight": 40
+        },
+        {
+            "id": 312,
+            "name": "彩虹天",
+            "description": "彩虹横跨天际，好运降临",
+            "percentage": 3,
+            "weight": 30
+        },
+        {
+            "id": 313,
+            "name": "热浪",
+            "description": "热浪滚滚，鱼群深潜",
+            "percentage": 3,
+            "weight": 30
+        },
+        {
+            "id": 314,
+            "name": "火烧云",
+            "description": "晚霞如火，美景如画",
+            "percentage": 3,
+            "weight": 30
+        },
+        {
+            "id": 315,
+            "name": "荧光海",
+            "description": "海水发光，梦幻景象",
+            "percentage": 3,
+            "weight": 30
+        },
+        {
+            "id": 316,
+            "name": "海市蜃楼",
+            "description": "虚幻景象，奇迹出现",
+            "percentage": 2,
+            "weight": 20
+        }
+    ]
+}

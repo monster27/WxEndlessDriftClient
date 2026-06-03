@@ -1,0 +1,25 @@
+{
+    "fishSpecies": [
+        {
+            "id": 601,
+            "name": "贝壳类",
+            "description": "贝类生物，放置于鱼缸底沙，不可移动",
+            "movementType": "static",
+            "positionType": "bottom"
+        },
+        {
+            "id": 602,
+            "name": "鱼类",
+            "description": "普通鱼类，在鱼缸中可以自由移动",
+            "movementType": "free",
+            "positionType": "water"
+        },
+        {
+            "id": 603,
+            "name": "蟹类",
+            "description": "蟹类生物，放置于鱼缸底沙，可移动",
+            "movementType": "walk",
+            "positionType": "bottom"
+        }
+    ]
+}

@@ -1,0 +1,52 @@
+{
+  "characterSkillConfigs": [
+    {
+      "id": 1,
+      "characterId": 901,
+      "levelSkillUnlocks": [
+        {
+          "unlockLevel": 50,
+          "skillId": 801,
+          "description": "解锁基础钓鱼技巧，提高钓鱼成功率"
+        },
+        {
+          "unlockLevel": 100,
+          "skillId": 802,
+          "description": "解锁高级钓鱼技巧，获得稀有鱼类加成"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "characterId": 902,
+      "levelSkillUnlocks": [
+        {
+          "unlockLevel": 50,
+          "skillId": 803,
+          "description": "解锁专业钓鱼技巧，缩短钓鱼时间"
+        },
+        {
+          "unlockLevel": 100,
+          "skillId": 804,
+          "description": "解锁大师钓鱼技巧，提高稀有鱼类出现概率"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "characterId": 903,
+      "levelSkillUnlocks": [
+        {
+          "unlockLevel": 50,
+          "skillId": 805,
+          "description": "解锁传奇钓鱼技巧，获得所有鱼类加成"
+        },
+        {
+          "unlockLevel": 100,
+          "skillId": 806,
+          "description": "解锁神话钓鱼技巧，获得最高钓鱼效率"
+        }
+      ]
+    }
+  ]
+}

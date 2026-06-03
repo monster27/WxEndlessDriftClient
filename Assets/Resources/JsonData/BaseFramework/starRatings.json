@@ -1,0 +1,36 @@
+{
+    "starRatings": [
+        {
+            "id": 501,
+            "name": "铜星",
+            "description": "基础重量",
+            "multiplier": 1.0,
+            "color": "#CD7F32",
+            "sortOrder": 1
+        },
+        {
+            "id": 502,
+            "name": "银星",
+            "description": "1.5倍重量",
+            "multiplier": 1.5,
+            "color": "#C0C0C0",
+            "sortOrder": 2
+        },
+        {
+            "id": 503,
+            "name": "金星",
+            "description": "2倍重量",
+            "multiplier": 2.0,
+            "color": "#FFD700",
+            "sortOrder": 3
+        },
+        {
+            "id": 504,
+            "name": "虹星",
+            "description": "3倍重量",
+            "multiplier": 3.0,
+            "color": "#FF69B4",
+            "sortOrder": 4
+        }
+    ]
+}

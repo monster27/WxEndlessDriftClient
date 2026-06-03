@@ -1,0 +1,54 @@
+{
+    "levelRangeExpList": [
+        {
+            "rangeKey": "1-10",
+            "rangeName": "1-10级",
+            "expRequired": 100
+        },
+        {
+            "rangeKey": "11-20",
+            "rangeName": "11-20级",
+            "expRequired": 200
+        },
+        {
+            "rangeKey": "21-30",
+            "rangeName": "21-30级",
+            "expRequired": 300
+        },
+        {
+            "rangeKey": "31-40",
+            "rangeName": "31-40级",
+            "expRequired": 400
+        },
+        {
+            "rangeKey": "41-50",
+            "rangeName": "41-50级",
+            "expRequired": 500
+        },
+        {
+            "rangeKey": "51-60",
+            "rangeName": "51-60级",
+            "expRequired": 600
+        },
+        {
+            "rangeKey": "61-70",
+            "rangeName": "61-70级",
+            "expRequired": 700
+        },
+        {
+            "rangeKey": "71-80",
+            "rangeName": "71-80级",
+            "expRequired": 800
+        },
+        {
+            "rangeKey": "81-90",
+            "rangeName": "81-90级",
+            "expRequired": 900
+        },
+        {
+            "rangeKey": "91-100",
+            "rangeName": "91-100级",
+            "expRequired": 1000
+        }
+    ]
+}

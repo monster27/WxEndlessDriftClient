@@ -1,0 +1,107 @@
+{
+    "fishes": [
+        {
+            "id": 1001,
+            "name": "鲤鱼",
+            "description": "常见的淡水鱼，寓意吉祥，适合新手钓手",
+            "islandId": 101,
+            "rarityId": 201,
+            "preferredIslandIds": [],
+            "preferredTimeIds": [
+                401,
+                402
+            ],
+            "preferredBaitIds": [
+                2001
+            ],
+            "preferredWeatherIds": [
+                301
+            ],
+            "fishSpeciesId": 602,
+            "struggleTime": 5,
+            "flashProbability": 0.5,
+            "baseWeight": 2.5,
+            "baseExp": 10
+        },
+        {
+            "id": 1002,
+            "name": "青鱼",
+            "description": "大型淡水鱼，力道十足，考验钓技",
+            "islandId": 101,
+            "rarityId": 202,
+            "preferredIslandIds": [],
+            "preferredTimeIds": [
+                403
+            ],
+            "preferredBaitIds": [
+                2002,
+                2003
+            ],
+            "preferredWeatherIds": [
+                302,
+                303
+            ],
+            "fishSpeciesId": 602,
+            "struggleTime": 7,
+            "flashProbability": 0.5,
+            "baseWeight": 5.0,
+            "baseExp": 25
+        },
+        {
+            "id": 1003,
+            "name": "黄鳍金枪鱼",
+            "description": "海洋中的高速猎手，肉质鲜美",
+            "islandId": 102,
+            "rarityId": 204,
+            "preferredIslandIds": [
+                0
+            ],
+            "preferredTimeIds": [
+                402,
+                403
+            ],
+            "preferredBaitIds": [
+                2005,
+                2006
+            ],
+            "preferredWeatherIds": [
+                305,
+                308
+            ],
+            "fishSpeciesId": 602,
+            "struggleTime": 8,
+            "flashProbability": 0.5,
+            "baseWeight": 15.0,
+            "baseExp": 80
+        },
+        {
+            "id": 1004,
+            "name": "石斑鱼",
+            "description": "礁石中的隐士，肉质极品",
+            "islandId": 0,
+            "rarityId": 203,
+            "preferredIslandIds": [
+                101,
+                102,
+                103
+            ],
+            "preferredTimeIds": [
+                401,
+                404
+            ],
+            "preferredBaitIds": [
+                2004,
+                2006
+            ],
+            "preferredWeatherIds": [
+                304,
+                306
+            ],
+            "fishSpeciesId": 602,
+            "struggleTime": 6,
+            "flashProbability": 0.5,
+            "baseWeight": 8.0,
+            "baseExp": 50
+        }
+    ]
+}

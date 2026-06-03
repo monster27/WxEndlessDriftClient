@@ -1,0 +1,24 @@
+{
+    "characters": [
+        {
+            "id": 3401,
+            "name": "新手渔夫",
+            "description": "刚刚开始钓鱼生涯的新手，熟悉基础钓鱼技巧",
+            "iconPath": "Characters/3401",
+            "maxLevel": 100,
+            "skillIdAtLevel50": 3301,
+            "skillIdAtLevel100": 3302,
+            "tenLevelGoldReward": 500
+        },
+        {
+            "id": 3402,
+            "name": "钓鱼大师",
+            "description": "经验丰富的钓鱼大师，精通各种钓鱼技巧",
+            "iconPath": "Characters/3402",
+            "maxLevel": 100,
+            "skillIdAtLevel50": 3303,
+            "skillIdAtLevel100": 3304,
+            "tenLevelGoldReward": 1000
+        }
+    ]
+}

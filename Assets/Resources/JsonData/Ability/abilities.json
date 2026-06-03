@@ -1,0 +1,95 @@
+{
+    "abilities": [
+        {
+            "id": 701,
+            "name": "普通鱼加成",
+            "description": "增加普通鱼类的权重（具体数值由完整钓鱼技能等级配置）",
+            "abilityType": "RarityWeight",
+            "targetRarityId": 1
+        },
+        {
+            "id": 702,
+            "name": "罕见鱼加成",
+            "description": "增加罕见鱼类的权重（具体数值由完整钓鱼技能等级配置）",
+            "abilityType": "RarityWeight",
+            "targetRarityId": 2
+        },
+        {
+            "id": 703,
+            "name": "稀有鱼加成",
+            "description": "增加稀有鱼类的权重（具体数值由完整钓鱼技能等级配置）",
+            "abilityType": "RarityWeight",
+            "targetRarityId": 3
+        },
+        {
+            "id": 704,
+            "name": "史诗鱼加成",
+            "description": "增加史诗鱼类的权重（具体数值由完整钓鱼技能等级配置）",
+            "abilityType": "RarityWeight",
+            "targetRarityId": 4
+        },
+        {
+            "id": 705,
+            "name": "传说鱼加成",
+            "description": "大幅增加传说鱼类的权重（具体数值由完整钓鱼技能等级配置）",
+            "abilityType": "RarityWeight",
+            "targetRarityId": 5
+        },
+        {
+            "id": 706,
+            "name": "幻想鱼加成",
+            "description": "极度稀有！增加幻想鱼类的权重（具体数值由完整钓鱼技能等级配置）",
+            "abilityType": "RarityWeight",
+            "targetRarityId": 6
+        },
+        {
+            "id": 707,
+            "name": "重量倾向调整",
+            "description": "调整重量随机偏向，系数越低越偏向基础重量（具体数值由完整钓鱼技能等级配置）",
+            "abilityType": "WeightBias",
+            "targetRarityId": 0
+        },
+        {
+            "id": 708,
+            "name": "挣扎时间减少",
+            "description": "减少鱼类挣扎时间百分比（具体数值由完整钓鱼技能等级配置）",
+            "abilityType": "StruggleTime",
+            "targetRarityId": 0
+        },
+        {
+            "id": 709,
+            "name": "咬钩概率加成",
+            "description": "增加鱼类咬钩概率，减少垃圾概率（具体数值由完整钓鱼技能等级配置）",
+            "abilityType": "CatchRate",
+            "targetRarityId": 0
+        },
+        {
+            "id": 710,
+            "name": "鱼类权重加成",
+            "description": "增加所有鱼类的权重倍率（具体数值由完整钓鱼技能等级配置）",
+            "abilityType": "FishWeight",
+            "targetRarityId": 0
+        },
+        {
+            "id": 711,
+            "name": "闪光率加成",
+            "description": "增加闪光鱼概率百分比（具体数值由完整钓鱼技能等级配置）",
+            "abilityType": "ShinyRate",
+            "targetRarityId": 0
+        },
+        {
+            "id": 712,
+            "name": "小游戏难度降低",
+            "description": "降低钓鱼小游戏难度等级（具体数值由完整钓鱼技能等级配置）",
+            "abilityType": "MinigameDifficulty",
+            "targetRarityId": 0
+        },
+        {
+            "id": 713,
+            "name": "钓鱼保底",
+            "description": "连续钓到垃圾次数上限，超过后必定钓上非垃圾（具体数值由完整钓鱼技能等级配置）",
+            "abilityType": "TrashProtection",
+            "targetRarityId": 0
+        }
+    ]
+}

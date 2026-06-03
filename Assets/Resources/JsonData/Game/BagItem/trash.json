@@ -1,0 +1,25 @@
+{
+    "trashList": [
+        {
+            "id": 9001,
+            "name": "塑料瓶",
+            "weight": 0.019999999552965165,
+            "weightValue": 40,
+            "experience": 1
+        },
+        {
+            "id": 9002,
+            "name": "易拉罐",
+            "weight": 0.014999999664723874,
+            "weightValue": 25,
+            "experience": 1
+        },
+        {
+            "id": 9003,
+            "name": "塑料袋",
+            "weight": 0.004999999888241291,
+            "weightValue": 40,
+            "experience": 0
+        }
+    ]
+}

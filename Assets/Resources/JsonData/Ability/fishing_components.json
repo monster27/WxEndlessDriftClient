@@ -1,0 +1,2154 @@
+{
+    "items": [
+        {
+            "id": 3001,
+            "name": "基础钓竿",
+            "description": "新手入门级钓竿，性能均衡",
+            "category": 1,
+            "iconPath": "",
+            "maxLevel": 10,
+            "isPassive": false,
+            "cooldownTime": 0.0,
+            "duration": 0.0,
+            "levelDataList": [
+                {
+                    "level": 1,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.0
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.0
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "入门级钓竿，性能基础",
+                    "upgradeDescription": "咬钩率+0%，挣扎时间-0%，小游戏难度-0",
+                    "upgradeCost": 100
+                },
+                {
+                    "level": 2,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.029999999329447748
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.019999999552965165
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.019999999552965165
+                        }
+                    ],
+                    "levelDescription": "经过简单打磨，性能小幅提升",
+                    "upgradeDescription": "咬钩率+3%，挣扎时间-2%，小游戏难度-2%",
+                    "upgradeCost": 200
+                },
+                {
+                    "level": 3,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.05999999865889549
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.03999999910593033
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.03999999910593033
+                        }
+                    ],
+                    "levelDescription": "手感逐渐熟练",
+                    "upgradeDescription": "咬钩率+6%，挣扎时间-4%，小游戏难度-4%",
+                    "upgradeCost": 300
+                },
+                {
+                    "level": 4,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.09000000357627869
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.05999999865889549
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.05999999865889549
+                        }
+                    ],
+                    "levelDescription": "钓竿开始显现出不错的性能",
+                    "upgradeDescription": "咬钩率+9%，挣扎时间-6%，小游戏难度-6%",
+                    "upgradeCost": 400
+                },
+                {
+                    "level": 5,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.11999999731779099
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.07999999821186066
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.07999999821186066
+                        }
+                    ],
+                    "levelDescription": "已经能够应对大多数情况",
+                    "upgradeDescription": "咬钩率+12%，挣扎时间-8%，小游戏难度-8%",
+                    "upgradeCost": 500
+                },
+                {
+                    "level": 6,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.15000000596046449
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.10000000149011612
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.10000000149011612
+                        }
+                    ],
+                    "levelDescription": "钓竿性能进一步提升",
+                    "upgradeDescription": "咬钩率+15%，挣扎时间-10%，小游戏难度-10%",
+                    "upgradeCost": 600
+                },
+                {
+                    "level": 7,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.18000000715255738
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.11999999731779099
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.11999999731779099
+                        }
+                    ],
+                    "levelDescription": "开始向专业级别迈进",
+                    "upgradeDescription": "咬钩率+18%，挣扎时间-12%，小游戏难度-12%",
+                    "upgradeCost": 700
+                },
+                {
+                    "level": 8,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.20999999344348908
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.14000000059604646
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.14000000059604646
+                        }
+                    ],
+                    "levelDescription": "性能稳定可靠",
+                    "upgradeDescription": "咬钩率+21%，挣扎时间-14%，小游戏难度-14%",
+                    "upgradeCost": 800
+                },
+                {
+                    "level": 9,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.23999999463558198
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.1599999964237213
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.1599999964237213
+                        }
+                    ],
+                    "levelDescription": "即将达到巅峰状态",
+                    "upgradeDescription": "咬钩率+24%，挣扎时间-16%，小游戏难度-16%",
+                    "upgradeCost": 900
+                },
+                {
+                    "level": 10,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.30000001192092898
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.20000000298023225
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.20000000298023225
+                        }
+                    ],
+                    "levelDescription": "基础钓竿的终极形态",
+                    "upgradeDescription": "咬钩率+30%，挣扎时间-20%，小游戏难度-20%",
+                    "upgradeCost": 1000
+                }
+            ],
+            "obtainStatus": 0,
+            "equipStatus": 0
+        },
+        {
+            "id": 3002,
+            "name": "碳素钓竿",
+            "description": "轻量化碳素材质，提升钓鱼效率",
+            "category": 1,
+            "iconPath": "",
+            "maxLevel": 10,
+            "isPassive": false,
+            "cooldownTime": 0.0,
+            "duration": 0.0,
+            "levelDataList": [
+                {
+                    "level": 1,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.05000000074505806
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.029999999329447748
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.029999999329447748
+                        }
+                    ],
+                    "levelDescription": "碳素材质，轻便耐用",
+                    "upgradeDescription": "咬钩率+5%，挣扎时间-3%，小游戏难度-3%",
+                    "upgradeCost": 150
+                },
+                {
+                    "level": 2,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.09000000357627869
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.05999999865889549
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.05999999865889549
+                        }
+                    ],
+                    "levelDescription": "操控感明显提升",
+                    "upgradeDescription": "咬钩率+9%，挣扎时间-6%，小游戏难度-6%",
+                    "upgradeCost": 250
+                },
+                {
+                    "level": 3,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.12999999523162843
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.09000000357627869
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.09000000357627869
+                        }
+                    ],
+                    "levelDescription": "抛投更加精准",
+                    "upgradeDescription": "咬钩率+13%，挣扎时间-9%，小游戏难度-9%",
+                    "upgradeCost": 350
+                },
+                {
+                    "level": 4,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.17000000178813935
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.11999999731779099
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.11999999731779099
+                        }
+                    ],
+                    "levelDescription": "灵敏度大幅提升",
+                    "upgradeDescription": "咬钩率+17%，挣扎时间-12%，小游戏难度-12%",
+                    "upgradeCost": 450
+                },
+                {
+                    "level": 5,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.20999999344348908
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.15000000596046449
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.15000000596046449
+                        }
+                    ],
+                    "levelDescription": "手感轻盈，反应迅速",
+                    "upgradeDescription": "咬钩率+21%，挣扎时间-15%，小游戏难度-15%",
+                    "upgradeCost": 550
+                },
+                {
+                    "level": 6,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.25
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.18000000715255738
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.18000000715255738
+                        }
+                    ],
+                    "levelDescription": "性能超越普通钓竿",
+                    "upgradeDescription": "咬钩率+25%，挣扎时间-18%，小游戏难度-18%",
+                    "upgradeCost": 650
+                },
+                {
+                    "level": 7,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.28999999165534975
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.20999999344348908
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.20999999344348908
+                        }
+                    ],
+                    "levelDescription": "专业级手感",
+                    "upgradeDescription": "咬钩率+29%，挣扎时间-21%，小游戏难度-21%",
+                    "upgradeCost": 750
+                },
+                {
+                    "level": 8,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.33000001311302187
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.23999999463558198
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.23999999463558198
+                        }
+                    ],
+                    "levelDescription": "几乎感觉不到重量",
+                    "upgradeDescription": "咬钩率+33%，挣扎时间-24%，小游戏难度-24%",
+                    "upgradeCost": 850
+                },
+                {
+                    "level": 9,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.3700000047683716
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.27000001072883608
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.27000001072883608
+                        }
+                    ],
+                    "levelDescription": "即将完美",
+                    "upgradeDescription": "咬钩率+37%，挣扎时间-27%，小游戏难度-27%",
+                    "upgradeCost": 950
+                },
+                {
+                    "level": 10,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.41999998688697817
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.3199999928474426
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.3199999928474426
+                        }
+                    ],
+                    "levelDescription": "碳素钓竿的巅峰之作",
+                    "upgradeDescription": "咬钩率+42%，挣扎时间-32%，小游戏难度-32%",
+                    "upgradeCost": 1100
+                }
+            ],
+            "obtainStatus": 0,
+            "equipStatus": 0
+        },
+        {
+            "id": 3101,
+            "name": "基础钓线",
+            "description": "标准鱼线，适合日常使用",
+            "category": 2,
+            "iconPath": "",
+            "maxLevel": 10,
+            "isPassive": false,
+            "cooldownTime": 0.0,
+            "duration": 0.0,
+            "levelDataList": [
+                {
+                    "level": 1,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.0
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.0
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "普通鱼线，足够日常使用",
+                    "upgradeDescription": "鱼类权重+0%，稀有鱼加成+0%",
+                    "upgradeCost": 80
+                },
+                {
+                    "level": 2,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.029999999329447748
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.019999999552965165
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "鱼线强度略有提升",
+                    "upgradeDescription": "鱼类权重+3%，稀有鱼加成+2%",
+                    "upgradeCost": 160
+                },
+                {
+                    "level": 3,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.05999999865889549
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.03999999910593033
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "能够应对稍大的鱼类",
+                    "upgradeDescription": "鱼类权重+6%，稀有鱼加成+4%",
+                    "upgradeCost": 240
+                },
+                {
+                    "level": 4,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.09000000357627869
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.05999999865889549
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "线质柔韧",
+                    "upgradeDescription": "鱼类权重+9%，稀有鱼加成+6%",
+                    "upgradeCost": 320
+                },
+                {
+                    "level": 5,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.11999999731779099
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.07999999821186066
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "拉力明显增强",
+                    "upgradeDescription": "鱼类权重+12%，稀有鱼加成+8%",
+                    "upgradeCost": 400
+                },
+                {
+                    "level": 6,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.15000000596046449
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.10000000149011612
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "切水性能良好",
+                    "upgradeDescription": "鱼类权重+15%，稀有鱼加成+10%",
+                    "upgradeCost": 480
+                },
+                {
+                    "level": 7,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.18000000715255738
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.11999999731779099
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "抗磨损能力提升",
+                    "upgradeDescription": "鱼类权重+18%，稀有鱼加成+12%",
+                    "upgradeCost": 560
+                },
+                {
+                    "level": 8,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.20999999344348908
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.14000000059604646
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "接近专业级别",
+                    "upgradeDescription": "鱼类权重+21%，稀有鱼加成+14%",
+                    "upgradeCost": 640
+                },
+                {
+                    "level": 9,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.23999999463558198
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.1599999964237213
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "性能优异",
+                    "upgradeDescription": "鱼类权重+24%，稀有鱼加成+16%",
+                    "upgradeCost": 720
+                },
+                {
+                    "level": 10,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.2800000011920929
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.20000000298023225
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "基础鱼线的极限",
+                    "upgradeDescription": "鱼类权重+28%，稀有鱼加成+20%",
+                    "upgradeCost": 800
+                }
+            ],
+            "obtainStatus": 0,
+            "equipStatus": 0
+        },
+        {
+            "id": 3102,
+            "name": "碳素鱼线",
+            "description": "高强度碳素鱼线，大幅提升稀有鱼出现概率",
+            "category": 2,
+            "iconPath": "",
+            "maxLevel": 10,
+            "isPassive": false,
+            "cooldownTime": 0.0,
+            "duration": 0.0,
+            "levelDataList": [
+                {
+                    "level": 1,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.05000000074505806
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.03999999910593033
+                        },
+                        {
+                            "paramId": 704,
+                            "value": 0.019999999552965165
+                        }
+                    ],
+                    "levelDescription": "碳素材质，强度更高",
+                    "upgradeDescription": "鱼类权重+5%，稀有鱼加成+4%，史诗鱼加成+2%",
+                    "upgradeCost": 150
+                },
+                {
+                    "level": 2,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.09000000357627869
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.07000000029802323
+                        },
+                        {
+                            "paramId": 704,
+                            "value": 0.03999999910593033
+                        }
+                    ],
+                    "levelDescription": "性能稳定",
+                    "upgradeDescription": "鱼类权重+9%，稀有鱼加成+7%，史诗鱼加成+4%",
+                    "upgradeCost": 280
+                },
+                {
+                    "level": 3,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.12999999523162843
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.10000000149011612
+                        },
+                        {
+                            "paramId": 704,
+                            "value": 0.05999999865889549
+                        }
+                    ],
+                    "levelDescription": "拉力强劲",
+                    "upgradeDescription": "鱼类权重+13%，稀有鱼加成+10%，史诗鱼加成+6%",
+                    "upgradeCost": 410
+                },
+                {
+                    "level": 4,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.17000000178813935
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.12999999523162843
+                        },
+                        {
+                            "paramId": 704,
+                            "value": 0.07999999821186066
+                        }
+                    ],
+                    "levelDescription": "切水迅速",
+                    "upgradeDescription": "鱼类权重+17%，稀有鱼加成+13%，史诗鱼加成+8%",
+                    "upgradeCost": 540
+                },
+                {
+                    "level": 5,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.20999999344348908
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.1599999964237213
+                        },
+                        {
+                            "paramId": 704,
+                            "value": 0.10000000149011612
+                        }
+                    ],
+                    "levelDescription": "灵敏度极高",
+                    "upgradeDescription": "鱼类权重+21%，稀有鱼加成+16%，史诗鱼加成+10%",
+                    "upgradeCost": 670
+                },
+                {
+                    "level": 6,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.25
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.1899999976158142
+                        },
+                        {
+                            "paramId": 704,
+                            "value": 0.11999999731779099
+                        }
+                    ],
+                    "levelDescription": "几乎感觉不到重量",
+                    "upgradeDescription": "鱼类权重+25%，稀有鱼加成+19%，史诗鱼加成+12%",
+                    "upgradeCost": 800
+                },
+                {
+                    "level": 7,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.28999999165534975
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.2199999988079071
+                        },
+                        {
+                            "paramId": 704,
+                            "value": 0.14000000059604646
+                        }
+                    ],
+                    "levelDescription": "专业级性能",
+                    "upgradeDescription": "鱼类权重+29%，稀有鱼加成+22%，史诗鱼加成+14%",
+                    "upgradeCost": 930
+                },
+                {
+                    "level": 8,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.33000001311302187
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.25
+                        },
+                        {
+                            "paramId": 704,
+                            "value": 0.1599999964237213
+                        }
+                    ],
+                    "levelDescription": "接近顶级",
+                    "upgradeDescription": "鱼类权重+33%，稀有鱼加成+25%，史诗鱼加成+16%",
+                    "upgradeCost": 1060
+                },
+                {
+                    "level": 9,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.3700000047683716
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.2800000011920929
+                        },
+                        {
+                            "paramId": 704,
+                            "value": 0.18000000715255738
+                        }
+                    ],
+                    "levelDescription": "性能卓越",
+                    "upgradeDescription": "鱼类权重+37%，稀有鱼加成+28%，史诗鱼加成+18%",
+                    "upgradeCost": 1190
+                },
+                {
+                    "level": 10,
+                    "paramsList": [
+                        {
+                            "paramId": 710,
+                            "value": 0.41999998688697817
+                        },
+                        {
+                            "paramId": 703,
+                            "value": 0.3199999928474426
+                        },
+                        {
+                            "paramId": 704,
+                            "value": 0.20000000298023225
+                        }
+                    ],
+                    "levelDescription": "碳素鱼线的巅峰",
+                    "upgradeDescription": "鱼类权重+42%，稀有鱼加成+32%，史诗鱼加成+20%",
+                    "upgradeCost": 1350
+                }
+            ],
+            "obtainStatus": 0,
+            "equipStatus": 0
+        },
+        {
+            "id": 3201,
+            "name": "基础钓钩",
+            "description": "标准鱼钩，适合钓各种鱼类",
+            "category": 3,
+            "iconPath": "",
+            "maxLevel": 10,
+            "isPassive": false,
+            "cooldownTime": 0.0,
+            "duration": 0.0,
+            "levelDataList": [
+                {
+                    "level": 1,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.0
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.0
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "普通鱼钩，锋利度一般",
+                    "upgradeDescription": "闪光率+0%，重量倾向+0",
+                    "upgradeCost": 80
+                },
+                {
+                    "level": 2,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.019999999552965165
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.009999999776482582
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "经过简单打磨",
+                    "upgradeDescription": "闪光率+2%，重量倾向+0.01",
+                    "upgradeCost": 160
+                },
+                {
+                    "level": 3,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.03999999910593033
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.019999999552965165
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "锋利度有所提升",
+                    "upgradeDescription": "闪光率+4%，重量倾向+0.02",
+                    "upgradeCost": 240
+                },
+                {
+                    "level": 4,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.05999999865889549
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.029999999329447748
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "能够轻松刺穿鱼唇",
+                    "upgradeDescription": "闪光率+6%，重量倾向+0.03",
+                    "upgradeCost": 320
+                },
+                {
+                    "level": 5,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.07999999821186066
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.03999999910593033
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "钩尖锋利",
+                    "upgradeDescription": "闪光率+8%，重量倾向+0.04",
+                    "upgradeCost": 400
+                },
+                {
+                    "level": 6,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.10000000149011612
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.05000000074505806
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "不易脱钩",
+                    "upgradeDescription": "闪光率+10%，重量倾向+0.05",
+                    "upgradeCost": 480
+                },
+                {
+                    "level": 7,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.11999999731779099
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.05999999865889549
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "倒刺设计合理",
+                    "upgradeDescription": "闪光率+12%，重量倾向+0.06",
+                    "upgradeCost": 560
+                },
+                {
+                    "level": 8,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.14000000059604646
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.07000000029802323
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "做工精细",
+                    "upgradeDescription": "闪光率+14%，重量倾向+0.07",
+                    "upgradeCost": 640
+                },
+                {
+                    "level": 9,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.1599999964237213
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.07999999821186066
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "性能稳定",
+                    "upgradeDescription": "闪光率+16%，重量倾向+0.08",
+                    "upgradeCost": 720
+                },
+                {
+                    "level": 10,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.20000000298023225
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.10000000149011612
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "基础鱼钩的极限",
+                    "upgradeDescription": "闪光率+20%，重量倾向+0.10",
+                    "upgradeCost": 800
+                }
+            ],
+            "obtainStatus": 0,
+            "equipStatus": 0
+        },
+        {
+            "id": 3202,
+            "name": "精钢鱼钩",
+            "description": "高强度精钢材质，大幅提升闪光鱼捕获概率",
+            "category": 3,
+            "iconPath": "",
+            "maxLevel": 10,
+            "isPassive": false,
+            "cooldownTime": 0.0,
+            "duration": 0.0,
+            "levelDataList": [
+                {
+                    "level": 1,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.05999999865889549
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.029999999329447748
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "精钢材质的鱼钩",
+                    "upgradeDescription": "闪光率+6%，重量倾向+0.03",
+                    "upgradeCost": 150
+                },
+                {
+                    "level": 2,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.10000000149011612
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.05000000074505806
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "硬度更高",
+                    "upgradeDescription": "闪光率+10%，重量倾向+0.05",
+                    "upgradeCost": 280
+                },
+                {
+                    "level": 3,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.14000000059604646
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.07000000029802323
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "抗腐蚀能力强",
+                    "upgradeDescription": "闪光率+14%，重量倾向+0.07",
+                    "upgradeCost": 410
+                },
+                {
+                    "level": 4,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.18000000715255738
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.09000000357627869
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "钩尖保持锋利",
+                    "upgradeDescription": "闪光率+18%，重量倾向+0.09",
+                    "upgradeCost": 540
+                },
+                {
+                    "level": 5,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.2199999988079071
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.10999999940395355
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "穿刺力强",
+                    "upgradeDescription": "闪光率+22%，重量倾向+0.11",
+                    "upgradeCost": 670
+                },
+                {
+                    "level": 6,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.25999999046325686
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.12999999523162843
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "不易弯曲",
+                    "upgradeDescription": "闪光率+26%，重量倾向+0.13",
+                    "upgradeCost": 800
+                },
+                {
+                    "level": 7,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.30000001192092898
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.15000000596046449
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "专业级品质",
+                    "upgradeDescription": "闪光率+30%，重量倾向+0.15",
+                    "upgradeCost": 930
+                },
+                {
+                    "level": 8,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.3400000035762787
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.17000000178813935
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "几乎完美",
+                    "upgradeDescription": "闪光率+34%，重量倾向+0.17",
+                    "upgradeCost": 1060
+                },
+                {
+                    "level": 9,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.3799999952316284
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.1899999976158142
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "顶级工艺",
+                    "upgradeDescription": "闪光率+38%，重量倾向+0.19",
+                    "upgradeCost": 1190
+                },
+                {
+                    "level": 10,
+                    "paramsList": [
+                        {
+                            "paramId": 711,
+                            "value": 0.44999998807907107
+                        },
+                        {
+                            "paramId": 707,
+                            "value": 0.2199999988079071
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "精钢鱼钩的巅峰",
+                    "upgradeDescription": "闪光率+45%，重量倾向+0.22",
+                    "upgradeCost": 1350
+                }
+            ],
+            "obtainStatus": 0,
+            "equipStatus": 0
+        },
+        {
+            "id": 3301,
+            "name": "新手入门",
+            "description": "新手必备的基础钓鱼技巧",
+            "category": 4,
+            "iconPath": "",
+            "maxLevel": 10,
+            "isPassive": false,
+            "cooldownTime": 0.0,
+            "duration": 0.0,
+            "levelDataList": [
+                {
+                    "level": 1,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.029999999329447748
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.019999999552965165
+                        },
+                        {
+                            "paramId": 713,
+                            "value": 1.0
+                        }
+                    ],
+                    "levelDescription": "新手技巧，适合入门",
+                    "upgradeDescription": "咬钩率+3%，小游戏难度-2%，钓鱼保底+1次",
+                    "upgradeCost": 100
+                },
+                {
+                    "level": 2,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.05000000074505806
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.03999999910593033
+                        },
+                        {
+                            "paramId": 713,
+                            "value": 1.0
+                        }
+                    ],
+                    "levelDescription": "逐渐掌握技巧",
+                    "upgradeDescription": "咬钩率+5%，小游戏难度-4%，钓鱼保底+1次",
+                    "upgradeCost": 180
+                },
+                {
+                    "level": 3,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.07000000029802323
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.05999999865889549
+                        },
+                        {
+                            "paramId": 713,
+                            "value": 2.0
+                        }
+                    ],
+                    "levelDescription": "入门技巧提升",
+                    "upgradeDescription": "咬钩率+7%，小游戏难度-6%，钓鱼保底+2次",
+                    "upgradeCost": 260
+                },
+                {
+                    "level": 4,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.09000000357627869
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.07999999821186066
+                        },
+                        {
+                            "paramId": 713,
+                            "value": 2.0
+                        }
+                    ],
+                    "levelDescription": "技巧渐入佳境",
+                    "upgradeDescription": "咬钩率+9%，小游戏难度-8%，钓鱼保底+2次",
+                    "upgradeCost": 340
+                },
+                {
+                    "level": 5,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.10999999940395355
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.10000000149011612
+                        },
+                        {
+                            "paramId": 713,
+                            "value": 2.0
+                        }
+                    ],
+                    "levelDescription": "基础技巧扎实",
+                    "upgradeDescription": "咬钩率+11%，小游戏难度-10%，钓鱼保底+2次",
+                    "upgradeCost": 420
+                },
+                {
+                    "level": 6,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.12999999523162843
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.11999999731779099
+                        },
+                        {
+                            "paramId": 713,
+                            "value": 3.0
+                        }
+                    ],
+                    "levelDescription": "技巧更加熟练",
+                    "upgradeDescription": "咬钩率+13%，小游戏难度-12%，钓鱼保底+3次",
+                    "upgradeCost": 500
+                },
+                {
+                    "level": 7,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.15000000596046449
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.14000000059604646
+                        },
+                        {
+                            "paramId": 713,
+                            "value": 3.0
+                        }
+                    ],
+                    "levelDescription": "能够应对各种情况",
+                    "upgradeDescription": "咬钩率+15%，小游戏难度-14%，钓鱼保底+3次",
+                    "upgradeCost": 580
+                },
+                {
+                    "level": 8,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.17000000178813935
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.1599999964237213
+                        },
+                        {
+                            "paramId": 713,
+                            "value": 3.0
+                        }
+                    ],
+                    "levelDescription": "技巧日益精进",
+                    "upgradeDescription": "咬钩率+17%，小游戏难度-16%，钓鱼保底+3次",
+                    "upgradeCost": 660
+                },
+                {
+                    "level": 9,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.1899999976158142
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.18000000715255738
+                        },
+                        {
+                            "paramId": 713,
+                            "value": 3.0
+                        }
+                    ],
+                    "levelDescription": "即将脱离新手",
+                    "upgradeDescription": "咬钩率+19%，小游戏难度-18%，钓鱼保底+3次",
+                    "upgradeCost": 740
+                },
+                {
+                    "level": 10,
+                    "paramsList": [
+                        {
+                            "paramId": 709,
+                            "value": 0.2199999988079071
+                        },
+                        {
+                            "paramId": 712,
+                            "value": 0.20000000298023225
+                        },
+                        {
+                            "paramId": 713,
+                            "value": 4.0
+                        }
+                    ],
+                    "levelDescription": "新手入门的圆满",
+                    "upgradeDescription": "咬钩率+22%，小游戏难度-20%，钓鱼保底+4次",
+                    "upgradeCost": 850
+                }
+            ],
+            "obtainStatus": 0,
+            "equipStatus": 0
+        },
+        {
+            "id": 3302,
+            "name": "进阶技巧",
+            "description": "进阶钓鱼技巧，提升稀有鱼捕获率",
+            "category": 4,
+            "iconPath": "",
+            "maxLevel": 10,
+            "isPassive": false,
+            "cooldownTime": 0.0,
+            "duration": 0.0,
+            "levelDataList": [
+                {
+                    "level": 1,
+                    "paramsList": [
+                        {
+                            "paramId": 703,
+                            "value": 0.029999999329447748
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.019999999552965165
+                        },
+                        {
+                            "paramId": 710,
+                            "value": 0.019999999552965165
+                        }
+                    ],
+                    "levelDescription": "进阶技巧入门",
+                    "upgradeDescription": "稀有鱼加成+3%，挣扎时间-2%，鱼类权重+2%",
+                    "upgradeCost": 200
+                },
+                {
+                    "level": 2,
+                    "paramsList": [
+                        {
+                            "paramId": 703,
+                            "value": 0.05999999865889549
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.03999999910593033
+                        },
+                        {
+                            "paramId": 710,
+                            "value": 0.03999999910593033
+                        }
+                    ],
+                    "levelDescription": "技巧有所提升",
+                    "upgradeDescription": "稀有鱼加成+6%，挣扎时间-4%，鱼类权重+4%",
+                    "upgradeCost": 350
+                },
+                {
+                    "level": 3,
+                    "paramsList": [
+                        {
+                            "paramId": 703,
+                            "value": 0.09000000357627869
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.05999999865889549
+                        },
+                        {
+                            "paramId": 710,
+                            "value": 0.05999999865889549
+                        }
+                    ],
+                    "levelDescription": "开始掌握要领",
+                    "upgradeDescription": "稀有鱼加成+9%，挣扎时间-6%，鱼类权重+6%",
+                    "upgradeCost": 500
+                },
+                {
+                    "level": 4,
+                    "paramsList": [
+                        {
+                            "paramId": 703,
+                            "value": 0.11999999731779099
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.07999999821186066
+                        },
+                        {
+                            "paramId": 710,
+                            "value": 0.07999999821186066
+                        }
+                    ],
+                    "levelDescription": "技巧逐渐成熟",
+                    "upgradeDescription": "稀有鱼加成+12%，挣扎时间-8%，鱼类权重+8%",
+                    "upgradeCost": 650
+                },
+                {
+                    "level": 5,
+                    "paramsList": [
+                        {
+                            "paramId": 703,
+                            "value": 0.15000000596046449
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.10000000149011612
+                        },
+                        {
+                            "paramId": 710,
+                            "value": 0.10000000149011612
+                        }
+                    ],
+                    "levelDescription": "能够精准判断",
+                    "upgradeDescription": "稀有鱼加成+15%，挣扎时间-10%，鱼类权重+10%",
+                    "upgradeCost": 800
+                },
+                {
+                    "level": 6,
+                    "paramsList": [
+                        {
+                            "paramId": 703,
+                            "value": 0.18000000715255738
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.11999999731779099
+                        },
+                        {
+                            "paramId": 710,
+                            "value": 0.11999999731779099
+                        }
+                    ],
+                    "levelDescription": "经验丰富",
+                    "upgradeDescription": "稀有鱼加成+18%，挣扎时间-12%，鱼类权重+12%",
+                    "upgradeCost": 950
+                },
+                {
+                    "level": 7,
+                    "paramsList": [
+                        {
+                            "paramId": 703,
+                            "value": 0.20999999344348908
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.14000000059604646
+                        },
+                        {
+                            "paramId": 710,
+                            "value": 0.14000000059604646
+                        }
+                    ],
+                    "levelDescription": "近乎专业",
+                    "upgradeDescription": "稀有鱼加成+21%，挣扎时间-14%，鱼类权重+14%",
+                    "upgradeCost": 1100
+                },
+                {
+                    "level": 8,
+                    "paramsList": [
+                        {
+                            "paramId": 703,
+                            "value": 0.23999999463558198
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.1599999964237213
+                        },
+                        {
+                            "paramId": 710,
+                            "value": 0.1599999964237213
+                        }
+                    ],
+                    "levelDescription": "技巧精湛",
+                    "upgradeDescription": "稀有鱼加成+24%，挣扎时间-16%，鱼类权重+16%",
+                    "upgradeCost": 1250
+                },
+                {
+                    "level": 9,
+                    "paramsList": [
+                        {
+                            "paramId": 703,
+                            "value": 0.27000001072883608
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.18000000715255738
+                        },
+                        {
+                            "paramId": 710,
+                            "value": 0.18000000715255738
+                        }
+                    ],
+                    "levelDescription": "炉火纯青",
+                    "upgradeDescription": "稀有鱼加成+27%，挣扎时间-18%，鱼类权重+18%",
+                    "upgradeCost": 1400
+                },
+                {
+                    "level": 10,
+                    "paramsList": [
+                        {
+                            "paramId": 703,
+                            "value": 0.3199999928474426
+                        },
+                        {
+                            "paramId": 708,
+                            "value": 0.2199999988079071
+                        },
+                        {
+                            "paramId": 710,
+                            "value": 0.2199999988079071
+                        }
+                    ],
+                    "levelDescription": "进阶技巧的巅峰",
+                    "upgradeDescription": "稀有鱼加成+32%，挣扎时间-22%，鱼类权重+22%",
+                    "upgradeCost": 1600
+                }
+            ],
+            "obtainStatus": 0,
+            "equipStatus": 0
+        },
+        {
+            "id": 3303,
+            "name": "大师技艺",
+            "description": "大师级钓鱼技艺，全面提升钓鱼能力",
+            "category": 4,
+            "iconPath": "",
+            "maxLevel": 10,
+            "isPassive": false,
+            "cooldownTime": 0.0,
+            "duration": 0.0,
+            "levelDataList": [
+                {
+                    "level": 1,
+                    "paramsList": [
+                        {
+                            "paramId": 704,
+                            "value": 0.03999999910593033
+                        },
+                        {
+                            "paramId": 705,
+                            "value": 0.019999999552965165
+                        },
+                        {
+                            "paramId": 711,
+                            "value": 0.029999999329447748
+                        }
+                    ],
+                    "levelDescription": "大师技艺入门",
+                    "upgradeDescription": "史诗鱼加成+4%，传说鱼加成+2%，闪光率+3%",
+                    "upgradeCost": 300
+                },
+                {
+                    "level": 2,
+                    "paramsList": [
+                        {
+                            "paramId": 704,
+                            "value": 0.07999999821186066
+                        },
+                        {
+                            "paramId": 705,
+                            "value": 0.03999999910593033
+                        },
+                        {
+                            "paramId": 711,
+                            "value": 0.05000000074505806
+                        }
+                    ],
+                    "levelDescription": "大师指点",
+                    "upgradeDescription": "史诗鱼加成+8%，传说鱼加成+4%，闪光率+5%",
+                    "upgradeCost": 500
+                },
+                {
+                    "level": 3,
+                    "paramsList": [
+                        {
+                            "paramId": 704,
+                            "value": 0.11999999731779099
+                        },
+                        {
+                            "paramId": 705,
+                            "value": 0.05999999865889549
+                        },
+                        {
+                            "paramId": 711,
+                            "value": 0.07000000029802323
+                        }
+                    ],
+                    "levelDescription": "技艺精湛",
+                    "upgradeDescription": "史诗鱼加成+12%，传说鱼加成+6%，闪光率+7%",
+                    "upgradeCost": 700
+                },
+                {
+                    "level": 4,
+                    "paramsList": [
+                        {
+                            "paramId": 704,
+                            "value": 0.1599999964237213
+                        },
+                        {
+                            "paramId": 705,
+                            "value": 0.07999999821186066
+                        },
+                        {
+                            "paramId": 711,
+                            "value": 0.09000000357627869
+                        }
+                    ],
+                    "levelDescription": "大师风范",
+                    "upgradeDescription": "史诗鱼加成+16%，传说鱼加成+8%，闪光率+9%",
+                    "upgradeCost": 900
+                },
+                {
+                    "level": 5,
+                    "paramsList": [
+                        {
+                            "paramId": 704,
+                            "value": 0.20000000298023225
+                        },
+                        {
+                            "paramId": 705,
+                            "value": 0.10000000149011612
+                        },
+                        {
+                            "paramId": 711,
+                            "value": 0.10999999940395355
+                        }
+                    ],
+                    "levelDescription": "技艺超凡",
+                    "upgradeDescription": "史诗鱼加成+20%，传说鱼加成+10%，闪光率+11%",
+                    "upgradeCost": 1100
+                },
+                {
+                    "level": 6,
+                    "paramsList": [
+                        {
+                            "paramId": 704,
+                            "value": 0.23999999463558198
+                        },
+                        {
+                            "paramId": 705,
+                            "value": 0.11999999731779099
+                        },
+                        {
+                            "paramId": 711,
+                            "value": 0.12999999523162843
+                        }
+                    ],
+                    "levelDescription": "大师领域",
+                    "upgradeDescription": "史诗鱼加成+24%，传说鱼加成+12%，闪光率+13%",
+                    "upgradeCost": 1300
+                },
+                {
+                    "level": 7,
+                    "paramsList": [
+                        {
+                            "paramId": 704,
+                            "value": 0.2800000011920929
+                        },
+                        {
+                            "paramId": 705,
+                            "value": 0.14000000059604646
+                        },
+                        {
+                            "paramId": 711,
+                            "value": 0.15000000596046449
+                        }
+                    ],
+                    "levelDescription": "技艺通神",
+                    "upgradeDescription": "史诗鱼加成+28%，传说鱼加成+14%，闪光率+15%",
+                    "upgradeCost": 1500
+                },
+                {
+                    "level": 8,
+                    "paramsList": [
+                        {
+                            "paramId": 704,
+                            "value": 0.3199999928474426
+                        },
+                        {
+                            "paramId": 705,
+                            "value": 0.1599999964237213
+                        },
+                        {
+                            "paramId": 711,
+                            "value": 0.17000000178813935
+                        }
+                    ],
+                    "levelDescription": "登峰造极",
+                    "upgradeDescription": "史诗鱼加成+32%，传说鱼加成+16%，闪光率+17%",
+                    "upgradeCost": 1700
+                },
+                {
+                    "level": 9,
+                    "paramsList": [
+                        {
+                            "paramId": 704,
+                            "value": 0.36000001430511477
+                        },
+                        {
+                            "paramId": 705,
+                            "value": 0.18000000715255738
+                        },
+                        {
+                            "paramId": 711,
+                            "value": 0.1899999976158142
+                        }
+                    ],
+                    "levelDescription": "接近传说",
+                    "upgradeDescription": "史诗鱼加成+36%，传说鱼加成+18%，闪光率+19%",
+                    "upgradeCost": 1900
+                },
+                {
+                    "level": 10,
+                    "paramsList": [
+                        {
+                            "paramId": 704,
+                            "value": 0.41999998688697817
+                        },
+                        {
+                            "paramId": 705,
+                            "value": 0.2199999988079071
+                        },
+                        {
+                            "paramId": 711,
+                            "value": 0.2199999988079071
+                        }
+                    ],
+                    "levelDescription": "大师技艺的圆满",
+                    "upgradeDescription": "史诗鱼加成+42%，传说鱼加成+22%，闪光率+22%",
+                    "upgradeCost": 2200
+                }
+            ],
+            "obtainStatus": 0,
+            "equipStatus": 0
+        },
+        {
+            "id": 3304,
+            "name": "传说之路",
+            "description": "通往传说级渔夫的终极技能",
+            "category": 4,
+            "iconPath": "",
+            "maxLevel": 10,
+            "isPassive": false,
+            "cooldownTime": 0.0,
+            "duration": 0.0,
+            "levelDataList": [
+                {
+                    "level": 1,
+                    "paramsList": [
+                        {
+                            "paramId": 705,
+                            "value": 0.05000000074505806
+                        },
+                        {
+                            "paramId": 706,
+                            "value": 0.009999999776482582
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "传说之路的起点",
+                    "upgradeDescription": "传说鱼加成+5%，幻想鱼加成+1%",
+                    "upgradeCost": 500
+                },
+                {
+                    "level": 2,
+                    "paramsList": [
+                        {
+                            "paramId": 705,
+                            "value": 0.10000000149011612
+                        },
+                        {
+                            "paramId": 706,
+                            "value": 0.019999999552965165
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "追寻传说",
+                    "upgradeDescription": "传说鱼加成+10%，幻想鱼加成+2%",
+                    "upgradeCost": 800
+                },
+                {
+                    "level": 3,
+                    "paramsList": [
+                        {
+                            "paramId": 705,
+                            "value": 0.15000000596046449
+                        },
+                        {
+                            "paramId": 706,
+                            "value": 0.029999999329447748
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "接近传说",
+                    "upgradeDescription": "传说鱼加成+15%，幻想鱼加成+3%",
+                    "upgradeCost": 1100
+                },
+                {
+                    "level": 4,
+                    "paramsList": [
+                        {
+                            "paramId": 705,
+                            "value": 0.20000000298023225
+                        },
+                        {
+                            "paramId": 706,
+                            "value": 0.03999999910593033
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "传说触手可及",
+                    "upgradeDescription": "传说鱼加成+20%，幻想鱼加成+4%",
+                    "upgradeCost": 1400
+                },
+                {
+                    "level": 5,
+                    "paramsList": [
+                        {
+                            "paramId": 705,
+                            "value": 0.25
+                        },
+                        {
+                            "paramId": 706,
+                            "value": 0.05000000074505806
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "传说之路进发",
+                    "upgradeDescription": "传说鱼加成+25%，幻想鱼加成+5%",
+                    "upgradeCost": 1700
+                },
+                {
+                    "level": 6,
+                    "paramsList": [
+                        {
+                            "paramId": 705,
+                            "value": 0.30000001192092898
+                        },
+                        {
+                            "paramId": 706,
+                            "value": 0.05999999865889549
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "传说领域",
+                    "upgradeDescription": "传说鱼加成+30%，幻想鱼加成+6%",
+                    "upgradeCost": 2000
+                },
+                {
+                    "level": 7,
+                    "paramsList": [
+                        {
+                            "paramId": 705,
+                            "value": 0.3499999940395355
+                        },
+                        {
+                            "paramId": 706,
+                            "value": 0.07000000029802323
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "超凡入圣",
+                    "upgradeDescription": "传说鱼加成+35%，幻想鱼加成+7%",
+                    "upgradeCost": 2300
+                },
+                {
+                    "level": 8,
+                    "paramsList": [
+                        {
+                            "paramId": 705,
+                            "value": 0.4000000059604645
+                        },
+                        {
+                            "paramId": 706,
+                            "value": 0.07999999821186066
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "传说级别",
+                    "upgradeDescription": "传说鱼加成+40%，幻想鱼加成+8%",
+                    "upgradeCost": 2600
+                },
+                {
+                    "level": 9,
+                    "paramsList": [
+                        {
+                            "paramId": 705,
+                            "value": 0.44999998807907107
+                        },
+                        {
+                            "paramId": 706,
+                            "value": 0.09000000357627869
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "传说之巅",
+                    "upgradeDescription": "传说鱼加成+45%，幻想鱼加成+9%",
+                    "upgradeCost": 2900
+                },
+                {
+                    "level": 10,
+                    "paramsList": [
+                        {
+                            "paramId": 705,
+                            "value": 0.550000011920929
+                        },
+                        {
+                            "paramId": 706,
+                            "value": 0.11999999731779099
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "传说之路的巅峰",
+                    "upgradeDescription": "传说鱼加成+55%，幻想鱼加成+12%",
+                    "upgradeCost": 3500
+                }
+            ],
+            "obtainStatus": 0,
+            "equipStatus": 0
+        }
+    ]
+}

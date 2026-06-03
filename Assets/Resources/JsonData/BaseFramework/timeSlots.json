@@ -1,0 +1,32 @@
+{
+    "timeSlots": [
+        {
+            "id": 401,
+            "name": "清晨",
+            "description": "日出时分，鱼群开始觅食",
+            "durationMinutes": 7,
+            "weight": 200
+        },
+        {
+            "id": 402,
+            "name": "日间",
+            "description": "阳光充足，钓鱼黄金时段",
+            "durationMinutes": 12,
+            "weight": 500
+        },
+        {
+            "id": 403,
+            "name": "傍晚",
+            "description": "夕阳西下，鱼群觅食高峰",
+            "durationMinutes": 6,
+            "weight": 200
+        },
+        {
+            "id": 404,
+            "name": "深夜",
+            "description": "夜深人静，稀有鱼出没",
+            "durationMinutes": 5,
+            "weight": 100
+        }
+    ]
+}

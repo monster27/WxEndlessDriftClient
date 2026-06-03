@@ -1,0 +1,204 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// 小分类配置
+/// 一个小分类对应一个BagDetail
+/// </summary>
+[System.Serializable]
+public class SubCategoryConfig
+{
+    public int subCategoryId;      // 小分类ID
+    public View.Detail.BagDetail bagDetail;  // 对应的BagDetail
+}
+
+/// <summary>
+/// 大分类配置
+/// 一个大分类对应一个toggle和多个小分类detail
+/// </summary>
+[System.Serializable]
+public class CategoryConfig
+{
+    public int categoryId;              // 大分类ID
+    public string categoryName;         // 大分类名称（用于显示）
+    public Toggle categoryToggle;       // 大分类的toggle
+    public List<SubCategoryConfig> subCategoryConfigs = new List<SubCategoryConfig>();  // 小分类配置列表
+}
+
+public class BagView : BagViewBase
+{
+    public ToggleGroup toggleGroup;
+    public List<CategoryConfig> categoryConfigs = new List<CategoryConfig>();
+
+    private Dictionary<int, CategoryConfig> categoryIdToConfig = new Dictionary<int, CategoryConfig>();
+    private bool isDataUpdated = false;
+
+    public override void Init()
+    {
+        if (isInitialized) return;
+        base.Init();
+        InitCategoryMappings();
+        InitToggleListeners();
+        isInitialized = true;
+    }
+
+    private void InitCategoryMappings()
+    {
+        categoryIdToConfig.Clear();
+        foreach (CategoryConfig config in categoryConfigs)
+        {
+            if (config != null && config.categoryId > 0)
+            {
+                categoryIdToConfig[config.categoryId] = config;
+            }
+        }
+    }
+
+    private void InitToggleListeners()
+    {
+        foreach (CategoryConfig config in categoryConfigs)
+        {
+            if (config != null && config.categoryToggle != null)
+            {
+                config.categoryToggle.onValueChanged.AddListener((isOn) => {
+                    if (isOn)
+                    {
+                        OnCategoryToggle(config);
+                    }
+                });
+            }
+        }
+    }
+
+    private void OnCategoryToggle(CategoryConfig config)
+    {
+        // 隐藏所有BagDetail
+        foreach (CategoryConfig cfg in categoryConfigs)
+        {
+            if (cfg != null)
+            {
+                foreach (SubCategoryConfig subCfg in cfg.subCategoryConfigs)
+                {
+                    if (subCfg != null && subCfg.bagDetail != null)
+                    {
+                        subCfg.bagDetail.gameObject.SetActive(false);
+                    }
+                }
+            }
+        }
+        
+        // 显示当前选中分类的所有小分类BagDetail
+        if (config != null)
+        {
+            foreach (SubCategoryConfig subCfg in config.subCategoryConfigs)
+            {
+                if (subCfg != null && subCfg.bagDetail != null)
+                {
+                    subCfg.bagDetail.gameObject.SetActive(true);
+                }
+            }
+        }
+    }
+
+    public void OpenBag()
+    {
+        // 检测数据是否更新过，如果没有更新过，先更新数据
+        if (!isDataUpdated)
+        {
+            RefreshItems();
+            isDataUpdated = true;
+        }
+        
+        gameObject.SetActive(true);
+        SendEvent();
+        
+        // 默认点击第一个分类
+        ClickFirstValidCategory();
+    }
+
+    private void SendEvent()
+    {
+        CommunicateEvent.Modify("Bag_Open");
+    }
+
+    public void InitBag()
+    {
+        CommunicateEvent.Modify("Bag_Init");
+    }
+
+    public void UpdateBagItems(Dictionary<int, int> inventory, Dictionary<int, ItemData> itemDataMap)
+    {
+        UpdateAllBagDetails(inventory, itemDataMap);
+        isDataUpdated = true;
+        
+        // 默认点击第一个有效分类
+        ClickFirstValidCategory();
+    }
+
+    private void ClickFirstValidCategory()
+    {
+        foreach (CategoryConfig config in categoryConfigs)
+        {
+            if (config != null && config.categoryToggle != null)
+            {
+                // 直接调用OnCategoryToggle方法，确保和手动点击的效果完全一致
+                OnCategoryToggle(config);
+                // 设置toggle为选中状态
+                config.categoryToggle.isOn = true;
+                break;
+            }
+        }
+    }
+
+    private void UpdateAllBagDetails(Dictionary<int, int> inventory, Dictionary<int, ItemData> itemDataMap)
+    {
+        // 更新所有分类的BagDetail
+        foreach (CategoryConfig config in categoryConfigs)
+        {
+            if (config != null)
+            {
+                foreach (SubCategoryConfig subCfg in config.subCategoryConfigs)
+                {
+                    if (subCfg != null && subCfg.bagDetail != null)
+                    {
+                        // 根据小分类ID更新对应detail的物品
+                        subCfg.bagDetail.UpdateItemsBySingleCategory(itemDataMap, inventory, subCfg.subCategoryId);
+                    }
+                }
+            }
+        }
+    }
+
+    public void RefreshItems()
+    {
+        CommunicateEvent.Modify("Bag_RefreshItems");
+    }
+
+    public void UpdateBagWithInventory(Dictionary<int, int> inventory, Dictionary<int, ItemData> itemDataMap)
+    {
+        UpdateAllBagDetails(inventory, itemDataMap);
+        isDataUpdated = true;
+    }
+
+    /// <summary>
+    /// 根据大分类ID获取配置
+    /// </summary>
+    public CategoryConfig GetCategoryConfig(int categoryId)
+    {
+        if (categoryIdToConfig.TryGetValue(categoryId, out CategoryConfig config))
+        {
+            return config;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 获取所有大分类ID
+    /// </summary>
+    public List<int> GetAllCategoryIds()
+    {
+        return new List<int>(categoryIdToConfig.Keys);
+    }
+}
