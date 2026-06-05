@@ -278,7 +278,7 @@ public class ServerTestView : MonoBehaviour
     {
         UpdateOutput("正在开始自动钓鱼...\n");
 
-        string jsonData = "{\"playerId\":1,\"spotId\":1,\"baitId\":2501,\"intervalMs\":3000}";
+        string jsonData = "{\"playerId\":1,\"sceneId\":1,\"baitId\":2501,\"intervalMs\":3000}";
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
 
         using (var request = new UnityEngine.Networking.UnityWebRequest(serverUrl + "/api/fishing/auto/start", "POST"))

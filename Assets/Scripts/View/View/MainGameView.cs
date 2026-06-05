@@ -39,6 +39,7 @@ public class MainGameView : BagViewBase
         base.Init();
 
         CommunicateEvent.Register<Vector3>(CommunicateEvent.EVENT_SHOW_BAIT_COUNTDOWN_AT_POSITION, OnShowBaitCountdownAtPosition);
+        CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
 
         if (bagBtn != null)
         {
@@ -239,5 +240,19 @@ public class MainGameView : BagViewBase
         {
             goldTxt.text = $"金币: {goldAmount}";
         }
+    }
+
+    private void OnGoldChanged(Dictionary<string, object> data)
+    {
+        if (data.TryGetValue("gold", out object goldObj))
+        {
+            int gold = System.Convert.ToInt32(goldObj);
+            UpdateGold(gold);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        CommunicateEvent.Unregister<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
     }
 }

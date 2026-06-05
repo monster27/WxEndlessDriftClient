@@ -21,12 +21,15 @@ namespace View.Detail
         private int quantity;
         private ItemData itemData;
         private bool isSelected = false;
-        private bool hasBeenSelected = false;
+        private bool isNewCatch = false;
+        private bool isSold = false;  // 是否已售出（等待移除）
 
         public int ItemId => itemId;
         public int Quantity => quantity;
         public bool IsSelected => isSelected;
         public ItemData ItemDataRef => itemData;
+        public bool IsNewCatch => isNewCatch;
+        public bool IsSold => isSold;
 
         public event System.Action<UI_FishBagPrefab> OnSelectionChanged;
 
@@ -43,22 +46,30 @@ namespace View.Detail
             }
         }
 
-        public void Init(int id, int qty, ItemData data, bool isNewCatch = false)
+        public void Init(int id, int qty, ItemData data, bool isNewCatchFlag = false)
         {
             itemId = id;
             quantity = qty;
             itemData = data;
             isSelected = false;
-            hasBeenSelected = false;
+            isNewCatch = isNewCatchFlag;
+            isSold = false;
 
             UpdateDisplay();
-            UpdateNewCatchStatus(isNewCatch);
+            UpdateNewCatchStatus(isNewCatchFlag);
             UpdateSelectedVisual();
         }
 
         public void SetSelectionCallback(System.Action<UI_FishBagPrefab> callback)
         {
             OnSelectionChanged = callback;
+        }
+
+        public void MarkAsSold()
+        {
+            isSold = true;
+            isSelected = false;
+            gameObject.SetActive(false);
         }
 
         private void UpdateDisplay()
@@ -111,19 +122,11 @@ namespace View.Detail
         public void UpdateQuantity(int newQuantity)
         {
             quantity = newQuantity;
-            if (quantityText != null && quantity > 0)
-            {
-                quantityText.text = quantity.ToString();
-                quantityText.gameObject.SetActive(true);
-            }
-            else if (quantityText != null)
-            {
-                quantityText.gameObject.SetActive(false);
-            }
         }
 
         public void UpdateNewCatchStatus(bool isNew)
         {
+            isNewCatch = isNew;
             if (newCatchImage != null)
             {
                 newCatchImage.gameObject.SetActive(isNew);
@@ -132,9 +135,8 @@ namespace View.Detail
 
         public void SetSelection(bool selected)
         {
-            if (selected && !hasBeenSelected)
+            if (selected && isNewCatch)
             {
-                hasBeenSelected = true;
                 UpdateNewCatchStatus(false);
             }
 
@@ -145,9 +147,8 @@ namespace View.Detail
 
         private void OnSelectButtonClick()
         {
-            if (!hasBeenSelected)
+            if (isNewCatch)
             {
-                hasBeenSelected = true;
                 UpdateNewCatchStatus(false);
             }
 
@@ -207,7 +208,6 @@ namespace View.Detail
         {
             if (itemData != null && quantity > 0)
             {
-                // 只计算单个物品的价格，而不是所有同ID物品的总价
                 return itemData.sellPrice;
             }
             return 0;

@@ -44,6 +44,7 @@ public class ServerManager : SingletonMono<ServerManager>
         CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_ADD_ITEM, OnAddItem);
         CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_REMOVE_ITEM, OnRemoveItem);
         CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_ADD_FISH, OnAddFish);
+        CommunicateEvent.Register(CommunicateEvent.EVENT_SYNC_GOLD, OnSyncGold);
     }
 
     private void Update()
@@ -84,6 +85,30 @@ public class ServerManager : SingletonMono<ServerManager>
             return;
         Debug.Log("[ServerManager] 转发金币变化事件到客户端");
         CommunicateEvent.Modify(CommunicateEvent.EVENT_CLIENT_GOLD_CHANGED, data);
+    }
+
+    private void OnSyncGold()
+    {
+        if (!_isEnabled)
+            return;
+        
+        Debug.Log("[ServerManager] 收到金币同步请求");
+        
+        // 使用网络服务器模式获取金币
+        if (NetServerManager.Instance != null)
+        {
+            int currentGold = NetServerManager.Instance.GetPlayerGold();
+            Debug.Log($"[ServerManager] 当前金币: {currentGold}");
+            
+            var goldData = new Dictionary<string, object>
+            {
+                { "gold", currentGold },
+                { "add", 0 },
+                { "reduce", 0 }
+            };
+            
+            CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, goldData);
+        }
     }
 
     private void OnAddItem((int itemId, int quantity) data)

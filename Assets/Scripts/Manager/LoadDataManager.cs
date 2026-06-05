@@ -933,18 +933,16 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         // 刷新鱼篓数据
         if (UIManager.Instance != null && UIManager.Instance.fishBagView != null && PlayerDataManager.Instance != null)
         {
-            // 先同步最新数据
-            PlayerDataManager.Instance.SyncInventoryFromServer();
-            
+            // 【修复】直接获取数据，不要再调用 SyncInventoryFromServer 触发新的事件
             var fishInventory = PlayerDataManager.Instance.GetFishInventory();
             var itemDataMap = GetItemDataMap();
-            
+
             Debug.Log($"[LoadDataManager] 鱼篓数据: {fishInventory.Count} 种鱼");
             foreach (var item in fishInventory)
             {
                 Debug.Log($"  鱼ID: {item.Key}, 数量: {item.Value}");
             }
-            
+
             UIManager.Instance.fishBagView.UpdateFishBagWithInventory(fishInventory, itemDataMap);
         }
         else

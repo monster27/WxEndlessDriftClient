@@ -88,9 +88,7 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
         if (NetServerManager.Instance != null && NetServerManager.Instance.IsConnected)
         {
             // 网络模式：从服务器获取人物配置
-            Debug.Log("[PlayerAniManager] 网络模式，尝试从服务器获取人物配置");
-            // 由于这是同步初始化，暂时使用默认人物配置
-            // 实际网络请求应该在 Init 后异步执行
+            Debug.Log("[PlayerAniManager] 网络模式，使用默认人物配置进行预加载");
             configList = GetDefaultCharacterConfigs();
         }
         else if (CharacterServerManager.Instance != null)
@@ -99,10 +97,11 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
             configList = CharacterServerManager.Instance.GetAllCharacterConfigs();
         }
 
+        // 如果以上两种方式都失败，使用默认人物配置作为后备
         if (configList == null || configList.Count == 0)
         {
-            Debug.LogWarning("[PlayerAniManager] 未找到人物配置，无法预加载动画");
-            return;
+            Debug.LogWarning("[PlayerAniManager] 未找到人物配置，使用默认人物配置");
+            configList = GetDefaultCharacterConfigs();
         }
 
         foreach (var config in configList)
@@ -240,34 +239,35 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
         }
     }
 
-    public void PlayReelAnimation()
-    {
-        Debug.Log("[PlayerAniManager] PlayReelAnimation called (no duration)");
-        if (aniCtrl != null)
-        {
-            aniCtrl.PlayReelAnimation();
-            Debug.Log("[PlayerAniManager] PlayReelAnimation executed");
-        }
-        else
-        {
-            Debug.LogWarning("[PlayerAniManager] aniCtrl is null, cannot play reel animation");
-        }
-    }
-
     public void PlayReelAnimation(float duration, Action callback)
     {
-        Debug.Log("[PlayerAniManager] PlayReelAnimation with callback called, duration: " + duration);
+        Debug.Log($"[PlayerAniManager] PlayReelAnimation with callback, duration: {duration}");
+
         if (aniCtrl != null)
         {
+            // 如果鱼篓已满，不播放拉钩动画
+            if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.IsFishBagFull())
+            {
+                Debug.Log("[PlayerAniManager] 鱼篓已满，不播放拉钩动画");
+                callback?.Invoke();
+                return;
+            }
+
+            // 如果已经在播放拉钩动画，忽略新请求
+            if (isWaitingForAnimation)
+            {
+                Debug.Log("[PlayerAniManager] 已有拉钩动画正在播放，忽略新请求");
+                callback?.Invoke();
+                return;
+            }
+
             aniCtrl.PlayReelAnimation();
             pendingCallback = callback;
             animationTimer = duration;
             isWaitingForAnimation = true;
-            Debug.Log("[PlayerAniManager] PlayReelAnimation with callback executed");
         }
         else
         {
-            Debug.LogWarning("[PlayerAniManager] aniCtrl is null, cannot play reel animation");
             callback?.Invoke();
         }
     }

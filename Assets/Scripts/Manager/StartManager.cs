@@ -97,6 +97,10 @@ public class StartManager : MonoBehaviour
                     PlayerPrefs.SetInt("PlayerId", response.playerId);
                     PlayerPrefs.Save();
                     
+                    // 【修复】设置当前玩家ID到 NetServerManager
+                    NetServerManager.Instance?.SetCurrentPlayerId(response.playerId);
+                    Debug.Log($"[StartManager] 登录成功，设置玩家ID为: {response.playerId}");
+                    
                     ShowStatus(response.isNewUser ? "注册成功!" : "登录成功!", false);
                     
                     // 延迟加载游戏场景

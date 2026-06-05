@@ -144,6 +144,7 @@ public static class NetUtils
         if (value is Dictionary<string, object>)
             return SerializeToJson((Dictionary<string, object>)value);
         
+        // 【修复】支持 List<object>
         if (value is List<object>)
         {
             var list = (List<object>)value;
@@ -154,6 +155,22 @@ public static class NetUtils
                 if (i > 0)
                     sb.Append(",");
                 sb.Append(ValueToJson(list[i]));
+            }
+            sb.Append("]");
+            return sb.ToString();
+        }
+        
+        // 【修复】支持 List<int>
+        if (value is List<int>)
+        {
+            var list = (List<int>)value;
+            var sb = new System.Text.StringBuilder();
+            sb.Append("[");
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (i > 0)
+                    sb.Append(",");
+                sb.Append(list[i].ToString());
             }
             sb.Append("]");
             return sb.ToString();

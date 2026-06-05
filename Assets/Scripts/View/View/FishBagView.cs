@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using View.Detail;
 
 public class FishBagView : BagViewBase
-{ 
+{
     public View.Detail.FishDetail fishDetail;
     public Text fishCountText;
     public Button selectAllButton;
@@ -33,7 +33,7 @@ public class FishBagView : BagViewBase
         {
             fishDetail.SetFishBagItemPrefab(fishBagItemPrefab);
         }
-        
+
         if (fishDetail != null)
         {
             fishDetail.SetOnFishSelectionChanged(OnFishSelectionChanged);
@@ -46,7 +46,7 @@ public class FishBagView : BagViewBase
         {
             selectAllButton.onClick.AddListener(OnSelectAllButtonClick);
         }
-        
+
         if (sellButton != null)
         {
             sellButton.onClick.AddListener(OnSellButtonClick);
@@ -119,47 +119,55 @@ public class FishBagView : BagViewBase
     {
         if (fishDetail != null)
         {
+            // ========== 添加调试日志 ==========
+            Debug.Log($"[FishBagView] UpdateFishDetail - 传入数据: fishInventory数量={fishInventory?.Count ?? 0}, itemDataMap数量={itemDataMap?.Count ?? 0}");
+            // ========== 调试日志结束 ==========
+
             fishDetail.UpdateFishItems(itemDataMap, fishInventory);
         }
     }
 
     public void RefreshItems()
     {
-        CommunicateEvent.Modify("FishBag_RefreshItems");
-        UpdateTotalSellPrice();
-    }
-
-    private List<int> SaveCurrentSelections()
-    {
-        List<int> selectedIds = new List<int>();
-        if (fishDetail != null)
+        // 直接从 PlayerDataManager 获取最新数据并更新UI
+        if (PlayerDataManager.Instance != null)
         {
-            List<UI_FishBagPrefab> allFishPrefabs = fishDetail.GetAllFishPrefabs();
-            foreach (var fishPrefab in allFishPrefabs)
+            var fishInventory = PlayerDataManager.Instance.GetFishInventory();
+            var itemDataMap = LoadDataManager.Instance?.GetItemDataMap();
+
+            // ========== 添加调试日志 ==========
+            Debug.Log($"[FishBagView] RefreshItems - 鱼篓数据:");
+            if (fishInventory != null)
             {
-                if (fishPrefab != null && fishPrefab.IsSelected)
+                int totalCount = 0;
+                foreach (var kvp in fishInventory)
                 {
-                    selectedIds.Add(fishPrefab.ItemId);
+                    totalCount += kvp.Value;
+                    Debug.Log($"   物品ID: {kvp.Key}, 数量: {kvp.Value}");
                 }
+                Debug.Log($"   总数量: {totalCount}");
+            }
+            else
+            {
+                Debug.Log("   鱼篓数据为 null");
+            }
+
+            if (itemDataMap != null)
+            {
+                Debug.Log($"   物品数据映射数量: {itemDataMap.Count}");
+            }
+            // ========== 调试日志结束 ==========
+
+            if (itemDataMap != null)
+            {
+                UpdateFishDetail(fishInventory, itemDataMap);
+                UpdateFishCountDisplay(fishInventory);
+                UpdateTotalSellPrice();
             }
         }
-        return selectedIds;
     }
 
-    private void RestoreSelections(List<int> selectedItemIds)
-    {
-        if (fishDetail != null && selectedItemIds != null)
-        {
-            List<UI_FishBagPrefab> allFishPrefabs = fishDetail.GetAllFishPrefabs();
-            foreach (var fishPrefab in allFishPrefabs)
-            {
-                if (fishPrefab != null && selectedItemIds.Contains(fishPrefab.ItemId))
-                {
-                    fishPrefab.SetSelection(true);
-                }
-            }
-        }
-    }
+
 
     public void UpdateFishBagWithInventory(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap)
     {
@@ -196,18 +204,19 @@ public class FishBagView : BagViewBase
                 }
             }
         }
-        
+
         UpdateTotalSellPrice();
     }
 
     public void OnSellButtonClick()
     {
         Debug.Log("[FishBagView] OnSellButtonClick 被调用");
-        
+
         if (fishDetail != null)
         {
             List<UI_FishBagPrefab> allFishPrefabs = fishDetail.GetAllFishPrefabs();
             List<int> selectedItemIds = new List<int>();
+            List<UI_FishBagPrefab> selectedPrefabs = new List<UI_FishBagPrefab>();  // 记录选中的预制体
             int totalPrice = 0;
 
             foreach (var fishPrefab in allFishPrefabs)
@@ -215,6 +224,7 @@ public class FishBagView : BagViewBase
                 if (fishPrefab != null && fishPrefab.IsSelected)
                 {
                     selectedItemIds.Add(fishPrefab.ItemId);
+                    selectedPrefabs.Add(fishPrefab);  // 记录预制体引用
                     totalPrice += fishPrefab.GetTotalSellPrice();
                     Debug.Log($"[FishBagView] 选中物品: ID={fishPrefab.ItemId}, 价格={fishPrefab.GetTotalSellPrice()}");
                 }
@@ -228,13 +238,33 @@ public class FishBagView : BagViewBase
 
             Debug.LogFormat("[FishBagView] 准备售卖 {0} 个物品，总价: {1}金币", selectedItemIds.Count, totalPrice);
 
-            Dictionary<string, object> sellData = new Dictionary<string, object>
+            // 先立即隐藏选中的预制体（客户端即时反馈）
+            foreach (var prefab in selectedPrefabs)
             {
-                { "itemIds", selectedItemIds },
-                { "totalPrice", totalPrice }
-            };
+                prefab.MarkAsSold();
+            }
+
+            Dictionary<string, object> sellData = new Dictionary<string, object>
+        {
+            { "itemIds", selectedItemIds },
+            { "totalPrice", totalPrice }
+        };
             CommunicateEvent.Modify(EVENT_FISHBAG_SELL, sellData);
+
+            // 更新总价显示
+            UpdateTotalSellPrice();
+            UpdateFishCountDisplay(GetCurrentFishInventory());
         }
+    }
+
+    // 辅助方法：获取当前鱼篓数据（需要实现）
+    private Dictionary<int, int> GetCurrentFishInventory()
+    {
+        if (PlayerDataManager.Instance != null)
+        {
+            return PlayerDataManager.Instance.GetFishInventory();
+        }
+        return new Dictionary<int, int>();
     }
 
     private void OnFishBagSell(Dictionary<string, object> data)
@@ -259,7 +289,7 @@ public class FishBagView : BagViewBase
         if (totalSellPriceText != null)
         {
             int totalPrice = 0;
-            
+
             if (fishDetail != null)
             {
                 List<UI_FishBagPrefab> allFishPrefabs = fishDetail.GetAllFishPrefabs();
@@ -271,12 +301,12 @@ public class FishBagView : BagViewBase
                     }
                 }
             }
-            
+
             totalSellPriceText.text = $"总价: {totalPrice} 金币";
         }
     }
 
-    private void ClearAllSelections()
+    public void ClearAllSelections()
     {
         isAllSelected = false;
         if (fishDetail != null)
@@ -290,5 +320,22 @@ public class FishBagView : BagViewBase
                 }
             }
         }
+    }
+
+    private void OnEnable()
+    {
+        // 注册数据更新事件
+        CommunicateEvent.Register("FishBagDataUpdated", OnDataUpdated);
+    }
+
+    private void OnDisable()
+    {
+        CommunicateEvent.Unregister("FishBagDataUpdated", OnDataUpdated);
+    }
+
+    private void OnDataUpdated()
+    {
+        Debug.Log("[FishBagView] 收到数据更新事件，刷新鱼篓");
+        RefreshItems();
     }
 }
