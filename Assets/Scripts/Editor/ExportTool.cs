@@ -258,6 +258,16 @@ public class ExportTool : EditorWindow
 
         GUILayout.Space(20);
 
+        // 数据一致性验证按钮
+        GUI.backgroundColor = new Color(0.6f, 0.8f, 1f); // 浅蓝色
+        if (GUILayout.Button("🔍 验证数据一致性", GUILayout.Height(30)))
+        {
+            ValidateData();
+        }
+        GUI.backgroundColor = Color.white;
+
+        GUILayout.Space(10);
+
         // 导出按钮
         GUI.backgroundColor = string.IsNullOrEmpty(exportPath) ? Color.gray : Color.green;
         GUI.enabled = !string.IsNullOrEmpty(exportPath);
@@ -275,6 +285,31 @@ public class ExportTool : EditorWindow
         }
 
         EditorGUILayout.EndScrollView();
+    }
+
+    private void ValidateData()
+    {
+        string report;
+        bool isConsistent = ValidateDataConsistency(out report);
+
+        Debug.Log(report);
+
+        if (isConsistent)
+        {
+            EditorUtility.DisplayDialog("数据一致性验证", report, "确定");
+        }
+        else
+        {
+            bool syncNow = EditorUtility.DisplayDialog("数据一致性验证", report + "\n\n是否立即同步数据？", "同步", "取消");
+            if (syncNow && !string.IsNullOrEmpty(exportPath))
+            {
+                ExportAll();
+            }
+            else if (syncNow && string.IsNullOrEmpty(exportPath))
+            {
+                EditorUtility.DisplayDialog("提示", "请先设置导出地址！", "确定");
+            }
+        }
     }
 
     private void ExportAll()
@@ -478,14 +513,15 @@ public class ExportTool : EditorWindow
     private static int ExportServerModels(string basePath)
     {
         int count = 0;
-        string serverModelsPath = Path.Combine(Application.dataPath.Replace("/Assets", ""), "..", "WxEndlessDriftServer", "Shared", "ServerModels");
+        // 从客户端读取ServerModels（保持与RefreshExportFileList一致）
+        string clientServerModelsPath = Path.Combine(Application.dataPath, "Scripts", "ServerModels");
 
-        if (Directory.Exists(serverModelsPath))
+        if (Directory.Exists(clientServerModelsPath))
         {
             string modelsDestPath = Path.Combine(basePath, "Shared", "ServerModels");
             Directory.CreateDirectory(modelsDestPath);
 
-            foreach (string csFile in Directory.GetFiles(serverModelsPath, "*.cs"))
+            foreach (string csFile in Directory.GetFiles(clientServerModelsPath, "*.cs"))
             {
                 string fileName = Path.GetFileName(csFile);
                 string destFile = Path.Combine(modelsDestPath, fileName);
@@ -501,14 +537,15 @@ public class ExportTool : EditorWindow
     private static int ExportSharedStructures(string basePath)
     {
         int count = 0;
-        string sharedStructuresPath = Path.Combine(Application.dataPath.Replace("/Assets", ""), "..", "WxEndlessDriftServer", "Shared", "Structures");
+        // 从客户端读取数据结构（保持与RefreshExportFileList一致）
+        string clientStructuresPath = Path.Combine(Application.dataPath, "Plugins", "Json");
 
-        if (Directory.Exists(sharedStructuresPath))
+        if (Directory.Exists(clientStructuresPath))
         {
             string structuresDestPath = Path.Combine(basePath, "Shared", "Structures");
             Directory.CreateDirectory(structuresDestPath);
 
-            foreach (string csFile in Directory.GetFiles(sharedStructuresPath, "*.cs"))
+            foreach (string csFile in Directory.GetFiles(clientStructuresPath, "*.cs"))
             {
                 string fileName = Path.GetFileName(csFile);
                 string destFile = Path.Combine(structuresDestPath, fileName);
@@ -524,29 +561,232 @@ public class ExportTool : EditorWindow
     private static int ExportSharedData(string basePath)
     {
         int count = 0;
-        string sharedDataPath = Path.Combine(Application.dataPath.Replace("/Assets", ""), "..", "WxEndlessDriftServer", "Shared", "Data");
-
-        if (Directory.Exists(sharedDataPath))
+        // 从客户端读取JSON数据（保持与RefreshExportFileList一致）
+        List<string> jsonPaths = new List<string>
         {
-            string dataDestPath = Path.Combine(basePath, "Shared", "Data");
-            Directory.CreateDirectory(dataDestPath);
+            Path.Combine(Application.dataPath, "Resources", "JsonData"),
+            Path.Combine(Application.dataPath, "Resources", "Json"),
+            Path.Combine(Application.dataPath, "Resources"),
+            Path.Combine(Application.dataPath, "Plugins", "JsonData"),
+            Path.Combine(Application.dataPath, "Json")
+        };
 
-            foreach (string jsonFile in Directory.GetFiles(sharedDataPath, "*.json", SearchOption.AllDirectories))
+        foreach (string jsonSourcePath in jsonPaths)
+        {
+            if (Directory.Exists(jsonSourcePath))
             {
-                string relativePath = jsonFile.Replace(sharedDataPath, "").TrimStart('/', '\\');
-                string destFile = Path.Combine(dataDestPath, relativePath);
-                string destDir = Path.GetDirectoryName(destFile);
-                if (!Directory.Exists(destDir))
+                string dataDestPath = Path.Combine(basePath, "Shared", "Data");
+                Directory.CreateDirectory(dataDestPath);
+
+                foreach (string jsonFile in Directory.GetFiles(jsonSourcePath, "*.json", SearchOption.AllDirectories))
                 {
-                    Directory.CreateDirectory(destDir);
+                    // 排除 ProjectSettings 和 Packages 目录
+                    if (jsonFile.Contains("ProjectSettings") || jsonFile.Contains("Packages"))
+                        continue;
+
+                    string relativePath = jsonFile.Replace(jsonSourcePath, "").TrimStart('/', '\\');
+                    string destFile = Path.Combine(dataDestPath, relativePath);
+                    string destDir = Path.GetDirectoryName(destFile);
+                    if (!Directory.Exists(destDir))
+                    {
+                        Directory.CreateDirectory(destDir);
+                    }
+                    File.Copy(jsonFile, destFile, true);
+                    count++;
+                    Debug.Log($"导出Shared数据: {relativePath}");
                 }
-                File.Copy(jsonFile, destFile, true);
-                count++;
-                Debug.Log($"导出Shared数据: {relativePath}");
             }
         }
 
         return count;
+    }
+
+    /// <summary>
+    /// 验证客户端与服务器数据一致性
+    /// </summary>
+    public static bool ValidateDataConsistency(out string report)
+    {
+        report = "";
+        bool isConsistent = true;
+        int totalFiles = 0;
+        int consistentCount = 0;
+        int inconsistentCount = 0;
+
+        string serverSharedPath = Path.Combine(Application.dataPath.Replace("/Assets", ""), "..", "WxEndlessDriftServer", "Shared");
+
+        // 1. 验证JSON数据一致性
+        List<string> jsonPaths = new List<string>
+        {
+            Path.Combine(Application.dataPath, "Resources", "JsonData"),
+            Path.Combine(Application.dataPath, "Resources", "Json"),
+            Path.Combine(Application.dataPath, "Resources"),
+            Path.Combine(Application.dataPath, "Plugins", "JsonData"),
+            Path.Combine(Application.dataPath, "Json")
+        };
+
+        foreach (string jsonSourcePath in jsonPaths)
+        {
+            if (Directory.Exists(jsonSourcePath))
+            {
+                foreach (string clientFile in Directory.GetFiles(jsonSourcePath, "*.json", SearchOption.AllDirectories))
+                {
+                    if (clientFile.Contains("ProjectSettings") || clientFile.Contains("Packages"))
+                        continue;
+
+                    string relativePath = clientFile.Replace(jsonSourcePath, "").TrimStart('/', '\\');
+                    string serverFile = Path.Combine(serverSharedPath, "Data", relativePath);
+
+                    totalFiles++;
+                    bool filesMatch = false;
+
+                    if (File.Exists(serverFile))
+                    {
+                        string clientContent = File.ReadAllText(clientFile);
+                        string serverContent = File.ReadAllText(serverFile);
+                        filesMatch = clientContent == serverContent;
+                    }
+
+                    if (filesMatch)
+                    {
+                        consistentCount++;
+                    }
+                    else
+                    {
+                        inconsistentCount++;
+                        isConsistent = false;
+                        report += $"\n❌ 不一致: {relativePath}";
+                        if (!File.Exists(serverFile))
+                        {
+                            report += " (服务器端不存在)";
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. 验证ServerModels一致性
+        string clientServerModelsPath = Path.Combine(Application.dataPath, "Scripts", "ServerModels");
+        string serverServerModelsPath = Path.Combine(serverSharedPath, "ServerModels");
+
+        if (Directory.Exists(clientServerModelsPath))
+        {
+            foreach (string clientFile in Directory.GetFiles(clientServerModelsPath, "*.cs"))
+            {
+                string fileName = Path.GetFileName(clientFile);
+                string serverFile = Path.Combine(serverServerModelsPath, fileName);
+
+                totalFiles++;
+                bool filesMatch = false;
+
+                if (File.Exists(serverFile))
+                {
+                    string clientContent = File.ReadAllText(clientFile);
+                    string serverContent = File.ReadAllText(serverFile);
+                    filesMatch = clientContent == serverContent;
+                }
+
+                if (filesMatch)
+                {
+                    consistentCount++;
+                }
+                else
+                {
+                    inconsistentCount++;
+                    isConsistent = false;
+                    report += $"\n❌ 不一致: ServerModels/{fileName}";
+                    if (!File.Exists(serverFile))
+                    {
+                        report += " (服务器端不存在)";
+                    }
+                }
+            }
+        }
+
+        // 3. 验证数据结构一致性
+        string clientStructPath = Path.Combine(Application.dataPath, "Plugins", "Json");
+        string serverStructPath = Path.Combine(serverSharedPath, "Structures");
+
+        if (Directory.Exists(clientStructPath))
+        {
+            foreach (string clientFile in Directory.GetFiles(clientStructPath, "*.cs"))
+            {
+                string fileName = Path.GetFileName(clientFile);
+                string serverFile = Path.Combine(serverStructPath, fileName);
+
+                totalFiles++;
+                bool filesMatch = false;
+
+                if (File.Exists(serverFile))
+                {
+                    string clientContent = File.ReadAllText(clientFile);
+                    string serverContent = File.ReadAllText(serverFile);
+                    filesMatch = clientContent == serverContent;
+                }
+
+                if (filesMatch)
+                {
+                    consistentCount++;
+                }
+                else
+                {
+                    inconsistentCount++;
+                    isConsistent = false;
+                    report += $"\n❌ 不一致: Structures/{fileName}";
+                    if (!File.Exists(serverFile))
+                    {
+                        report += " (服务器端不存在)";
+                    }
+                }
+            }
+        }
+
+        // 4. 验证事件常量一致性
+        string clientEventPath = Path.Combine(Application.dataPath, "Scripts", "BaseTool", "GameEventConstants.cs");
+        string serverEventPath = Path.Combine(serverSharedPath, "Events", "GameEventConstants.cs");
+
+        if (File.Exists(clientEventPath))
+        {
+            totalFiles++;
+            if (File.Exists(serverEventPath))
+            {
+                string clientContent = File.ReadAllText(clientEventPath);
+                string serverContent = File.ReadAllText(serverEventPath);
+                if (clientContent == serverContent)
+                {
+                    consistentCount++;
+                }
+                else
+                {
+                    inconsistentCount++;
+                    isConsistent = false;
+                    report += "\n❌ 不一致: Events/GameEventConstants.cs";
+                }
+            }
+            else
+            {
+                inconsistentCount++;
+                isConsistent = false;
+                report += "\n❌ 不一致: Events/GameEventConstants.cs (服务器端不存在)";
+            }
+        }
+
+        // 生成报告
+        string summary = $"\n📊 数据一致性验证报告:\n";
+        summary += $"总文件数: {totalFiles}\n";
+        summary += $"✅ 一致: {consistentCount}\n";
+        summary += $"❌ 不一致: {inconsistentCount}\n";
+
+        if (isConsistent)
+        {
+            summary += "\n🎉 所有数据一致！";
+        }
+        else
+        {
+            summary += "\n⚠️ 发现不一致的文件，建议运行一键导出工具同步数据。";
+        }
+
+        report = summary + report;
+        return isConsistent;
     }
 
     private static int ExportGameEventConstants(string basePath)

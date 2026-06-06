@@ -125,4 +125,32 @@ namespace ServerModels
         public bool isTrash;
         public float struggleTime;
     }
+
+    [System.Serializable]
+    public class EquipmentResponse
+    {
+        public int rodId;
+        public int rodLevel;
+        public int lineId;
+        public int lineLevel;
+        public int hookId;
+        public int hookLevel;
+        public int skill1Id;
+        public int skill1Level;
+        public int skill2Id;
+        public int skill2Level;
+        public int characterId;
+        public int characterLevel;
+        public int baitId;
+        public int baitLevel;
+    }
+
+    [System.Serializable]
+    public class CharacterSyncResponse
+    {
+        public int characterId;  // 改为小写，与服务器返回的JSON字段名匹配
+        public int level;
+        public int exp;
+        public bool isActive;
+    }
 }

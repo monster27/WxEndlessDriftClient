@@ -14,6 +14,8 @@ namespace ServerModels
         public float continuousPauseDuration = 1f;
         public float normalPauseDuration = 0.5f;
         public int fishBagCapacity = 20;
+        public float struggleTimeMultiplier = 1f;
+        public float maxStruggleTime = 10f;
         public Dictionary<int, int> rarityBonus = new Dictionary<int, int>();
         public Dictionary<int, int> rarityWeights = new Dictionary<int, int>();
     }

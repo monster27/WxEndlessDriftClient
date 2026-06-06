@@ -44,6 +44,24 @@ public class FishingEquipView : MonoBehaviour
                 if (item != null) item.Init();
             }
         }
+
+        // 注册装备刷新事件监听器
+        CommunicateEvent.Register("Equipment_Refresh", OnEquipmentRefresh);
+    }
+
+    void OnDestroy()
+    {
+        // 取消装备刷新事件监听器
+        CommunicateEvent.Unregister("Equipment_Refresh", OnEquipmentRefresh);
+    }
+
+    /// <summary>
+    /// 装备刷新事件处理
+    /// </summary>
+    private void OnEquipmentRefresh()
+    {
+        Debug.Log("[FishingEquipView] 收到装备刷新事件，更新显示");
+        UpdateDisplay();
     }
 
     public void SetCallback(System.Action<string, object[]> cb)

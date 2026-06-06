@@ -102,12 +102,20 @@ public static partial class CommunicateEvent
 
     // === 回调机制（用于异步UI操作） ===
     private static Dictionary<string, System.Action> callbacks = new Dictionary<string, System.Action>();
+    private static Dictionary<string, System.Action<bool>> boolCallbacks = new Dictionary<string, System.Action<bool>>();
     private static int callbackIdCounter = 0;
 
     public static string RegisterCallback(System.Action callback)
     {
         string callbackId = $"callback_{callbackIdCounter++}";
         callbacks[callbackId] = callback;
+        return callbackId;
+    }
+
+    public static string RegisterCallback(System.Action<bool> callback)
+    {
+        string callbackId = $"callback_{callbackIdCounter++}";
+        boolCallbacks[callbackId] = callback;
         return callbackId;
     }
 
@@ -124,5 +132,23 @@ public static partial class CommunicateEvent
         }
     }
 
-    public static void ClearAll() { eventTable.Clear(); requestHandlers.Clear(); callbacks.Clear(); }
+    public static void OnCallback(string callbackId, bool result)
+    {
+        if (boolCallbacks.ContainsKey(callbackId))
+        {
+            boolCallbacks[callbackId]?.Invoke(result);
+            boolCallbacks.Remove(callbackId);
+        }
+        else if (callbacks.ContainsKey(callbackId))
+        {
+            callbacks[callbackId]?.Invoke();
+            callbacks.Remove(callbackId);
+        }
+        else
+        {
+            Debug.LogWarning($"[CommunicateEvent] OnCallback - id={callbackId} 未找到");
+        }
+    }
+
+    public static void ClearAll() { eventTable.Clear(); requestHandlers.Clear(); callbacks.Clear(); boolCallbacks.Clear(); }
 }

@@ -13,6 +13,7 @@ public class AdvertisingView : MonoBehaviour
     public Text skipBtnText;
 
     private Action onActionCallback;
+    private Action<bool> onActionCallbackWithResult;
     private Action onCloseCallback;
 
     void Start()
@@ -58,10 +59,38 @@ public class AdvertisingView : MonoBehaviour
         }
 
         onActionCallback = onAction;
+        onActionCallbackWithResult = null;
         onCloseCallback = onClose;
 
         gameObject.SetActive(true);
         Debug.Log($"[AdvertisingView] ShowAd 完成 - 界面已显示");
+    }
+
+    public void ShowAd(string info, Action<bool> onActionWithResult, Action onClose = null, string btnText = "确定", string skipText = "跳过")
+    {
+        Debug.Log($"[AdvertisingView] ShowAd (带结果) 开始 - info={info}, btnText={btnText}, skipText={skipText}");
+        
+        if (infoText != null)
+        {
+            infoText.text = info;
+        }
+
+        if (actionBtnText != null)
+        {
+            actionBtnText.text = btnText;
+        }
+
+        if (skipBtnText != null)
+        {
+            skipBtnText.text = skipText;
+        }
+
+        onActionCallback = null;
+        onActionCallbackWithResult = onActionWithResult;
+        onCloseCallback = onClose;
+
+        gameObject.SetActive(true);
+        Debug.Log($"[AdvertisingView] ShowAd (带结果) 完成 - 界面已显示");
     }
 
     public void ShowAdWithUnlockSkill(string info, int skillId, string btnText = "看广告解锁")
@@ -88,8 +117,23 @@ public class AdvertisingView : MonoBehaviour
 
     private void OnActionClick()
     {
-        Debug.Log($"[AdvertisingView] OnActionClick - onActionCallback={onActionCallback != null}");
-        onActionCallback?.Invoke();
+        Debug.Log($"[AdvertisingView] OnActionClick - onActionCallback={onActionCallback != null}, onActionCallbackWithResult={onActionCallbackWithResult != null}");
+        
+        // 模拟广告播放结果（实际项目中应该调用广告SDK）
+        // 80%成功率模拟
+        bool adSuccess = UnityEngine.Random.value < 0.8f;
+        
+        Debug.Log($"[AdvertisingView] OnActionClick - 广告播放模拟结果: {(adSuccess ? "成功" : "失败")}");
+        
+        if (onActionCallback != null)
+        {
+            onActionCallback.Invoke();
+        }
+        else if (onActionCallbackWithResult != null)
+        {
+            onActionCallbackWithResult.Invoke(adSuccess);
+        }
+        
         Close();
     }
 

@@ -389,6 +389,7 @@ public class InfoFishEquipView : MonoBehaviour
         }
 
         string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
+        int levelBeforeAd = GetEquipLevel();
         string info = componentName != "未知组件" ? $"看广告升级装备: {componentName}" : "看广告升级装备";
         callback?.Invoke("OpenAd", new object[] { info, currentEquipId, "看广告升级", (System.Action)(() =>
         {
@@ -396,9 +397,20 @@ public class InfoFishEquipView : MonoBehaviour
             CommunicateEvent.Modify("Equip_UpgradeByAd", currentEquipId);
             UpdateDisplay();
 
-            // 显示升级成功提示
-            string successInfo = componentName != "未知组件" ? $"{componentName} 升级成功！" : "装备升级成功！";
-            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+            // 检查等级是否变化，根据结果判断是否升级成功
+            int levelAfterAd = GetEquipLevel();
+            if (levelAfterAd > levelBeforeAd)
+            {
+                // 显示升级成功提示
+                string successInfo = componentName != "未知组件" ? $"{componentName} 升级成功！" : "装备升级成功！";
+                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+            }
+            else
+            {
+                // 显示升级失败提示
+                string failInfo = componentName != "未知组件" ? $"{componentName} 升级失败" : "装备升级失败";
+                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, failInfo);
+            }
         })});
     }
 
@@ -406,14 +418,36 @@ public class InfoFishEquipView : MonoBehaviour
     {
         string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
         string info = componentName != "未知组件" ? $"看广告解锁装备: {componentName}" : "看广告解锁装备";
-        callback?.Invoke("OpenAd", new object[] { info, currentEquipId, "看广告解锁", (System.Action)(() =>
+        callback?.Invoke("OpenAdWithResult", new object[] { info, currentEquipId, "看广告解锁", (System.Action<bool>)((bool success) =>
         {
-            CommunicateEvent.Modify("Equip_Unlock", currentEquipId);
-            UpdateDisplay();
+            Debug.Log($"[InfoFishEquipView] 广告解锁回调 - success={success}, currentEquipId={currentEquipId}");
+            
+            if (success)
+            {
+                CommunicateEvent.Modify("Equip_Unlock", currentEquipId);
+                UpdateDisplay();
 
-            // 显示解锁成功提示
-            string successInfo = componentName != "未知组件" ? $"恭喜解锁 {componentName}！" : "恭喜解锁装备！";
-            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+                // 检查实际装备状态，根据结果显示不同提示
+                EquipState state = GetEquipState();
+                if (state != EquipState.Locked)
+                {
+                    // 显示解锁成功提示
+                    string successInfo = componentName != "未知组件" ? $"恭喜解锁 {componentName}！" : "恭喜解锁装备！";
+                    CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+                }
+                else
+                {
+                    // 显示解锁失败提示
+                    string failInfo = componentName != "未知组件" ? $"解锁 {componentName} 失败" : "解锁装备失败";
+                    CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, failInfo);
+                }
+            }
+            else
+            {
+                // 广告播放失败
+                string failInfo = componentName != "未知组件" ? $"观看广告失败，未能解锁 {componentName}" : "观看广告失败，未能解锁装备";
+                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, failInfo);
+            }
         })});
     }
 
@@ -427,9 +461,20 @@ public class InfoFishEquipView : MonoBehaviour
             CommunicateEvent.Modify("Equip_Unlock", currentEquipId);
             UpdateDisplay();
 
-            // 显示获取成功提示
-            string successInfo = componentName != "未知组件" ? $"成功获取 {componentName}！" : "成功获取装备！";
-            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+            // 检查实际装备状态，根据结果显示不同提示
+            EquipState state = GetEquipState();
+            if (state != EquipState.Locked)
+            {
+                // 显示获取成功提示
+                string successInfo = componentName != "未知组件" ? $"成功获取 {componentName}！" : "成功获取装备！";
+                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+            }
+            else
+            {
+                // 显示获取失败提示
+                string failInfo = componentName != "未知组件" ? $"获取 {componentName} 失败" : "获取装备失败";
+                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, failInfo);
+            }
         })});
     }
 

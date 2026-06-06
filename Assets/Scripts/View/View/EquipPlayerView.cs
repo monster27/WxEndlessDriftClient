@@ -308,6 +308,9 @@ public class EquipPlayerView : MonoBehaviour
     {
         Debug.Log("[EquipPlayerView] Show() called");
 
+        // 从服务器同步最新人物数据
+        NetServerManager.Instance?.SyncCharacterDataFromServer();
+
         int equippedCharacterId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Character);
         Debug.Log($"[EquipPlayerView] 当前装备的人物ID: {equippedCharacterId}");
 

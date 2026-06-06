@@ -162,6 +162,9 @@ public class EquipmentView : MonoBehaviour
             case "OpenAd":
                 OpenAdvertisingView((string)args[0], (int)args[1], (string)args[2], (System.Action)args[3]);
                 break;
+            case "OpenAdWithResult":
+                OpenAdvertisingView((string)args[0], (int)args[1], (string)args[2], (System.Action<bool>)args[3]);
+                break;
         }
     }
 
@@ -320,6 +323,72 @@ public class EquipmentView : MonoBehaviour
             callbackId = callbackId
         };
         CommunicateEvent.Modify<CommunicateEvent.AdvertisingRequest>(CommunicateEvent.EVENT_UI_SHOW_ADVERTISING, request);
+    }
+
+    private void OpenAdvertisingView(string info, int targetId, string btnText, System.Action<bool> onConfirmWithResult)
+    {
+        // 包装回调，先调用服务器API
+        System.Action<bool> wrappedCallback = (bool adSuccess) =>
+        {
+            if (adSuccess)
+            {
+                // 广告成功，调用服务器API解锁装备
+                int playerId = NetServerManager.Instance?.GetCurrentPlayerId() ?? 1;
+                string equipmentType = GetEquipmentTypeFromId(targetId);
+                
+                Debug.Log($"[EquipmentView] 广告成功，开始解锁装备: playerId={playerId}, equipmentId={targetId}, type={equipmentType}");
+                
+                NetServerManager.Instance.UnlockEquipment(playerId, targetId, equipmentType, (success, message) =>
+                {
+                    if (success)
+                    {
+                        Debug.Log($"[EquipmentView] 服务器解锁成功，通知UI");
+                        onConfirmWithResult?.Invoke(true);
+                    }
+                    else
+                    {
+                        Debug.LogError($"[EquipmentView] 服务器解锁失败: {message}");
+                        UIManager.Instance.ShowTip("解锁失败: " + message);
+                        onConfirmWithResult?.Invoke(false);
+                    }
+                });
+            }
+            else
+            {
+                // 广告失败
+                Debug.Log($"[EquipmentView] 广告失败");
+                onConfirmWithResult?.Invoke(false);
+            }
+        };
+
+        string callbackId = CommunicateEvent.RegisterCallback(wrappedCallback);
+        var request = new CommunicateEvent.AdvertisingRequest
+        {
+            info = info,
+            targetId = targetId,
+            btnText = btnText,
+            callbackId = callbackId
+        };
+        CommunicateEvent.Modify<CommunicateEvent.AdvertisingRequest>(CommunicateEvent.EVENT_UI_SHOW_ADVERTISING, request);
+    }
+
+    /// <summary>
+    /// 根据装备ID获取装备类型
+    /// </summary>
+    private string GetEquipmentTypeFromId(int equipmentId)
+    {
+        if (equipmentId >= 3001 && equipmentId < 3100)
+            return "Rod";
+        else if (equipmentId >= 3101 && equipmentId < 3200)
+            return "Line";
+        else if (equipmentId >= 3201 && equipmentId < 3300)
+            return "Hook";
+        else if (equipmentId >= 3401 && equipmentId < 3500)
+            return "Character";
+        else if (equipmentId >= 3501 && equipmentId < 3600)
+            return "Skill";
+        else
+            return "Unknown";
     }
 
     private void RefreshAllViews()

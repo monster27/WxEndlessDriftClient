@@ -51,9 +51,9 @@ public class UIManager : SingletonMono<UIManager>
 
     private void OnShowAdvertisingRequest(CommunicateEvent.AdvertisingRequest request)
     {
-        ShowAdvertising(request.info, request.targetId, request.btnText, () =>
+        ShowAdvertising(request.info, request.targetId, request.btnText, (bool success) =>
         {
-            CommunicateEvent.OnCallback(request.callbackId);
+            CommunicateEvent.OnCallback(request.callbackId, success);
         });
     }
 
@@ -189,6 +189,24 @@ public class UIManager : SingletonMono<UIManager>
         if (advertisingView != null)
         {
             advertisingView.ShowAd(info, onConfirm, null, btnText);
+        }
+    }
+
+    public void ShowAdvertising(string info, int targetId, string btnText, System.Action<bool> onConfirmWithResult)
+    {
+        if (advertisingView == null)
+        {
+            GameObject prefab = Resources.Load<GameObject>("Prefabs/UI/AdvertisingView");
+            if (prefab != null)
+            {
+                GameObject obj = Instantiate(prefab, transform);
+                advertisingView = obj.GetComponent<AdvertisingView>();
+            }
+        }
+
+        if (advertisingView != null)
+        {
+            advertisingView.ShowAd(info, onConfirmWithResult, null, btnText);
         }
     }
 }

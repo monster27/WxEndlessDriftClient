@@ -336,9 +336,19 @@ public class NetServerManager : SingletonMono<NetServerManager>
         CommunicateEvent.RegisterRequest<int, int>(CommunicateEvent.EVENT_GET_CHARACTER_LEVEL, _ => GetCharacterLevel());
         CommunicateEvent.RegisterRequest<int, PlayerNetworkData>(CommunicateEvent.EVENT_GET_PLAYER_DATA, _ => GetPlayerData());
 
+        // 注册装备/卸下事件处理器
+        CommunicateEvent.Register<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_ITEM, OnEquipItem);
+
+        // 注册人物相关请求处理器
+        CommunicateEvent.RegisterRequest<int, bool>(CommunicateEvent.EVENT_IS_CHARACTER_OBTAINED, characterId => IsCharacterObtained(characterId));
+        CommunicateEvent.RegisterRequest<int, bool>(CommunicateEvent.EVENT_IS_SKILL_OBTAINED, skillId => IsSkillObtained(skillId));
+        CommunicateEvent.RegisterRequest<int, bool>(CommunicateEvent.EVENT_IS_ITEM_EQUIPPED, itemId => IsItemEquipped(itemId));
+
         // 注册 CharacterServerManager 相关的请求处理器
         CommunicateEvent.RegisterRequest<int, PlayerCharacterData>("CharacterServerManager_GetPlayerData", _ => GetPlayerCharacterData());
+        CommunicateEvent.RegisterRequest<int, PlayerCharacterData>("CharacterManager_GetPlayerData", _ => GetPlayerCharacterData());
         CommunicateEvent.RegisterRequest<int, int>("CharacterServerManager_GetExpToNextLevel", _ => GetExpToNextLevel());
+        CommunicateEvent.RegisterRequest<int, int>("CharacterManager_GetExpToNextLevel", _ => GetExpToNextLevel());
 
         // 注册自动钓鱼状态相关的请求处理器
         CommunicateEvent.RegisterRequest<int, bool>("IsAutoFishing", _ => isAutoFishing);
@@ -350,6 +360,9 @@ public class NetServerManager : SingletonMono<NetServerManager>
 
         // 注册售卖鱼事件处理器
         CommunicateEvent.Register<(List<int>, int)>(CommunicateEvent.EVENT_SELL_FISH_ITEMS, OnSellFishItems);
+
+        // 注册装备解锁事件处理器
+        CommunicateEvent.Register<int>("Equip_Unlock", OnUnlockEquipment);
     }
 
     private bool isInContinuousMode = false;
@@ -385,13 +398,14 @@ public class NetServerManager : SingletonMono<NetServerManager>
     }
 
     // 玩家装备数据
-    private int equippedRodId = 1;
-    private int equippedLineId = 1;
-    private int equippedHookId = 1;
+    private int equippedRodId = 3001;
+    private int equippedLineId = 3101;
+    private int equippedHookId = 3201;
     private int equippedSkill1Id = 0;
     private int equippedSkill2Id = 0;
     private int equippedCharacterId = 3401;
     private int characterLevel = 1;
+    private int currentCharacterExp = 0;
 
     private bool IsInContinuousMode()
     {
@@ -475,6 +489,108 @@ public class NetServerManager : SingletonMono<NetServerManager>
         return characterLevel;
     }
 
+    /// <summary>
+    /// 处理装备物品请求
+    /// </summary>
+    private void OnEquipItem((EquipmentSlotType slotType, int itemId) data)
+    {
+        if (!CheckNetworkConnection())
+            return;
+
+        var (slotType, itemId) = data;
+        Logger.Log($"[NetServerManager] 处理装备请求: slotType={slotType}, itemId={itemId}");
+
+        // 更新本地装备数据
+        UpdateLocalEquippedItem(slotType, itemId);
+
+        // 调用服务器API
+        int slotTypeInt = (int)slotType;
+        StartCoroutine(SendEquipRequest(slotTypeInt, itemId));
+    }
+
+    /// <summary>
+    /// 更新本地装备数据
+    /// </summary>
+    private void UpdateLocalEquippedItem(EquipmentSlotType slotType, int itemId)
+    {
+        switch (slotType)
+        {
+            case EquipmentSlotType.FishingRod:
+                equippedRodId = itemId;
+                break;
+            case EquipmentSlotType.FishingLine:
+                equippedLineId = itemId;
+                break;
+            case EquipmentSlotType.FishingHook:
+                equippedHookId = itemId;
+                break;
+            case EquipmentSlotType.Skill1:
+                equippedSkill1Id = itemId;
+                break;
+            case EquipmentSlotType.Skill2:
+                equippedSkill2Id = itemId;
+                break;
+            case EquipmentSlotType.Character:
+                equippedCharacterId = itemId;
+                break;
+        }
+        Logger.Log($"[NetServerManager] 本地装备数据已更新: {slotType} = {itemId}");
+    }
+
+    /// <summary>
+    /// 发送装备请求到服务器
+    /// </summary>
+    private IEnumerator SendEquipRequest(int slotType, int itemId)
+    {
+        string url = $"/api/player/equipment/{_currentPlayerId}/{slotType}/equip/{itemId}";
+        Logger.Log($"[NetServerManager] 发送装备请求: {url}");
+
+        using (UnityWebRequest request = UnityWebRequest.PostWwwForm(serverUrl + url, ""))
+        {
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    var response = JsonUtility.FromJson<EquipResponse>(json);
+                    if (response != null && response.success)
+                    {
+                        Logger.Log($"[NetServerManager] 装备成功: slotType={slotType}, itemId={itemId}");
+                        
+                        // 触发装备变更事件，通知UI刷新
+                        CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, (slotType, itemId));
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"[NetServerManager] 装备失败: {response?.message ?? "未知错误"}");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析装备响应失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 装备请求失败: {request.error}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 装备响应数据结构
+    /// </summary>
+    private class EquipResponse
+    {
+        public bool success;
+        public string message;
+    }
+
     private PlayerNetworkData GetPlayerData()
     {
         return new PlayerNetworkData
@@ -496,13 +612,111 @@ public class NetServerManager : SingletonMono<NetServerManager>
             equippedCharacterId = equippedCharacterId,
             isEquipped = equippedCharacterId > 0,
             currentLevel = characterLevel,
-            currentExp = 0
+            currentExp = currentCharacterExp
         };
+    }
+
+    /// <summary>
+    /// 从服务器同步人物数据
+    /// </summary>
+    public void SyncCharacterDataFromServer()
+    {
+        if (!_isEnabled || _currentPlayerId <= 0)
+            return;
+
+        string url = $"/api/player/character/{_currentPlayerId}";
+        StartCoroutine(SendRequest<CharacterSyncResponse>(url, null,
+            (response) =>
+            {
+                if (response != null)
+                {
+                    equippedCharacterId = response.characterId;
+                    characterLevel = response.level;
+                    currentCharacterExp = response.exp;
+                    Logger.Log($"[NetServerManager] 人物数据同步完成: CharacterId={equippedCharacterId}, Level={characterLevel}, Exp={currentCharacterExp}");
+                    
+                    // 计算升级所需经验
+                    int requiredExp = GetExpToNextLevel();
+                    
+                    // 触发人物数据更新事件，通知UI刷新
+                    CommunicateEvent.Modify<(int, int, int)>(CommunicateEvent.EVENT_CHARACTER_DATA_CHANGED, (characterLevel, currentCharacterExp, requiredExp));
+                }
+            },
+            (error) =>
+            {
+                Logger.LogError($"[NetServerManager] 人物数据同步失败: {error}");
+            }));
     }
 
     private int GetExpToNextLevel()
     {
-        return 100;
+        // 根据当前等级计算升级所需经验
+        // 1-10级: 10点/级, 11-20级: 20点/级, 21-30级: 30点/级, 以此类推
+        int level = characterLevel;
+        if (level >= 1 && level <= 10)
+            return 10;
+        if (level >= 11 && level <= 20)
+            return 20;
+        if (level >= 21 && level <= 30)
+            return 30;
+        if (level >= 31 && level <= 40)
+            return 40;
+        if (level >= 41 && level <= 50)
+            return 50;
+        if (level >= 51 && level <= 60)
+            return 60;
+        if (level >= 61 && level <= 70)
+            return 70;
+        if (level >= 71 && level <= 80)
+            return 80;
+        if (level >= 81 && level <= 90)
+            return 90;
+        if (level >= 91 && level <= 99)
+            return 100;
+        return 100; // 满级后返回默认值
+    }
+
+    /// <summary>
+    /// 检查人物是否已获取（从背包数据判断）
+    /// </summary>
+    private bool IsCharacterObtained(int characterId)
+    {
+        // 从背包数据中判断人物是否已获取
+        if (playerInventory != null && playerInventory.ContainsKey(characterId))
+        {
+            return playerInventory[characterId] > 0;
+        }
+        // 默认人物3401始终视为已获取
+        if (characterId == 3401)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 检查技能是否已获取（从背包数据判断）
+    /// </summary>
+    private bool IsSkillObtained(int skillId)
+    {
+        if (playerInventory != null && playerInventory.ContainsKey(skillId))
+        {
+            return playerInventory[skillId] > 0;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 检查物品是否已装备
+    /// </summary>
+    private bool IsItemEquipped(int itemId)
+    {
+        return equippedRodId == itemId ||
+               equippedLineId == itemId ||
+               equippedHookId == itemId ||
+               equippedSkill1Id == itemId ||
+               equippedSkill2Id == itemId ||
+               equippedCharacterId == itemId;
     }
 
     private IEnumerator FetchGameState()
@@ -711,6 +925,74 @@ public class NetServerManager : SingletonMono<NetServerManager>
             }
         }
 
+        // 获取玩家装备信息（包含人物数据）
+        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/player/equipment/" + _currentPlayerId))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    Logger.Log("[NetServerManager] 装备数据响应: " + json);
+                    var data = JsonUtility.FromJson<EquipmentResponse>(json);
+                    if (data != null)
+                    {
+                        equippedRodId = data.rodId > 0 ? data.rodId : 3001;
+                        equippedLineId = data.lineId > 0 ? data.lineId : 3101;
+                        equippedHookId = data.hookId > 0 ? data.hookId : 3201;
+                        equippedSkill1Id = data.skill1Id;
+                        equippedSkill2Id = data.skill2Id;
+                        equippedCharacterId = data.characterId > 0 ? data.characterId : 3401;
+                        characterLevel = data.characterLevel > 0 ? data.characterLevel : 1;
+                        Logger.Log($"[NetServerManager] 更新玩家装备: Rod={equippedRodId}, Line={equippedLineId}, Hook={equippedHookId}, Character={equippedCharacterId}, Level={characterLevel}");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError("[NetServerManager] 解析装备数据失败: " + ex.Message);
+                }
+            }
+            else
+            {
+                Logger.LogError("[NetServerManager] 获取装备数据失败: " + request.error);
+            }
+        }
+
+        // 获取玩家人物数据（经验等）
+        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/player/character/" + _currentPlayerId))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    Logger.Log("[NetServerManager] 人物数据响应: " + json);
+                    var data = JsonUtility.FromJson<CharacterSyncResponse>(json);
+                    if (data != null)
+                    {
+                        equippedCharacterId = data.characterId > 0 ? data.characterId : 3401;
+                        characterLevel = data.level > 0 ? data.level : 1;
+                        currentCharacterExp = data.exp;
+                        Logger.Log($"[NetServerManager] 更新人物数据: CharacterId={equippedCharacterId}, Level={characterLevel}, Exp={currentCharacterExp}");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError("[NetServerManager] 解析人物数据失败: " + ex.Message);
+                }
+            }
+            else
+            {
+                Logger.LogError("[NetServerManager] 获取人物数据失败: " + request.error);
+            }
+        }
+
         // ========== 关键修复：同步数据到 PlayerDataManager ==========
         // 所有数据获取完成后，通知 PlayerDataManager 同步
         if (PlayerDataManager.Instance != null)
@@ -718,6 +1000,14 @@ public class NetServerManager : SingletonMono<NetServerManager>
             PlayerDataManager.Instance.SyncInventoryFromServer();
             PlayerDataManager.Instance.SyncGoldFromServer();
             Logger.Log("[NetServerManager] 已通知 PlayerDataManager 同步数据");
+        }
+        // ========== 修复结束 ==========
+
+        // ========== 关键修复：根据装备的人物ID切换人物动画 ==========
+        if (PlayerAniManager.Instance != null && equippedCharacterId > 0)
+        {
+            Logger.Log($"[NetServerManager] 切换人物动画: characterId={equippedCharacterId}");
+            PlayerAniManager.Instance.SwitchCharacter(equippedCharacterId);
         }
         // ========== 修复结束 ==========
 
@@ -1126,6 +1416,13 @@ public class NetServerManager : SingletonMono<NetServerManager>
             NotifyPlayIdleAnimation();
         }
 
+        // ========== 修复：鱼篓空了之后自动重新启动自动钓鱼 ==========
+        if (!isFishBagFull && !isAutoFishing)
+        {
+            Logger.Log("[NetServerManager] 鱼篓已空，自动重新启动自动钓鱼");
+            AutoStartFishing();
+        }
+
         // ========== 修复：通知 PlayerDataManager 同步数据，触发UI刷新 ==========
         if (PlayerDataManager.Instance != null)
         {
@@ -1133,6 +1430,92 @@ public class NetServerManager : SingletonMono<NetServerManager>
             PlayerDataManager.Instance.SyncGoldFromServer();
             Logger.Log("[NetServerManager] 售卖后已通知 PlayerDataManager 同步数据");
         }
+    }
+
+    /// <summary>
+    /// 处理装备解锁请求
+    /// </summary>
+    public void OnUnlockEquipment(int equipId)
+    {
+        if (!CheckNetworkConnection())
+            return;
+
+        Logger.Log($"[NetServerManager] 处理装备解锁请求: equipId={equipId}");
+
+        // 确定装备类型
+        string equipmentType = GetEquipmentType(equipId);
+        if (string.IsNullOrEmpty(equipmentType))
+        {
+            Logger.LogWarning($"[NetServerManager] 无法确定装备类型: equipId={equipId}");
+            UIManager.Instance?.ShowTip("装备类型错误");
+            return;
+        }
+
+        var requestData = new Dictionary<string, object>
+        {
+            { "playerId", _currentPlayerId },
+            { "equipmentId", equipId },
+            { "equipmentType", equipmentType }
+        };
+
+        StartCoroutine(SendRequest<object>("/api/equipment/unlock", requestData,
+            (response) =>
+            {
+                Logger.Log($"[NetServerManager] 装备解锁成功: equipId={equipId}");
+                
+                // 重新获取玩家数据
+                StartCoroutine(FetchPlayerDataAfterUnlock());
+            },
+            (error) =>
+            {
+                Logger.LogWarning($"[NetServerManager] 装备解锁失败: {error}");
+                UIManager.Instance?.ShowTip("解锁失败，请重试");
+            }));
+    }
+
+    /// <summary>
+    /// 根据装备ID确定装备类型
+    /// </summary>
+    private string GetEquipmentType(int equipId)
+    {
+        if (equipId >= 3001 && equipId <= 3099)
+            return "Rod";
+        else if (equipId >= 3101 && equipId <= 3199)
+            return "Line";
+        else if (equipId >= 3201 && equipId <= 3299)
+            return "Hook";
+        else if (equipId >= 3401 && equipId <= 3499)
+            return "Character";
+        else if (equipId >= 3301 && equipId <= 3399)
+            return "Skill";
+        else
+            return null;
+    }
+
+    /// <summary>
+    /// 解锁装备后重新获取玩家数据
+    /// </summary>
+    private System.Collections.IEnumerator FetchPlayerDataAfterUnlock()
+    {
+        // 等待一帧，确保服务器数据已更新
+        yield return null;
+
+        // 重新获取玩家背包数据
+        yield return StartCoroutine(FetchPlayerData());
+
+        // 触发装备列表刷新事件
+        CommunicateEvent.Modify("Equipment_Refresh");
+
+        // 触发人物数据刷新事件（如果是人物解锁）
+        CommunicateEvent.Modify("Character_Refresh");
+
+        // 触发背包数据变更事件，通知所有监听者
+        CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_ITEM_QUANTITY_CHANGED, (0, 0));
+
+        // 显示解锁成功提示
+        UIManager.Instance?.ShowTip("解锁成功！");
+
+        Logger.Log("[NetServerManager] 装备解锁后已刷新玩家数据");
     }
 
     /// <summary>
@@ -1437,6 +1820,9 @@ public class NetServerManager : SingletonMono<NetServerManager>
         Sprite icon = GetItemIcon(catchInfo.fishId);
 
         UIManager.Instance?.ShowCatchResult(catchInfo.fishName, catchInfo.weight, icon);
+        
+        // 钓获后同步人物经验数据
+        SyncCharacterDataFromServer();
     }
 
     /// <summary>
@@ -1785,4 +2171,57 @@ public class NetServerManager : SingletonMono<NetServerManager>
         Logger.LogColor("[NetServerManager] 已断开连接", "red");
     }
 
+    /// <summary>
+    /// 解锁装备API
+    /// </summary>
+    public void UnlockEquipment(int playerId, int equipmentId, string equipmentType, System.Action<bool, string> onComplete)
+    {
+        Logger.LogColor($"[NetServerManager] UnlockEquipment: PlayerId={playerId}, EquipmentId={equipmentId}, Type={equipmentType}", "cyan");
+        
+        if (!CheckNetworkConnection())
+        {
+            onComplete?.Invoke(false, "网络未连接");
+            return;
+        }
+
+        var requestData = new Dictionary<string, object>
+        {
+            { "playerId", playerId },
+            { "equipmentId", equipmentId },
+            { "equipmentType", equipmentType }
+        };
+
+        StartCoroutine(SendRequest<UnlockEquipmentResponse>(
+            "/api/fishing/unlock-equipment",
+            requestData,
+            (response) =>
+            {
+                if (response.success)
+                {
+                    Logger.LogColor($"[NetServerManager] 装备解锁成功: {response.message}", "green");
+                    onComplete?.Invoke(true, response.message);
+                }
+                else
+                {
+                    Logger.LogError($"[NetServerManager] 装备解锁失败: {response.message}");
+                    onComplete?.Invoke(false, response.message);
+                }
+            },
+            (error) =>
+            {
+                Logger.LogError($"[NetServerManager] 装备解锁请求失败: {error}");
+                onComplete?.Invoke(false, error);
+            },
+            forcePost: true
+        ));
+    }
+
+    /// <summary>
+    /// 解锁装备响应
+    /// </summary>
+    private class UnlockEquipmentResponse
+    {
+        public bool success { get; set; }
+        public string message { get; set; }
+    }
 }

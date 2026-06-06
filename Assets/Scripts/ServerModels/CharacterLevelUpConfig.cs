@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using UnityEngine;
+using Newtonsoft.Json;
 
 namespace ServerModels
 {
@@ -11,7 +11,7 @@ namespace ServerModels
         public static CharacterLevelUpConfig ParseFromJson(string json)
         {
             var config = new CharacterLevelUpConfig();
-            var wrapper = JsonUtility.FromJson<LevelUpExpWrapper>(json);
+            var wrapper = JsonConvert.DeserializeObject<LevelUpExpWrapper>(json);
             if (wrapper != null && wrapper.levelUpExpRequirements != null)
             {
                 config.levelUpExpRequirements = wrapper.levelUpExpRequirements;
