@@ -74,7 +74,10 @@ public class ExportTool : EditorWindow
     {
         exportFiles.Clear();
 
-        // 获取JSON文件列表（检查多个可能的路径）
+        // 获取服务器Shared目录路径
+        string serverSharedPath = Path.Combine(Application.dataPath.Replace("/Assets", ""), "..", "WxEndlessDriftServer", "Shared");
+
+        // 1. 获取客户端JSON数据（导出到服务器Shared/Data）
         List<string> jsonPaths = new List<string>
         {
             Path.Combine(Application.dataPath, "Resources", "JsonData"),
@@ -90,7 +93,6 @@ public class ExportTool : EditorWindow
             {
                 foreach (string file in Directory.GetFiles(jsonSourcePath, "*.json", SearchOption.AllDirectories))
                 {
-                    // 排除 ProjectSettings 和 Packages 目录
                     if (file.Contains("ProjectSettings") || file.Contains("Packages"))
                         continue;
 
@@ -98,7 +100,7 @@ public class ExportTool : EditorWindow
                     exportFiles.Add(new ExportFileInfo
                     {
                         sourcePath = file,
-                        destinationPath = Path.Combine("Data", "Json", relativePath),
+                        destinationPath = Path.Combine(serverSharedPath, "Data", relativePath),
                         fileType = "JSON数据",
                         color = new Color(0.2f, 0.6f, 1f) // 蓝色
                     });
@@ -106,7 +108,7 @@ public class ExportTool : EditorWindow
             }
         }
 
-        // 获取数据结构文件列表
+        // 2. 获取客户端数据结构（导出到服务器Shared/Structures）
         string structSourcePath = Path.Combine(Application.dataPath, "Plugins", "Json");
         if (Directory.Exists(structSourcePath))
         {
@@ -115,37 +117,37 @@ public class ExportTool : EditorWindow
                 exportFiles.Add(new ExportFileInfo
                 {
                     sourcePath = file,
-                    destinationPath = Path.Combine("Structures", Path.GetFileName(file)),
+                    destinationPath = Path.Combine(serverSharedPath, "Structures", Path.GetFileName(file)),
                     fileType = "数据结构",
                     color = new Color(0.2f, 0.8f, 0.2f) // 绿色
                 });
             }
         }
 
-        // 获取服务器模型文件列表
-        string serverModelsPath = Path.Combine(Application.dataPath.Replace("/Assets", ""), "..", "WxEndlessDriftServer", "Models");
-        if (Directory.Exists(serverModelsPath))
+        // 3. 获取客户端ServerModels（导出到服务器Shared/ServerModels）
+        string clientServerModelsPath = Path.Combine(Application.dataPath, "Scripts", "ServerModels");
+        if (Directory.Exists(clientServerModelsPath))
         {
-            foreach (string file in Directory.GetFiles(serverModelsPath, "*.cs"))
+            foreach (string file in Directory.GetFiles(clientServerModelsPath, "*.cs"))
             {
                 exportFiles.Add(new ExportFileInfo
                 {
                     sourcePath = file,
-                    destinationPath = Path.Combine("ServerModels", Path.GetFileName(file)),
+                    destinationPath = Path.Combine(serverSharedPath, "ServerModels", Path.GetFileName(file)),
                     fileType = "服务器模型",
                     color = new Color(1f, 0.6f, 0.2f) // 橙色
                 });
             }
         }
 
-        // 获取游戏事件常量文件（服务器和客户端交互数据）
+        // 4. 获取游戏事件常量文件（导出到服务器Shared/Events）
         string gameEventConstantsPath = Path.Combine(Application.dataPath, "Scripts", "BaseTool", "GameEventConstants.cs");
         if (File.Exists(gameEventConstantsPath))
         {
             exportFiles.Add(new ExportFileInfo
             {
                 sourcePath = gameEventConstantsPath,
-                destinationPath = Path.Combine("Events", "GameEventConstants.cs"),
+                destinationPath = Path.Combine(serverSharedPath, "Events", "GameEventConstants.cs"),
                 fileType = "事件常量",
                 color = new Color(1f, 0.4f, 0.7f) // 粉色
             });
@@ -179,6 +181,15 @@ public class ExportTool : EditorWindow
 
         // 导出内容预览
         EditorGUILayout.LabelField($"📋 待导出文件 ({exportFiles.Count} 个)", EditorStyles.boldLabel);
+
+        // 检索文件夹路径显示
+        GUILayout.BeginVertical("Box");
+        EditorGUILayout.LabelField("🔍 检索文件夹路径", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField($"• JSON数据: Assets/Resources/JsonData", EditorStyles.miniLabel);
+        EditorGUILayout.LabelField($"• 数据结构: Assets/Plugins/Json", EditorStyles.miniLabel);
+        EditorGUILayout.LabelField($"• 服务器模型: Assets/Scripts/ServerModels", EditorStyles.miniLabel);
+        EditorGUILayout.LabelField($"• 事件常量: Assets/Scripts/BaseTool", EditorStyles.miniLabel);
+        GUILayout.EndVertical();
 
         showFileList = EditorGUILayout.Foldout(showFileList, $"展开查看所有文件", EditorStyles.foldoutHeader);
         if (showFileList)
@@ -214,16 +225,11 @@ public class ExportTool : EditorWindow
                         GUILayout.Label("●", GUILayout.Width(20));
                         GUI.color = fileInfo.color;
 
-                        // 文件名
-                        GUILayout.Label(Path.GetFileName(fileInfo.sourcePath), GUILayout.Width(200));
+                        // 只显示Unity路径
+                        string unityPath = fileInfo.sourcePath.Replace(Application.dataPath.Replace("/Assets", ""), "");
+                        GUILayout.Label(unityPath, EditorStyles.miniLabel);
 
                         GUI.color = Color.white;
-
-                        // 箭头
-                        GUILayout.Label("→", GUILayout.Width(20));
-
-                        // 目标路径
-                        GUILayout.Label(fileInfo.destinationPath, EditorStyles.miniLabel);
 
                         GUILayout.EndHorizontal();
                     }
@@ -241,17 +247,11 @@ public class ExportTool : EditorWindow
             GUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("📊 统计信息", EditorStyles.boldLabel);
 
-            var stats = exportFiles.GroupBy(f => f.fileType)
-                .Select(g => new { Type = g.Key, Count = g.Count() });
-
-            foreach (var stat in stats)
-            {
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(stat.Type, GUILayout.Width(100));
-                GUILayout.FlexibleSpace();
-                GUILayout.Label($"{stat.Count} 个文件");
-                GUILayout.EndHorizontal();
-            }
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("总文件数", GUILayout.Width(100));
+            GUILayout.FlexibleSpace();
+            GUILayout.Label($"{exportFiles.Count} 个文件");
+            GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
         }
@@ -304,35 +304,61 @@ public class ExportTool : EditorWindow
             int failCount = 0;
 
             foreach (var fileInfo in exportFiles)
-            {
-                try
                 {
-                    string destFullPath = Path.Combine(exportPath, fileInfo.destinationPath);
-                    string destDir = Path.GetDirectoryName(destFullPath);
-                    if (!Directory.Exists(destDir))
+                    try
                     {
-                        Directory.CreateDirectory(destDir);
+                        string destFullPath = Path.Combine(exportPath, fileInfo.destinationPath);
+                        string destDir = Path.GetDirectoryName(destFullPath);
+                        if (!Directory.Exists(destDir))
+                        {
+                            Directory.CreateDirectory(destDir);
+                        }
+
+                        // 检查文件是否存在且内容不同
+                        if (File.Exists(destFullPath))
+                        {
+                            string sourceContent = File.ReadAllText(fileInfo.sourcePath);
+                            string destContent = File.ReadAllText(destFullPath);
+                            
+                            if (sourceContent == destContent)
+                            {
+                                // 内容相同，跳过
+                                Debug.Log($"跳过（内容相同）: {fileInfo.destinationPath}");
+                                continue;
+                            }
+                            else
+                            {
+                                // 内容不同，先备份旧文件
+                                string backupPath = destFullPath + ".backup";
+                                if (!File.Exists(backupPath))
+                                {
+                                    File.Copy(destFullPath, backupPath);
+                                }
+                                Debug.Log($"备份旧文件: {backupPath}");
+                            }
+                        }
+
+                        // 执行复制（覆盖）
+                        File.Copy(fileInfo.sourcePath, destFullPath, true);
+                        successCount++;
+                        Debug.Log($"导出成功: {fileInfo.destinationPath}");
                     }
-                    File.Copy(fileInfo.sourcePath, destFullPath, true);
-                    successCount++;
-                    Debug.Log($"✅ 导出成功: {fileInfo.destinationPath}");
+                    catch (System.Exception e)
+                    {
+                        failCount++;
+                        Debug.LogError($"导出失败 {fileInfo.sourcePath}: {e.Message}");
+                    }
                 }
-                catch (System.Exception e)
-                {
-                    failCount++;
-                    Debug.LogError($"❌ 导出失败 {fileInfo.sourcePath}: {e.Message}");
-                }
-            }
 
             SaveLastExportPath();
 
-            string message = $"🎉 导出完成！\n\n";
-            message += $"✅ 成功: {successCount} 个文件\n";
+            string message = $"导出完成！\n\n";
+            message += $"成功: {successCount} 个文件\n";
             if (failCount > 0)
             {
-                message += $"❌ 失败: {failCount} 个文件\n";
+                message += $"失败: {failCount} 个文件\n";
             }
-            message += $"\n📁 导出目录:\n{exportPath}";
+            message += $"\n导出目录:\n{exportPath}";
 
             EditorUtility.DisplayDialog("导出完成", message, "确定");
         }
@@ -370,9 +396,10 @@ public class ExportTool : EditorWindow
 
         int exportedCount = 0;
 
-        exportedCount += ExportJsonFiles(path);
         exportedCount += ExportStructFiles(path);
         exportedCount += ExportServerModels(path);
+        exportedCount += ExportSharedStructures(path);
+        exportedCount += ExportSharedData(path);
         exportedCount += ExportGameEventConstants(path);
 
         EditorPrefs.SetString(PREFS_KEY_EXPORT_PATH, path);
@@ -451,11 +478,11 @@ public class ExportTool : EditorWindow
     private static int ExportServerModels(string basePath)
     {
         int count = 0;
-        string serverModelsPath = Path.Combine(Application.dataPath.Replace("/Assets", ""), "..", "WxEndlessDriftServer", "Models");
+        string serverModelsPath = Path.Combine(Application.dataPath.Replace("/Assets", ""), "..", "WxEndlessDriftServer", "Shared", "ServerModels");
 
         if (Directory.Exists(serverModelsPath))
         {
-            string modelsDestPath = Path.Combine(basePath, "ServerModels");
+            string modelsDestPath = Path.Combine(basePath, "Shared", "ServerModels");
             Directory.CreateDirectory(modelsDestPath);
 
             foreach (string csFile in Directory.GetFiles(serverModelsPath, "*.cs"))
@@ -465,6 +492,57 @@ public class ExportTool : EditorWindow
                 File.Copy(csFile, destFile, true);
                 count++;
                 Debug.Log($"导出服务器模型: {fileName}");
+            }
+        }
+
+        return count;
+    }
+
+    private static int ExportSharedStructures(string basePath)
+    {
+        int count = 0;
+        string sharedStructuresPath = Path.Combine(Application.dataPath.Replace("/Assets", ""), "..", "WxEndlessDriftServer", "Shared", "Structures");
+
+        if (Directory.Exists(sharedStructuresPath))
+        {
+            string structuresDestPath = Path.Combine(basePath, "Shared", "Structures");
+            Directory.CreateDirectory(structuresDestPath);
+
+            foreach (string csFile in Directory.GetFiles(sharedStructuresPath, "*.cs"))
+            {
+                string fileName = Path.GetFileName(csFile);
+                string destFile = Path.Combine(structuresDestPath, fileName);
+                File.Copy(csFile, destFile, true);
+                count++;
+                Debug.Log($"导出Shared结构: {fileName}");
+            }
+        }
+
+        return count;
+    }
+
+    private static int ExportSharedData(string basePath)
+    {
+        int count = 0;
+        string sharedDataPath = Path.Combine(Application.dataPath.Replace("/Assets", ""), "..", "WxEndlessDriftServer", "Shared", "Data");
+
+        if (Directory.Exists(sharedDataPath))
+        {
+            string dataDestPath = Path.Combine(basePath, "Shared", "Data");
+            Directory.CreateDirectory(dataDestPath);
+
+            foreach (string jsonFile in Directory.GetFiles(sharedDataPath, "*.json", SearchOption.AllDirectories))
+            {
+                string relativePath = jsonFile.Replace(sharedDataPath, "").TrimStart('/', '\\');
+                string destFile = Path.Combine(dataDestPath, relativePath);
+                string destDir = Path.GetDirectoryName(destFile);
+                if (!Directory.Exists(destDir))
+                {
+                    Directory.CreateDirectory(destDir);
+                }
+                File.Copy(jsonFile, destFile, true);
+                count++;
+                Debug.Log($"导出Shared数据: {relativePath}");
             }
         }
 
@@ -489,6 +567,21 @@ public class ExportTool : EditorWindow
         }
 
         return count;
+    }
+
+    private static void ExportSharedJsonFiles(string sourcePath, string relativePath, List<ExportFileInfo> exportFiles)
+    {
+        foreach (string file in Directory.GetFiles(sourcePath, "*.json", SearchOption.AllDirectories))
+        {
+            string fileRelativePath = file.Replace(sourcePath, "").TrimStart('/', '\\');
+            exportFiles.Add(new ExportFileInfo
+            {
+                sourcePath = file,
+                destinationPath = Path.Combine("Shared", "Data", fileRelativePath),
+                fileType = "Shared数据",
+                color = new Color(0.4f, 0.6f, 1f) // 浅蓝色
+            });
+        }
     }
 
     private class ExportFileInfo

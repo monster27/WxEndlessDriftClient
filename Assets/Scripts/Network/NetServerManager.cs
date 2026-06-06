@@ -4,6 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using Utils;
+using Logger = Utils.Logger;
+using ServerModels;
+
 
 public class NetServerManager : SingletonMono<NetServerManager>
 {
@@ -53,7 +57,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         RegisterNetworkEvents();
         RegisterServerEvents();
 
-        Debug.Log("<color=green>[NetServerManager] 网络服务器管理器初始化完成，服务器地址: " + serverUrl + "</color>");
+        Logger.LogColor("[NetServerManager] 网络服务器管理器初始化完成，服务器地址: " + serverUrl, "green");
 
         StartConnect();
     }
@@ -67,11 +71,11 @@ public class NetServerManager : SingletonMono<NetServerManager>
     {
         if (!isConnected)
         {
-            Debug.Log("[NetServerManager] 未连接服务器，跳过退出请求");
+            Logger.Log("[NetServerManager] 未连接服务器，跳过退出请求");
             return;
         }
 
-        Debug.Log("<color=orange>[NetServerManager] 发送玩家退出请求</color>");
+        Logger.LogColor("[NetServerManager] 发送玩家退出请求", "orange");
 
         var requestData = new Dictionary<string, object>
         {
@@ -82,12 +86,12 @@ public class NetServerManager : SingletonMono<NetServerManager>
         StartCoroutine(SendRequest<object>("/api/player/" + _currentPlayerId + "/exit", requestData,
             onSuccess: (response) =>
             {
-                Debug.Log("<color=green>[NetServerManager] 玩家退出请求成功</color>");
+                Logger.LogColor("[NetServerManager] 玩家退出请求成功", "green");
                 StopHeartbeat();
             },
             onError: (error) =>
             {
-                Debug.LogWarning("[NetServerManager] 玩家退出请求失败: " + error);
+                Logger.LogWarning("[NetServerManager] 玩家退出请求失败: " + error);
             },
             forcePost: true
         ));
@@ -98,7 +102,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     /// </summary>
     public void RequestReconnect()
     {
-        Debug.Log("<color=orange>[NetServerManager] 请求重连恢复状态</color>");
+        Logger.LogColor("[NetServerManager] 请求重连恢复状态", "orange");
 
         var requestData = new Dictionary<string, object>
         {
@@ -109,7 +113,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         StartCoroutine(SendRequest<object>("/api/player/" + _currentPlayerId + "/reconnect", requestData,
             onSuccess: (response) =>
             {
-                Debug.Log("<color=green>[NetServerManager] 重连请求成功，开始恢复钓鱼状态</color>");
+                Logger.LogColor("[NetServerManager] 重连请求成功，开始恢复钓鱼状态", "green");
 
                 // 重新启动钓鱼状态轮询
                 StartCoroutine(FetchGameState());
@@ -122,7 +126,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
             },
             onError: (error) =>
             {
-                Debug.LogWarning("[NetServerManager] 重连请求失败: " + error + "，尝试重新连接");
+                Logger.LogWarning("[NetServerManager] 重连请求失败: " + error + "，尝试重新连接");
                 // 如果重连失败，尝试重新连接服务器
                 Reconnect();
             },
@@ -140,7 +144,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
             StopCoroutine(heartbeatCoroutine);
         }
         heartbeatCoroutine = StartCoroutine(SendHeartbeatCoroutine());
-        Debug.Log("[NetServerManager] 心跳协程已启动");
+        Logger.Log("[NetServerManager] 心跳协程已启动");
     }
 
     /// <summary>
@@ -152,7 +156,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         {
             StopCoroutine(heartbeatCoroutine);
             heartbeatCoroutine = null;
-            Debug.Log("[NetServerManager] 心跳协程已停止");
+            Logger.Log("[NetServerManager] 心跳协程已停止");
         }
     }
 
@@ -189,11 +193,11 @@ public class NetServerManager : SingletonMono<NetServerManager>
         StartCoroutine(SendRequest<object>("/api/player/" + _currentPlayerId + "/heartbeat", requestData,
             onSuccess: (response) =>
             {
-                Debug.Log("<color=cyan>[NetServerManager] 心跳发送成功</color>");
+                Logger.LogColor("[NetServerManager] 心跳发送成功", "cyan");
             },
             onError: (error) =>
             {
-                Debug.LogWarning("[NetServerManager] 心跳发送失败: " + error);
+                Logger.LogWarning("[NetServerManager] 心跳发送失败: " + error);
             },
             forcePost: true
         ));
@@ -208,7 +212,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     /// </summary>
     void OnApplicationPause(bool pause)
     {
-        Debug.Log($"[NetServerManager] OnApplicationPause: {pause}");
+        Logger.Log($"[NetServerManager] OnApplicationPause: {pause}");
 
         if (pause)
         {
@@ -227,7 +231,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
             isApplicationPaused = false;
             if (!isConnected)
             {
-                Debug.Log("[NetServerManager] 应用恢复但未连接到服务器，尝试重连");
+                Logger.Log("[NetServerManager] 应用恢复但未连接到服务器，尝试重连");
                 RequestReconnect();
             }
             else
@@ -244,7 +248,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     /// </summary>
     void OnApplicationQuit()
     {
-        Debug.Log("<color=red>[NetServerManager] OnApplicationQuit - 应用退出</color>");
+        Logger.LogColor("[NetServerManager] OnApplicationQuit - 应用退出", "red");
 
         // 发送退出请求
         SendPlayerExit();
@@ -262,7 +266,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     /// </summary>
     private void OnDestroy()
     {
-        Debug.Log("<color=red>[NetServerManager] OnDestroy - 对象销毁</color>");
+        Logger.LogColor("[NetServerManager] OnDestroy - 对象销毁", "red");
 
         // 发送退出请求
         if (isConnected)
@@ -302,7 +306,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
             Disconnect();
         }
 
-        Debug.Log("<color=orange>[NetServerManager] 设置启用状态: " + enabled + "</color>");
+        Logger.LogColor("[NetServerManager] 设置启用状态: " + enabled, "orange");
     }
 
     private void RegisterNetworkEvents()
@@ -311,7 +315,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
 
     private void RegisterServerEvents()
     {
-        Debug.Log("[NetServerManager] 注册网络模式下的事件处理器");
+        Logger.Log("[NetServerManager] 注册网络模式下的事件处理器");
 
         // 注册连续模式相关的请求处理器
         CommunicateEvent.RegisterRequest<int, bool>(CommunicateEvent.EVENT_IS_IN_CONTINUOUS_MODE, _ => IsInContinuousMode());
@@ -330,7 +334,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         // 注册装备相关的请求处理器
         CommunicateEvent.RegisterRequest<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, slotType => GetEquippedItem(slotType));
         CommunicateEvent.RegisterRequest<int, int>(CommunicateEvent.EVENT_GET_CHARACTER_LEVEL, _ => GetCharacterLevel());
-        CommunicateEvent.RegisterRequest<int, PlayerData>(CommunicateEvent.EVENT_GET_PLAYER_DATA, _ => GetPlayerData());
+        CommunicateEvent.RegisterRequest<int, PlayerNetworkData>(CommunicateEvent.EVENT_GET_PLAYER_DATA, _ => GetPlayerData());
 
         // 注册 CharacterServerManager 相关的请求处理器
         CommunicateEvent.RegisterRequest<int, PlayerCharacterData>("CharacterServerManager_GetPlayerData", _ => GetPlayerCharacterData());
@@ -372,7 +376,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     public void SetCurrentPlayerId(int playerId)
     {
         _currentPlayerId = playerId;
-        Debug.Log($"[NetServerManager] 当前玩家ID已更新为: {_currentPlayerId}");
+        Logger.Log($"[NetServerManager] 当前玩家ID已更新为: {_currentPlayerId}");
     }
 
     public int GetCurrentPlayerId()
@@ -429,10 +433,10 @@ public class NetServerManager : SingletonMono<NetServerManager>
         if (!_isEnabled)
             return;
 
-        Debug.Log("[NetServerManager] 收到金币同步请求");
+        Logger.Log("[NetServerManager] 收到金币同步请求");
 
         int currentGold = playerGold;
-        Debug.Log($"[NetServerManager] 当前金币: {currentGold}");
+        Logger.Log($"[NetServerManager] 当前金币: {currentGold}");
 
         var goldData = new Dictionary<string, object>
         {
@@ -471,9 +475,9 @@ public class NetServerManager : SingletonMono<NetServerManager>
         return characterLevel;
     }
 
-    private PlayerData GetPlayerData()
+    private PlayerNetworkData GetPlayerData()
     {
-        return new PlayerData
+        return new PlayerNetworkData
         {
             playerId = _currentPlayerId,
             nickname = "Player",
@@ -521,12 +525,12 @@ public class NetServerManager : SingletonMono<NetServerManager>
                     {
                         isInContinuousMode = data.isInContinuousMode;
                         continuousModeRemainingTime = data.remainingTime;
-                        Debug.Log("[NetServerManager] 更新连续模式状态: " + isInContinuousMode + ", 剩余时间: " + continuousModeRemainingTime);
+                        Logger.Log("[NetServerManager] 更新连续模式状态: " + isInContinuousMode + ", 剩余时间: " + continuousModeRemainingTime);
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError("[NetServerManager] 解析游戏状态失败: " + ex.Message);
+                    Logger.LogError("[NetServerManager] 解析游戏状态失败: " + ex.Message);
                 }
             }
         }
@@ -551,12 +555,12 @@ public class NetServerManager : SingletonMono<NetServerManager>
                     if (data != null)
                     {
                         currentSceneBaitCount = data.baitCount;
-                        Debug.Log("[NetServerManager] 更新鱼饵数量: " + currentSceneBaitCount);
+                        Logger.Log("[NetServerManager] 更新鱼饵数量: " + currentSceneBaitCount);
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError("[NetServerManager] 解析鱼饵数量失败: " + ex.Message);
+                    Logger.LogError("[NetServerManager] 解析鱼饵数量失败: " + ex.Message);
                 }
             }
         }
@@ -567,12 +571,12 @@ public class NetServerManager : SingletonMono<NetServerManager>
         if (!isConnected)
             yield break;
 
-        Debug.Log($"[DEBUG] FetchPlayerData called with currentPlayerId={_currentPlayerId}");
+        Logger.Log($"[DEBUG] FetchPlayerData called with currentPlayerId={_currentPlayerId}");
 
         // 获取玩家金币
         using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/player/gold/" + _currentPlayerId))
         {
-            Debug.Log($"[DEBUG] Requesting gold for playerId={_currentPlayerId}, URL={serverUrl}/api/player/gold/{_currentPlayerId}");
+            Logger.Log($"[DEBUG] Requesting gold for playerId={_currentPlayerId}, URL={serverUrl}/api/player/gold/{_currentPlayerId}");
             request.timeout = 5;
             yield return request.SendWebRequest();
 
@@ -581,29 +585,29 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 try
                 {
                     string json = request.downloadHandler.text;
-                    Debug.Log($"[DEBUG] Gold response: {json}");
+                    Logger.Log($"[DEBUG] Gold response: {json}");
                     var data = JsonUtility.FromJson<GoldResponse>(json);
                     if (data != null)
                     {
                         playerGold = data.gold;
-                        Debug.Log("[NetServerManager] 更新玩家金币: " + playerGold);
+                        Logger.Log("[NetServerManager] 更新玩家金币: " + playerGold);
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError("[NetServerManager] 解析金币数据失败: " + ex.Message);
+                    Logger.LogError("[NetServerManager] 解析金币数据失败: " + ex.Message);
                 }
             }
             else
             {
-                Debug.LogError("[NetServerManager] 获取金币数据失败: " + request.error);
+                Logger.LogError("[NetServerManager] 获取金币数据失败: " + request.error);
             }
         }
 
         // 获取玩家背包
         using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/player/inventory/" + _currentPlayerId))
         {
-            Debug.Log($"[DEBUG] Requesting inventory for playerId={_currentPlayerId}, URL={serverUrl}/api/player/inventory/{_currentPlayerId}");
+            Logger.Log($"[DEBUG] Requesting inventory for playerId={_currentPlayerId}, URL={serverUrl}/api/player/inventory/{_currentPlayerId}");
             request.timeout = 5;
             yield return request.SendWebRequest();
 
@@ -612,7 +616,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 try
                 {
                     string json = request.downloadHandler.text;
-                    Debug.Log($"[DEBUG] Inventory response: {json}");
+                    Logger.Log($"[DEBUG] Inventory response: {json}");
                     var data = JsonUtility.FromJson<InventoryResponse>(json);
                     if (data != null && data.items != null)
                     {
@@ -621,17 +625,17 @@ public class NetServerManager : SingletonMono<NetServerManager>
                         {
                             playerInventory[item.key] = item.value;
                         }
-                        Debug.Log("[NetServerManager] 更新玩家背包: " + playerInventory.Count + " 件物品");
+                        Logger.Log("[NetServerManager] 更新玩家背包: " + playerInventory.Count + " 件物品");
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError("[NetServerManager] 解析背包数据失败: " + ex.Message);
+                    Logger.LogError("[NetServerManager] 解析背包数据失败: " + ex.Message);
                 }
             }
             else
             {
-                Debug.LogError("[NetServerManager] 获取背包数据失败: " + request.error);
+                Logger.LogError("[NetServerManager] 获取背包数据失败: " + request.error);
             }
         }
 
@@ -646,7 +650,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 try
                 {
                     string json = request.downloadHandler.text;
-                    Debug.Log("[NetServerManager] 鱼篓数据响应: " + json);
+                    Logger.Log("[NetServerManager] 鱼篓数据响应: " + json);
                     var data = JsonUtility.FromJson<InventoryResponse>(json);
                     if (data != null && data.items != null)
                     {
@@ -656,24 +660,24 @@ public class NetServerManager : SingletonMono<NetServerManager>
                             fishInventory[item.key] = item.value;
                         }
                         int totalFish = GetTotalFishCount();
-                        Debug.Log("[NetServerManager] 更新玩家鱼篓: " + fishInventory.Count + " 种鱼，总数量: " + totalFish);
+                        Logger.Log("[NetServerManager] 更新玩家鱼篓: " + fishInventory.Count + " 种鱼，总数量: " + totalFish);
 
                         // 更新鱼篓满状态
                         isFishBagFull = totalFish >= fishBagCapacity;
                     }
                     else
                     {
-                        Debug.LogWarning("[NetServerManager] 鱼篓数据为空或格式不正确");
+                        Logger.LogWarning("[NetServerManager] 鱼篓数据为空或格式不正确");
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError("[NetServerManager] 解析鱼篓数据失败: " + ex.Message);
+                    Logger.LogError("[NetServerManager] 解析鱼篓数据失败: " + ex.Message);
                 }
             }
             else
             {
-                Debug.LogError("[NetServerManager] 获取鱼篓数据失败: " + request.error);
+                Logger.LogError("[NetServerManager] 获取鱼篓数据失败: " + request.error);
             }
         }
 
@@ -688,22 +692,22 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 try
                 {
                     string json = request.downloadHandler.text;
-                    Debug.Log("[NetServerManager] 鱼篓容量响应: " + json);
+                    Logger.Log("[NetServerManager] 鱼篓容量响应: " + json);
                     var data = JsonUtility.FromJson<CapacityResponse>(json);
                     if (data != null)
                     {
                         fishBagCapacity = data.capacity;
-                        Debug.Log("[NetServerManager] 更新鱼篓容量: " + fishBagCapacity);
+                        Logger.Log("[NetServerManager] 更新鱼篓容量: " + fishBagCapacity);
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError("[NetServerManager] 解析鱼篓容量失败: " + ex.Message);
+                    Logger.LogError("[NetServerManager] 解析鱼篓容量失败: " + ex.Message);
                 }
             }
             else
             {
-                Debug.LogError("[NetServerManager] 获取鱼篓容量失败: " + request.error);
+                Logger.LogError("[NetServerManager] 获取鱼篓容量失败: " + request.error);
             }
         }
 
@@ -713,14 +717,14 @@ public class NetServerManager : SingletonMono<NetServerManager>
         {
             PlayerDataManager.Instance.SyncInventoryFromServer();
             PlayerDataManager.Instance.SyncGoldFromServer();
-            Debug.Log("[NetServerManager] 已通知 PlayerDataManager 同步数据");
+            Logger.Log("[NetServerManager] 已通知 PlayerDataManager 同步数据");
         }
         // ========== 修复结束 ==========
 
         // 根据鱼篓满状态决定是否启动自动钓鱼
         if (isFishBagFull)
         {
-            Debug.Log("[NetServerManager] 鱼篓已满，不启动自动钓鱼，播放懒动画");
+            Logger.Log("[NetServerManager] 鱼篓已满，不启动自动钓鱼，播放懒动画");
             NotifyPlayLazyAnimation();
         }
         else
@@ -746,58 +750,19 @@ public class NetServerManager : SingletonMono<NetServerManager>
         {
             if (isAutoFishing)
             {
-                Debug.Log("[NetServerManager] 已在自动钓鱼状态，无需重复启动");
+                Logger.Log("[NetServerManager] 已在自动钓鱼状态，无需重复启动");
                 return;
             }
 
             int defaultBaitId = 2501;
-            Debug.Log($"[NetServerManager] 登录成功，自动开始钓鱼，使用鱼饵ID: {defaultBaitId}");
+            Logger.Log($"[NetServerManager] 登录成功，自动开始钓鱼，使用鱼饵ID: {defaultBaitId}");
             StartAutoFishing(defaultBaitId);
         }
         catch (System.Exception ex)
         {
-            Debug.LogWarning("[NetServerManager] 自动开始钓鱼失败: " + ex.Message);
+            Logger.LogWarning("[NetServerManager] 自动开始钓鱼失败: " + ex.Message);
         }
     }
-
-    [System.Serializable]
-    private class ContinuousModeStatus
-    {
-        public bool isInContinuousMode;
-        public float remainingTime;
-    }
-
-    [System.Serializable]
-    private class BaitCountResponse
-    {
-        public int baitCount;
-    }
-
-    [System.Serializable]
-    private class GoldResponse
-    {
-        public int gold;
-    }
-
-    [System.Serializable]
-    private class InventoryResponse
-    {
-        public List<KeyValuePair> items;
-    }
-
-    [System.Serializable]
-    private class KeyValuePair
-    {
-        public int key;
-        public int value;
-    }
-
-    [System.Serializable]
-    private class CapacityResponse
-    {
-        public int capacity;
-    }
-
     private void StartConnect()
     {
         if (connectCoroutine != null)
@@ -813,7 +778,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
             yield break;
 
         networkState = NetUtils.NetworkState.Connecting;
-        Debug.Log("<color=yellow>[NetServerManager] 正在连接到服务器: " + serverUrl + "</color>");
+        Logger.LogColor("[NetServerManager] 正在连接到服务器: " + serverUrl, "yellow");
 
         using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/ping"))
         {
@@ -822,7 +787,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                Debug.Log("<color=green>[NetServerManager] 连接服务器成功</color>");
+                Logger.LogColor("[NetServerManager] 连接服务器成功", "green");
                 networkState = NetUtils.NetworkState.Connected;
                 isConnected = true;
                 missedHeartbeats = 0;
@@ -838,7 +803,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
             }
             else
             {
-                Debug.LogError("<color=red>[NetServerManager] 连接服务器失败: " + request.error + "</color>");
+                Logger.LogError("[NetServerManager] 连接服务器失败: " + request.error);
                 networkState = NetUtils.NetworkState.Disconnected;
                 isConnected = false;
                 UIManager.Instance?.ShowTip("无法连接到服务器，请检查网络连接");
@@ -883,7 +848,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
 
         if (request.result == UnityWebRequest.Result.Success)
         {
-            Debug.Log("<color=cyan>[NetServerManager] 请求成功: " + endpoint + "</color>");
+            Logger.LogColor("[NetServerManager] 请求成功: " + endpoint, "cyan");
             try
             {
                 string jsonResponse = request.downloadHandler.text;
@@ -892,13 +857,13 @@ public class NetServerManager : SingletonMono<NetServerManager>
             }
             catch (System.Exception ex)
             {
-                Debug.LogError("[NetServerManager] 解析响应失败: " + ex.Message);
+                Logger.LogError("[NetServerManager] 解析响应失败: " + ex.Message);
                 onError?.Invoke("解析响应失败");
             }
         }
         else
         {
-            Debug.LogError("<color=red>[NetServerManager] 请求失败: " + endpoint + ", 错误: " + request.error + "</color>");
+            Logger.LogError("[NetServerManager] 请求失败: " + endpoint + ", 错误: " + request.error);
             UIManager.Instance?.ShowTip("网络请求失败，请检查网络连接");
             onError?.Invoke(request.error);
         }
@@ -908,7 +873,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     {
         if (!_isEnabled)
         {
-            Debug.LogWarning("[NetServerManager] 网络管理器未启用");
+            Logger.LogWarning("[NetServerManager] 网络管理器未启用");
             return false;
         }
 
@@ -923,7 +888,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
 
     private void ShowNetworkError()
     {
-        Debug.LogError("[NetServerManager] 网络连接失败，请检查网络连接后重试");
+        Logger.LogError("[NetServerManager] 网络连接失败，请检查网络连接后重试");
         UIManager.Instance?.ShowTip("网络连接失败，请检查网络连接后重试");
     }
 
@@ -942,7 +907,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 if (networkState == NetUtils.NetworkState.Connected)
                 {
                     missedHeartbeats++;
-                    Debug.Log("[NetServerManager] 等待心跳响应，未收到响应次数: " + missedHeartbeats);
+                    Logger.Log("[NetServerManager] 等待心跳响应，未收到响应次数: " + missedHeartbeats);
                     StartCoroutine(SendHeartbeatRequest());
                 }
                 else if (networkState == NetUtils.NetworkState.Reconnecting)
@@ -966,7 +931,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
 
         if (missedHeartbeats >= NetUtils.MAX_MISSED_HEARTBEATS)
         {
-            Debug.LogError("[NetServerManager] 心跳超时，断开连接");
+            Logger.LogError("[NetServerManager] 心跳超时，断开连接");
             networkState = NetUtils.NetworkState.Reconnecting;
             isConnected = false;
             missedHeartbeats = 0;
@@ -976,7 +941,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
 
     private IEnumerator SendHeartbeatRequest()
     {
-        Debug.Log("[NetServerManager] SendHeartbeat 被调用");
+        Logger.Log("[NetServerManager] SendHeartbeat 被调用");
 
         long clientTime = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var requestData = new Dictionary<string, object>
@@ -989,7 +954,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
             {
                 if (response != null)
                 {
-                    Debug.Log("[NetServerManager] OnHeartbeatResponse 收到心跳响应");
+                    Logger.Log("[NetServerManager] OnHeartbeatResponse 收到心跳响应");
                     lastServerTime = response.serverTime;
                     isConnected = true;
                     missedHeartbeats = 0;
@@ -1002,7 +967,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
             },
             (error) =>
             {
-                Debug.LogWarning("[NetServerManager] 心跳请求失败: " + error);
+                Logger.LogWarning("[NetServerManager] 心跳请求失败: " + error);
                 isConnected = false;
             });
     }
@@ -1011,7 +976,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     {
         if (!CheckNetworkConnection())
             return;
-        Debug.Log("[NetServerManager] 处理添加物品请求: itemId=" + data.itemId + ", quantity=" + data.quantity);
+        Logger.Log("[NetServerManager] 处理添加物品请求: itemId=" + data.itemId + ", quantity=" + data.quantity);
 
         var requestData = new Dictionary<string, object>
         {
@@ -1025,7 +990,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     {
         if (!CheckNetworkConnection())
             return;
-        Debug.Log("[NetServerManager] 处理移除物品请求: itemId=" + data.itemId + ", quantity=" + data.quantity);
+        Logger.Log("[NetServerManager] 处理移除物品请求: itemId=" + data.itemId + ", quantity=" + data.quantity);
 
         var requestData = new Dictionary<string, object>
         {
@@ -1039,7 +1004,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     {
         if (!CheckNetworkConnection())
             return;
-        Debug.Log("[NetServerManager] 处理添加鱼请求: fishId=" + data.fishId + ", quantity=" + data.quantity);
+        Logger.Log("[NetServerManager] 处理添加鱼请求: fishId=" + data.fishId + ", quantity=" + data.quantity);
 
         var requestData = new Dictionary<string, object>
         {
@@ -1055,7 +1020,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
             return;
 
         var (itemIds, totalPrice) = data;
-        Debug.Log($"[NetServerManager] 处理售卖鱼请求: itemIds={string.Join(",", itemIds)}, totalPrice={totalPrice}");
+        Logger.Log($"[NetServerManager] 处理售卖鱼请求: itemIds={string.Join(",", itemIds)}, totalPrice={totalPrice}");
 
         var requestData = new Dictionary<string, object>
         {
@@ -1066,7 +1031,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         StartCoroutine(SendRequest<object>($"/api/player/fish-bag/{_currentPlayerId}/sell", requestData,
             (response) =>
             {
-                Debug.Log("[NetServerManager] 售卖鱼成功");
+                Logger.Log("[NetServerManager] 售卖鱼成功");
 
                 // ========== 修复：售卖成功后，重新从服务器获取最新数据 ==========
                 // 避免手动递减导致客户端与服务端数据不一致
@@ -1074,7 +1039,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
             },
             (error) =>
             {
-                Debug.LogWarning("[NetServerManager] 售卖鱼失败: " + error);
+                Logger.LogWarning("[NetServerManager] 售卖鱼失败: " + error);
                 UIManager.Instance?.ShowTip("售卖失败，请重试");
             }));
     }
@@ -1098,7 +1063,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 try
                 {
                     string json = request.downloadHandler.text;
-                    Debug.Log("[NetServerManager] 售卖后鱼篓数据响应: " + json);
+                    Logger.Log("[NetServerManager] 售卖后鱼篓数据响应: " + json);
                     var data = JsonUtility.FromJson<InventoryResponse>(json);
                     if (data != null && data.items != null)
                     {
@@ -1108,7 +1073,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                             fishInventory[item.key] = item.value;
                         }
                         int totalFish = fishInventory.Values.Sum();
-                        Debug.Log("[NetServerManager] 售卖后更新鱼篓: " + fishInventory.Count + " 种鱼，总数量: " + totalFish);
+                        Logger.Log("[NetServerManager] 售卖后更新鱼篓: " + fishInventory.Count + " 种鱼，总数量: " + totalFish);
 
                         // 更新鱼篓满状态
                         isFishBagFull = totalFish >= fishBagCapacity;
@@ -1116,12 +1081,12 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError("[NetServerManager] 售卖后解析鱼篓数据失败: " + ex.Message);
+                    Logger.LogError("[NetServerManager] 售卖后解析鱼篓数据失败: " + ex.Message);
                 }
             }
             else
             {
-                Debug.LogError("[NetServerManager] 售卖后获取鱼篓数据失败: " + request.error);
+                Logger.LogError("[NetServerManager] 售卖后获取鱼篓数据失败: " + request.error);
             }
         }
 
@@ -1140,17 +1105,17 @@ public class NetServerManager : SingletonMono<NetServerManager>
                     if (data != null)
                     {
                         playerGold = data.gold;
-                        Debug.Log("[NetServerManager] 售卖后更新金币: " + playerGold);
+                        Logger.Log("[NetServerManager] 售卖后更新金币: " + playerGold);
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError("[NetServerManager] 售卖后解析金币数据失败: " + ex.Message);
+                    Logger.LogError("[NetServerManager] 售卖后解析金币数据失败: " + ex.Message);
                 }
             }
             else
             {
-                Debug.LogError("[NetServerManager] 售卖后获取金币数据失败: " + request.error);
+                Logger.LogError("[NetServerManager] 售卖后获取金币数据失败: " + request.error);
             }
         }
 
@@ -1166,7 +1131,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         {
             PlayerDataManager.Instance.SyncInventoryFromServer();
             PlayerDataManager.Instance.SyncGoldFromServer();
-            Debug.Log("[NetServerManager] 售卖后已通知 PlayerDataManager 同步数据");
+            Logger.Log("[NetServerManager] 售卖后已通知 PlayerDataManager 同步数据");
         }
     }
 
@@ -1187,7 +1152,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 try
                 {
                     string json = request.downloadHandler.text;
-                    Debug.Log("[NetServerManager] 从服务器获取鱼篓数据: " + json);
+                    Logger.Log("[NetServerManager] 从服务器获取鱼篓数据: " + json);
                     var data = JsonUtility.FromJson<InventoryResponse>(json);
                     if (data != null && data.items != null)
                     {
@@ -1197,7 +1162,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                             fishInventory[item.key] = item.value;
                         }
                         int totalFish = fishInventory.Values.Sum();
-                        Debug.Log("[NetServerManager] 服务器鱼篓数据: " + fishInventory.Count + " 种鱼，总数量: " + totalFish);
+                        Logger.Log("[NetServerManager] 服务器鱼篓数据: " + fishInventory.Count + " 种鱼，总数量: " + totalFish);
 
                         // 更新鱼篓满状态
                         isFishBagFull = totalFish >= fishBagCapacity;
@@ -1205,12 +1170,12 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError("[NetServerManager] 解析服务器鱼篓数据失败: " + ex.Message);
+                    Logger.LogError("[NetServerManager] 解析服务器鱼篓数据失败: " + ex.Message);
                 }
             }
             else
             {
-                Debug.LogError("[NetServerManager] 获取服务器鱼篓数据失败: " + request.error);
+                Logger.LogError("[NetServerManager] 获取服务器鱼篓数据失败: " + request.error);
             }
         }
 
@@ -1248,7 +1213,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     {
         if (!isConnected)
         {
-            Debug.LogWarning("[NetServerManager] 未连接到服务器，无法钓鱼");
+            Logger.LogWarning("[NetServerManager] 未连接到服务器，无法钓鱼");
             yield break;
         }
 
@@ -1273,7 +1238,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
 
                     if (response != null && response.success)
                     {
-                        Debug.Log("[NetServerManager] 钓鱼成功: " + response.fishName + " (" + response.weight + "kg)");
+                        Logger.Log("[NetServerManager] 钓鱼成功: " + response.fishName + " (" + response.weight + "kg)");
 
                         int goldChange = response.goldBalance - playerGold;
                         playerGold = response.goldBalance;
@@ -1317,17 +1282,17 @@ public class NetServerManager : SingletonMono<NetServerManager>
                     }
                     else
                     {
-                        Debug.LogWarning("[NetServerManager] 钓鱼失败: " + (response?.message ?? "未知错误"));
+                        Logger.LogWarning("[NetServerManager] 钓鱼失败: " + (response?.message ?? "未知错误"));
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError("[NetServerManager] 解析钓鱼响应失败: " + ex.Message);
+                    Logger.LogError("[NetServerManager] 解析钓鱼响应失败: " + ex.Message);
                 }
             }
             else
             {
-                Debug.LogError("[NetServerManager] 钓鱼请求失败: " + request.error);
+                Logger.LogError("[NetServerManager] 钓鱼请求失败: " + request.error);
             }
         }
     }
@@ -1342,10 +1307,10 @@ public class NetServerManager : SingletonMono<NetServerManager>
     {
         if (isPlayingReelAnimation)
         {
-            Debug.Log("[NetServerManager] 正在播放 Reel 动画，忽略 Idle 请求");
+            Logger.Log("[NetServerManager] 正在播放 Reel 动画，忽略 Idle 请求");
             return;
         }
-        Debug.Log("[NetServerManager] 通知播放Idle动画");
+        Logger.Log("[NetServerManager] 通知播放Idle动画");
         PlayerAniManager.Instance?.PlayIdleAnimation();
     }
 
@@ -1353,10 +1318,10 @@ public class NetServerManager : SingletonMono<NetServerManager>
     {
         if (isPlayingReelAnimation)
         {
-            Debug.Log("[NetServerManager] 正在播放 Reel 动画，忽略 Lazy 请求");
+            Logger.Log("[NetServerManager] 正在播放 Reel 动画，忽略 Lazy 请求");
             return;
         }
-        Debug.Log("[NetServerManager] 通知播放Lazy动画");
+        Logger.Log("[NetServerManager] 通知播放Lazy动画");
         PlayerAniManager.Instance?.PlayLazyAnimation();
     }
 
@@ -1364,7 +1329,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     {
         if (isPlayingReelAnimation)
         {
-            Debug.Log("[NetServerManager] 已在播放 Reel 动画，忽略新请求");
+            Logger.Log("[NetServerManager] 已在播放 Reel 动画，忽略新请求");
             onComplete?.Invoke();
             return;
         }
@@ -1374,7 +1339,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         struggleStartTime = Time.time;
         currentStruggleTime = struggleTime;
 
-        Debug.Log($"[NetServerManager] 通知播放Reel动画，挣扎时间: {struggleTime}秒");
+        Logger.Log($"[NetServerManager] 通知播放Reel动画，挣扎时间: {struggleTime}秒");
 
         PlayerAniManager.Instance?.PlayReelAnimation(struggleTime, () =>
         {
@@ -1395,7 +1360,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
             if (UIManager.Instance?.fishBagView != null && UIManager.Instance.fishBagView.gameObject.activeSelf)
             {
                 UIManager.Instance.fishBagView.RefreshItems();
-                Debug.Log("[NetServerManager] 鱼篓界面已打开，强制刷新");
+                Logger.Log("[NetServerManager] 鱼篓界面已打开，强制刷新");
             }
 
             // 根据当前状态切换到正确的动画
@@ -1411,7 +1376,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     }
     public void NotifySyncInventoryFromServer()
     {
-        Debug.Log("[NetServerManager] 通知同步背包数据");
+        Logger.Log("[NetServerManager] 通知同步背包数据");
         if (PlayerDataManager.Instance != null)
         {
             PlayerDataManager.Instance.SyncInventoryFromServer();
@@ -1437,24 +1402,24 @@ public class NetServerManager : SingletonMono<NetServerManager>
         if (UIManager.Instance?.fishBagView != null)
         {
             UIManager.Instance.fishBagView.RefreshItems();
-            Debug.Log("[NetServerManager] 延迟刷新鱼篓UI完成");
+            Logger.Log("[NetServerManager] 延迟刷新鱼篓UI完成");
         }
     }
 
     public void NotifyAddFish(int fishId, int quantity)
     {
-        Debug.Log("[NetServerManager] 通知添加鱼: fishId=" + fishId + ", quantity=" + quantity);
+        Logger.Log("[NetServerManager] 通知添加鱼: fishId=" + fishId + ", quantity=" + quantity);
     }
 
     public void NotifyRefreshUI()
     {
-        Debug.Log("[NetServerManager] 通知刷新UI");
+        Logger.Log("[NetServerManager] 通知刷新UI");
         PlayerDataManager.Instance?.RefreshUI();
     }
 
     public void NotifyShowCatchResult(string itemName, float weight, Sprite icon)
     {
-        Debug.Log("[NetServerManager] 通知显示捕获结果: " + itemName);
+        Logger.Log("[NetServerManager] 通知显示捕获结果: " + itemName);
         UIManager.Instance?.ShowCatchResult(itemName, weight, icon);
     }
 
@@ -1466,7 +1431,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         if (catchInfo == null)
             return;
 
-        Debug.Log($"[NetServerManager] 显示钓获结果: {catchInfo.fishName}, 重量: {catchInfo.weight}kg");
+        Logger.Log($"[NetServerManager] 显示钓获结果: {catchInfo.fishName}, 重量: {catchInfo.weight}kg");
 
         // 获取物品图标
         Sprite icon = GetItemIcon(catchInfo.fishId);
@@ -1513,7 +1478,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         // 先检查鱼篓是否已满
         if (isFishBagFull)
         {
-            Debug.Log("[NetServerManager] 鱼篓已满，无法启动自动钓鱼");
+            Logger.Log("[NetServerManager] 鱼篓已满，无法启动自动钓鱼");
             NotifyPlayLazyAnimation();
             return;
         }
@@ -1538,11 +1503,11 @@ public class NetServerManager : SingletonMono<NetServerManager>
             if (response != null && response.success)
             {
                 isAutoFishing = true;
-                Debug.Log("[NetServerManager] 自动钓鱼已启动");
+                Logger.Log("[NetServerManager] 自动钓鱼已启动");
             }
             else
             {
-                Debug.LogWarning("[NetServerManager] 启动自动钓鱼失败: " + (response?.message ?? "未知错误"));
+                Logger.LogWarning("[NetServerManager] 启动自动钓鱼失败: " + (response?.message ?? "未知错误"));
             }
         }));
     }
@@ -1566,11 +1531,11 @@ public class NetServerManager : SingletonMono<NetServerManager>
             if (response != null && response.success)
             {
                 isAutoFishing = false;
-                Debug.Log("[NetServerManager] 自动钓鱼已停止");
+                Logger.Log("[NetServerManager] 自动钓鱼已停止");
             }
             else
             {
-                Debug.LogWarning("[NetServerManager] 停止自动钓鱼失败: " + (response?.message ?? "未知错误"));
+                Logger.LogWarning("[NetServerManager] 停止自动钓鱼失败: " + (response?.message ?? "未知错误"));
             }
         }));
     }
@@ -1635,7 +1600,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                                 lastCatchId = response.lastCatch.fishId;
                                 float struggleTime = response.lastCatch.struggleTime > 0 ? response.lastCatch.struggleTime : 1.5f;
 
-                                Debug.Log($"[NetServerManager] 检测到新钓获: {response.lastCatch.fishName} (ID:{response.lastCatch.fishId}), 重量:{response.lastCatch.weight}kg, 挣扎时间:{struggleTime}秒");
+                                Logger.Log($"[NetServerManager] 检测到新钓获: {response.lastCatch.fishName} (ID:{response.lastCatch.fishId}), 重量:{response.lastCatch.weight}kg, 挣扎时间:{struggleTime}秒");
 
                                 if (!isPlayingReelAnimation && !isFishBagFull)
                                 {
@@ -1660,7 +1625,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                                     // 播放拉钩动画
                                     NotifyPlayReelAnimation(struggleTime, () =>
                                     {
-                                        Debug.Log("[NetServerManager] Reel动画结束");
+                                        Logger.Log("[NetServerManager] Reel动画结束");
 
                                         // 显示MainTile
                                         if (pendingCatchInfo != null)
@@ -1682,7 +1647,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                                 currentStruggleTime = response.lastCatch.struggleTime;
                                 isPlayingReelAnimation = true;
 
-                                Debug.Log($"[NetServerManager] 恢复收竿动画状态，挣扎时间: {currentStruggleTime}秒");
+                                Logger.Log($"[NetServerManager] 恢复收竿动画状态，挣扎时间: {currentStruggleTime}秒");
 
                                 // 重新播放动画（如果需要）
                                 PlayerAniManager.Instance?.PlayReelAnimation(currentStruggleTime, () =>
@@ -1719,7 +1684,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                                 {
                                     if (!wasFull)
                                     {
-                                        Debug.Log("[NetServerManager] 鱼篓已满，切换到懒动画");
+                                        Logger.Log("[NetServerManager] 鱼篓已满，切换到懒动画");
                                         NotifyPlayLazyAnimation();
                                     }
                                 }
@@ -1727,7 +1692,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                                 {
                                     if (wasFull || wasPaused)
                                     {
-                                        Debug.Log("[NetServerManager] 鱼篓未满，切换到空闲动画");
+                                        Logger.Log("[NetServerManager] 鱼篓未满，切换到空闲动画");
                                         NotifyPlayIdleAnimation();
                                     }
                                 }
@@ -1771,7 +1736,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                                 nextFishingDisplay = "等待中";
                             }
 
-                            Debug.Log("[NetServerManager] 更新钓鱼状态: 自动钓鱼=" + isAutoFishing +
+                            Logger.Log("[NetServerManager] 更新钓鱼状态: 自动钓鱼=" + isAutoFishing +
                                      ", 停滞=" + isPaused + ", 鱼篓满=" + isFishBagFull +
                                      ", 垃圾连续=" + trashStreak + ", 鱼篓总数=" + GetTotalFishCount() +
                                      ", 下次钓鱼=" + nextFishingDisplay);
@@ -1779,12 +1744,12 @@ public class NetServerManager : SingletonMono<NetServerManager>
                     }
                     catch (System.Exception ex)
                     {
-                        Debug.LogError("[NetServerManager] 解析钓鱼状态失败: " + ex.Message);
+                        Logger.LogError("[NetServerManager] 解析钓鱼状态失败: " + ex.Message);
                     }
                 }
                 else
                 {
-                    Debug.LogWarning("[NetServerManager] 获取钓鱼状态失败: " + request.error);
+                    Logger.LogWarning("[NetServerManager] 获取钓鱼状态失败: " + request.error);
                 }
             }
         }
@@ -1801,7 +1766,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         missedHeartbeats = 0;
         StopHeartbeat();
 
-        Debug.Log("<color=orange>[NetServerManager] 尝试重新连接...</color>");
+        Logger.LogColor("[NetServerManager] 尝试重新连接...", "orange");
         StartConnect();
     }
 
@@ -1817,92 +1782,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         networkState = NetUtils.NetworkState.Disconnected;
         isConnected = false;
         isPlayingReelAnimation = false;
-        Debug.Log("<color=red>[NetServerManager] 已断开连接</color>");
+        Logger.LogColor("[NetServerManager] 已断开连接", "red");
     }
 
-    [System.Serializable]
-    private class HeartbeatResponse
-    {
-        public long serverTime;
-        public long clientTime;
-        public bool isConnected;
-    }
-
-    [System.Serializable]
-    private class HeartbeatRequest
-    {
-        public long clientTime;
-    }
-
-    [System.Serializable]
-    public class PlayerData
-    {
-        public int playerId;
-        public string nickname;
-        public int gold;
-        public int level;
-        public int experience;
-        public int currentSceneId;
-        public int maxFishBagCapacity;
-        public int FishBagCapacity => maxFishBagCapacity;
-    }
-
-    [System.Serializable]
-    public class FishingCatchResponse
-    {
-        public bool success;
-        public int fishId;
-        public string fishName;
-        public float weight;
-        public int goldEarned;
-        public int expEarned;
-        public int goldBalance;
-        public int expBalance;
-        public int durability;
-        public string message;
-        public bool isTrash;
-        public int trashStreak;
-        public float struggleTime;
-    }
-
-    [System.Serializable]
-    public class AutoFishingResponse
-    {
-        public bool success;
-        public string message;
-        public int catchCount;
-        public int totalGold;
-        public int totalExp;
-    }
-
-    [System.Serializable]
-    public class FishingStatusResponse
-    {
-        public bool success;
-        public int level;
-        public int gold;
-        public int diamonds;
-        public int exp;
-        public int durability;
-        public int todayFishCount;
-        public int comboCount;
-        public bool isAutoFishing;
-        public bool isPaused;
-        public int trashStreak;
-        public float continuousModeRemainingTime;
-        public float nextFishingTime;
-        public LastCatchInfo lastCatch;  // 新增：最近钓获信息
-    }
-
-    [System.Serializable]
-    public class LastCatchInfo
-    {
-        public int fishId;
-        public string fishName;
-        public float weight;
-        public int goldEarned;
-        public int expEarned;
-        public bool isTrash;
-        public float struggleTime;
-    }
 }
