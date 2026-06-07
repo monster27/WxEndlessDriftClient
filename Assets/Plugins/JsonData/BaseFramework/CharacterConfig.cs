@@ -48,6 +48,36 @@ public class CharacterConfig
     /// 整十级奖励的金币数
     /// </summary>
     public int tenLevelGoldReward;
+    
+    /// <summary>
+    /// 空闲动画列数
+    /// </summary>
+    public int idleColumns = 15;
+    
+    /// <summary>
+    /// 空闲动画速度
+    /// </summary>
+    public float idleSpeed = 15.0f;
+    
+    /// <summary>
+    /// 收杆动画列数
+    /// </summary>
+    public int reelColumns = 12;
+    
+    /// <summary>
+    /// 收杆动画速度
+    /// </summary>
+    public float reelSpeed = 20.0f;
+    
+    /// <summary>
+    /// 懒怠动画列数
+    /// </summary>
+    public int lazyColumns = 15;
+    
+    /// <summary>
+    /// 懒怠动画速度
+    /// </summary>
+    public float lazySpeed = 18.0f;
 }
 
 /// <summary>

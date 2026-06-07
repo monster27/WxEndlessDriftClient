@@ -8,7 +8,13 @@
             "maxLevel": 100,
             "skillIdAtLevel50": 3301,
             "skillIdAtLevel100": 3302,
-            "tenLevelGoldReward": 500
+            "tenLevelGoldReward": 500,
+            "idleColumns": 15,
+            "idleSpeed": 15.0,
+            "reelColumns": 12,
+            "reelSpeed": 20.0,
+            "lazyColumns": 15,
+            "lazySpeed": 18.0
         },
         {
             "id": 3402,
@@ -18,7 +24,13 @@
             "maxLevel": 100,
             "skillIdAtLevel50": 3303,
             "skillIdAtLevel100": 3304,
-            "tenLevelGoldReward": 1000
+            "tenLevelGoldReward": 1000,
+            "idleColumns": 10,
+            "idleSpeed": 15.0,
+            "reelColumns": 12,
+            "reelSpeed": 20.0,
+            "lazyColumns": 11,
+            "lazySpeed": 18.0
         }
     ]
 }

@@ -18,6 +18,9 @@ public class CharacterConfigEditor : EditorWindow
     // 使用EditorWindow的序列化字段来保存状态
     [SerializeField] private int deleteIndex = -1;
     [SerializeField] private bool needDelete = false;
+    
+    // 存储每个人物的折叠状态
+    [SerializeField] private Dictionary<int, bool> characterFoldStates = new Dictionary<int, bool>();
 
     [MenuItem("Tools/游戏内容/2.物品内部数据/3401_人物配置")]
     public static void ShowWindow()
@@ -149,12 +152,27 @@ public class CharacterConfigEditor : EditorWindow
     {
         CharacterConfig character = characterList[index];
 
+        // 获取或初始化折叠状态
+        if (!characterFoldStates.ContainsKey(index))
+        {
+            characterFoldStates[index] = false; // 默认展开
+        }
+        bool isFolded = characterFoldStates[index];
+
         // 使用GUILayout.BeginArea来隔离每个项目的布局
         EditorGUILayout.BeginVertical("box");
 
         // 标题行
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField($"人物 {index + 1}", EditorStyles.boldLabel);
+        
+        // 折叠/展开按钮
+        GUIContent foldIcon = new GUIContent(isFolded ? "▶" : "▼");
+        if (GUILayout.Button(foldIcon, GUILayout.Width(20), GUILayout.Height(20)))
+        {
+            characterFoldStates[index] = !isFolded;
+        }
+        
+        EditorGUILayout.LabelField($"人物 {index + 1}: {character.name} (ID: {character.id})", EditorStyles.boldLabel);
         GUILayout.FlexibleSpace();
 
         // 删除按钮 - 只设置标志，不执行实际删除
@@ -168,57 +186,88 @@ public class CharacterConfigEditor : EditorWindow
         GUI.backgroundColor = Color.white;
         EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.Space(5);
-
-        // 编辑区域
-        EditorGUI.indentLevel++;
-
-        // ID范围提示
-        EditorGUILayout.HelpBox($"人物ID范围: {CHARACTER_START_ID} - {CHARACTER_END_ID}", MessageType.Info);
-        
-        int newId = EditorGUILayout.IntField("人物ID", character.id);
-        if (newId != character.id)
+        // 根据折叠状态决定是否显示详细内容
+        if (!isFolded)
         {
-            // 验证ID范围
-            if (newId < CHARACTER_START_ID || newId > CHARACTER_END_ID)
+            EditorGUILayout.Space(5);
+
+            // 编辑区域
+            EditorGUI.indentLevel++;
+
+            // ID范围提示
+            EditorGUILayout.HelpBox($"人物ID范围: {CHARACTER_START_ID} - {CHARACTER_END_ID}", MessageType.Info);
+            
+            int newId = EditorGUILayout.IntField("人物ID", character.id);
+            if (newId != character.id)
             {
-                Debug.LogWarning($"ID {newId} 超出范围 {CHARACTER_START_ID}-{CHARACTER_END_ID}");
+                // 验证ID范围
+                if (newId < CHARACTER_START_ID || newId > CHARACTER_END_ID)
+                {
+                    Debug.LogWarning($"ID {newId} 超出范围 {CHARACTER_START_ID}-{CHARACTER_END_ID}");
+                }
+                else if (!IsIdDuplicate(newId, index))
+                {
+                    character.id = newId;
+                }
             }
-            else if (!IsIdDuplicate(newId, index))
+
+            character.name = EditorGUILayout.TextField("人物名称", character.name);
+
+            // 描述
+            EditorGUILayout.LabelField("人物描述");
+            character.description = EditorGUILayout.TextArea(character.description, GUILayout.Height(50));
+
+            // 图标路径
+            if (string.IsNullOrEmpty(character.iconPath))
             {
-                character.id = newId;
+                character.iconPath = $"Characters/{character.id}";
             }
+            character.iconPath = EditorGUILayout.TextField("图标路径", character.iconPath);
+
+            // 最大等级（固定100）
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("最大等级", GUILayout.Width(80));
+            EditorGUILayout.LabelField("100 (固定)", EditorStyles.label);
+            character.maxLevel = 100;
+            EditorGUILayout.EndHorizontal();
+
+            character.skillIdAtLevel50 = EditorGUILayout.IntField("50级技能ID", character.skillIdAtLevel50);
+            character.skillIdAtLevel100 = EditorGUILayout.IntField("100级技能ID", character.skillIdAtLevel100);
+            
+            // 每十级固定奖励配置
+            EditorGUILayout.Space(5);
+            EditorGUILayout.LabelField("奖励配置", EditorStyles.boldLabel);
+            character.tenLevelGoldReward = EditorGUILayout.IntField("每十级固定金币奖励", character.tenLevelGoldReward);
+            
+            // 动画参数配置
+            EditorGUILayout.Space(5);
+            EditorGUILayout.LabelField("动画参数配置", EditorStyles.boldLabel);
+            
+            // Idle动画（空闲状态）
+            EditorGUILayout.BeginVertical("box");
+            EditorGUILayout.LabelField("Idle - 空闲动画", EditorStyles.boldLabel);
+            character.idleColumns = EditorGUILayout.IntField("  图片列数（总帧数）", character.idleColumns);
+            character.idleSpeed = EditorGUILayout.FloatField("  播放速度（帧/秒）", character.idleSpeed);
+            EditorGUILayout.EndVertical();
+            
+            // Reel动画（收杆状态）
+            EditorGUILayout.Space(5);
+            EditorGUILayout.BeginVertical("box");
+            EditorGUILayout.LabelField("Reel - 收杆动画", EditorStyles.boldLabel);
+            character.reelColumns = EditorGUILayout.IntField("  图片列数（总帧数）", character.reelColumns);
+            character.reelSpeed = EditorGUILayout.FloatField("  播放速度（帧/秒）", character.reelSpeed);
+            EditorGUILayout.EndVertical();
+            
+            // Lazy动画（懒怠状态）
+            EditorGUILayout.Space(5);
+            EditorGUILayout.BeginVertical("box");
+            EditorGUILayout.LabelField("Lazy - 懒怠动画", EditorStyles.boldLabel);
+            character.lazyColumns = EditorGUILayout.IntField("  图片列数（总帧数）", character.lazyColumns);
+            character.lazySpeed = EditorGUILayout.FloatField("  播放速度（帧/秒）", character.lazySpeed);
+            EditorGUILayout.EndVertical();
+            
+            EditorGUI.indentLevel--;
         }
-
-        character.name = EditorGUILayout.TextField("人物名称", character.name);
-
-        // 描述
-        EditorGUILayout.LabelField("人物描述");
-        character.description = EditorGUILayout.TextArea(character.description, GUILayout.Height(50));
-
-        // 图标路径
-        if (string.IsNullOrEmpty(character.iconPath))
-        {
-            character.iconPath = $"Characters/{character.id}";
-        }
-        character.iconPath = EditorGUILayout.TextField("图标路径", character.iconPath);
-
-        // 最大等级（固定100）
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("最大等级", GUILayout.Width(80));
-        EditorGUILayout.LabelField("100 (固定)", EditorStyles.label);
-        character.maxLevel = 100;
-        EditorGUILayout.EndHorizontal();
-
-        character.skillIdAtLevel50 = EditorGUILayout.IntField("50级技能ID", character.skillIdAtLevel50);
-        character.skillIdAtLevel100 = EditorGUILayout.IntField("100级技能ID", character.skillIdAtLevel100);
-        
-        // 每十级固定奖励配置
-        EditorGUILayout.Space(5);
-        EditorGUILayout.LabelField("奖励配置", EditorStyles.boldLabel);
-        character.tenLevelGoldReward = EditorGUILayout.IntField("每十级固定金币奖励", character.tenLevelGoldReward);
-        
-        EditorGUI.indentLevel--;
 
         EditorGUILayout.EndVertical();
     }
@@ -236,7 +285,14 @@ public class CharacterConfigEditor : EditorWindow
             maxLevel = 100,
             skillIdAtLevel50 = 0,
             skillIdAtLevel100 = 0,
-            tenLevelGoldReward = 500
+            tenLevelGoldReward = 500,
+            // 默认动画参数
+            idleColumns = 15,
+            idleSpeed = 15.0f,
+            reelColumns = 12,
+            reelSpeed = 20.0f,
+            lazyColumns = 15,
+            lazySpeed = 18.0f
         };
 
         characterList.Add(newCharacter);

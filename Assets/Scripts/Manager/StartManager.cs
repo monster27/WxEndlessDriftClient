@@ -103,8 +103,17 @@ public class StartManager : MonoBehaviour
                     
                     ShowStatus(response.isNewUser ? "注册成功!" : "登录成功!", false);
                     
+                    // 如果是新用户，初始化基础装备和人物
+                    if (response.isNewUser)
+                    {
+                        Debug.Log($"[StartManager] 检测到新用户，开始初始化基础装备和人物...");
+                        // 等待一小段时间确保NetServerManager已初始化
+                        yield return new WaitForSeconds(0.2f);
+                        StartCoroutine(InitializeNewPlayer(response.playerId));
+                    }
+                    
                     // 延迟加载游戏场景
-                    yield return new WaitForSeconds(0.5f);
+                    yield return new WaitForSeconds(response.isNewUser ? 1.5f : 0.5f);
                     LoadGameScene();
                 }
                 else if (parseSuccess && response != null)
@@ -137,7 +146,64 @@ public class StartManager : MonoBehaviour
         Debug.Log("加载游戏场景: " + gameSceneName);
         SceneManager.LoadScene(gameSceneName);
     }
-
+    
+    /// <summary>
+    /// 初始化新玩家 - 添加基础装备和人物
+    /// </summary>
+    private IEnumerator InitializeNewPlayer(int playerId)
+    {
+        Debug.Log($"[StartManager] 开始初始化新玩家: playerId={playerId}");
+        
+        // 调用服务器的初始化API
+        string url = "http://localhost:5000/api/player/init";
+        string jsonData = $"{{\"playerId\":{playerId}}}";
+        
+        using (UnityEngine.Networking.UnityWebRequest request = UnityEngine.Networking.UnityWebRequest.Post(url, jsonData, "application/json"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UnityEngine.Networking.UploadHandlerRaw(bodyRaw);
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+            
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
+            {
+                string responseText = request.downloadHandler.text;
+                Debug.Log($"[StartManager] 新玩家初始化响应: {responseText}");
+                
+                try
+                {
+                    var initResponse = JsonUtility.FromJson<InitResponse>(responseText);
+                    if (initResponse != null && initResponse.success)
+                    {
+                        Debug.Log($"[StartManager] 新玩家初始化成功！已添加：基础钓竿、钓钩、钓线、人物3401");
+                        ShowStatus("基础装备已发放！", false);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[StartManager] 新玩家初始化失败: {initResponse?.message ?? "未知错误"}");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError($"[StartManager] 解析初始化响应失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Debug.LogError($"[StartManager] 新玩家初始化请求失败: {request.error}");
+            }
+        }
+    }
+    
+    [System.Serializable]
+    private class InitResponse
+    {
+        public bool success;
+        public string message;
+    }
+    
     [System.Serializable]
     private class LoginResponse
     {

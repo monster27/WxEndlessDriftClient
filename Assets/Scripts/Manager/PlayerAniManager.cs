@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using SharedModels;
 
 public class PlayerAniManager : SingletonMono<PlayerAniManager>
 {
@@ -15,7 +16,6 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
     private int currentCharacterId = 0;
 
     private const string ANI_PATH_PREFIX = "JsonData/PlayerAni/Ani/";
-    private const string ANI_PARAMS_PATH = "JsonData/PlayerAni/ani_params";
 
     public void Init()
     {
@@ -31,7 +31,6 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
                 }
             }
         }
-        LoadAnimationParams();
         PreloadAllCharacterAnimations();
 
         if (aniCtrl != null && characterAniDict.Count > 0)
@@ -40,44 +39,6 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
         }
 
         Debug.Log("[PlayerAniManager] 初始化完成，已预加载 " + characterAniDict.Count + " 个人物的动画资源");
-    }
-
-    private void LoadAnimationParams()
-    {
-        TextAsset paramsAsset = Resources.Load<TextAsset>(ANI_PARAMS_PATH);
-        if (paramsAsset == null)
-        {
-            Debug.LogWarning("[PlayerAniManager] 动画参数配置文件加载失败: " + ANI_PARAMS_PATH);
-            return;
-        }
-
-        try
-        {
-            AnimationParamsConfig config = JsonUtility.FromJson<AnimationParamsConfig>(paramsAsset.text);
-            if (config != null && config.characterAnimations != null)
-            {
-                foreach (var animParam in config.characterAnimations)
-                {
-                    if (!characterAniDict.ContainsKey(animParam.characterId))
-                    {
-                        characterAniDict[animParam.characterId] = new CharacterAniData();
-                    }
-                    characterAniDict[animParam.characterId].characterId = animParam.characterId;
-                    characterAniDict[animParam.characterId].idleColumns = animParam.idleColumns;
-                    characterAniDict[animParam.characterId].idleSpeed = animParam.idleSpeed;
-                    characterAniDict[animParam.characterId].reelColumns = animParam.reelColumns;
-                    characterAniDict[animParam.characterId].reelSpeed = animParam.reelSpeed;
-                    characterAniDict[animParam.characterId].lazyColumns = animParam.lazyColumns;
-                    characterAniDict[animParam.characterId].lazySpeed = animParam.lazySpeed;
-                    Debug.Log($"[PlayerAniManager] 加载人物 {animParam.characterId} 动画参数成功 - idle: {animParam.idleColumns}x{animParam.idleSpeed}, reel: {animParam.reelColumns}x{animParam.reelSpeed}, lazy: {animParam.lazyColumns}x{animParam.lazySpeed}");
-                }
-            }
-            Debug.Log("[PlayerAniManager] 动画参数配置文件加载完成");
-        }
-        catch (Exception e)
-        {
-            Debug.LogError("[PlayerAniManager] 解析动画参数配置文件失败: " + e.Message);
-        }
     }
 
     private void PreloadAllCharacterAnimations()
@@ -136,6 +97,18 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
             characterAniDict[characterId] = aniData;
         }
 
+        CharacterConfig characterConfig = GetCharacterConfig(characterId);
+        if (characterConfig != null)
+        {
+            aniData.idleColumns = characterConfig.idleColumns;
+            aniData.idleSpeed = characterConfig.idleSpeed;
+            aniData.reelColumns = characterConfig.reelColumns;
+            aniData.reelSpeed = characterConfig.reelSpeed;
+            aniData.lazyColumns = characterConfig.lazyColumns;
+            aniData.lazySpeed = characterConfig.lazySpeed;
+            Debug.Log($"[PlayerAniManager] 从人物配置加载动画参数 - characterId: {characterId}, idle: {aniData.idleColumns}x{aniData.idleSpeed}, reel: {aniData.reelColumns}x{aniData.reelSpeed}, lazy: {aniData.lazyColumns}x{aniData.lazySpeed}");
+        }
+
         string basePath = ANI_PATH_PREFIX + characterId;
 
         Texture2D idleTex = Resources.Load<Texture2D>(basePath + "/Idle");
@@ -171,6 +144,22 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
         {
             Debug.LogWarning($"[PlayerAniManager] 人物 {characterId} Reel 动画加载失败: {basePath}/Reel");
         }
+    }
+
+    private CharacterConfig GetCharacterConfig(int characterId)
+    {
+        if (LoadDataManager.Instance != null)
+        {
+            return LoadDataManager.Instance.GetCharacterConfig(characterId);
+        }
+        
+        CharacterConfigList configList = CharacterConfigList.LoadFromResources();
+        if (configList != null && configList.characters != null)
+        {
+            return configList.characters.Find(c => c.id == characterId);
+        }
+        
+        return null;
     }
 
     public void SwitchCharacter(int characterId)
@@ -337,20 +326,3 @@ public class CharacterAniData
     public float lazySpeed = 18f;
 }
 
-[System.Serializable]
-public class AnimationParamsConfig
-{
-    public List<CharacterAnimationParams> characterAnimations;
-}
-
-[System.Serializable]
-public class CharacterAnimationParams
-{
-    public int characterId;
-    public int idleColumns;
-    public float idleSpeed;
-    public int reelColumns;
-    public float reelSpeed;
-    public int lazyColumns;
-    public float lazySpeed;
-}

@@ -777,6 +777,15 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         return null;
     }
 
+    public CharacterConfig GetCharacterConfig(int id)
+    {
+        foreach (var item in characters)
+        {
+            if (item.id == id) return item;
+        }
+        return null;
+    }
+
     public string GetComponentName(int id)
     {
         FishingComponentConfig component = GetComponentById(id);

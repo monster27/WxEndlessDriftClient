@@ -562,6 +562,13 @@ public class NetServerManager : SingletonMono<NetServerManager>
                     {
                         Logger.Log($"[NetServerManager] 装备成功: slotType={slotType}, itemId={itemId}");
                         
+                        // 如果是人物装备，立即同步人物数据
+                        if (slotType == (int)EquipmentSlotType.Character)
+                        {
+                            Logger.Log($"[NetServerManager] 检测到人物装备，立即同步人物数据...");
+                            StartCoroutine(SyncCharacterDataAfterEquip(itemId));
+                        }
+                        
                         // 触发装备变更事件，通知UI刷新
                         CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, (slotType, itemId));
                     }
@@ -675,7 +682,72 @@ public class NetServerManager : SingletonMono<NetServerManager>
             return 100;
         return 100; // 满级后返回默认值
     }
-
+    
+    /// <summary>
+    /// 装备成功后同步人物数据
+    /// </summary>
+    private IEnumerator SyncCharacterDataAfterEquip(int expectedCharacterId)
+    {
+        // 等待一小段时间，确保服务器数据已更新
+        yield return new WaitForSeconds(0.3f);
+        
+        string url = $"/api/player/character/{_currentPlayerId}";
+        Logger.Log($"[NetServerManager] 正在从服务器获取人物数据: {url}");
+        
+        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + url))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    Logger.Log($"[NetServerManager] 人物数据响应: {json}");
+                    var response = JsonUtility.FromJson<CharacterSyncResponse>(json);
+                    
+                    if (response != null)
+                    {
+                        // 更新本地人物数据
+                        equippedCharacterId = response.characterId;
+                        characterLevel = response.level > 0 ? response.level : 1;
+                        currentCharacterExp = response.exp;
+                        
+                        Logger.Log($"[NetServerManager] 装备后人物数据同步完成: CharacterId={equippedCharacterId}, Level={characterLevel}, Exp={currentCharacterExp}");
+                        
+                        // 计算升级所需经验
+                        int requiredExp = GetExpToNextLevel();
+                        
+                        // 触发人物数据更新事件，通知UI刷新
+                        CommunicateEvent.Modify<(int, int, int)>(CommunicateEvent.EVENT_CHARACTER_DATA_CHANGED, (characterLevel, currentCharacterExp, requiredExp));
+                        
+                        // 如果获取到的人物ID与预期不符，记录警告
+                        if (response.characterId != expectedCharacterId)
+                        {
+                            Logger.LogWarning($"[NetServerManager] 警告：获取到的人物ID({response.characterId})与预期({expectedCharacterId})不符！");
+                        }
+                        
+                        // 切换人物动画
+                        if (PlayerAniManager.Instance != null && equippedCharacterId > 0)
+                        {
+                            Logger.Log($"[NetServerManager] 切换人物动画: characterId={equippedCharacterId}");
+                            PlayerAniManager.Instance.SwitchCharacter(equippedCharacterId);
+                        }
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析人物数据失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 获取人物数据失败: {request.error}");
+            }
+        }
+    }
+    
     /// <summary>
     /// 检查人物是否已获取（从背包数据判断）
     /// </summary>
@@ -992,7 +1064,13 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 Logger.LogError("[NetServerManager] 获取人物数据失败: " + request.error);
             }
         }
-
+        
+        // ========== 检查并添加基础人物3401 ==========
+        // 等待一小段时间确保所有数据加载完成
+        yield return new WaitForSeconds(0.2f);
+        yield return StartCoroutine(EnsureBasicCharacter());
+        // ========== 检查结束 ==========
+        
         // ========== 关键修复：同步数据到 PlayerDataManager ==========
         // 所有数据获取完成后，通知 PlayerDataManager 同步
         if (PlayerDataManager.Instance != null)
@@ -1033,7 +1111,174 @@ public class NetServerManager : SingletonMono<NetServerManager>
         }
         return total;
     }
-
+    
+    /// <summary>
+    /// 确保玩家拥有基础人物3401
+    /// 如果没有，则添加基础人物并装备
+    /// </summary>
+    private IEnumerator EnsureBasicCharacter()
+    {
+        Logger.Log("[NetServerManager] 开始检查玩家是否拥有基础人物3401...");
+        
+        // 检查玩家背包中是否有人物3401
+        // 人物ID范围是 3401-3500
+        if (playerInventory != null && playerInventory.ContainsKey(3401))
+        {
+            Logger.Log($"[NetServerManager] 玩家已拥有基础人物3401，数量: {playerInventory[3401]}");
+        }
+        else
+        {
+            Logger.LogWarning("[NetServerManager] 玩家未拥有基础人物3401，正在添加...");
+            
+            // 添加基础人物3401到背包
+            yield return StartCoroutine(AddCharacterToInventory(3401));
+        }
+        
+        // ========== 关键修复：同时添加到PlayerCharacter表 ==========
+        // 添加人物到PlayerCharacter表（人物等级系统），确保CharacterServerManager能找到记录
+        yield return StartCoroutine(AddCharacterToPlayerCharacter(3401));
+        // ========== 修复结束 ==========
+        
+        // 检查当前装备的人物是否是有效的
+        if (equippedCharacterId < 3401 || equippedCharacterId > 3500)
+        {
+            Logger.LogWarning($"[NetServerManager] 当前装备的人物ID({equippedCharacterId})无效，正在装备基础人物3401...");
+            
+            // 如果没有装备有效的人物，装备3401
+            yield return StartCoroutine(SendEquipRequest((int)EquipmentSlotType.Character, 3401));
+        }
+        else
+        {
+            Logger.Log($"[NetServerManager] 当前装备的人物ID有效: {equippedCharacterId}");
+        }
+        
+        Logger.Log("[NetServerManager] 基础人物检查完成");
+    }
+    
+    /// <summary>
+    /// 添加人物到玩家背包
+    /// </summary>
+    private IEnumerator AddCharacterToInventory(int characterId)
+    {
+        string url = serverUrl + "/api/player/inventory/add";
+        string jsonData = $"{{\"playerId\":{_currentPlayerId},\"itemId\":{characterId},\"quantity\":1}}";
+        
+        Logger.Log($"[NetServerManager] 添加人物到背包: {jsonData}");
+        
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+            
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string responseText = request.downloadHandler.text;
+                Logger.Log($"[NetServerManager] 添加人物响应: {responseText}");
+                
+                try
+                {
+                    var response = JsonUtility.FromJson<AddItemResponse>(responseText);
+                    if (response != null && response.success)
+                    {
+                        Logger.Log($"[NetServerManager] 成功添加人物 {characterId} 到背包");
+                        
+                        // 更新本地背包数据
+                        if (playerInventory.ContainsKey(characterId))
+                        {
+                            playerInventory[characterId] += 1;
+                        }
+                        else
+                        {
+                            playerInventory[characterId] = 1;
+                        }
+                        
+                        // 通知背包数据更新
+                        if (PlayerDataManager.Instance != null)
+                        {
+                            PlayerDataManager.Instance.SyncInventoryFromServer();
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"[NetServerManager] 添加人物失败: {response?.message ?? "未知错误"}");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析添加人物响应失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 添加人物请求失败: {request.error}");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 添加物品响应
+    /// </summary>
+    [System.Serializable]
+    private class AddItemResponse
+    {
+        public bool success;
+        public string message;
+    }
+    
+    /// <summary>
+    /// 添加人物到PlayerCharacter表（人物等级系统）
+    /// </summary>
+    private IEnumerator AddCharacterToPlayerCharacter(int characterId)
+    {
+        string url = serverUrl + "/api/player/character/add";
+        string jsonData = $"{{\"playerId\":{_currentPlayerId},\"characterId\":{characterId}}}";
+        
+        Logger.Log($"[NetServerManager] 添加人物到PlayerCharacter表: {jsonData}");
+        
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+            
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string responseText = request.downloadHandler.text;
+                Logger.Log($"[NetServerManager] 添加人物到PlayerCharacter响应: {responseText}");
+                
+                try
+                {
+                    var response = JsonUtility.FromJson<AddItemResponse>(responseText);
+                    if (response != null && response.success)
+                    {
+                        Logger.Log($"[NetServerManager] 成功添加人物 {characterId} 到PlayerCharacter表");
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"[NetServerManager] 添加人物到PlayerCharacter失败: {response?.message ?? "未知错误"}");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析添加人物到PlayerCharacter响应失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 添加人物到PlayerCharacter请求失败: {request.error}");
+            }
+        }
+    }
+    
     private void AutoStartFishing()
     {
         try
