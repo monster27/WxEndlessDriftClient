@@ -25,6 +25,7 @@ public class UI_MallPrefab : MonoBehaviour
 
     private void OnItemClick()
     {
+        Debug.Log($"[UI_MallPrefab] OnItemClick - itemId={itemId}");
         CommunicateEvent.Modify("Mall_ItemClicked", itemId);
     }
 

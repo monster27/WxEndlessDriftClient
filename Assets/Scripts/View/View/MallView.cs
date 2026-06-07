@@ -54,11 +54,13 @@ public class MallView : MonoBehaviour
 
     private void OnMaskClick()
     {
+        Debug.Log("[MallView] OnMaskClick - 点击遮罩关闭");
         CloseMall();
     }
 
     private void OnMallItemClicked(int itemId)
     {
+        Debug.Log($"[MallView] OnMallItemClicked - itemId={itemId}");
         if (mallItemDetailView != null)
         {
             ItemData itemData = null;
@@ -96,6 +98,7 @@ public class MallView : MonoBehaviour
 
     public void CloseMall()
     {
+        Debug.Log("[MallView] CloseMall - 关闭商城");
         gameObject.SetActive(false);
         CommunicateEvent.Modify("Mall_Close");
     }

@@ -382,16 +382,19 @@ public class MainEquipmentView : MonoBehaviour
 
     private void OnFishingRodClick()
     {
+        Debug.Log("[MainEquipmentView] OnFishingRodClick - 点击钓竿按钮");
         callback?.Invoke("OpenFishingRod", null);
     }
 
     private void OnFishingLineClick()
     {
+        Debug.Log("[MainEquipmentView] OnFishingLineClick - 点击钓线按钮");
         callback?.Invoke("OpenFishingLine", null);
     }
 
     private void OnFishingHookClick()
     {
+        Debug.Log("[MainEquipmentView] OnFishingHookClick - 点击钓钩按钮");
         callback?.Invoke("OpenFishingHook", null);
     }
 
@@ -408,11 +411,13 @@ public class MainEquipmentView : MonoBehaviour
                 }
             }
         }
+        Debug.Log($"[MainEquipmentView] OnSkillClick - 点击技能按钮, skillSlot={skillSlot}");
         callback?.Invoke("OpenSkill", new object[] { skillSlot });
     }
 
     private void OnCharacterClick()
     {
+        Debug.Log("[MainEquipmentView] OnCharacterClick - 点击人物按钮");
         callback?.Invoke("OpenCharacter", null);
     }
 }

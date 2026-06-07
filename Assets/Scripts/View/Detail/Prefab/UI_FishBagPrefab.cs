@@ -146,11 +146,12 @@ namespace View.Detail
         }
 
         private void OnSelectButtonClick()
+    {
+        Debug.Log($"[UI_FishBagPrefab] OnSelectButtonClick - itemId={itemId}, isSelected={isSelected}");
+        if (isNewCatch)
         {
-            if (isNewCatch)
-            {
-                UpdateNewCatchStatus(false);
-            }
+            UpdateNewCatchStatus(false);
+        }
 
             isSelected = !isSelected;
             UpdateSelectedVisual();

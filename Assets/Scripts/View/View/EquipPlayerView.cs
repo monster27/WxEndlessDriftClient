@@ -620,16 +620,19 @@ public class EquipPlayerView : MonoBehaviour
 
     private void OnMaskClick()
     {
+        Debug.Log("[EquipPlayerView] OnMaskClick - 点击遮罩返回");
         callback?.Invoke("Back", null);
     }
 
     private void OnCloseClick()
     {
+        Debug.Log("[EquipPlayerView] OnCloseClick - 点击关闭按钮返回");
         callback?.Invoke("Back", null);
     }
 
     private void OnLeftClick()
     {
+        Debug.Log("[EquipPlayerView] OnLeftClick - 点击左箭头切换人物");
         if (characterIds.Count <= 1) return;
 
         currentIndex--;
@@ -642,6 +645,7 @@ public class EquipPlayerView : MonoBehaviour
 
     private void OnRightClick()
     {
+        Debug.Log("[EquipPlayerView] OnRightClick - 点击右箭头切换人物");
         if (characterIds.Count <= 1) return;
 
         currentIndex++;
@@ -654,6 +658,7 @@ public class EquipPlayerView : MonoBehaviour
 
     private void OnSkill1UnlockClick()
     {
+        Debug.Log("[EquipPlayerView] OnSkill1UnlockClick - 点击解锁技能1");
         var characterConfig = CharacterConfigList.LoadFromResources();
         if (characterConfig != null)
         {
@@ -674,6 +679,7 @@ public class EquipPlayerView : MonoBehaviour
 
     private void OnSkill2UnlockClick()
     {
+        Debug.Log("[EquipPlayerView] OnSkill2UnlockClick - 点击解锁技能2");
         var characterConfig = CharacterConfigList.LoadFromResources();
         if (characterConfig != null)
         {

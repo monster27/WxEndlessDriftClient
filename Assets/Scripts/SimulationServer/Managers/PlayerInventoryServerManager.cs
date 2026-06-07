@@ -29,6 +29,11 @@ public enum EquipmentSlotType
 /// </summary>
 public class PlayerInventoryServerManager
 {
+    /// <summary>
+    /// 单例实例
+    /// </summary>
+    public static PlayerInventoryServerManager Instance { get; private set; }
+    
     private Dictionary<int, int> playerInventory = new Dictionary<int, int>();  // 玩家背包
     private Dictionary<int, int> fishInventory = new Dictionary<int, int>();    // 鱼篓数据
     private int fishBagCapacity = 20;  // 鱼篓容量
@@ -62,6 +67,9 @@ public class PlayerInventoryServerManager
     /// </summary>
     public void Initialize()
     {
+        // 设置单例实例
+        Instance = this;
+        
         InitInventory();
         InitEquipmentSlots();
         EquipStarterGear();  // 装备新手初始物品
@@ -85,6 +93,9 @@ public class PlayerInventoryServerManager
         // 注册View层发送的请求事件
         CommunicateEvent.Register<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_ITEM, OnEquipItemRequest);
         CommunicateEvent.Register<int>(CommunicateEvent.EVENT_EQUIP_BAIT, OnEquipBaitRequest);
+        
+        // 注册人物列表同步事件（从NetServerManager接收）
+        CommunicateEvent.Register<List<int>>("SyncUnlockedCharacters", OnSyncUnlockedCharacters);
 
         Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] 广告事件监听器注册完成</color>");
     }
@@ -99,19 +110,30 @@ public class PlayerInventoryServerManager
 
         Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnSkillUnlockByAd 开始 - skillId={0}</color>", skillId);
 
-        if (skillObtainStatus == null)
-        {
-            Debug.LogErrorFormat("<color=orange>[PlayerInventoryServerManager] OnSkillUnlockByAd - skillObtainStatus 为 null</color>");
-            return;
-        }
+        // 调用服务器API解锁技能
+        NetServerManager.Instance.UnlockSkill(skillId, (success) => {
+            if (success)
+            {
+                Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] 服务器技能解锁成功 - skillId={0}</color>", skillId);
+                
+                // 更新本地技能状态
+                SetSkillObtainStatus(skillId, FishingComponentObtainStatus.Obtained);
+                SetComponentLevel(skillId, 1);
+                
+                // 从服务器同步背包数据（服务器已添加物品）
+                RefreshInventoryData();
 
-        SetSkillObtainStatus(skillId, FishingComponentObtainStatus.Obtained);
-        SetComponentLevel(skillId, 1);
-
-        // 验证结果
-        var status = GetSkillObtainStatus(skillId);
-        var level = GetComponentLevel(skillId);
-        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnSkillUnlockByAd 完成 - skillId={0}, status={1}, level={2}</color>", skillId, status, level);
+                // 验证结果
+                var status = GetSkillObtainStatus(skillId);
+                var level = GetComponentLevel(skillId);
+                int count = playerInventory.ContainsKey(skillId) ? playerInventory[skillId] : 0;
+                Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnSkillUnlockByAd 完成 - skillId={0}, status={1}, level={2}, 数量={3}</color>", skillId, status, level, count);
+            }
+            else
+            {
+                Debug.LogErrorFormat("<color=orange>[PlayerInventoryServerManager] 服务器技能解锁失败 - skillId={0}</color>", skillId);
+            }
+        });
     }
 
     /// <summary>
@@ -260,30 +282,61 @@ public class PlayerInventoryServerManager
         if (!CheckServerConnection())
             return;
 
-        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipUnlock 开始 - equipId={0}</color>", equipId);
+        Debug.LogFormat("<color=cyan>[装备状态] ========== 开始解锁操作 ========== ItemId={0}</color>", equipId);
 
-        // 添加装备到背包
-        playerInventory[equipId] = 1;  // 使用 [] 而不是 Add，确保覆盖
-        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipUnlock - 已添加到背包, playerInventory[{0}] = 1</color>", equipId);
-
-        // 设置装备等级为1
-        SetComponentLevel(equipId, 1);
-        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipUnlock - 已设置等级, level=1</color>");
-
-        // 如果是人物，设置获取状态（不自动装备，玩家需要点击装备按钮）
+        // 如果是人物，调用服务器API解锁（类似于技能解锁）
         if (equipId >= 3401 && equipId <= 3499)
         {
-            Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipUnlock - 检测到人物解锁, equipId={0}</color>", equipId);
+            Debug.LogFormat("<color=cyan>[装备状态] 检测到人物解锁请求: ItemId={0}, 当前状态=未拥有</color>", equipId);
 
-            characterObtainStatus[equipId] = true;
+            // 调用服务器API解锁人物
+            if (NetServerManager.Instance != null)
+            {
+                NetServerManager.Instance.UnlockCharacter(equipId, (success) => {
+                    if (success)
+                    {
+                        Debug.LogFormat("<color=cyan>[装备状态] 状态变化: ItemId={0}, 从[未拥有]变为[已拥有未装备], 操作=服务器解锁成功</color>", equipId);
+                        
+                        // 更新本地状态
+                        characterObtainStatus[equipId] = true;
+                        SetComponentLevel(equipId, 1);
+                        
+                        // 从服务器同步数据
+                        RefreshInventoryData();
+                        
+                        Debug.LogFormat("<color=cyan>[装备状态] ========== 人物解锁操作完成 ========== ItemId={0}, 状态=已拥有未装备</color>", equipId);
+                    }
+                    else
+                    {
+                        Debug.LogErrorFormat("<color=orange>[PlayerInventoryServerManager] 服务器人物解锁失败 - equipId={0}</color>", equipId);
+                    }
+                });
+            }
+            else
+            {
+                // 离线模式，直接本地处理
+                playerInventory[equipId] = 1;
+                SetComponentLevel(equipId, 1);
+                characterObtainStatus[equipId] = true;
+                Debug.LogFormat("<color=cyan>[装备状态] 状态变化: ItemId={0}, 从[未拥有]变为[已拥有未装备], 操作=离线模式本地解锁</color>", equipId);
+                Debug.LogFormat("<color=cyan>[装备状态] ========== 人物解锁操作完成 ========== ItemId={0}, 状态=已拥有未装备</color>", equipId);
+            }
+        }
+        else
+        {
+            // 非人物装备，添加到背包
+            playerInventory[equipId] = 1;
+            Debug.LogFormat("<color=cyan>[装备状态] 状态变化: ItemId={0}, 从[未拥有]变为[已拥有未装备], 操作=添加到背包</color>", equipId);
 
-            Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] 人物 {0} 已解锁，等待玩家点击装备按钮</color>", equipId);
+            // 设置装备等级为1
+            SetComponentLevel(equipId, 1);
+            Debug.LogFormat("<color=cyan>[装备状态] ========== 装备解锁操作完成 ========== ItemId={0}, 状态=已拥有未装备, 等级=1</color>", equipId);
         }
 
         // 验证结果
         int count = playerInventory.ContainsKey(equipId) ? playerInventory[equipId] : 0;
         int level = GetComponentLevel(equipId);
-        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] OnEquipUnlock 完成 - equipId={0}, 数量={1}, 等级={2}</color>", equipId, count, level);
+        Debug.LogFormat("<color=cyan>[装备状态] 最终状态验证: ItemId={0}, 数量={1}, 等级={2}</color>", equipId, count, level);
     }
 
     /// <summary>
@@ -646,18 +699,84 @@ public class PlayerInventoryServerManager
 
     /// <summary>
     /// 检查人物是否已获取（解锁）
+    /// 优先检查 characterObtainStatus，如果没有则检查背包数据
     /// </summary>
     /// <param name="characterId">人物ID</param>
     /// <returns>是否已获取</returns>
     public bool IsCharacterObtained(int characterId)
     {
+        // 首先检查 characterObtainStatus 字典（主要来源）
         if (characterObtainStatus.TryGetValue(characterId, out bool obtained))
         {
+            Debug.LogFormat("<color=cyan>[装备状态] 检查人物获取状态: CharacterId={0}, 状态={1}（来自characterObtainStatus）</color>", characterId, obtained ? "已拥有" : "未拥有");
             return obtained;
         }
+        
+        // 如果字典中没有，检查背包中是否有人物（说明已获取）
+        if (playerInventory.ContainsKey(characterId) && playerInventory[characterId] > 0)
+        {
+            Debug.LogFormat("<color=cyan>[装备状态] 检查人物获取状态: CharacterId={0}, 状态=已拥有（来自背包数据，数量={1}）</color>", characterId, playerInventory[characterId]);
+            return true;
+        }
+        
+        // 默认人物3401始终视为已获取
+        if (characterId == 3401)
+        {
+            Debug.LogFormat("<color=cyan>[装备状态] 检查人物获取状态: CharacterId={0}, 状态=已拥有（默认人物）</color>", characterId);
+            return true;
+        }
+        
+        Debug.LogFormat("<color=cyan>[装备状态] 检查人物获取状态: CharacterId={0}, 状态=未拥有</color>", characterId);
         return false;
     }
-
+    
+    /// <summary>
+    /// 同步已解锁人物列表到 characterObtainStatus
+    /// 在 FetchPlayerData 后调用，确保人物状态与服务器一致
+    /// </summary>
+    /// <param name="unlockedCharacterIds">已解锁的人物ID列表</param>
+    public void SyncCharacterObtainStatus(HashSet<int> unlockedCharacterIds)
+    {
+        Debug.LogFormat("<color=cyan>[装备状态] ========== 开始同步人物列表 ========== 共 {0} 个人物</color>", unlockedCharacterIds?.Count ?? 0);
+        
+        if (unlockedCharacterIds == null)
+            return;
+            
+        foreach (var characterId in unlockedCharacterIds)
+        {
+            // 检查之前的状态，记录状态变化
+            bool previousStatus = characterObtainStatus.TryGetValue(characterId, out bool prev) && prev;
+            characterObtainStatus[characterId] = true;
+            
+            if (!previousStatus)
+            {
+                Debug.LogFormat("<color=cyan>[装备状态] 状态变化: CharacterId={0}, 从[未拥有]变为[已拥有未装备], 操作=服务器同步</color>", characterId);
+            }
+            else
+            {
+                Debug.LogFormat("<color=cyan>[装备状态] 状态确认: CharacterId={0}, 状态=已拥有（服务器确认）</color>", characterId);
+            }
+        }
+        
+        Debug.LogFormat("<color=cyan>[装备状态] ========== 人物列表同步完成 ========== 共 {0} 个人物已解锁</color>", unlockedCharacterIds.Count);
+    }
+    
+    /// <summary>
+    /// 处理从 NetServerManager 发送的人物列表同步事件
+    /// </summary>
+    /// <param name="characterIds">已解锁的人物ID列表</param>
+    private void OnSyncUnlockedCharacters(List<int> characterIds)
+    {
+        if (characterIds == null || characterIds.Count == 0)
+            return;
+            
+        Debug.LogFormat("<color=orange>[PlayerInventoryServerManager] 接收到人物列表同步事件，共 {0} 个人物</color>", characterIds.Count);
+        
+        // 转换为 HashSet 并调用同步方法
+        var unlockedSet = new HashSet<int>(characterIds);
+        SyncCharacterObtainStatus(unlockedSet);
+    }
+    
     private bool CheckServerConnection()
     {
         if (ManagerManager.Instance != null && !ManagerManager.Instance.isOfflineMode)
@@ -714,13 +833,15 @@ public class PlayerInventoryServerManager
     /// <returns>是否装备成功</returns>
     public bool EquipItem(EquipmentSlotType slotType, int itemId)
     {
+        Debug.LogFormat("<color=cyan>[装备状态] ========== 开始装备操作 ========== 槽位={0}, ItemId={1}</color>", slotType, itemId);
+        
         // 检查是技能槽还是物品槽
         if (slotType == EquipmentSlotType.Skill1 || slotType == EquipmentSlotType.Skill2)
         {
             // 技能槽检查 skillObtainStatus
             if (!IsSkillObtained(itemId))
             {
-                Debug.LogWarning($"[PlayerInventoryServerManager] 装备失败：没有获取过技能 ID={itemId}");
+                Debug.LogWarning($"[装备状态] 装备失败：没有获取过技能 ID={itemId}, 状态=未拥有");
                 return false;
             }
         }
@@ -729,17 +850,26 @@ public class PlayerInventoryServerManager
             // 物品槽检查 playerInventory
             if (!playerInventory.ContainsKey(itemId) || playerInventory[itemId] <= 0)
             {
-                Debug.LogWarning($"[PlayerInventoryServerManager] 装备失败：背包中没有物品 ID={itemId}");
+                Debug.LogWarning($"[装备状态] 装备失败：背包中没有物品 ID={itemId}, 状态=未拥有");
                 return false;
             }
         }
 
         // 获取当前装备的物品
         int currentEquippedItem = GetEquippedItem(slotType);
+        Debug.LogFormat("<color=cyan>[装备状态] 当前装备状态: 槽位={0}, 当前装备ItemId={1}</color>", slotType, currentEquippedItem);
+        
+        // 如果已经装备了相同的物品，直接返回成功
+        if (currentEquippedItem == itemId)
+        {
+            Debug.LogFormat("<color=cyan>[装备状态] 已装备该物品，无需重复装备: 槽位={0}, ItemId={1}, 状态=已拥有已装备</color>", slotType, itemId);
+            return true;
+        }
 
         // 如果槽位已有装备，先卸下
         if (currentEquippedItem > 0)
         {
+            Debug.LogFormat("<color=cyan>[装备状态] 状态变化: ItemId={0}, 从[已拥有已装备]变为[已拥有未装备], 操作=卸下放回背包</color>", currentEquippedItem);
             UnequipItem(slotType);
         }
 
@@ -751,9 +881,20 @@ public class PlayerInventoryServerManager
         if (slotType != EquipmentSlotType.Skill1 && slotType != EquipmentSlotType.Skill2 && slotType != EquipmentSlotType.Bait)
         {
             RemoveItem(itemId, 1);
+            Debug.LogFormat("<color=cyan>[装备状态] 状态变化: ItemId={0}, 从[已拥有未装备]变为[已拥有已装备], 操作=装备并从背包移除</color>", itemId);
+        }
+        else if (slotType == EquipmentSlotType.Skill1 || slotType == EquipmentSlotType.Skill2)
+        {
+            // 技能解锁不消耗背包物品
+            Debug.LogFormat("<color=cyan>[装备状态] 状态变化: ItemId={0}, 从[未拥有]变为[已拥有已装备], 操作=技能解锁（不消耗背包物品）</color>", itemId);
+        }
+        else if (slotType == EquipmentSlotType.Bait)
+        {
+            // 鱼饵装备不消耗数量
+            Debug.LogFormat("<color=cyan>[装备状态] 状态变化: ItemId={0}, 从[已拥有未装备]变为[已拥有已装备], 操作=装备鱼饵（不消耗数量）</color>", itemId);
         }
 
-        Debug.Log($"[PlayerInventoryServerManager] 装备成功：{slotNames[slotType]} 槽位装备物品 ID={itemId}");
+        Debug.LogFormat("<color=cyan>[装备状态] ========== 装备操作完成 ========== 槽位={0}, 新装备ItemId={1}</color>", slotType, itemId);
         RefreshInventoryData();
 
         // 触发装备变更事件
@@ -769,13 +910,17 @@ public class PlayerInventoryServerManager
     /// <returns>是否卸下成功</returns>
     public bool UnequipItem(EquipmentSlotType slotType)
     {
+        Debug.LogFormat("<color=cyan>[装备状态] ========== 开始卸下操作 ========== 槽位={0}</color>", slotType);
+        
         int equippedItemId = GetEquippedItem(slotType);
 
         if (equippedItemId == 0)
         {
-            Debug.LogWarning($"[PlayerInventoryServerManager] 卸下失败：{slotNames[slotType]} 槽位没有装备");
+            Debug.LogWarning($"[装备状态] 卸下失败：槽位={slotType} 槽位没有装备");
             return false;
         }
+        
+        Debug.LogFormat("<color=cyan>[装备状态] 当前装备状态: 槽位={0}, 当前装备ItemId={1}, 状态=已拥有已装备</color>", slotType, equippedItemId);
 
         // 技能不需要放回背包，只需要清空槽位
         // 鱼饵也不需要放回背包，因为装备时没有消耗数量
@@ -783,12 +928,18 @@ public class PlayerInventoryServerManager
         {
             // 将装备放回背包
             AddItem(equippedItemId, 1);
+            Debug.LogFormat("<color=cyan>[装备状态] 状态变化: ItemId={0}, 从[已拥有已装备]变为[已拥有未装备], 操作=卸下放回背包</color>", equippedItemId);
+        }
+        else
+        {
+            // 技能和鱼饵卸下时不放回背包
+            Debug.LogFormat("<color=cyan>[装备状态] 状态变化: ItemId={0}, 从[已拥有已装备]变为[已拥有未装备], 操作=卸下（不放回背包）</color>", equippedItemId);
         }
 
         // 清空槽位
         equippedItems[slotType] = 0;
 
-        Debug.Log($"[PlayerInventoryServerManager] 卸下成功：{slotNames[slotType]} 槽位卸下物品 ID={equippedItemId}");
+        Debug.LogFormat("<color=cyan>[装备状态] ========== 卸下操作完成 ========== 槽位={0}, 卸下ItemId={1}</color>", slotType, equippedItemId);
         RefreshInventoryData();
 
         // 触发装备变更事件（槽位变为空）

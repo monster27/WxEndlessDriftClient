@@ -382,6 +382,12 @@ public class NetServerManager : SingletonMono<NetServerManager>
     private Dictionary<int, int> fishInventory = new Dictionary<int, int>();
     private int fishBagCapacity = 20;
     private int playerGold = 0;
+    
+    // 玩家已解锁的人物列表（从专用表获取）
+    private HashSet<int> unlockedCharacters = new HashSet<int>();
+    
+    // 玩家已解锁的装备列表（从服务器获取，用于判断装备状态）
+    private HashSet<int> unlockedEquipment = new HashSet<int>();
 
     // 当前玩家ID
     private int _currentPlayerId = 1;
@@ -561,6 +567,12 @@ public class NetServerManager : SingletonMono<NetServerManager>
                     if (response != null && response.success)
                     {
                         Logger.Log($"[NetServerManager] 装备成功: slotType={slotType}, itemId={itemId}");
+                        
+                        // 同步背包数据（服务器已处理物品增减）
+                        if (PlayerDataManager.Instance != null)
+                        {
+                            PlayerDataManager.Instance.SyncInventoryFromServer();
+                        }
                         
                         // 如果是人物装备，立即同步人物数据
                         if (slotType == (int)EquipmentSlotType.Character)
@@ -749,10 +761,191 @@ public class NetServerManager : SingletonMono<NetServerManager>
     }
     
     /// <summary>
-    /// 检查人物是否已获取（从背包数据判断）
+    /// 同步玩家已解锁的人物列表（从服务器专用表获取）
+    /// </summary>
+    public void SyncUnlockedCharactersFromServer()
+    {
+        StartCoroutine(SyncUnlockedCharactersCoroutine());
+    }
+    
+    private IEnumerator SyncUnlockedCharactersCoroutine()
+    {
+        string url = serverUrl + "/api/player/characters/" + _currentPlayerId;
+        Logger.Log($"[NetServerManager] 同步人物列表: {url}");
+        
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    Logger.Log("[NetServerManager] 人物列表响应: " + json);
+                    
+                    // 清空旧数据
+                    unlockedCharacters.Clear();
+                    
+                    // 解析JSON数组
+                    var data = JsonUtility.FromJson<CharacterListResponse>(json);
+                    if (data != null && data.characters != null)
+                    {
+                        foreach (var character in data.characters)
+                        {
+                            unlockedCharacters.Add(character.characterId);
+                            Logger.Log($"[NetServerManager] 已解锁人物: {character.characterId}");
+                        }
+                    }
+                    else
+                    {
+                        // 尝试直接解析数组
+                        var characters = Newtonsoft.Json.JsonConvert.DeserializeObject<List<CharacterData>>(json);
+                        if (characters != null)
+                        {
+                            foreach (var character in characters)
+                            {
+                                unlockedCharacters.Add(character.characterId);
+                                Logger.Log($"[NetServerManager] 已解锁人物: {character.characterId}");
+                            }
+                        }
+                    }
+                    
+                    // 始终包含默认人物
+                    unlockedCharacters.Add(3401);
+                    
+                    Logger.Log($"[NetServerManager] 同步人物列表完成，共 {unlockedCharacters.Count} 个已解锁人物");
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析人物列表失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 获取人物列表失败: {request.error}");
+            }
+        }
+    }
+    
+    // 辅助类：用于解析人物列表响应
+    [System.Serializable]
+    private class CharacterListResponse
+    {
+        public List<CharacterData> characters;
+    }
+    
+    [System.Serializable]
+    private class CharacterData
+    {
+        public int characterId;
+        public int level;
+        public int exp;
+        public bool isActive;
+    }
+    
+    /// <summary>
+    /// 同步玩家已解锁的装备列表（从服务器获取）
+    /// </summary>
+    public void SyncUnlockedEquipmentFromServer()
+    {
+        StartCoroutine(SyncUnlockedEquipmentCoroutine());
+    }
+    
+    private IEnumerator SyncUnlockedEquipmentCoroutine()
+    {
+        string url = serverUrl + "/api/player/" + _currentPlayerId + "/unlocked-equipment";
+        Logger.Log($"[NetServerManager] 同步已解锁装备列表: {url}");
+        
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    Logger.Log("[NetServerManager] 已解锁装备列表响应: " + json);
+                    
+                    // 清空旧数据
+                    unlockedEquipment.Clear();
+                    
+                    // 解析JSON
+                    var response = JsonUtility.FromJson<UnlockedEquipmentResponse>(json);
+                    if (response != null && response.success && response.unlockedEquipment != null)
+                    {
+                        foreach (var equipmentId in response.unlockedEquipment)
+                        {
+                            unlockedEquipment.Add(equipmentId);
+                            Logger.Log($"[NetServerManager] 已解锁装备: {equipmentId}");
+                        }
+                    }
+                    
+                    Logger.Log($"[NetServerManager] 同步已解锁装备列表完成，共 {unlockedEquipment.Count} 个装备");
+                    
+                    // 使用事件机制通知 PlayerInventoryServerManager 更新已解锁装备列表
+                    var equipmentList = new List<int>(unlockedEquipment);
+                    CommunicateEvent.Modify<List<int>>("SyncUnlockedEquipment", equipmentList);
+                    Logger.Log($"[NetServerManager] 已发送同步已解锁装备列表事件，共 {unlockedEquipment.Count} 个装备");
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析已解锁装备列表失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 获取已解锁装备列表失败: {request.error}");
+            }
+        }
+    }
+    
+    // 辅助类：用于解析已解锁装备列表响应
+    [System.Serializable]
+    private class UnlockedEquipmentResponse
+    {
+        public bool success;
+        public List<int> unlockedEquipment;
+    }
+    
+    /// <summary>
+    /// 检查装备是否已解锁（已拥有）
+    /// </summary>
+    /// <param name="equipmentId">装备ID</param>
+    /// <returns>是否已解锁</returns>
+    public bool IsEquipmentUnlocked(int equipmentId)
+    {
+        // 首先检查已解锁装备列表
+        if (unlockedEquipment.Contains(equipmentId))
+        {
+            return true;
+        }
+        // 然后检查背包
+        if (playerInventory != null && playerInventory.ContainsKey(equipmentId) && playerInventory[equipmentId] > 0)
+        {
+            return true;
+        }
+        // 默认人物3401始终视为已解锁
+        if (equipmentId == 3401)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 检查人物是否已获取（从专用表和背包数据判断）
     /// </summary>
     private bool IsCharacterObtained(int characterId)
     {
+        // 首先检查专用表（主要来源）
+        if (unlockedCharacters.Contains(characterId))
+        {
+            return true;
+        }
         // 从背包数据中判断人物是否已获取
         if (playerInventory != null && playerInventory.ContainsKey(characterId))
         {
@@ -925,6 +1118,48 @@ public class NetServerManager : SingletonMono<NetServerManager>
             }
         }
 
+        // 获取玩家已解锁的人物列表
+        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/player/characters/" + _currentPlayerId))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    Logger.Log("[NetServerManager] 人物列表响应: " + json);
+                    
+                    unlockedCharacters.Clear();
+                    
+                    // 尝试用Newtonsoft解析数组
+                    var characters = Newtonsoft.Json.JsonConvert.DeserializeObject<List<CharacterData>>(json);
+                    if (characters != null)
+                    {
+                        foreach (var character in characters)
+                        {
+                            unlockedCharacters.Add(character.characterId);
+                            Logger.Log($"[NetServerManager] 已解锁人物: {character.characterId}");
+                        }
+                    }
+                    
+                    // 始终包含默认人物
+                    unlockedCharacters.Add(3401);
+                    
+                    Logger.Log($"[NetServerManager] 同步人物列表完成，共 {unlockedCharacters.Count} 个已解锁人物");
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError("[NetServerManager] 解析人物列表失败: " + ex.Message);
+                }
+            }
+            else
+            {
+                Logger.LogError("[NetServerManager] 获取人物列表失败: " + request.error);
+            }
+        }
+
         // 获取玩家鱼篓
         using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/player/fish-bag/" + _currentPlayerId))
         {
@@ -1080,6 +1315,20 @@ public class NetServerManager : SingletonMono<NetServerManager>
             Logger.Log("[NetServerManager] 已通知 PlayerDataManager 同步数据");
         }
         // ========== 修复结束 ==========
+        
+        // ========== 同步人物列表到 PlayerInventoryServerManager ==========
+        // 使用事件机制避免编译顺序问题
+        if (unlockedCharacters != null && unlockedCharacters.Count > 0)
+        {
+            var characterList = new List<int>(unlockedCharacters);
+            CommunicateEvent.Modify<List<int>>("SyncUnlockedCharacters", characterList);
+            Logger.Log($"[NetServerManager] 已发送同步人物列表事件，共 {unlockedCharacters.Count} 个人物");
+        }
+        // ========== 同步结束 ==========
+        
+        // ========== 同步已解锁装备列表到 PlayerInventoryServerManager ==========
+        SyncUnlockedEquipmentFromServer();
+        // ========== 同步结束 ==========
 
         // ========== 关键修复：根据装备的人物ID切换人物动画 ==========
         if (PlayerAniManager.Instance != null && equippedCharacterId > 0)
@@ -1279,6 +1528,189 @@ public class NetServerManager : SingletonMono<NetServerManager>
         }
     }
     
+    /// <summary>
+    /// 解锁技能（通过广告等方式）
+    /// </summary>
+    public void UnlockSkill(int skillId, System.Action<bool> callback)
+    {
+        StartCoroutine(UnlockSkillCoroutine(skillId, callback));
+    }
+    
+    /// <summary>
+    /// 解锁人物（通过广告等方式）
+    /// </summary>
+    public void UnlockCharacter(int characterId, System.Action<bool> callback)
+    {
+        StartCoroutine(UnlockCharacterCoroutine(characterId, callback));
+    }
+    
+    private IEnumerator UnlockCharacterCoroutine(int characterId, System.Action<bool> callback)
+    {
+        string url = serverUrl + "/api/player/character/add";
+        string jsonData = $"{{\"playerId\":{_currentPlayerId},\"characterId\":{characterId}}}";
+        
+        Logger.Log($"[NetServerManager] 解锁人物请求: {jsonData}");
+        
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+            
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string responseText = request.downloadHandler.text;
+                Logger.Log($"[NetServerManager] 解锁人物响应: {responseText}");
+                
+                try
+                {
+                    var response = JsonUtility.FromJson<AddItemResponse>(responseText);
+                    if (response != null && response.success)
+                    {
+                        Logger.Log($"[NetServerManager] 成功解锁人物 {characterId}");
+                        callback?.Invoke(true);
+                        
+                        // 刷新背包数据
+                        PlayerDataManager.Instance.SyncInventoryFromServer();
+                        
+                        // 同步人物列表
+                        SyncUnlockedCharactersFromServer();
+                        
+                        // 同步已解锁装备列表
+                        SyncUnlockedEquipmentFromServer();
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"[NetServerManager] 解锁人物失败: {response?.message ?? "未知错误"}");
+                        callback?.Invoke(false);
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析解锁人物响应失败: {ex.Message}");
+                    callback?.Invoke(false);
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 解锁人物请求失败: {request.error}");
+                callback?.Invoke(false);
+            }
+        }
+    }
+
+    private IEnumerator UnlockSkillCoroutine(int skillId, System.Action<bool> callback)
+    {
+        string url = serverUrl + "/api/player/skills/unlock";
+        string jsonData = $"{{\"PlayerId\":{_currentPlayerId},\"ComponentId\":{skillId}}}";
+        
+        Logger.Log($"[NetServerManager] 解锁技能请求: {jsonData}");
+        
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+            
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string responseText = request.downloadHandler.text;
+                Logger.Log($"[NetServerManager] 解锁技能响应: {responseText}");
+                
+                try
+                {
+                    var response = JsonUtility.FromJson<AddItemResponse>(responseText);
+                    if (response != null && response.success)
+                    {
+                        Logger.Log($"[NetServerManager] 成功解锁技能 {skillId}");
+                        callback?.Invoke(true);
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"[NetServerManager] 解锁技能失败: {response?.message ?? "未知错误"}");
+                        callback?.Invoke(false);
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析解锁技能响应失败: {ex.Message}");
+                    callback?.Invoke(false);
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 解锁技能请求失败: {request.error}");
+                callback?.Invoke(false);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 升级技能
+    /// </summary>
+    public void UpgradeSkill(int skillId, int newLevel, System.Action<bool> callback)
+    {
+        StartCoroutine(UpgradeSkillCoroutine(skillId, newLevel, callback));
+    }
+
+    private IEnumerator UpgradeSkillCoroutine(int skillId, int newLevel, System.Action<bool> callback)
+    {
+        string url = serverUrl + "/api/player/skills/upgrade";
+        string jsonData = $"{{\"PlayerId\":{_currentPlayerId},\"ComponentId\":{skillId},\"NewLevel\":{newLevel}}}";
+        
+        Logger.Log($"[NetServerManager] 升级技能请求: {jsonData}");
+        
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+            
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string responseText = request.downloadHandler.text;
+                Logger.Log($"[NetServerManager] 升级技能响应: {responseText}");
+                
+                try
+                {
+                    var response = JsonUtility.FromJson<AddItemResponse>(responseText);
+                    if (response != null && response.success)
+                    {
+                        Logger.Log($"[NetServerManager] 成功升级技能 {skillId} 到等级 {newLevel}");
+                        callback?.Invoke(true);
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"[NetServerManager] 升级技能失败: {response?.message ?? "未知错误"}");
+                        callback?.Invoke(false);
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析升级技能响应失败: {ex.Message}");
+                    callback?.Invoke(false);
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 升级技能请求失败: {request.error}");
+                callback?.Invoke(false);
+            }
+        }
+    }
+
     private void AutoStartFishing()
     {
         try

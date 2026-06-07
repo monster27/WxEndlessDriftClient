@@ -239,11 +239,13 @@ public class InfoSkillView : MonoBehaviour
 
     private void OnMaskClick()
     {
+        Debug.Log("[InfoSkillView] OnMaskClick - 点击遮罩返回");
         callback?.Invoke("Back", null);
     }
 
     private void OnCloseClick()
     {
+        Debug.Log("[InfoSkillView] OnCloseClick - 点击关闭按钮返回");
         callback?.Invoke("Back", null);
     }
 
@@ -279,12 +281,19 @@ public class InfoSkillView : MonoBehaviour
     {
         string componentName = LoadDataManager.Instance.GetComponentName(skillId);
         string info = componentName != "未知组件" ? $"看广告获取技能: {componentName}" : "看广告获取技能";
-        callback?.Invoke("OpenAd", new object[] { info, skillId, "看广告获取", (System.Action)(() =>
+        callback?.Invoke("OpenAdWithResult", new object[] { info, skillId, "看广告获取", (System.Action<bool>)((bool success) =>
         {
-            CommunicateEvent.Modify("Skill_UnlockByAd", skillId);
-            UpdateSkillList();
-            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"成功获取 {componentName}！");
-            callback?.Invoke("RefreshAllViews", null);
+            if (success)
+            {
+                CommunicateEvent.Modify("Skill_UnlockByAd", skillId);
+                UpdateSkillList();
+                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"成功获取 {componentName}！");
+                callback?.Invoke("RefreshAllViews", null);
+            }
+            else
+            {
+                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "广告播放失败");
+            }
         })});
     }
 
@@ -320,6 +329,9 @@ public class InfoSkillView : MonoBehaviour
                 break;
             case "OpenAd":
                 callback?.Invoke("OpenAd", args);
+                break;
+            case "OpenAdWithResult":
+                callback?.Invoke("OpenAdWithResult", args);
                 break;
             case "RefreshAllViews":
                 UpdateSkillList();

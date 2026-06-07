@@ -84,21 +84,25 @@ public class MainGameView : BagViewBase
 
     private void OnBagBtnClick()
     {
+        Debug.Log("[MainGameView] OnBagBtnClick - 点击背包按钮");
         CommunicateEvent.Modify("UI_OpenBag");
     }
 
     private void OnFishBagBtnClick()
     {
+        Debug.Log("[MainGameView] OnFishBagBtnClick - 点击鱼背包按钮");
         CommunicateEvent.Modify("UI_OpenFishBag");
     }
 
     private void OnMallBtnClick()
     {
+        Debug.Log("[MainGameView] OnMallBtnClick - 点击商城按钮");
         CommunicateEvent.Modify("UI_OpenMall");
     }
 
     private void OnEquipBtnClick()
     {
+        Debug.Log("[MainGameView] OnEquipBtnClick - 点击装备按钮");
         CommunicateEvent.Modify("UI_OpenEquipment");
     }
 
@@ -107,6 +111,7 @@ public class MainGameView : BagViewBase
     /// </summary>
     private void OnMenuOpenBtnClick()
     {
+        Debug.Log("[MainGameView] OnMenuOpenBtnClick - 点击打开菜单");
         isMenuOpen = true;
         SetMenuPanelState(isMenuOpen);
     }
@@ -116,6 +121,7 @@ public class MainGameView : BagViewBase
     /// </summary>
     private void OnMenuCloseBtnClick()
     {
+        Debug.Log("[MainGameView] OnMenuCloseBtnClick - 点击关闭菜单");
         isMenuOpen = false;
         SetMenuPanelState(isMenuOpen);
     }
@@ -125,6 +131,7 @@ public class MainGameView : BagViewBase
     /// </summary>
     private void OnHideRightBtnClick()
     {
+        Debug.Log("[MainGameView] OnHideRightBtnClick - 点击隐藏右侧");
         isMenuOpen = false;
         SetMenuPanelState(isMenuOpen);
     }

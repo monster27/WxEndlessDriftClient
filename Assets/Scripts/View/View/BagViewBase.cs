@@ -65,6 +65,7 @@ public class BagViewBase : MonoBehaviour
 
     protected virtual void OnCloseButtonClick()
     {
+        Debug.Log("[BagViewBase] OnCloseButtonClick - 点击关闭背包");
         CloseBag();
     }
 

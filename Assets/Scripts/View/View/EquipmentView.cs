@@ -131,11 +131,13 @@ public class EquipmentView : MonoBehaviour
 
     private void OnMaskClick()
     {
+        Debug.Log("[EquipmentView] OnMaskClick - 点击遮罩关闭");
         Hide();
     }
 
     private void OnCloseClick()
     {
+        Debug.Log("[EquipmentView] OnCloseClick - 点击关闭按钮");
         Hide();
     }
 
@@ -213,6 +215,9 @@ public class EquipmentView : MonoBehaviour
                 break;
             case "OpenAd":
                 OpenAdvertisingView((string)args[0], (int)args[1], (string)args[2], (System.Action)args[3]);
+                break;
+            case "OpenAdWithResult":
+                OpenAdvertisingView((string)args[0], (int)args[1], (string)args[2], (System.Action<bool>)args[3]);
                 break;
             case "RefreshAllViews":
                 RefreshAllViews();
@@ -332,26 +337,51 @@ public class EquipmentView : MonoBehaviour
         {
             if (adSuccess)
             {
-                // 广告成功，调用服务器API解锁装备
                 int playerId = NetServerManager.Instance?.GetCurrentPlayerId() ?? 1;
-                string equipmentType = GetEquipmentTypeFromId(targetId);
                 
-                Debug.Log($"[EquipmentView] 广告成功，开始解锁装备: playerId={playerId}, equipmentId={targetId}, type={equipmentType}");
-                
-                NetServerManager.Instance.UnlockEquipment(playerId, targetId, equipmentType, (success, message) =>
+                // 判断是技能还是装备
+                if (targetId >= 3301 && targetId < 3400)
                 {
-                    if (success)
+                    // 技能
+                    Debug.Log($"[EquipmentView] 广告成功，开始解锁技能: playerId={playerId}, skillId={targetId}");
+                    
+                    NetServerManager.Instance.UnlockSkill(targetId, (success) =>
                     {
-                        Debug.Log($"[EquipmentView] 服务器解锁成功，通知UI");
-                        onConfirmWithResult?.Invoke(true);
-                    }
-                    else
+                        if (success)
+                        {
+                            Debug.Log($"[EquipmentView] 服务器技能解锁成功，通知UI");
+                            onConfirmWithResult?.Invoke(true);
+                        }
+                        else
+                        {
+                            Debug.LogError($"[EquipmentView] 服务器技能解锁失败");
+                            UIManager.Instance.ShowTip("技能解锁失败");
+                            onConfirmWithResult?.Invoke(false);
+                        }
+                    });
+                }
+                else
+                {
+                    // 装备
+                    string equipmentType = GetEquipmentTypeFromId(targetId);
+                    
+                    Debug.Log($"[EquipmentView] 广告成功，开始解锁装备: playerId={playerId}, equipmentId={targetId}, type={equipmentType}");
+                    
+                    NetServerManager.Instance.UnlockEquipment(playerId, targetId, equipmentType, (success, message) =>
                     {
-                        Debug.LogError($"[EquipmentView] 服务器解锁失败: {message}");
-                        UIManager.Instance.ShowTip("解锁失败: " + message);
-                        onConfirmWithResult?.Invoke(false);
-                    }
-                });
+                        if (success)
+                        {
+                            Debug.Log($"[EquipmentView] 服务器解锁成功，通知UI");
+                            onConfirmWithResult?.Invoke(true);
+                        }
+                        else
+                        {
+                            Debug.LogError($"[EquipmentView] 服务器解锁失败: {message}");
+                            UIManager.Instance.ShowTip("解锁失败: " + message);
+                            onConfirmWithResult?.Invoke(false);
+                        }
+                    });
+                }
             }
             else
             {

@@ -223,6 +223,19 @@ public class FishingEquipView : MonoBehaviour
             return EquipState.OwnerUse;
         }
 
+        // 首先检查是否已解锁（已拥有）
+        bool isUnlocked = false;
+        if (NetServerManager.Instance != null)
+        {
+            isUnlocked = NetServerManager.Instance.IsEquipmentUnlocked(equipId);
+        }
+        
+        if (isUnlocked)
+        {
+            return EquipState.OwnerUnUse;
+        }
+
+        // 旧逻辑：检查背包（保留作为后备）
         var inventory = CommunicateEvent.Request<int, Dictionary<int, int>>(CommunicateEvent.EVENT_GET_INVENTORY, 0);
         if (inventory.ContainsKey(equipId))
         {
@@ -274,16 +287,19 @@ public class FishingEquipView : MonoBehaviour
 
     private void OnMaskClick()
     {
+        Debug.Log("[FishingEquipView] OnMaskClick - 点击遮罩返回");
         callback?.Invoke("Back", null);
     }
 
     private void OnCloseClick()
     {
+        Debug.Log("[FishingEquipView] OnCloseClick - 点击关闭按钮返回");
         callback?.Invoke("Back", null);
     }
 
     private void OnLeftClick()
     {
+        Debug.Log("[FishingEquipView] OnLeftClick - 点击左箭头翻页");
         List<int> currentIds = GetCurrentIds();
         int totalPages = Mathf.CeilToInt((float)currentIds.Count / itemsPerPage);
         if (totalPages <= 1) return;
@@ -299,6 +315,7 @@ public class FishingEquipView : MonoBehaviour
 
     private void OnRightClick()
     {
+        Debug.Log("[FishingEquipView] OnRightClick - 点击右箭头翻页");
         List<int> currentIds = GetCurrentIds();
         int totalPages = Mathf.CeilToInt((float)currentIds.Count / itemsPerPage);
         if (totalPages <= 1) return;

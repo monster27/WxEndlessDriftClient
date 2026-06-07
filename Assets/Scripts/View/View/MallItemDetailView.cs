@@ -138,6 +138,7 @@ public class MallItemDetailView : MonoBehaviour
 
     private void OnAddClick()
     {
+        Debug.Log("[MallItemDetailView] OnAddClick - 点击增加数量");
         if (quantity < maxQuantity)
         {
             quantity++;
@@ -151,6 +152,7 @@ public class MallItemDetailView : MonoBehaviour
 
     private void OnSubtractClick()
     {
+        Debug.Log("[MallItemDetailView] OnSubtractClick - 点击减少数量");
         if (quantity > 0)
         {
             quantity--;
@@ -176,6 +178,7 @@ public class MallItemDetailView : MonoBehaviour
 
     private void OnConfirmClick()
     {
+        Debug.Log("[MallItemDetailView] OnConfirmClick - 点击确认购买");
         if (quantity <= 0)
         {
             Debug.LogWarning("[MallItemDetailView] 购买数量必须大于0");
@@ -190,11 +193,13 @@ public class MallItemDetailView : MonoBehaviour
 
     private void OnCancelClick()
     {
+        Debug.Log("[MallItemDetailView] OnCancelClick - 点击取消");
         CloseDetailView();
     }
 
     private void OnMaskClick()
     {
+        Debug.Log("[MallItemDetailView] OnMaskClick - 点击遮罩关闭");
         CloseDetailView();
     }
 

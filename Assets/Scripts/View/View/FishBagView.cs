@@ -193,6 +193,7 @@ public class FishBagView : BagViewBase
 
     public void OnSelectAllButtonClick()
     {
+        Debug.Log("[FishBagView] OnSelectAllButtonClick - 点击全选按钮");
         if (fishDetail != null)
         {
             List<UI_FishBagPrefab> allFishPrefabs = fishDetail.GetAllFishPrefabs();

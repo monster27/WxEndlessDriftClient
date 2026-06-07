@@ -266,12 +266,14 @@ public class SkillInfoView : MonoBehaviour
 
     private void OnMaskClick()
     {
+        Debug.Log("[SkillInfoView] OnMaskClick - 点击遮罩关闭");
         //callback?.Invoke("Back", null);
         gameObject.SetActive(false);
     }
 
     private void OnCloseClick()
     {
+        Debug.Log("[SkillInfoView] OnCloseClick - 点击关闭按钮");
         //callback?.Invoke("Back", null);
         gameObject.SetActive(false);
     }
@@ -346,13 +348,20 @@ public class SkillInfoView : MonoBehaviour
         Debug.Log($"[SkillInfoView] OnUnlockClick - skillId={currentSkillId}, callback={callback}");
         string componentName = LoadDataManager.Instance.GetComponentName(currentSkillId);
         string info = componentName != "未知组件" ? $"看广告获取技能: {componentName}" : "看广告获取技能";
-        callback?.Invoke("OpenAd", new object[] { info, currentSkillId, "看广告获取", (System.Action)(() =>
+        callback?.Invoke("OpenAdWithResult", new object[] { info, currentSkillId, "看广告获取", (System.Action<bool>)((bool success) =>
         {
-            Debug.Log($"[SkillInfoView] OnUnlockClick 广告回调执行 - skillId={currentSkillId}");
-            CommunicateEvent.Modify("Skill_UnlockByAd", currentSkillId);
-            UpdateDisplay();
-            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"成功获取 {componentName}！");
-            callback?.Invoke("RefreshAllViews", null);
+            Debug.Log($"[SkillInfoView] OnUnlockClick 广告回调执行 - skillId={currentSkillId}, success={success}");
+            if (success)
+            {
+                CommunicateEvent.Modify("Skill_UnlockByAd", currentSkillId);
+                UpdateDisplay();
+                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"成功获取 {componentName}！");
+                callback?.Invoke("RefreshAllViews", null);
+            }
+            else
+            {
+                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "广告播放失败");
+            }
         })});
     }
 

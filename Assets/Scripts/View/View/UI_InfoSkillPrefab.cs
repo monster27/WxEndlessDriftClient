@@ -219,6 +219,7 @@ public class UI_InfoSkillPrefab : MonoBehaviour
 
     private void OnUpgradeBtnClick()
     {
+        Debug.Log($"[UI_InfoSkillPrefab] OnUpgradeBtnClick - skillId={skillId}");
         if (onUpgradeClick != null)
         {
             onUpgradeClick(skillId);
@@ -227,6 +228,7 @@ public class UI_InfoSkillPrefab : MonoBehaviour
 
     private void OnWatchAdBtnClick()
     {
+        Debug.Log($"[UI_InfoSkillPrefab] OnWatchAdBtnClick - skillId={skillId}");
         if (onWatchAdClick != null)
         {
             onWatchAdClick(skillId);

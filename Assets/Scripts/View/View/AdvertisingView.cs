@@ -105,12 +105,14 @@ public class AdvertisingView : MonoBehaviour
 
     private void OnMaskClick()
     {
+        Debug.Log("[AdvertisingView] OnMaskClick - 点击遮罩关闭");
         onCloseCallback?.Invoke();
         Close();
     }
 
     private void OnCloseClick()
     {
+        Debug.Log("[AdvertisingView] OnCloseClick - 点击关闭按钮");
         onCloseCallback?.Invoke();
         Close();
     }

@@ -335,11 +335,13 @@ public class InfoFishEquipView : MonoBehaviour
 
     private void OnMaskClick()
     {
+        Debug.Log("[InfoFishEquipView] OnMaskClick - 点击遮罩返回");
         callback?.Invoke("Back", new object[] { currentType });
     }
 
     private void OnCloseClick()
     {
+        Debug.Log("[InfoFishEquipView] OnCloseClick - 点击关闭按钮返回");
         callback?.Invoke("Back", new object[] { currentType });
     }
 
@@ -379,6 +381,7 @@ public class InfoFishEquipView : MonoBehaviour
 
     private void OnAdUpgradeClick()
     {
+        Debug.Log("[InfoFishEquipView] OnAdUpgradeClick - 点击看广告升级");
         int level = GetEquipLevel();
 
         // 检查是否已经满级（看广告升级有限制）
@@ -416,6 +419,7 @@ public class InfoFishEquipView : MonoBehaviour
 
     private void OnUnlockClick()
     {
+        Debug.Log("[InfoFishEquipView] OnUnlockClick - 点击看广告解锁");
         string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
         string info = componentName != "未知组件" ? $"看广告解锁装备: {componentName}" : "看广告解锁装备";
         callback?.Invoke("OpenAdWithResult", new object[] { info, currentEquipId, "看广告解锁", (System.Action<bool>)((bool success) =>
