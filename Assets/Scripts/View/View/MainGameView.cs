@@ -22,6 +22,7 @@ public class MainGameView : BagViewBase
     public Text gameTimeTxt;
     public Text goldTxt;
     public Text baitCountdownTxt;
+    public Text baitCountTxt;  // 窝料数量显示
     public MainTile mainTile;
 
     // 需要控制显隐的UI面板（例如侧边栏菜单）
@@ -29,6 +30,9 @@ public class MainGameView : BagViewBase
 
     // 窝料倒计时Text的GameObject（用于控制显隐）
     public GameObject baitCountdownObj;
+
+    // 当前窝料数量
+    private int currentBaitCount = 0;
 
     // 菜单当前状态
     private bool isMenuOpen = false;
@@ -40,6 +44,8 @@ public class MainGameView : BagViewBase
 
         CommunicateEvent.Register<Vector3>(CommunicateEvent.EVENT_SHOW_BAIT_COUNTDOWN_AT_POSITION, OnShowBaitCountdownAtPosition);
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
+        // 注册窝料数量变化事件
+        CommunicateEvent.Register("BaitCountChanged", OnBaitCountChanged);
         // 天气和时间变化事件由EnvManager统一处理，然后调用UpdateWeather和UpdateTime方法
 
         if (bagBtn != null)
@@ -79,6 +85,9 @@ public class MainGameView : BagViewBase
 
         // 初始化菜单状态
         SetMenuPanelState(isMenuOpen);
+
+        // 初始化窝料数量显示
+        UpdateBaitCountDisplay();
 
         isInitialized = true;
     }
@@ -242,6 +251,29 @@ public class MainGameView : BagViewBase
         }
     }
 
+    /// <summary>
+    /// 更新窝料数量显示
+    /// </summary>
+    public void UpdateBaitCountDisplay()
+    {
+        // 从服务器获取当前窝料数量
+        currentBaitCount = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_CURRENT_SCENE_BAIT_COUNT, 0);
+        
+        if (baitCountTxt != null)
+        {
+            baitCountTxt.text = $"窝料: {currentBaitCount}";
+        }
+    }
+
+    /// <summary>
+    /// 窝料数量变化事件处理器
+    /// </summary>
+    private void OnBaitCountChanged()
+    {
+        Debug.Log("[MainGameView] OnBaitCountChanged - 窝料数量变化");
+        UpdateBaitCountDisplay();
+    }
+
     public void InitTimeNameDic()
     {
     }
@@ -289,5 +321,6 @@ public class MainGameView : BagViewBase
     private void OnDestroy()
     {
         CommunicateEvent.Unregister<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
+        CommunicateEvent.Unregister("BaitCountChanged", OnBaitCountChanged);
     }
 }

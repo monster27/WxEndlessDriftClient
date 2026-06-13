@@ -2709,6 +2709,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                             {
                                 continuousModeRemainingTime = response.continuousModeRemainingTime;
                                 isInContinuousMode = true;
+                                baitEndTimeIsSeconds = true;  // 标记为使用 remainingTime 计时
                             }
                             else
                             {
@@ -2721,11 +2722,13 @@ public class NetServerManager : SingletonMono<NetServerManager>
                                     {
                                         continuousModeRemainingTime = 0;
                                         isInContinuousMode = false;
+                                        baitEndTimeIsSeconds = false;
                                     }
                                 }
                                 else
                                 {
                                     isInContinuousMode = false;
+                                    baitEndTimeIsSeconds = false;
                                 }
                             }
                             
@@ -3268,6 +3271,11 @@ public class NetServerManager : SingletonMono<NetServerManager>
     /// 窝料结束时间戳（服务器时间，秒）
     /// </summary>
     private long baitEndTime = 0;
+    
+    /// <summary>
+    /// baitEndTime 是否为剩余秒数标记
+    /// </summary>
+    private bool baitEndTimeIsSeconds = false;
 
     // ==================== 天气和时间相关字段 ====================
     private int currentWeatherId = 0;          // 当前天气ID
@@ -3324,15 +3332,46 @@ public class NetServerManager : SingletonMono<NetServerManager>
                     var response = JsonUtility.FromJson<AddBaitTimeResponse>(responseText);
                     if (response != null && response.success)
                     {
-                        // 保存服务器返回的窝料结束时间戳
-                        baitEndTime = response.baitEndTime;
-                        isInContinuousMode = true;
-                        currentFishingMode = "Continuous";
-
-                        // 根据服务器时间计算剩余时间
-                        UpdateContinuousModeRemainingTime();
-
-                        Logger.Log($"[NetServerManager] 成功增加窝料时间，结束时间戳: {baitEndTime}, 当前剩余时间: {continuousModeRemainingTime}秒");
+                        // 优先使用服务器返回的 remainingTime（剩余秒数）
+                        if (response.remainingTime > 0)
+                        {
+                            continuousModeRemainingTime = response.remainingTime;
+                            isInContinuousMode = true;
+                            currentFishingMode = "Continuous";
+                            
+                            // 如果 baitEndTime 是有效的时间戳，保存它
+                            if (response.baitEndTime > 1000000000)
+                            {
+                                // baitEndTime 是有效的Unix时间戳
+                                baitEndTime = response.baitEndTime;
+                                baitEndTimeIsSeconds = false;
+                                Logger.Log($"[NetServerManager] 成功增加窝料时间，剩余时间: {continuousModeRemainingTime}秒, 结束时间戳: {baitEndTime}");
+                            }
+                            else
+                            {
+                                // baitEndTime 是剩余秒数或无效，不保存它
+                                baitEndTime = 0;
+                                baitEndTimeIsSeconds = true;
+                                Logger.Log($"[NetServerManager] 成功增加窝料时间，剩余时间: {continuousModeRemainingTime}秒（使用remainingTime计时）");
+                            }
+                        }
+                        else if (response.baitEndTime > 0)
+                        {
+                            // 旧服务器可能只返回 baitEndTime，需要判断是时间戳还是剩余秒数
+                            baitEndTime = response.baitEndTime;
+                            isInContinuousMode = true;
+                            currentFishingMode = "Continuous";
+                            
+                            // 根据服务器时间计算剩余时间
+                            UpdateContinuousModeRemainingTime();
+                            
+                            Logger.Log($"[NetServerManager] 成功增加窝料时间，结束时间戳: {baitEndTime}, 当前剩余时间: {continuousModeRemainingTime}秒");
+                        }
+                        else
+                        {
+                            Logger.LogWarning("[NetServerManager] 增加窝料时间成功但未返回有效时间数据");
+                            yield break;
+                        }
 
                         // 同步更新背包数据（窝料已消耗）
                         PlayerDataManager.Instance?.SyncInventoryFromServer();
@@ -3391,24 +3430,43 @@ public class NetServerManager : SingletonMono<NetServerManager>
                     var response = JsonUtility.FromJson<EnterContinuousModeWithBaitEndTimeResponse>(responseText);
                     if (response != null && response.success)
                     {
-                        isInContinuousMode = true;
-                        continuousModeRemainingTime = response.remainingTime;
-                        currentFishingMode = "Continuous";
-
-                        // 尝试获取baitEndTime
-                        if (response.baitEndTime > 0)
+                        // 优先使用 remainingTime
+                        if (response.remainingTime > 0)
                         {
+                            continuousModeRemainingTime = response.remainingTime;
+                            isInContinuousMode = true;
+                            currentFishingMode = "Continuous";
+                            
+                            // 如果 baitEndTime 是有效的时间戳，保存它
+                            if (response.baitEndTime > 1000000000)
+                            {
+                                baitEndTime = response.baitEndTime;
+                                baitEndTimeIsSeconds = false;
+                                Logger.Log($"[NetServerManager] 成功进入连续钓鱼模式，剩余时间: {continuousModeRemainingTime}秒, 结束时间戳: {baitEndTime}");
+                            }
+                            else
+                            {
+                                // baitEndTime 是剩余秒数或无效，不保存它
+                                baitEndTime = 0;
+                                baitEndTimeIsSeconds = true;
+                                Logger.Log($"[NetServerManager] 成功进入连续钓鱼模式，剩余时间: {continuousModeRemainingTime}秒（使用remainingTime计时）");
+                            }
+                        }
+                        else if (response.baitEndTime > 0)
+                        {
+                            // 旧服务器可能只返回 baitEndTime，需要判断是时间戳还是剩余秒数
                             baitEndTime = response.baitEndTime;
+                            isInContinuousMode = true;
+                            currentFishingMode = "Continuous";
+                            
                             // 根据服务器时间计算剩余时间
                             UpdateContinuousModeRemainingTime();
                             Logger.Log($"[NetServerManager] 成功进入连续钓鱼模式，结束时间戳: {baitEndTime}, 当前剩余时间: {continuousModeRemainingTime}秒");
                         }
                         else
                         {
-                            // 旧服务器不支持baitEndTime，使用remainingTime
-                            Logger.Log($"[NetServerManager] 成功进入连续钓鱼模式，剩余时间: {continuousModeRemainingTime}秒（旧API）");
-                            // 从remainingTime推算baitEndTime（兼容性处理）
-                            baitEndTime = (lastServerTime / 1000) + (long)continuousModeRemainingTime;
+                            Logger.LogWarning("[NetServerManager] 进入连续钓鱼模式成功但未返回有效时间数据");
+                            yield break;
                         }
 
                         // 同步更新背包数据（窝料已消耗）
@@ -3446,6 +3504,64 @@ public class NetServerManager : SingletonMono<NetServerManager>
         bool wasInContinuousMode = isInContinuousMode;
         float previousRemainingTime = continuousModeRemainingTime;
         
+        // 如果 baitEndTimeIsSeconds = true，说明使用的是 remainingTime 计时
+        if (baitEndTimeIsSeconds)
+        {
+            if (continuousModeRemainingTime > 0)
+            {
+                // 按帧递减（每帧调用，deltaTime约0.016秒）
+                continuousModeRemainingTime -= Time.deltaTime;
+                if (continuousModeRemainingTime < 0)
+                {
+                    continuousModeRemainingTime = 0;
+                }
+                
+                isInContinuousMode = true;
+                currentFishingMode = "Continuous";
+                
+                if (!wasInContinuousMode)
+                {
+                    Logger.Log($"[NetServerManager] 进入连续模式，剩余时间: {continuousModeRemainingTime:F2}秒");
+                }
+                
+                // 如果倒计时结束
+                if (continuousModeRemainingTime <= 0)
+                {
+                    isInContinuousMode = false;
+                    currentFishingMode = "Normal";
+                    baitEndTimeIsSeconds = false;
+                    
+                    if (wasInContinuousMode)
+                    {
+                        Logger.Log("[NetServerManager] 连续模式结束");
+                    }
+                }
+            }
+            else
+            {
+                // 剩余时间已到
+                continuousModeRemainingTime = 0;
+                isInContinuousMode = false;
+                currentFishingMode = "Normal";
+                baitEndTimeIsSeconds = false;
+                
+                if (wasInContinuousMode)
+                {
+                    Logger.Log("[NetServerManager] 连续模式结束");
+                }
+            }
+            
+            // 如果状态发生变化，通知其他模块
+            if (wasInContinuousMode != isInContinuousMode || 
+                Mathf.Abs(previousRemainingTime - continuousModeRemainingTime) > 0.1f)
+            {
+                // 通过事件通知状态变化
+                CommunicateEvent.Modify<float>("ContinuousModeTimeUpdated", continuousModeRemainingTime);
+            }
+            return;
+        }
+        
+        // 以下是使用 baitEndTime 时间戳的逻辑（保留兼容）
         if (baitEndTime <= 0)
         {
             continuousModeRemainingTime = 0;
@@ -3469,7 +3585,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
             Logger.LogWarning("[NetServerManager] 服务器时间无效，使用客户端时间");
         }
         
-        // 计算剩余时间
+        // baitEndTime 是绝对时间戳，计算剩余时间
         float remaining = baitEndTime - currentServerTime;
         
         // 调试日志
@@ -3651,7 +3767,8 @@ public class NetServerManager : SingletonMono<NetServerManager>
     {
         public bool success;
         public string message;
-        public long baitEndTime; // 窝料结束时间戳（秒）
+        public float remainingTime; // 剩余秒数（优先使用）
+        public long baitEndTime;    // 窝料结束时间戳（秒）- 如果服务器返回的是剩余秒数则可能小于1000000000
     }
 
     /// <summary>

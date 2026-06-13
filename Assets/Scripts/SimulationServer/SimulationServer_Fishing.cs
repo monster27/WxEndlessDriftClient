@@ -330,12 +330,15 @@ public partial class SimulationServer : MonoBehaviour
             int remainingBait = GetCurrentSceneBaitCount();
             Debug.LogFormat("<color=orange>[SimulationServer] 消耗窝料成功，剩余: {0}，连续模式时间: {1}秒</color>", remainingBait, continuousModeRemainingTime);
 
-            UIManager.ShowMessage($"窝料剩余: {remainingBait}");
+            // 显示连续钓鱼模式进入成功的提示
+            int minutes = Mathf.FloorToInt(continuousModeRemainingTime / 60f);
+            int seconds = Mathf.FloorToInt(continuousModeRemainingTime % 60f);
+            UIManager.ShowMessage($"已进入连续钓鱼模式，剩余时间: {minutes:00}:{seconds:00}");
             return true;
         }
 
         Debug.LogFormat("<color=orange>[SimulationServer] 窝料不足，无法进入连续模式，当前窝料: {0}</color>", currentBait);
-        UIManager.ShowMessage("窝料不足");
+        UIManager.ShowMessage("窝料不足，无法进入连续钓鱼模式");
         return false;
     }
 

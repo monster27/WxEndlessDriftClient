@@ -122,7 +122,7 @@ public class ClickManager : MonoBehaviour
         else
         {
             Debug.Log("[ClickManager] 窝料不足，无法使用");
-            UIManager.ShowMessage("窝料不足");
+            UIManager.ShowMessage("窝料不足，无法进入连续钓鱼模式");
         }
     }
 }
