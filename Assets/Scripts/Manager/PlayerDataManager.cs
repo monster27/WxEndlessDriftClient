@@ -160,7 +160,10 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         // 6. 通知UI更新
         CommunicateEvent.Modify("FishBagDataUpdated");
 
-        // 7. 如果鱼篓界面是打开的，直接刷新
+        // 7. 新增：通知普通背包数据更新（钓鱼消耗鱼饵后需要刷新背包UI）
+        CommunicateEvent.Modify("Bag_RefreshItems");
+
+        // 8. 如果鱼篓界面是打开的，直接刷新
         if (UIManager.Instance?.fishBagView != null && UIManager.Instance.fishBagView.gameObject.activeSelf)
         {
             UIManager.Instance.fishBagView.RefreshItems();

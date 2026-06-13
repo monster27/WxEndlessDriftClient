@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Text;
+using SharedModels;
 
 namespace View.Detail
 {
@@ -19,6 +20,69 @@ namespace View.Detail
             if (contentTransform == null)
             {
                 contentTransform = transform.Find("Content");
+            }
+            
+            // 注册装备状态更新事件
+            CommunicateEvent.Register<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipmentChanged);
+            
+            // 【修复】初始化时主动获取当前装备的鱼饵状态
+            InitializeEquippedBaitState();
+        }
+        
+        void OnDestroy()
+        {
+            // 取消注册装备状态更新事件
+            CommunicateEvent.Unregister<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipmentChanged);
+        }
+        
+        /// <summary>
+        /// 装备状态更新事件处理器
+        /// </summary>
+        private void OnEquipmentChanged((EquipmentSlotType, int) data)
+        {
+            EquipmentSlotType slotType = data.Item1;
+            int itemId = data.Item2;
+            
+            Debug.Log($"[BagDetail] 接收到装备状态更新事件: SlotType={slotType}, ItemId={itemId}");
+            
+            // 如果是鱼饵槽位的装备变化
+            if (slotType == EquipmentSlotType.Bait)
+            {
+                UpdateBaitEquippedState(itemId);
+            }
+        }
+        
+        /// <summary>
+        /// 初始化时主动获取当前装备的鱼饵状态
+        /// </summary>
+        private void InitializeEquippedBaitState()
+        {
+            // 从服务器获取当前装备的鱼饵ID
+            int equippedBaitId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Bait);
+            Debug.Log($"[BagDetail] 初始化装备状态 - 当前装备的鱼饵ID: {equippedBaitId}");
+            
+            // 更新鱼饵的装备状态显示
+            UpdateBaitEquippedState(equippedBaitId);
+        }
+        
+        /// <summary>
+        /// 更新鱼饵的装备状态显示
+        /// </summary>
+        private void UpdateBaitEquippedState(int newBaitId)
+        {
+            // 遍历所有物品，更新装备状态
+            foreach (var kvp in itemPrefabs)
+            {
+                int itemId = kvp.Key;
+                bool shouldBeEquipped = (itemId == newBaitId);
+                
+                foreach (var prefab in kvp.Value)
+                {
+                    if (prefab != null && prefab.gameObject.activeSelf)
+                    {
+                        prefab.SetEquipped(shouldBeEquipped);
+                    }
+                }
             }
         }
 
@@ -267,9 +331,17 @@ namespace View.Detail
                 {
                     foreach (var prefab in kvp.Value)
                     {
-                        prefab.Init(0, 0, null);
-                        prefab.gameObject.SetActive(false);
-                        objectPool.Add(prefab);
+                        // 【修复】添加null检查，防止prefab为null时崩溃
+                        if (prefab != null)
+                        {
+                            prefab.Init(0, 0, null);
+                            prefab.gameObject.SetActive(false);
+                            objectPool.Add(prefab);
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[BagDetail] ReturnUnusedToPool - prefab为null");
+                        }
                     }
                     toRemove.Add(kvp.Key);
                 }

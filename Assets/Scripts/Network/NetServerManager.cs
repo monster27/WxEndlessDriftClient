@@ -54,6 +54,35 @@ public class NetServerManager : SingletonMono<NetServerManager>
 
     private float struggleStartTime = 0f;      // 挣扎开始时间
     private float currentStruggleTime = 0f;    // 当前挣扎总时长
+
+    // ========== 数据加载完成回调机制 ==========
+    public event Action OnAllDataLoaded;
+    
+    // 数据加载状态追踪
+    private bool isDataLoading = false;
+    private int loadedDataCount = 0;
+    private int totalDataCount = 5;  // 背包、装备、鱼篓、人物、商城
+    
+    /// <summary>
+    /// 开始加载所有数据
+    /// </summary>
+    public void StartDataLoading()
+    {
+        if (isDataLoading)
+        {
+            Logger.LogWarning("[NetServerManager] 数据正在加载中，请勿重复调用");
+            return;
+        }
+        
+        isDataLoading = true;
+        loadedDataCount = 0;
+        
+        Logger.Log("[NetServerManager] 开始加载所有玩家数据...");
+        
+        // 重置加载状态
+        StartCoroutine(FetchAllPlayerData());
+    }
+
     public void Init()
     {
         RegisterNetworkEvents();
@@ -547,6 +576,9 @@ public class NetServerManager : SingletonMono<NetServerManager>
 
         // 通知背包刷新
         CommunicateEvent.Modify("Bag_RefreshItems");
+
+        // 触发装备变更事件，通知UI刷新
+        CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, ((int)EquipmentSlotType.Bait, itemId));
     }
 
     /// <summary>
@@ -1019,7 +1051,8 @@ public class NetServerManager : SingletonMono<NetServerManager>
                equippedHookId == itemId ||
                equippedSkill1Id == itemId ||
                equippedSkill2Id == itemId ||
-               equippedCharacterId == itemId;
+               equippedCharacterId == itemId ||
+               equippedBaitId == itemId;  // 添加鱼饵检查
     }
 
     private IEnumerator FetchGameState()
@@ -1145,8 +1178,8 @@ public class NetServerManager : SingletonMono<NetServerManager>
                         }
                         Logger.Log("[NetServerManager] 更新玩家背包: " + playerInventory.Count + " 件物品");
 
-                        // ========== 新增：强制通知背包数据更新 ==========
-                        CommunicateEvent.Modify<Dictionary<int, int>>("BagDataUpdated", playerInventory);
+                        // 注意：不要在这里触发 BagDataUpdated，应该在获取装备数据之后再触发
+                        // 这样可以确保装备状态（equippedBaitId）已经更新
 
                         // 检查鱼饵和窝料
                         if (playerInventory.ContainsKey(2001))
@@ -1316,7 +1349,12 @@ public class NetServerManager : SingletonMono<NetServerManager>
                         equippedCharacterId = data.characterId > 0 ? data.characterId : 3401;
                         equippedBaitId = data.baitId;  // 更新鱼饵装备
                         characterLevel = data.characterLevel > 0 ? data.characterLevel : 1;
-                        Logger.Log($"[NetServerManager] 更新玩家装备: Rod={equippedRodId}, Line={equippedLineId}, Hook={equippedHookId}, Character={equippedCharacterId}, Bait={equippedBaitId}, Level={characterLevel}");
+                        Logger.Log($"[NetServerManager] 登录后更新玩家装备: Rod={equippedRodId}, Line={equippedLineId}, Hook={equippedHookId}, Character={equippedCharacterId}, Bait={equippedBaitId}, Level={characterLevel}");
+                        Logger.Log($"[NetServerManager] 调试 - 服务器返回的装备数据: baitId={data.baitId}, baitLevel={data.baitLevel}");
+
+                        // 重要：在获取装备数据后，触发背包UI刷新（确保装备状态正确显示）
+                        CommunicateEvent.Modify("Bag_RefreshItems");
+                        Logger.Log("[NetServerManager] 已触发背包UI刷新（确保装备状态正确）");
                     }
                 }
                 catch (System.Exception ex)
@@ -1408,6 +1446,232 @@ public class NetServerManager : SingletonMono<NetServerManager>
             total += kvp.Value;
         }
         return total;
+    }
+
+    /// <summary>
+    /// 按顺序加载所有玩家数据（用于登录后数据预加载）
+    /// </summary>
+    private IEnumerator FetchAllPlayerData()
+    {
+        Logger.Log("[NetServerManager] 开始按顺序加载所有玩家数据...");
+        
+        // 通知LoadingView开始加载背包数据
+        CommunicateEvent.Modify("NetworkLoadingTask", "加载背包数据...");
+        
+        // 1. 加载背包数据
+        Logger.Log("[NetServerManager] 正在加载背包数据...");
+        yield return StartCoroutine(FetchPlayerInventoryCoroutine());
+        CommunicateEvent.Modify("NetworkLoadingComplete", "加载背包数据...");
+        
+        // 通知LoadingView开始加载装备数据
+        CommunicateEvent.Modify("NetworkLoadingTask", "加载装备数据...");
+        
+        // 2. 加载装备数据（必须在背包之后，因为装备状态需要正确显示）
+        Logger.Log("[NetServerManager] 正在加载装备数据...");
+        yield return StartCoroutine(FetchPlayerEquipmentCoroutine());
+        CommunicateEvent.Modify("NetworkLoadingComplete", "加载装备数据...");
+        
+        // 通知LoadingView开始加载鱼篓数据
+        CommunicateEvent.Modify("NetworkLoadingTask", "加载鱼篓数据...");
+        
+        // 3. 加载鱼篓数据
+        Logger.Log("[NetServerManager] 正在加载鱼篓数据...");
+        yield return StartCoroutine(FetchPlayerFishInventoryCoroutine());
+        CommunicateEvent.Modify("NetworkLoadingComplete", "加载鱼篓数据...");
+        
+        // 通知LoadingView开始加载人物数据
+        CommunicateEvent.Modify("NetworkLoadingTask", "加载人物数据...");
+        
+        // 4. 加载人物数据
+        Logger.Log("[NetServerManager] 正在加载人物数据...");
+        yield return StartCoroutine(FetchPlayerCharacterDataCoroutine());
+        CommunicateEvent.Modify("NetworkLoadingComplete", "加载人物数据...");
+        
+        // 通知LoadingView开始加载商城数据
+        CommunicateEvent.Modify("NetworkLoadingTask", "加载商城数据...");
+        
+        // 5. 加载商城数据
+        Logger.Log("[NetServerManager] 正在加载商城数据...");
+        SyncMallItemsFromServer();
+        CommunicateEvent.Modify("NetworkLoadingComplete", "加载商城数据...");
+        
+        // 等待一帧确保所有数据已更新
+        yield return null;
+        
+        // 触发数据加载完成事件
+        OnAllDataLoaded?.Invoke();
+        Logger.Log("[NetServerManager] 所有玩家数据加载完成！");
+        
+        // 通知LoadingView所有数据加载完成
+        CommunicateEvent.Modify("NetworkLoadingComplete", "所有数据加载完成！");
+        
+        isDataLoading = false;
+    }
+    
+    /// <summary>
+    /// 异步获取背包数据
+    /// </summary>
+    private IEnumerator FetchPlayerInventoryCoroutine()
+    {
+        using (var request = UnityWebRequest.Get(serverUrl + "/api/player/inventory/" + _currentPlayerId))
+        {
+            request.timeout = 10;
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    var data = JsonUtility.FromJson<InventoryResponse>(json);
+                    if (data != null && data.items != null)
+                    {
+                        playerInventory.Clear();
+                        int itemCount = 0;
+                        foreach (var item in data.items)
+                        {
+                            playerInventory[item.key] = item.value;
+                            Logger.Log($"[DEBUG] 收到背包物品: ID={item.key}, 数量={item.value}");
+                            itemCount++;
+                        }
+                        Logger.Log($"[NetServerManager] 背包数据加载完成: {playerInventory.Count} 件物品");
+                        
+                        // 通知LoadingView背包数据加载完成
+                        CommunicateEvent.Modify("NetworkLoadingComplete", $"背包数据 - {itemCount} 种物品");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("[NetServerManager] 解析背包数据失败: " + ex.Message);
+                    CommunicateEvent.Modify("NetworkLoadingError", $"背包数据解析失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.LogError("[NetServerManager] 获取背包数据失败: " + request.error);
+                CommunicateEvent.Modify("NetworkLoadingError", $"获取背包数据失败: {request.error}");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 异步获取装备数据
+    /// </summary>
+    private IEnumerator FetchPlayerEquipmentCoroutine()
+    {
+        using (var request = UnityWebRequest.Get(serverUrl + "/api/player/equipment/" + _currentPlayerId))
+        {
+            request.timeout = 10;
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    var data = JsonUtility.FromJson<EquipmentResponse>(json);
+                    if (data != null)
+                    {
+                        equippedRodId = data.rodId > 0 ? data.rodId : 3001;
+                        equippedLineId = data.lineId > 0 ? data.lineId : 3101;
+                        equippedHookId = data.hookId > 0 ? data.hookId : 3201;
+                        equippedSkill1Id = data.skill1Id;
+                        equippedSkill2Id = data.skill2Id;
+                        equippedCharacterId = data.characterId > 0 ? data.characterId : 3401;
+                        equippedBaitId = data.baitId;
+                        characterLevel = data.characterLevel > 0 ? data.characterLevel : 1;
+                        
+                        Logger.Log($"[NetServerManager] 装备数据加载完成: Rod={equippedRodId}, Line={equippedLineId}, Hook={equippedHookId}, Character={equippedCharacterId}, Bait={equippedBaitId}");
+                        
+                        // 通知LoadingView装备数据加载完成
+                        string baitInfo = equippedBaitId > 0 ? $"鱼饵ID={equippedBaitId}" : "无装备鱼饵";
+                        CommunicateEvent.Modify("NetworkLoadingComplete", $"装备数据 - {baitInfo}");
+                        
+                        // 【修复】触发装备状态更新事件，通知UI更新装备标记
+                        CommunicateEvent.Modify<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, (EquipmentSlotType.Bait, equippedBaitId));
+                        Logger.Log("[NetServerManager] 已触发装备状态更新事件");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("[NetServerManager] 解析装备数据失败: " + ex.Message);
+                    CommunicateEvent.Modify("NetworkLoadingError", $"装备数据解析失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.LogError("[NetServerManager] 获取装备数据失败: " + request.error);
+                CommunicateEvent.Modify("NetworkLoadingError", $"获取装备数据失败: {request.error}");
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 异步获取鱼篓数据
+    /// </summary>
+    private IEnumerator FetchPlayerFishInventoryCoroutine()
+    {
+        using (var request = UnityWebRequest.Get(serverUrl + "/api/player/fish-bag/" + _currentPlayerId))
+        {
+            request.timeout = 10;
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    var data = JsonUtility.FromJson<InventoryResponse>(json);
+                    if (data != null && data.items != null)
+                    {
+                        fishInventory.Clear();
+                        foreach (var item in data.items)
+                        {
+                            fishInventory[item.key] = item.value;
+                        }
+                        Logger.Log("[NetServerManager] 鱼篓数据加载完成: " + fishInventory.Count + " 种鱼");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("[NetServerManager] 解析鱼篓数据失败: " + ex.Message);
+                }
+            }
+            else
+            {
+                Logger.LogError("[NetServerManager] 获取鱼篓数据失败: " + request.error);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// 异步获取人物数据
+    /// </summary>
+    private IEnumerator FetchPlayerCharacterDataCoroutine()
+    {
+        using (var request = UnityWebRequest.Get(serverUrl + "/api/player/character/" + _currentPlayerId))
+        {
+            request.timeout = 10;
+            yield return request.SendWebRequest();
+            
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    // 解析人物数据（具体实现根据服务器返回格式）
+                    Logger.Log("[NetServerManager] 人物数据加载完成: " + json);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("[NetServerManager] 解析人物数据失败: " + ex.Message);
+                }
+            }
+            else
+            {
+                Logger.LogError("[NetServerManager] 获取人物数据失败: " + request.error);
+            }
+        }
     }
     
     /// <summary>
@@ -2256,7 +2520,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     }
 
     /// <summary>
-    /// 从服务器重新获取鱼篓数据，确保客户端与服务端一致
+    /// 从服务器重新获取鱼篓和背包数据，确保客户端与服务端一致
     /// </summary>
     private System.Collections.IEnumerator FetchFishInventoryFromServer()
     {
@@ -2299,10 +2563,55 @@ public class NetServerManager : SingletonMono<NetServerManager>
             }
         }
 
-        // 通知 PlayerDataManager 同步数据
+        // 获取普通背包数据（包含鱼饵），并等待完成
+        yield return StartCoroutine(FetchPlayerInventoryFromServer());
+
+        // 通知 PlayerDataManager 同步数据（在背包数据更新之后）
         if (PlayerDataManager.Instance != null)
         {
             PlayerDataManager.Instance.SyncInventoryFromServer();
+        }
+    }
+
+    /// <summary>
+    /// 从服务器获取普通背包数据（异步）
+    /// </summary>
+    private System.Collections.IEnumerator FetchPlayerInventoryFromServer()
+    {
+        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/player/inventory/" + _currentPlayerId))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    var data = JsonUtility.FromJson<InventoryResponse>(json);
+                    if (data != null && data.items != null)
+                    {
+                        playerInventory.Clear();
+                        foreach (var item in data.items)
+                        {
+                            playerInventory[item.key] = item.value;
+                            Logger.Log($"[NetServerManager] 更新背包数据: ID={item.key}, 数量={item.value}");
+                        }
+                        Logger.Log("[NetServerManager] 普通背包数据已更新: " + playerInventory.Count + " 件物品");
+
+                        // 通知背包UI刷新
+                        CommunicateEvent.Modify<Dictionary<int, int>>("BagDataUpdated", playerInventory);
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError("[NetServerManager] 解析普通背包数据失败: " + ex.Message);
+                }
+            }
+            else
+            {
+                Logger.LogError("[NetServerManager] 获取普通背包数据失败: " + request.error);
+            }
         }
     }
 

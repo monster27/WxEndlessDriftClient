@@ -45,6 +45,17 @@ namespace View.Detail
 
         private void UpdateDisplay()
         {
+            // 【修复】添加null检查，防止物品数据为null时崩溃
+            if (itemData == null)
+            {
+                Debug.LogWarning($"[UI_BagPrefab] UpdateDisplay - itemData为null，itemId={itemId}");
+                if (nameText != null) nameText.text = "";
+                if (quantityText != null) quantityText.text = "";
+                if (iconImage != null) iconImage.sprite = null;
+                if (equippedMarker != null) equippedMarker.gameObject.SetActive(false);
+                return;
+            }
+            
             if (nameText != null)
             {
                 nameText.text = itemData.name;

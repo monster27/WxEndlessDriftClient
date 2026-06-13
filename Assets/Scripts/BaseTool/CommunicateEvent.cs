@@ -8,6 +8,8 @@ public static partial class CommunicateEvent
     // === 带参数注册 ===
     public static void Register<T>(string eventName, Action<T> callback)
     {
+        Debug.Log($"[CommunicateEvent] Register - 注册事件: {eventName}, 类型: {typeof(T).Name}");
+        
         if (!eventTable.ContainsKey(eventName))
             eventTable[eventName] = new Dictionary<Type, Delegate>();
 
@@ -18,6 +20,8 @@ public static partial class CommunicateEvent
             typeTable[dataType] = null;
 
         typeTable[dataType] = (Action<T>)typeTable[dataType] + callback;
+        
+        Debug.Log($"[CommunicateEvent] Register - 事件 {eventName} 注册完成");
     }
 
     // === 无参数注册 ===
@@ -71,6 +75,7 @@ public static partial class CommunicateEvent
             return;
         }
         
+        Debug.Log($"[CommunicateEvent] 触发事件: {eventName}, 数据: {newData}");
         ((Action<T>)typeTable[dataType])(newData);
     }
 
