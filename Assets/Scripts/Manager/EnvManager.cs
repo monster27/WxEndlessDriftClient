@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using SharedModels;
 
 public class EnvManager : SingletonMono<EnvManager>
 {
@@ -20,6 +21,56 @@ public class EnvManager : SingletonMono<EnvManager>
         
         // 注册服务器事件监听
         RegisterServerEvents();
+
+        // 初始化默认天气和时间显示（从配置数据中获取默认值）
+        InitDefaultWeatherAndTime();
+    }
+
+    /// <summary>
+    /// 初始化默认天气和时间显示
+    /// </summary>
+    private void InitDefaultWeatherAndTime()
+    {
+        if (LoadDataManager.Instance == null) return;
+
+        // 设置默认天气（使用配置表中的第一个天气）
+        var weathers = LoadDataManager.Instance.weathers;
+        if (weathers != null && weathers.Count > 0)
+        {
+            currentWeatherId = weathers[0].id;
+            currentWeatherName = weathers[0].name;
+        }
+
+        // 根据当前系统时间计算默认时间段
+        var timeSlots = LoadDataManager.Instance.timeSlots;
+        if (timeSlots != null && timeSlots.Count > 0)
+        {
+            int totalCycleMinutes = 0;
+            List<int> bounds = new List<int>();
+            foreach (var slot in timeSlots)
+            {
+                totalCycleMinutes += slot.durationMinutes;
+                bounds.Add(totalCycleMinutes);
+            }
+
+            System.DateTime now = System.DateTime.Now;
+            int totalMinutes = now.Hour * 60 + now.Minute;
+            int cyclePosition = totalMinutes % totalCycleMinutes;
+
+            for (int i = 0; i < bounds.Count; i++)
+            {
+                if (cyclePosition < bounds[i])
+                {
+                    TimeSlotData currentSlot = timeSlots[i];
+                    timeStatus = GetTimeStatusFromSlotId(currentSlot.id);
+                    string timeName = currentSlot.name;
+
+                    // 更新UI显示
+                    UpdateTimeStatus(timeStatus, timeName, currentWeatherId);
+                    break;
+                }
+            }
+        }
     }
     
     /// <summary>
@@ -133,12 +184,19 @@ public class EnvManager : SingletonMono<EnvManager>
             UIManager.Instance.UpdateMainViewWeather(currentWeatherId, currentWeatherName);
         }
     }
-}
 
-public enum TimeStatus
-{
-    Earlymorning,
-    Daytime,
-    Evening,
-    LateAtNigh
+    /// <summary>
+    /// 根据时间段ID获取时间状态
+    /// </summary>
+    private TimeStatus GetTimeStatusFromSlotId(int slotId)
+    {
+        switch (slotId)
+        {
+            case 401: return TimeStatus.Earlymorning;
+            case 402: return TimeStatus.Daytime;
+            case 403: return TimeStatus.Evening;
+            case 404: return TimeStatus.LateAtNigh;
+            default: return TimeStatus.Daytime;
+        }
+    }
 }

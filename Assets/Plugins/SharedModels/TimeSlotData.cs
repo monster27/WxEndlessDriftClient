@@ -8,6 +8,9 @@ namespace SharedModels
     {
         public int id;
         public string name = string.Empty;
+        public string description = string.Empty;
+        public int durationMinutes;
+        public int weight;
     }
 
     [Serializable]
@@ -18,9 +21,9 @@ namespace SharedModels
 
     public enum TimeStatus
     {
-        Daytime = 0,
-        Sunset = 1,
-        Night = 2,
-        Dawn = 3
+        Earlymorning = 0,
+        Daytime = 1,
+        Evening = 2,
+        LateAtNigh = 3
     }
 }

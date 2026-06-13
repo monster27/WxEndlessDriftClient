@@ -8,6 +8,9 @@ namespace SharedModels
     {
         public int id;
         public string name = string.Empty;
+        public string description = string.Empty;
+        public int percentage;
+        public int weight;
     }
 
     [Serializable]

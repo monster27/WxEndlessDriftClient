@@ -6,7 +6,8 @@ using System.Text;
 using System.Linq;
 using Utils;
 using Logger = Utils.Logger;
-using ServerModels;
+// using ServerModels; // 已统一使用 SharedModels
+using SharedModels;
 
 
 public class NetServerManager : SingletonMono<NetServerManager>
@@ -2674,10 +2675,15 @@ public class NetServerManager : SingletonMono<NetServerManager>
     private IEnumerator PollFishingStatus()
     {
         int lastCatchId = -1;
+        bool isFirstRequest = true;
 
         while (isConnected && this != null && gameObject != null)
         {
-            yield return new WaitForSeconds(2f);
+            if (!isFirstRequest)
+            {
+                yield return new WaitForSeconds(2f);
+            }
+            isFirstRequest = false;
 
             if (!isConnected || this == null || gameObject == null)
                 yield break;

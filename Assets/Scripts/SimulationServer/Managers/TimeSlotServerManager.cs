@@ -1,56 +1,30 @@
-// ========================================================
-// 模拟服务器已被移除 - 客户端现在仅使用网络服务器模式
-// 此文件中的所有代码已被注释，以支持纯在线模式
-// ========================================================
-/*
 using System.Collections.Generic;
 using UnityEngine;
+using SharedModels;
 
-/// <summary>
-/// 时间槽服务器管理器
-/// 负责管理游戏内的时间周期和时间段切换
-/// </summary>
 public class TimeSlotServerManager
 {
-    private List<TimeSlotData> timeSlots;           // 时间段数据列表
-    private List<int> timeSlotBounds;               // 时间段边界列表
-    private int totalCycleMinutes = 30;             // 完整时间周期（分钟）
-    private EnvManager envManager;                  // 环境管理器引用
-    private TimeStatus currentTimeStatus = TimeStatus.Daytime;  // 当前时间状态
+    private List<TimeSlotData> timeSlots;
+    private List<int> timeSlotBounds;
+    private int totalCycleMinutes = 30;
+    private TimeStatus currentTimeStatus = TimeStatus.Daytime;
 
-    /// <summary>
-    /// 当前时间状态
-    /// </summary>
     public TimeStatus CurrentTimeStatus => currentTimeStatus;
 
-    /// <summary>
-    /// 时间槽变化事件
-    /// </summary>
     public event System.Action<TimeStatus> OnTimeSlotChanged;
 
-    /// <summary>
-    /// 构造函数
-    /// </summary>
     public TimeSlotServerManager()
     {
         InitTimeSlots();
         Debug.Log("[TimeSlotServerManager] 时间槽服务器管理器初始化完成");
     }
 
-    /// <summary>
-    /// 初始化时间槽管理器
-    /// </summary>
-    /// <param name="envManager">环境管理器引用</param>
-    public void Initialize(EnvManager envManager)
+    public void Initialize()
     {
-        this.envManager = envManager;
         InitTimeSlots();
         Debug.Log("[TimeSlotServerManager] 时间槽管理器初始化完成");
     }
 
-    /// <summary>
-    /// 初始化时间段数据
-    /// </summary>
     private void InitTimeSlots()
     {
         if (LoadDataManager.Instance == null)
@@ -70,20 +44,14 @@ public class TimeSlotServerManager
         }
 
         totalCycleMinutes = currentBound;
+        UpdateCurrentTimeSlot();
     }
 
-    /// <summary>
-    /// 更新方法
-    /// </summary>
-    /// <param name="deltaTime">帧时间</param>
     public void Update(float deltaTime)
     {
         UpdateCurrentTimeSlot();
     }
 
-    /// <summary>
-    /// 更新当前时间段
-    /// </summary>
     public void UpdateCurrentTimeSlot()
     {
         if (timeSlots == null || timeSlotBounds == null)
@@ -106,16 +74,13 @@ public class TimeSlotServerManager
                 if (newTimeStatus != currentTimeStatus)
                 {
                     currentTimeStatus = newTimeStatus;
-                    OnTimeSlotChanged?.Invoke(newTimeStatus);
+                    NotifyTimeSlotChanged(newTimeStatus);
                 }
                 break;
             }
         }
     }
 
-    /// <summary>
-    /// 手动切换时间槽
-    /// </summary>
     public void SwitchTimeSlot()
     {
         if (timeSlots == null || timeSlots.Count == 0)
@@ -129,15 +94,32 @@ public class TimeSlotServerManager
         int nextIndex = (currentIndex + 1) % statuses.Length;
 
         currentTimeStatus = statuses[nextIndex];
-        OnTimeSlotChanged?.Invoke(currentTimeStatus);
+        NotifyTimeSlotChanged(currentTimeStatus);
         Debug.Log($"[TimeSlotServerManager] 手动切换时间槽: {currentTimeStatus}");
     }
 
-    /// <summary>
-    /// 根据时间段ID获取时间状态
-    /// </summary>
-    /// <param name="slotId">时间段ID</param>
-    /// <returns>时间状态</returns>
+    public void ManualSetTimeSlot(TimeStatus status)
+    {
+        if (currentTimeStatus != status)
+        {
+            currentTimeStatus = status;
+            NotifyTimeSlotChanged(status);
+            Debug.Log($"[TimeSlotServerManager] 手动设置时间槽: {currentTimeStatus}");
+        }
+    }
+
+    private void NotifyTimeSlotChanged(TimeStatus status)
+    {
+        OnTimeSlotChanged?.Invoke(status);
+
+        var data = new Dictionary<string, object>
+        {
+            { "timeStatus", (int)status },
+            { "timeSlotName", GetCurrentTimeSlotName() }
+        };
+        CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_TIME_SLOT_CHANGED, data);
+    }
+
     private TimeStatus GetTimeStatusFromSlotId(int slotId)
     {
         switch (slotId)
@@ -149,5 +131,28 @@ public class TimeSlotServerManager
             default: return TimeStatus.Daytime;
         }
     }
+
+    public string GetCurrentTimeSlotName()
+    {
+        foreach (var slot in timeSlots)
+        {
+            if (GetTimeStatusFromSlotId(slot.id) == currentTimeStatus)
+            {
+                return slot.name;
+            }
+        }
+        return "未知时段";
+    }
+
+    public TimeSlotData GetCurrentTimeSlotData()
+    {
+        foreach (var slot in timeSlots)
+        {
+            if (GetTimeStatusFromSlotId(slot.id) == currentTimeStatus)
+            {
+                return slot;
+            }
+        }
+        return null;
+    }
 }
-*/
