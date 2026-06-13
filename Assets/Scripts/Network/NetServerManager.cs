@@ -8,6 +8,7 @@ using Utils;
 using Logger = Utils.Logger;
 // using ServerModels; // 已统一使用 SharedModels
 using SharedModels;
+using System;
 
 
 public class NetServerManager : SingletonMono<NetServerManager>
@@ -358,7 +359,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         CommunicateEvent.RegisterRequest<int, float>("GetTimeUntilNextFishing", _ => timeUntilNextFishing);
         CommunicateEvent.RegisterRequest<int, int>("GetTrashStreak", _ => trashStreak);
         CommunicateEvent.RegisterRequest<int, bool>("IsFishBagFull", _ => isFishBagFull);
-        CommunicateEvent.RegisterRequest<int, string>("GetCurrentFishingMode", _ => currentFishingMode);
+        CommunicateEvent.RegisterRequest<int, string>("GetCurrentFishingMode", _ => currentFishingMode.ToString());
 
         // 注册售卖鱼事件处理器
         CommunicateEvent.Register<(List<int>, int)>(CommunicateEvent.EVENT_SELL_FISH_ITEMS, OnSellFishItems);
@@ -388,7 +389,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     private float timeUntilNextFishing = 0f;
     private int trashStreak = 0;
     private bool isFishBagFull = false;
-    private string currentFishingMode = "Normal";
+    private FishingMode currentFishingMode = FishingMode.Normal;
 
     // 玩家数据
     private Dictionary<int, int> playerInventory = new Dictionary<int, int>();
@@ -1313,8 +1314,9 @@ public class NetServerManager : SingletonMono<NetServerManager>
                         equippedSkill1Id = data.skill1Id;
                         equippedSkill2Id = data.skill2Id;
                         equippedCharacterId = data.characterId > 0 ? data.characterId : 3401;
+                        equippedBaitId = data.baitId;  // 更新鱼饵装备
                         characterLevel = data.characterLevel > 0 ? data.characterLevel : 1;
-                        Logger.Log($"[NetServerManager] 更新玩家装备: Rod={equippedRodId}, Line={equippedLineId}, Hook={equippedHookId}, Character={equippedCharacterId}, Level={characterLevel}");
+                        Logger.Log($"[NetServerManager] 更新玩家装备: Rod={equippedRodId}, Line={equippedLineId}, Hook={equippedHookId}, Character={equippedCharacterId}, Bait={equippedBaitId}, Level={characterLevel}");
                     }
                 }
                 catch (System.Exception ex)
@@ -1768,9 +1770,19 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 return;
             }
 
-            int defaultBaitId = 2501;
-            Logger.Log($"[NetServerManager] 登录成功，自动开始钓鱼，使用鱼饵ID: {defaultBaitId}");
-            StartAutoFishing(defaultBaitId);
+            // 使用当前装备的鱼饵ID，如果没有装备则使用0（表示不使用鱼饵）
+            int baitId = equippedBaitId > 0 ? equippedBaitId : 0;
+
+            if (baitId == 0)
+            {
+                Logger.Log("[NetServerManager] 未装备鱼饵，自动钓鱼不使用鱼饵");
+            }
+            else
+            {
+                Logger.Log($"[NetServerManager] 登录成功，自动开始钓鱼，使用装备的鱼饵ID: {baitId}");
+            }
+
+            StartAutoFishing(baitId);
         }
         catch (System.Exception ex)
         {
@@ -1911,27 +1923,25 @@ public class NetServerManager : SingletonMono<NetServerManager>
         if (!_isEnabled)
             return;
 
-        if (SimulationServer.Instance != null && SimulationServer.Instance.IsRunning())
+        // 心跳检测（网络模式）
+        heartbeatTimer += Time.deltaTime;
+        if (heartbeatTimer >= NetUtils.HEARTBEAT_INTERVAL)
         {
-            heartbeatTimer += Time.deltaTime;
-            if (heartbeatTimer >= NetUtils.HEARTBEAT_INTERVAL)
-            {
-                heartbeatTimer = 0f;
+            heartbeatTimer = 0f;
 
-                if (networkState == NetUtils.NetworkState.Connected)
-                {
-                    missedHeartbeats++;
-                    Logger.Log("[NetServerManager] 等待心跳响应，未收到响应次数: " + missedHeartbeats);
-                    StartCoroutine(SendHeartbeatRequest());
-                }
-                else if (networkState == NetUtils.NetworkState.Reconnecting)
-                {
-                    StartConnect();
-                }
-                else if (networkState == NetUtils.NetworkState.Disconnected)
-                {
-                    StartConnect();
-                }
+            if (networkState == NetUtils.NetworkState.Connected)
+            {
+                missedHeartbeats++;
+                Logger.Log("[NetServerManager] 等待心跳响应，未收到响应次数: " + missedHeartbeats);
+                StartCoroutine(SendHeartbeatRequest());
+            }
+            else if (networkState == NetUtils.NetworkState.Reconnecting)
+            {
+                StartConnect();
+            }
+            else if (networkState == NetUtils.NetworkState.Disconnected)
+            {
+                StartConnect();
             }
         }
 
@@ -2738,7 +2748,16 @@ public class NetServerManager : SingletonMono<NetServerManager>
                                 }
                             }
                             
-                            currentFishingMode = continuousModeRemainingTime > 0 ? "Continuous" : "Normal";
+                            // 使用服务器返回的钓鱼模式（整数传输）
+                            if (Enum.IsDefined(typeof(FishingMode), response.fishingMode))
+                            {
+                                currentFishingMode = (FishingMode)response.fishingMode;
+                            }
+                            else
+                            {
+                                // 降级处理：根据连续模式剩余时间判断
+                                currentFishingMode = continuousModeRemainingTime > 0 ? FishingMode.Continuous : FishingMode.Normal;
+                            }
                             
                             // 调试日志
                             Logger.Log($"[NetServerManager] 轮询钓鱼状态: continuousModeRemainingTime={continuousModeRemainingTime:F1}, isInContinuousMode={isInContinuousMode}, currentFishingMode={currentFishingMode}");
@@ -3343,7 +3362,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                         {
                             continuousModeRemainingTime = response.remainingTime;
                             isInContinuousMode = true;
-                            currentFishingMode = "Continuous";
+                            currentFishingMode = FishingMode.Continuous;
                             
                             // 如果 baitEndTime 是有效的时间戳，保存它
                             if (response.baitEndTime > 1000000000)
@@ -3366,7 +3385,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                             // 旧服务器可能只返回 baitEndTime，需要判断是时间戳还是剩余秒数
                             baitEndTime = response.baitEndTime;
                             isInContinuousMode = true;
-                            currentFishingMode = "Continuous";
+                            currentFishingMode = FishingMode.Continuous;
                             
                             // 根据服务器时间计算剩余时间
                             UpdateContinuousModeRemainingTime();
@@ -3441,7 +3460,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                         {
                             continuousModeRemainingTime = response.remainingTime;
                             isInContinuousMode = true;
-                            currentFishingMode = "Continuous";
+                            currentFishingMode = FishingMode.Continuous;
                             
                             // 如果 baitEndTime 是有效的时间戳，保存它
                             if (response.baitEndTime > 1000000000)
@@ -3463,7 +3482,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                             // 旧服务器可能只返回 baitEndTime，需要判断是时间戳还是剩余秒数
                             baitEndTime = response.baitEndTime;
                             isInContinuousMode = true;
-                            currentFishingMode = "Continuous";
+                            currentFishingMode = FishingMode.Continuous;
                             
                             // 根据服务器时间计算剩余时间
                             UpdateContinuousModeRemainingTime();
@@ -3523,7 +3542,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 }
                 
                 isInContinuousMode = true;
-                currentFishingMode = "Continuous";
+                currentFishingMode = FishingMode.Continuous;
                 
                 if (!wasInContinuousMode)
                 {
@@ -3534,7 +3553,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 if (continuousModeRemainingTime <= 0)
                 {
                     isInContinuousMode = false;
-                    currentFishingMode = "Normal";
+                    currentFishingMode = FishingMode.Normal;
                     baitEndTimeIsSeconds = false;
                     
                     if (wasInContinuousMode)
@@ -3548,7 +3567,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 // 剩余时间已到
                 continuousModeRemainingTime = 0;
                 isInContinuousMode = false;
-                currentFishingMode = "Normal";
+                currentFishingMode = FishingMode.Normal;
                 baitEndTimeIsSeconds = false;
                 
                 if (wasInContinuousMode)
@@ -3572,7 +3591,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         {
             continuousModeRemainingTime = 0;
             isInContinuousMode = false;
-            currentFishingMode = "Normal";
+            currentFishingMode = FishingMode.Normal;
             
             if (wasInContinuousMode)
             {
@@ -3602,7 +3621,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
         {
             continuousModeRemainingTime = remaining;
             isInContinuousMode = true;
-            currentFishingMode = "Continuous";
+            currentFishingMode = FishingMode.Continuous;
             
             if (!wasInContinuousMode)
             {
@@ -3614,7 +3633,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
             // 剩余时间已到
             continuousModeRemainingTime = 0;
             isInContinuousMode = false;
-            currentFishingMode = "Normal";
+            currentFishingMode = FishingMode.Normal;
             baitEndTime = 0;
             
             if (wasInContinuousMode)

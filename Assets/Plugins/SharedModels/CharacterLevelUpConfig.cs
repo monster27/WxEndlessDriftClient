@@ -1,12 +1,11 @@
-using UnityEngine;
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace SharedModels
 {
     /// <summary>
     /// 人物升级配置（运行时使用，支持服务器/客户端传输）
+    /// 纯数据类，不含Unity相关依赖
     /// </summary>
     [Serializable]
     public class CharacterLevelUpConfig
@@ -37,9 +36,6 @@ namespace SharedModels
 
             levelExpForLevel.Clear();
 
-            System.Text.StringBuilder debugInfo = new System.Text.StringBuilder();
-            debugInfo.AppendLine("[CharacterLevelUpConfig] 初始化运行时数据:");
-
             foreach (var kvp in levelUpExpRequirements)
             {
                 string[] parts = kvp.Key.Split('-');
@@ -53,12 +49,8 @@ namespace SharedModels
                     {
                         levelExpForLevel[level] = expPerLevel;
                     }
-                    debugInfo.AppendLine($"  等级区间 {kvp.Key}: 每级 {expPerLevel} 经验");
                 }
             }
-
-            debugInfo.AppendLine($"  总计: levelExpForLevel.Count={levelExpForLevel.Count}");
-            Debug.Log(debugInfo.ToString());
 
             isInitialized = true;
         }
@@ -141,34 +133,30 @@ namespace SharedModels
         }
 
         /// <summary>
-        /// 从JSON字符串解析
+        /// 获取等级列表（用于遍历所有配置的等级）
         /// </summary>
-        public static CharacterLevelUpConfig ParseFromJson(string jsonString)
+        public List<int> GetAllLevels()
         {
-            CharacterLevelUpConfig config = new CharacterLevelUpConfig();
-            System.Text.StringBuilder debugInfo = new System.Text.StringBuilder();
-            debugInfo.AppendLine("[CharacterLevelUpConfig] ParseFromJson 解析配置:");
+            InitializeRuntimeData();
+            return new List<int>(levelExpForLevel.Keys);
+        }
 
-            try
+        /// <summary>
+        /// 计算从当前等级升到目标等级所需的总经验
+        /// </summary>
+        public int CalculateTotalExp(int fromLevel, int toLevel)
+        {
+            InitializeRuntimeData();
+            
+            int totalExp = 0;
+            for (int level = fromLevel; level < toLevel; level++)
             {
-                JsonWrapper wrapper = JsonUtility.FromJson<JsonWrapper>(jsonString);
-                if (wrapper != null)
+                if (levelExpForLevel.TryGetValue(level, out int exp))
                 {
-                    debugInfo.AppendLine($"  levelRangeExpList.Count={wrapper.levelRangeExpList.Count}");
-                    foreach (var item in wrapper.levelRangeExpList)
-                    {
-                        debugInfo.AppendLine($"    区间 {item.rangeKey}: {item.expRequired} 经验");
-                        config.levelUpExpRequirements[item.rangeKey] = item.expRequired;
-                    }
+                    totalExp += exp;
                 }
-                Debug.Log(debugInfo.ToString());
             }
-            catch (Exception e)
-            {
-                Debug.LogError($"[CharacterLevelUpConfig] ParseFromJson failed: {e.Message}");
-            }
-
-            return config;
+            return totalExp;
         }
     }
 

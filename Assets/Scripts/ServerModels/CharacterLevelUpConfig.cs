@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.CharacterLevelUpConfig 已弃用
+// 请使用 SharedModels.CharacterLevelUpConfig
+// ========================================================
+/*
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -33,3 +38,4 @@ namespace ServerModels
         public Dictionary<int, int> levelUpExpRequirements = new Dictionary<int, int>();
     }
 }
+*/

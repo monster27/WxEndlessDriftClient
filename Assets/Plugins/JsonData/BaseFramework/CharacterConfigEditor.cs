@@ -3,6 +3,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using SharedModels;
 
 /// <summary>
 /// 人物配置编辑器 - 完美解决版本

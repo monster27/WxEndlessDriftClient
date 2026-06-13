@@ -354,5 +354,6 @@ public class ServerTestView : MonoBehaviour
         public int todayFishCount;
         public int comboCount;
         public bool isAutoFishing;
+        public int fishingMode; // 钓鱼模式（0=Normal, 1=Continuous）
     }
 }

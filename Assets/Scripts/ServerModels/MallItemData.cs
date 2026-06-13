@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.MallItemData 已弃用
+// 请使用 SharedModels.MallItemData
+// ========================================================
+/*
 namespace ServerModels
 {
     [System.Serializable]
@@ -8,3 +13,4 @@ namespace ServerModels
         public int stock;
     }
 }
+*/

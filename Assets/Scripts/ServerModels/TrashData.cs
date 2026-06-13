@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.TrashData 已弃用
+// 请使用 SharedModels.TrashData
+// ========================================================
+/*
 using System.Collections.Generic;
 
 namespace ServerModels
@@ -16,3 +21,4 @@ namespace ServerModels
         public List<TrashData> trash = new List<TrashData>();
     }
 }
+*/

@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.FishingStats 已弃用
+// 请使用 SharedModels.FishingStats
+// ========================================================
+/*
 using System.Collections.Generic;
 
 namespace ServerModels
@@ -20,3 +25,4 @@ namespace ServerModels
         public Dictionary<int, int> rarityWeights = new Dictionary<int, int>();
     }
 }
+*/

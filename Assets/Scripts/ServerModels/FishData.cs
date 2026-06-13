@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.FishData 已弃用
+// 请使用 SharedModels.FishData
+// ========================================================
+/*
 using System.Collections.Generic;
 
 namespace ServerModels
@@ -27,3 +32,4 @@ namespace ServerModels
         public List<FishData> fishes = new List<FishData>();
     }
 }
+*/

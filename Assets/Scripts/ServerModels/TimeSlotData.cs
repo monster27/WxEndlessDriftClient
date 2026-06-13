@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.TimeSlotData 已弃用
+// 请使用 SharedModels.TimeSlotData
+// ========================================================
+/*
 using System.Collections.Generic;
 
 namespace ServerModels
@@ -23,3 +28,4 @@ namespace ServerModels
         Dawn = 3
     }
 }
+*/

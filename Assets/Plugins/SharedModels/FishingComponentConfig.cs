@@ -1,4 +1,3 @@
-using UnityEngine;
 using System;
 using System.Collections.Generic;
 
@@ -211,56 +210,6 @@ namespace SharedModels
         public int continuousPauseDuration;
         public int normalPauseDuration;
         public int fishBagCapacity;
-        
-        /// <summary>
-        /// 获取指定等级的数据
-        /// </summary>
-        /// <param name="level">等级</param>
-        /// <returns>等级数据，如果不存在返回null</returns>
-        public FishingComponentLevelData GetLevelData(int level)
-        {
-            if (levelDataList == null) return null;
-            return levelDataList.Find(data => data.level == level);
-        }
-        
-        /// <summary>
-        /// 获取指定等级中指定参数ID的值
-        /// </summary>
-        /// <param name="level">等级</param>
-        /// <param name="paramId">参数ID</param>
-        /// <returns>参数值，如果不存在返回0</returns>
-        public float GetParamValue(int level, int paramId)
-        {
-            var levelData = GetLevelData(level);
-            if (levelData == null || levelData.paramsList == null) return 0f;
-            
-            var param = levelData.paramsList.Find(p => p.paramId == paramId);
-            return param != null ? param.value : 0f;
-        }
-        
-        /// <summary>
-        /// 获取指定等级的第index个参数（从0开始）
-        /// </summary>
-        /// <param name="level">等级</param>
-        /// <param name="index">参数索引（0、1、2）</param>
-        /// <returns>参数数据，如果不存在返回null</returns>
-        public FishingComponentParam GetParamByIndex(int level, int index)
-        {
-            var levelData = GetLevelData(level);
-            if (levelData == null || levelData.paramsList == null || index >= levelData.paramsList.Count) return null;
-            return levelData.paramsList[index];
-        }
-        
-        /// <summary>
-        /// 获取指定等级的参数数量
-        /// </summary>
-        /// <param name="level">等级</param>
-        /// <returns>参数数量</returns>
-        public int GetParamCount(int level)
-        {
-            var levelData = GetLevelData(level);
-            return levelData != null && levelData.paramsList != null ? levelData.paramsList.Count : 0;
-        }
     }
 
     /// <summary>
@@ -311,74 +260,6 @@ namespace SharedModels
         {
             if (items == null) return null;
             return items.Find(c => c.name == name);
-        }
-
-        /// <summary>
-        /// 获取所有组件的图标路径字典
-        /// 如果JSON中iconPath为空，则根据ID规则生成路径
-        /// 规则：3001-3099=Rod, 3101-3199=Line, 3201-3299=Hook, 3301-3399=Skill
-        /// </summary>
-        /// <returns>图标ID到路径的字典</returns>
-        public Dictionary<int, string> GetAllIconPaths()
-        {
-            var iconPaths = new Dictionary<int, string>();
-            if (items == null) return iconPaths;
-
-            foreach (var item in items)
-            {
-                string iconPath;
-                if (!string.IsNullOrEmpty(item.iconPath))
-                {
-                    iconPath = item.iconPath;
-                }
-                else
-                {
-                    iconPath = GenerateIconPath(item.id);
-                }
-                iconPaths[item.id] = iconPath;
-            }
-            return iconPaths;
-        }
-
-        /// <summary>
-        /// 根据ID生成图标路径
-        /// </summary>
-        private string GenerateIconPath(int id)
-        {
-            if (id >= 3001 && id <= 3099)
-                return $"UI/Icon/Equipment/Rod/{id}";
-            if (id >= 3101 && id <= 3199)
-                return $"UI/Icon/Equipment/Line/{id}";
-            if (id >= 3201 && id <= 3299)
-                return $"UI/Icon/Equipment/Hook/{id}";
-            if (id >= 3301 && id <= 3399)
-                return $"UI/Icon/Equipment/Skill/{id}";
-            return $"UI/Icon/Equipment/Unknown/{id}";
-        }
-
-        /// <summary>
-        /// 从Resources路径加载配置
-        /// </summary>
-        /// <param name="path">Resources路径（不含拓展名）</param>
-        /// <returns>配置实例，失败返回null</returns>
-        public static CompleteFishingSkillConfig LoadFromResources(string path)
-        {
-            TextAsset textAsset = Resources.Load<TextAsset>(path);
-            if (textAsset == null)
-            {
-                Debug.LogError($"[CompleteFishingSkillConfig] 加载失败: {path}");
-                return null;
-            }
-
-            var config = JsonUtility.FromJson<CompleteFishingSkillConfig>(textAsset.text);
-            if (config == null)
-            {
-                Debug.LogError($"[CompleteFishingSkillConfig] 解析失败: {path}");
-                return null;
-            }
-
-            Debug.Log($"[CompleteFishingSkillConfig] 加载成功，路径: {path}");
-            return config;
         }
     }
 

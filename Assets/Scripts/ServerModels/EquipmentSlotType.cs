@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.EquipmentSlotType 已弃用
+// 请使用 SharedModels.EquipmentSlotType
+// ========================================================
+/*
 namespace ServerModels
 {
     public enum EquipmentSlotType
@@ -13,3 +18,4 @@ namespace ServerModels
         Decoration = 41
     }
 }
+*/

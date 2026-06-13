@@ -2,145 +2,34 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
+// 引入SharedModels命名空间以使用统一的数据类型
+using SharedModels;
+
 namespace JsonData
 {
     /// <summary>
-    /// 人物升级配置（运行时使用，支持服务器/客户端传输）
+    /// 人物升级配置扩展类（Unity专用）
+    /// 提供Unity相关的资源加载和调试功能
+    /// 数据类型定义请参见 SharedModels/CharacterLevelUpConfig.cs
     /// </summary>
-    [Serializable]
-    public class CharacterLevelUpConfig
+    public static class CharacterLevelUpConfigExtensions
     {
         /// <summary>
-        /// 升级经验配置（等级区间 -> 所需经验）
+        /// 从Unity Resources加载升级配置
         /// </summary>
-        public Dictionary<string, int> levelUpExpRequirements = new Dictionary<string, int>();
-
-        /// <summary>
-        /// 整十级金币奖励配置（等级 -> 金币奖励）
-        /// </summary>
-        public Dictionary<int, int> tenLevelGoldRewards = new Dictionary<int, int>();
-
-        /// <summary>
-        /// 运行时使用的等级经验配置（等级 -> 升级所需经验）
-        /// </summary>
-        private Dictionary<int, int> levelExpForLevel = new Dictionary<int, int>();
-
-        private bool isInitialized = false;
-
-        /// <summary>
-        /// 初始化运行时字典
-        /// </summary>
-        private void InitializeRuntimeData()
+        public static CharacterLevelUpConfig LoadFromResources(string path = "JsonData/BaseFramework/levelup_exp")
         {
-            if (isInitialized) return;
-
-            levelExpForLevel.Clear();
-
-            System.Text.StringBuilder debugInfo = new System.Text.StringBuilder();
-            debugInfo.AppendLine("[CharacterLevelUpConfig] 初始化运行时数据:");
-
-            foreach (var kvp in levelUpExpRequirements)
+            TextAsset textAsset = Resources.Load<TextAsset>(path);
+            if (textAsset == null)
             {
-                string[] parts = kvp.Key.Split('-');
-                if (parts.Length == 2)
-                {
-                    int startLevel = int.Parse(parts[0]);
-                    int endLevel = int.Parse(parts[1]);
-                    int expPerLevel = kvp.Value;
-
-                    for (int level = startLevel; level < endLevel; level++)
-                    {
-                        levelExpForLevel[level] = expPerLevel;
-                    }
-                    debugInfo.AppendLine($"  等级区间 {kvp.Key}: 每级 {expPerLevel} 经验");
-                }
+                Debug.LogError($"[CharacterLevelUpConfig] 加载失败: {path}");
+                return null;
             }
-
-            debugInfo.AppendLine($"  总计: levelExpForLevel.Count={levelExpForLevel.Count}");
-            Debug.Log(debugInfo.ToString());
-
-            isInitialized = true;
+            return ParseFromJson(textAsset.text);
         }
 
         /// <summary>
-        /// 获取指定等级升级所需经验
-        /// </summary>
-        public int GetExpForLevel(int level)
-        {
-            InitializeRuntimeData();
-
-            if (levelExpForLevel.TryGetValue(level, out int exp))
-            {
-                return exp;
-            }
-            return 100;
-        }
-
-        /// <summary>
-        /// 获取等级区间的总经验值
-        /// </summary>
-        /// <param name="rangeKey">区间键，如 "1-10"</param>
-        /// <returns>该区间的总经验值</returns>
-        public int GetExpForLevelRange(string rangeKey)
-        {
-            if (levelUpExpRequirements.TryGetValue(rangeKey, out int exp))
-            {
-                return exp;
-            }
-            return 1000; // 默认值
-        }
-
-        /// <summary>
-        /// 配置版本号（用于数据同步）
-        /// </summary>
-        public int configVersion = 1;
-
-        /// <summary>
-        /// 最后更新时间
-        /// </summary>
-        public string lastUpdateTime;
-
-        /// <summary>
-        /// 从传输数据对象恢复
-        /// </summary>
-        public void FromTransferData(LevelUpConfigData data)
-        {
-            if (data == null) return;
-
-            configVersion = data.configVersion;
-            lastUpdateTime = data.lastUpdateTime;
-
-            levelUpExpRequirements.Clear();
-            if (data.levelUpExpList != null)
-            {
-                foreach (var item in data.levelUpExpList)
-                {
-                    levelUpExpRequirements[item.rangeKey] = item.expRequired;
-                }
-            }
-
-            isInitialized = false;
-        }
-
-        /// <summary>
-        /// JSON解析用的包装类
-        /// </summary>
-        [Serializable]
-        public class JsonWrapper
-        {
-            public List<LevelRangeJson> levelRangeExpList = new List<LevelRangeJson>();
-        }
-
-        [Serializable]
-        public class LevelRangeJson
-        {
-            public string rangeKey;
-            public string rangeName;
-            public int expRequired;
-        }
-
-        /// <summary>
-        /// 从JSON字符串解析
+        /// 从JSON字符串解析（带Unity调试日志）
         /// </summary>
         public static CharacterLevelUpConfig ParseFromJson(string jsonString)
         {
@@ -150,7 +39,7 @@ namespace JsonData
 
             try
             {
-                JsonWrapper wrapper = JsonUtility.FromJson<JsonWrapper>(jsonString);
+                CharacterLevelUpConfig.JsonWrapper wrapper = JsonUtility.FromJson<CharacterLevelUpConfig.JsonWrapper>(jsonString);
                 if (wrapper != null)
                 {
                     debugInfo.AppendLine($"  levelRangeExpList.Count={wrapper.levelRangeExpList.Count}");
@@ -169,26 +58,24 @@ namespace JsonData
 
             return config;
         }
-    }
 
-    /// <summary>
-    /// 升级配置传输数据类
-    /// </summary>
-    [Serializable]
-    public class LevelUpConfigData
-    {
-        public int configVersion;
-        public string lastUpdateTime;
-        public List<LevelRangeData> levelUpExpList;
-    }
-
-    /// <summary>
-    /// 等级区间数据
-    /// </summary>
-    [Serializable]
-    public class LevelRangeData
-    {
-        public string rangeKey;
-        public int expRequired;
+        /// <summary>
+        /// 打印配置调试信息
+        /// </summary>
+        public static void PrintDebugInfo(this CharacterLevelUpConfig config)
+        {
+            System.Text.StringBuilder debugInfo = new System.Text.StringBuilder();
+            debugInfo.AppendLine("[CharacterLevelUpConfig] 配置信息:");
+            debugInfo.AppendLine($"  配置版本: {config.configVersion}");
+            debugInfo.AppendLine($"  最后更新: {config.lastUpdateTime}");
+            debugInfo.AppendLine($"  等级区间数量: {config.levelUpExpRequirements.Count}");
+            
+            foreach (var kvp in config.levelUpExpRequirements)
+            {
+                debugInfo.AppendLine($"    {kvp.Key}: {kvp.Value} 经验");
+            }
+            
+            Debug.Log(debugInfo.ToString());
+        }
     }
 }

@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.FishingResult 已弃用
+// 请使用 SharedModels.FishingResult
+// ========================================================
+/*
 namespace ServerModels
 {
     [System.Serializable]
@@ -25,3 +30,4 @@ namespace ServerModels
         public bool isSuccess;
     }
 }
+*/

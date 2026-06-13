@@ -153,7 +153,7 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
             return LoadDataManager.Instance.GetCharacterConfig(characterId);
         }
         
-        CharacterConfigList configList = CharacterConfigList.LoadFromResources();
+        CharacterConfigList configList = CharacterConfigListExtensions.LoadFromResources();
         if (configList != null && configList.characters != null)
         {
             return configList.characters.Find(c => c.id == characterId);

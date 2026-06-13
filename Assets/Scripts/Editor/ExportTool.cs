@@ -124,17 +124,17 @@ public class ExportTool : EditorWindow
             }
         }
 
-        // 3. 获取客户端ServerModels（导出到服务器Shared/ServerModels）
-        string clientServerModelsPath = Path.Combine(Application.dataPath, "Scripts", "ServerModels");
-        if (Directory.Exists(clientServerModelsPath))
+        // 3. 获取客户端SharedModels（导出到服务器Shared/SharedModels）
+        string clientSharedModelsPath = Path.Combine(Application.dataPath, "Plugins", "SharedModels");
+        if (Directory.Exists(clientSharedModelsPath))
         {
-            foreach (string file in Directory.GetFiles(clientServerModelsPath, "*.cs"))
+            foreach (string file in Directory.GetFiles(clientSharedModelsPath, "*.cs"))
             {
                 exportFiles.Add(new ExportFileInfo
                 {
                     sourcePath = file,
-                    destinationPath = Path.Combine(serverSharedPath, "ServerModels", Path.GetFileName(file)),
-                    fileType = "服务器模型",
+                    destinationPath = Path.Combine(serverSharedPath, "SharedModels", Path.GetFileName(file)),
+                    fileType = "共享模型",
                     color = new Color(1f, 0.6f, 0.2f) // 橙色
                 });
             }
@@ -187,7 +187,7 @@ public class ExportTool : EditorWindow
         EditorGUILayout.LabelField("🔍 检索文件夹路径", EditorStyles.boldLabel);
         EditorGUILayout.LabelField($"• JSON数据: Assets/Resources/JsonData", EditorStyles.miniLabel);
         EditorGUILayout.LabelField($"• 数据结构: Assets/Plugins/Json", EditorStyles.miniLabel);
-        EditorGUILayout.LabelField($"• 服务器模型: Assets/Scripts/ServerModels", EditorStyles.miniLabel);
+        EditorGUILayout.LabelField($"• 共享模型: Assets/Plugins/SharedModels", EditorStyles.miniLabel);
         EditorGUILayout.LabelField($"• 事件常量: Assets/Scripts/BaseTool", EditorStyles.miniLabel);
         GUILayout.EndVertical();
 
@@ -432,7 +432,7 @@ public class ExportTool : EditorWindow
         int exportedCount = 0;
 
         exportedCount += ExportStructFiles(path);
-        exportedCount += ExportServerModels(path);
+        exportedCount += ExportSharedModels(path);
         exportedCount += ExportSharedStructures(path);
         exportedCount += ExportSharedData(path);
         exportedCount += ExportGameEventConstants(path);
@@ -510,24 +510,24 @@ public class ExportTool : EditorWindow
         return count;
     }
 
-    private static int ExportServerModels(string basePath)
+    private static int ExportSharedModels(string basePath)
     {
         int count = 0;
-        // 从客户端读取ServerModels（保持与RefreshExportFileList一致）
-        string clientServerModelsPath = Path.Combine(Application.dataPath, "Scripts", "ServerModels");
+        // 从客户端读取SharedModels（保持与RefreshExportFileList一致）
+        string clientSharedModelsPath = Path.Combine(Application.dataPath, "Plugins", "SharedModels");
 
-        if (Directory.Exists(clientServerModelsPath))
+        if (Directory.Exists(clientSharedModelsPath))
         {
-            string modelsDestPath = Path.Combine(basePath, "Shared", "ServerModels");
+            string modelsDestPath = Path.Combine(basePath, "Shared", "SharedModels");
             Directory.CreateDirectory(modelsDestPath);
 
-            foreach (string csFile in Directory.GetFiles(clientServerModelsPath, "*.cs"))
+            foreach (string csFile in Directory.GetFiles(clientSharedModelsPath, "*.cs"))
             {
                 string fileName = Path.GetFileName(csFile);
                 string destFile = Path.Combine(modelsDestPath, fileName);
                 File.Copy(csFile, destFile, true);
                 count++;
-                Debug.Log($"导出服务器模型: {fileName}");
+                Debug.Log($"导出共享模型: {fileName}");
             }
         }
 
@@ -664,16 +664,16 @@ public class ExportTool : EditorWindow
             }
         }
 
-        // 2. 验证ServerModels一致性
-        string clientServerModelsPath = Path.Combine(Application.dataPath, "Scripts", "ServerModels");
-        string serverServerModelsPath = Path.Combine(serverSharedPath, "ServerModels");
+        // 2. 验证SharedModels一致性
+        string clientSharedModelsPath = Path.Combine(Application.dataPath, "Plugins", "SharedModels");
+        string serverSharedModelsPath = Path.Combine(serverSharedPath, "SharedModels");
 
-        if (Directory.Exists(clientServerModelsPath))
+        if (Directory.Exists(clientSharedModelsPath))
         {
-            foreach (string clientFile in Directory.GetFiles(clientServerModelsPath, "*.cs"))
+            foreach (string clientFile in Directory.GetFiles(clientSharedModelsPath, "*.cs"))
             {
                 string fileName = Path.GetFileName(clientFile);
-                string serverFile = Path.Combine(serverServerModelsPath, fileName);
+                string serverFile = Path.Combine(serverSharedModelsPath, fileName);
 
                 totalFiles++;
                 bool filesMatch = false;
@@ -693,7 +693,7 @@ public class ExportTool : EditorWindow
                 {
                     inconsistentCount++;
                     isConsistent = false;
-                    report += $"\n❌ 不一致: ServerModels/{fileName}";
+                    report += $"\n❌ 不一致: SharedModels/{fileName}";
                     if (!File.Exists(serverFile))
                     {
                         report += " (服务器端不存在)";

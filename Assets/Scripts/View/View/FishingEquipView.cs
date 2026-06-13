@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using SharedModels;
 
 public class FishingEquipView : MonoBehaviour
 {
@@ -81,7 +82,7 @@ public class FishingEquipView : MonoBehaviour
         lineIds.Clear();
         hookIds.Clear();
 
-        var config = CompleteFishingSkillConfig.LoadFromResources("JsonData/Ability/fishing_components");
+        var config = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
         if (config != null && config.items != null)
         {
             foreach (var item in config.items)
@@ -100,7 +101,7 @@ public class FishingEquipView : MonoBehaviour
     {
         iconCache.Clear();
 
-        var fishingConfig = CompleteFishingSkillConfig.LoadFromResources("JsonData/Ability/fishing_components");
+        var fishingConfig = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
         if (fishingConfig != null)
         {
             var iconPaths = fishingConfig.GetAllIconPaths();

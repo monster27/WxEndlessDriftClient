@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using SharedModels;
 
 public class UI_MallPrefab : MonoBehaviour
 {

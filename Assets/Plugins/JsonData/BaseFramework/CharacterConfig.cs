@@ -2,92 +2,19 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-/// <summary>
-/// 人物配置类
-/// 定义人物的基本属性、升级所需经验和技能奖励
-/// </summary>
-[Serializable]
-public class CharacterConfig
-{
-    /// <summary>
-    /// 人物唯一ID
-    /// </summary>
-    public int id;
-    
-    /// <summary>
-    /// 人物名称
-    /// </summary>
-    public string name;
-    
-    /// <summary>
-    /// 人物描述
-    /// </summary>
-    public string description;
-    
-    /// <summary>
-    /// 人物图标路径
-    /// </summary>
-    public string iconPath;
-    
-    /// <summary>
-    /// 最大等级
-    /// </summary>
-    public int maxLevel = 100;
-    
-    /// <summary>
-    /// 50级解锁的技能ID
-    /// </summary>
-    public int skillIdAtLevel50;
-    
-    /// <summary>
-    /// 100级解锁的技能ID
-    /// </summary>
-    public int skillIdAtLevel100;
-    
-    /// <summary>
-    /// 整十级奖励的金币数
-    /// </summary>
-    public int tenLevelGoldReward;
-    
-    /// <summary>
-    /// 空闲动画列数
-    /// </summary>
-    public int idleColumns = 15;
-    
-    /// <summary>
-    /// 空闲动画速度
-    /// </summary>
-    public float idleSpeed = 15.0f;
-    
-    /// <summary>
-    /// 收杆动画列数
-    /// </summary>
-    public int reelColumns = 12;
-    
-    /// <summary>
-    /// 收杆动画速度
-    /// </summary>
-    public float reelSpeed = 20.0f;
-    
-    /// <summary>
-    /// 懒怠动画列数
-    /// </summary>
-    public int lazyColumns = 15;
-    
-    /// <summary>
-    /// 懒怠动画速度
-    /// </summary>
-    public float lazySpeed = 18.0f;
-}
+// 引入SharedModels命名空间以使用统一的数据类型
+using SharedModels;
 
 /// <summary>
-/// 人物配置列表包装器
+/// 人物配置列表扩展类（Unity专用）
+/// 提供Unity相关的资源加载功能
+/// 数据类型定义请参见 SharedModels/CharacterConfig.cs
 /// </summary>
-[Serializable]
-public class CharacterConfigList
+public static class CharacterConfigListExtensions
 {
-    public List<CharacterConfig> characters;
-
+    /// <summary>
+    /// 从Unity Resources加载人物配置
+    /// </summary>
     public static CharacterConfigList LoadFromResources(string path = "JsonData/BaseFramework/characters")
     {
         TextAsset textAsset = Resources.Load<TextAsset>(path);
@@ -106,114 +33,86 @@ public class CharacterConfigList
         return config;
     }
 
-    public List<int> GetAllCharacterIds()
+    /// <summary>
+    /// 加载人物配置（带错误处理）
+    /// </summary>
+    public static bool TryLoadFromResources(out CharacterConfigList config, string path = "JsonData/BaseFramework/characters")
     {
-        var ids = new List<int>();
-        if (characters == null) return ids;
-        foreach (var c in characters)
+        try
         {
-            ids.Add(c.id);
+            config = LoadFromResources(path);
+            return config != null;
         }
-        return ids;
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[CharacterConfigList] 加载异常: {ex.Message}");
+            config = null;
+            return false;
+        }
     }
+}
 
-    public (int skillId50, int skillId100) GetCharacterSkillIds(int characterId)
+/// <summary>
+/// 人物配置扩展类（Unity专用）
+/// 提供Unity相关的功能扩展
+/// </summary>
+public static class CharacterConfigExtensions
+{
+    /// <summary>
+    /// 加载人物图标Sprite
+    /// </summary>
+    public static Sprite LoadIconSprite(this CharacterConfig config)
     {
-        if (characters == null) return (0, 0);
-        var config = characters.Find(c => c.id == characterId);
-        if (config == null) return (0, 0);
-        return (config.skillIdAtLevel50, config.skillIdAtLevel100);
+        if (string.IsNullOrEmpty(config.iconPath))
+        {
+            Debug.LogWarning($"[CharacterConfig] 人物ID={config.id} 图标路径为空");
+            return null;
+        }
+        
+        Sprite sprite = Resources.Load<Sprite>(config.iconPath);
+        if (sprite == null)
+        {
+            Debug.LogWarning($"[CharacterConfig] 加载图标失败: {config.iconPath}");
+        }
+        return sprite;
+    }
+
+    /// <summary>
+    /// 加载人物动画纹理
+    /// </summary>
+    public static Texture2D LoadIdleTexture(this CharacterConfig config)
+    {
+        return LoadTexture(config.idleTexturePath);
+    }
+
+    /// <summary>
+    /// 加载收杆动画纹理
+    /// </summary>
+    public static Texture2D LoadReelTexture(this CharacterConfig config)
+    {
+        return LoadTexture(config.reelTexturePath);
+    }
+
+    /// <summary>
+    /// 加载懒怠动画纹理
+    /// </summary>
+    public static Texture2D LoadLazyTexture(this CharacterConfig config)
+    {
+        return LoadTexture(config.lazyTexturePath);
+    }
+
+    private static Texture2D LoadTexture(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return null;
+        }
+        
+        Texture2D texture = Resources.Load<Texture2D>(path);
+        if (texture == null)
+        {
+            Debug.LogWarning($"[CharacterConfig] 加载纹理失败: {path}");
+        }
+        return texture;
     }
 }
-
-// CharacterLevelUpConfig已移至单独文件CharacterLevelUpConfig.cs
-
-/// <summary>
-/// 人物技能配置类
-/// 定义人物可解锁的技能配置
-/// </summary>
-[Serializable]
-public class CharacterSkillConfig
-{
-    /// <summary>
-    /// 配置ID
-    /// </summary>
-    public int id;
-    
-    /// <summary>
-    /// 关联的人物ID
-    /// </summary>
-    public int characterId;
-    
-    /// <summary>
-    /// 等级解锁的技能列表
-    /// </summary>
-    public List<LevelSkillUnlock> levelSkillUnlocks = new List<LevelSkillUnlock>();
-}
-
-/// <summary>
-/// 等级技能解锁配置
-/// </summary>
-[Serializable]
-public class LevelSkillUnlock
-{
-    /// <summary>
-    /// 解锁等级
-    /// </summary>
-    public int unlockLevel;
-    
-    /// <summary>
-    /// 解锁的完整钓鱼技能ID
-    /// </summary>
-    public int skillId;
-    
-    /// <summary>
-    /// 解锁描述
-    /// </summary>
-    public string description;
-}
-
-/// <summary>
-/// 人物技能配置列表包装器
-/// </summary>
-[Serializable]
-public class CharacterSkillConfigList
-{
-    public List<CharacterSkillConfig> characterSkillConfigs;
-}
-
-/// <summary>
-/// 玩家人物数据类
-/// 存储玩家当前的人物状态
-/// </summary>
-[Serializable]
-public class PlayerCharacterData
-{
-    /// <summary>
-    /// 当前装备的人物ID
-    /// </summary>
-    public int equippedCharacterId = 0;
-    
-    /// <summary>
-    /// 当前人物等级
-    /// </summary>
-    public int currentLevel = 1;
-    
-    /// <summary>
-    /// 当前经验值
-    /// </summary>
-    public int currentExp = 0;
-    
-    /// <summary>
-    /// 已解锁的技能ID列表
-    /// </summary>
-    public List<int> unlockedSkills = new List<int>();
-    
-    /// <summary>
-    /// 是否已装备
-    /// </summary>
-    public bool isEquipped = false;
-}
-
-
-// 已移除的CharacterLevelUpConfig参考代码已移至单独文件CharacterLevelUpConfig.cs

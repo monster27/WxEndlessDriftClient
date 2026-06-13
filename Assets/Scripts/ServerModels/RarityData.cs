@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.RarityData 已弃用
+// 请使用 SharedModels.RarityData
+// ========================================================
+/*
 using System.Collections.Generic;
 
 namespace ServerModels
@@ -18,3 +23,4 @@ namespace ServerModels
         public List<RarityData> rarities = new List<RarityData>();
     }
 }
+*/

@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using SharedModels;
 
 /// <summary>
 /// 完整钓鱼技能编辑器（ID范围：3001-3399）

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using SharedModels;
 
 public class InfoFishEquipView : MonoBehaviour
 {

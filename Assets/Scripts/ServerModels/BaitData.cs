@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.BaitData 已弃用
+// 请使用 SharedModels.BaitData
+// ========================================================
+/*
 using System;
 
 namespace ServerModels
@@ -16,3 +21,4 @@ namespace ServerModels
         public BaitData[] baits;
     }
 }
+*/

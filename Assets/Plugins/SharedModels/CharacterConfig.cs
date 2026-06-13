@@ -1,4 +1,3 @@
-using UnityEngine;
 using System;
 using System.Collections.Generic;
 
@@ -7,6 +6,7 @@ namespace SharedModels
     /// <summary>
     /// 人物配置类
     /// 定义人物的基本属性、升级所需经验和技能奖励
+    /// 纯数据类，不含Unity相关依赖
     /// </summary>
     [Serializable]
     public class CharacterConfig
@@ -51,46 +51,64 @@ namespace SharedModels
         /// </summary>
         public int tenLevelGoldReward;
         
-        // 动画参数
+        /// <summary>
+        /// 空闲动画列数
+        /// </summary>
         public int idleColumns = 15;
+        
+        /// <summary>
+        /// 空闲动画速度
+        /// </summary>
         public float idleSpeed = 15.0f;
+        
+        /// <summary>
+        /// 收杆动画列数
+        /// </summary>
         public int reelColumns = 12;
+        
+        /// <summary>
+        /// 收杆动画速度
+        /// </summary>
         public float reelSpeed = 20.0f;
+        
+        /// <summary>
+        /// 懒怠动画列数
+        /// </summary>
         public int lazyColumns = 15;
+        
+        /// <summary>
+        /// 懒怠动画速度
+        /// </summary>
         public float lazySpeed = 18.0f;
         
-        // 动画纹理路径
+        /// <summary>
+        /// 空闲动画纹理路径
+        /// </summary>
         public string idleTexturePath = string.Empty;
+        
+        /// <summary>
+        /// 收杆动画纹理路径
+        /// </summary>
         public string reelTexturePath = string.Empty;
+        
+        /// <summary>
+        /// 懒怠动画纹理路径
+        /// </summary>
         public string lazyTexturePath = string.Empty;
     }
 
     /// <summary>
     /// 人物配置列表包装器
+    /// 纯数据类，Unity相关加载方法请参见BaseFramework/CharacterConfig.cs
     /// </summary>
     [Serializable]
     public class CharacterConfigList
     {
         public List<CharacterConfig> characters = new List<CharacterConfig>();
 
-        public static CharacterConfigList LoadFromResources(string path = "JsonData/BaseFramework/characters")
-        {
-            TextAsset textAsset = Resources.Load<TextAsset>(path);
-            if (textAsset == null)
-            {
-                Debug.LogError($"[CharacterConfigList] 加载失败: {path}");
-                return null;
-            }
-            var config = JsonUtility.FromJson<CharacterConfigList>(textAsset.text);
-            if (config == null)
-            {
-                Debug.LogError($"[CharacterConfigList] 解析失败: {path}");
-                return null;
-            }
-            Debug.Log($"[CharacterConfigList] 加载成功，路径: {path}");
-            return config;
-        }
-
+        /// <summary>
+        /// 获取所有人物ID
+        /// </summary>
         public List<int> GetAllCharacterIds()
         {
             var ids = new List<int>();
@@ -102,6 +120,9 @@ namespace SharedModels
             return ids;
         }
 
+        /// <summary>
+        /// 获取指定人物的技能ID
+        /// </summary>
         public (int skillId50, int skillId100) GetCharacterSkillIds(int characterId)
         {
             if (characters == null) return (0, 0);

@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.NetworkData 已弃用
+// 请使用 SharedModels.NetworkData
+// ========================================================
+/*
 using System.Collections.Generic;
 
 namespace ServerModels
@@ -112,12 +117,11 @@ namespace ServerModels
         public float continuousModeRemainingTime;
         public float nextFishingTime;
         public LastCatchInfo lastCatch;
-        public long baitEndTime; // 窝料结束时间戳（秒）
+        public long baitEndTime;
         
-        // 天气和时间相关字段（服务器只传输ID，客户端根据配置表显示名称）
-        public int currentWeatherId;    // 当前天气ID
-        public int timeSlotId;          // 当前时间段ID
-        public int timeStatus;          // 当前时间状态（0=白天，1=黄昏，2=夜晚）
+        public int currentWeatherId;
+        public int timeSlotId;
+        public int timeStatus;
     }
 
     [System.Serializable]
@@ -154,9 +158,10 @@ namespace ServerModels
     [System.Serializable]
     public class CharacterSyncResponse
     {
-        public int characterId;  // 改为小写，与服务器返回的JSON字段名匹配
+        public int characterId;
         public int level;
         public int exp;
         public bool isActive;
     }
 }
+*/

@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.FishingComponentConfig 已弃用
+// 请使用 SharedModels.FishingComponentConfig
+// ========================================================
+/*
 using System.Collections.Generic;
 
 namespace ServerModels
@@ -75,3 +80,4 @@ namespace ServerModels
         public int baitLevel;
     }
 }
+*/

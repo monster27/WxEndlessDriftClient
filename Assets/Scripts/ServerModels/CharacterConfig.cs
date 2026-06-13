@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.CharacterConfig 已弃用
+// 请使用 SharedModels.CharacterConfig
+// ========================================================
+/*
 using System.Collections.Generic;
 
 namespace ServerModels
@@ -38,3 +43,4 @@ namespace ServerModels
         public List<int> unlockedSkills = new List<int>();
     }
 }
+*/

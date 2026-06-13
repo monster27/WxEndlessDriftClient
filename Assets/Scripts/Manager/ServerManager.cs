@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using SharedModels;
 
 public class ServerManager : SingletonMono<ServerManager>
 {
@@ -41,9 +42,14 @@ public class ServerManager : SingletonMono<ServerManager>
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_TIME_SLOT_CHANGED, OnTimeSlotChanged);
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_WEATHER_CHANGED, OnWeatherChanged);
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
+        // ========================================================
+        // SimulationServer 相关代码已注释（当前使用网络模式）
+        // ========================================================
+        /*
         CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_ADD_ITEM, OnAddItem);
         CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_REMOVE_ITEM, OnRemoveItem);
         CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_ADD_FISH, OnAddFish);
+        */
         CommunicateEvent.Register(CommunicateEvent.EVENT_SYNC_GOLD, OnSyncGold);
     }
 
@@ -52,6 +58,10 @@ public class ServerManager : SingletonMono<ServerManager>
         if (!_isEnabled)
             return;
 
+        // ========================================================
+        // SimulationServer 相关代码已注释（当前使用网络模式）
+        // ========================================================
+        /*
         if (SimulationServer.Instance != null && SimulationServer.Instance.IsRunning())
         {
             heartbeatTimer += Time.deltaTime;
@@ -61,6 +71,7 @@ public class ServerManager : SingletonMono<ServerManager>
                 SendHeartbeat();
             }
         }
+        */
     }
 
     private void OnTimeSlotChanged(Dictionary<string, object> data)
@@ -111,6 +122,10 @@ public class ServerManager : SingletonMono<ServerManager>
         }
     }
 
+    // ========================================================
+    // SimulationServer 相关代码已注释（当前使用网络模式）
+    // ========================================================
+    /*
     private void OnAddItem((int itemId, int quantity) data)
     {
         if (!_isEnabled)
@@ -134,6 +149,7 @@ public class ServerManager : SingletonMono<ServerManager>
         Debug.Log($"[ServerManager] 处理添加鱼请求: fishId={data.fishId}, quantity={data.quantity}");
         SimulationServer.Instance?.AddFish(data.fishId, data.quantity);
     }
+    */
 
     public void NotifyPlayIdleAnimation()
     {
@@ -213,6 +229,10 @@ public class ServerManager : SingletonMono<ServerManager>
                         PlayerDataManager.Instance.RefreshUI();
                     }
 
+                    // ========================================================
+                    // SimulationServer 相关代码已注释（当前使用网络模式）
+                    // ========================================================
+                    /*
                     if (SimulationServer.Instance != null)
                     {
                         bool isFishBagFull = SimulationServer.Instance.IsFishBagFull();
@@ -230,11 +250,20 @@ public class ServerManager : SingletonMono<ServerManager>
 
                         SimulationServer.Instance.AutoFishingManager?.ResetNotificationState();
                     }
+                    */
+                    
+                    // 默认播放Idle动画
+                    PlayerAniManager.Instance.PlayIdleAnimation();
+                    Debug.Log("[ServerManager] 拉杆动画结束，切换到Idle动画");
                 }
             );
         }
     }
 
+    // ========================================================
+    // SimulationServer 相关代码已注释（当前使用网络模式）
+    // ========================================================
+    /*
     public void RequestFishingData(int detectedFishId, int actualItemId, bool isTrash)
     {
         if (!_isEnabled)
@@ -258,6 +287,7 @@ public class ServerManager : SingletonMono<ServerManager>
             }
         }
     }
+    */
 
     private void OnFishingResponse(Dictionary<string, object> data)
     {
@@ -362,10 +392,15 @@ public class ServerManager : SingletonMono<ServerManager>
 
         Debug.Log($"[ServerManager] 发送心跳包: clientTime={clientTime}");
 
+        // ========================================================
+        // SimulationServer 相关代码已注释（当前使用网络模式）
+        // ========================================================
+        /*
         if (SimulationServer.Instance != null)
         {
             SimulationServer.Instance.ProcessHeartbeat(heartbeatData);
         }
+        */
     }
 
     private void OnHeartbeatResponse(Dictionary<string, object> data)

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using SharedModels;
 
 public class InfoSkillView : MonoBehaviour
 {
@@ -96,7 +97,7 @@ public class InfoSkillView : MonoBehaviour
     private void LoadSkillIds()
     {
         skillIds.Clear();
-        var config = CompleteFishingSkillConfig.LoadFromResources("JsonData/Ability/fishing_components");
+        var config = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
         if (config != null && config.items != null)
         {
             foreach (var component in config.items)
@@ -190,7 +191,7 @@ public class InfoSkillView : MonoBehaviour
 
     private string GetSkillDescription(int skillId, int level)
     {
-        var config = CompleteFishingSkillConfig.LoadFromResources("JsonData/Ability/fishing_components");
+        var config = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
         if (config == null || config.items == null) return "";
 
         var component = config.GetComponentById(skillId);

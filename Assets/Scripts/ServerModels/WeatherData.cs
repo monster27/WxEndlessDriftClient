@@ -1,3 +1,8 @@
+// ========================================================
+// ServerModels.WeatherData 已弃用
+// 请使用 SharedModels.WeatherData
+// ========================================================
+/*
 using System.Collections.Generic;
 
 namespace ServerModels
@@ -15,3 +20,4 @@ namespace ServerModels
         public List<WeatherData> weathers = new List<WeatherData>();
     }
 }
+*/

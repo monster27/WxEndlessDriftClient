@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using SharedModels;
 
 public class SkillInfoView : MonoBehaviour
 {
@@ -161,7 +162,7 @@ public class SkillInfoView : MonoBehaviour
 
     private string GetNextLevelDescription()
     {
-        var config = CompleteFishingSkillConfig.LoadFromResources("JsonData/Ability/fishing_components");
+        var config = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
         if (config == null || config.items == null) return "升级后效果提升";
 
         var component = config.GetComponentById(currentSkillId);

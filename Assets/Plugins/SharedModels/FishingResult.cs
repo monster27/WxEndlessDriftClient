@@ -22,8 +22,11 @@ namespace SharedModels
         public bool ShouldPause = true;
         public float PauseDuration = 0.5f;
 
+        // 兼容字段（小写命名）
         public int detectedFishId;
         public int actualItemId;
+        public bool isTrash;        // 兼容小写命名
+        public float struggleTime;  // 兼容小写命名
         public bool isSuccess;
     }
 }

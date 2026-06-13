@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using SharedModels;
 
 public class EquipPlayerView : MonoBehaviour
 {
@@ -212,7 +213,7 @@ public class EquipPlayerView : MonoBehaviour
         }
 
         var skillIds = new List<int>();
-        var config = CompleteFishingSkillConfig.LoadFromResources("JsonData/Ability/fishing_components");
+        var config = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
         if (config != null && config.items != null)
         {
             foreach (var item in config.items)
@@ -293,7 +294,7 @@ public class EquipPlayerView : MonoBehaviour
     private void LoadCharacterIds()
     {
         characterIds.Clear();
-        var config = CharacterConfigList.LoadFromResources();
+        var config = CharacterConfigListExtensions.LoadFromResources();
         if (config != null)
         {
             var ids = config.GetAllCharacterIds();
@@ -478,7 +479,7 @@ public class EquipPlayerView : MonoBehaviour
     {
         Debug.Log($"[EquipPlayerView] UpdateSkillDisplay - currentCharacterId={currentCharacterId}");
         
-        var config = CompleteFishingSkillConfig.LoadFromResources("JsonData/Ability/fishing_components");
+        var config = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
         if (config == null)
         {
             Debug.LogWarning("[EquipPlayerView] UpdateSkillDisplay - config is null");
@@ -494,7 +495,7 @@ public class EquipPlayerView : MonoBehaviour
         int skill1Id = 0;
         int skill2Id = 0;
 
-        var characterConfig = CharacterConfigList.LoadFromResources();
+        var characterConfig = CharacterConfigListExtensions.LoadFromResources();
         if (characterConfig != null)
         {
             (skill1Id, skill2Id) = characterConfig.GetCharacterSkillIds(currentCharacterId);
@@ -659,13 +660,14 @@ public class EquipPlayerView : MonoBehaviour
     private void OnSkill1UnlockClick()
     {
         Debug.Log("[EquipPlayerView] OnSkill1UnlockClick - 点击解锁技能1");
-        var characterConfig = CharacterConfigList.LoadFromResources();
+        var characterConfig = CharacterConfigListExtensions.LoadFromResources();
         if (characterConfig != null)
         {
-            (int skillId50, _) = characterConfig.GetCharacterSkillIds(currentCharacterId);
+            var skillIds = characterConfig.GetCharacterSkillIds(currentCharacterId);
+            int skillId50 = skillIds.skillId50;
             if (skillId50 > 0)
             {
-                var fishingConfig = CompleteFishingSkillConfig.LoadFromResources("JsonData/Ability/fishing_components");
+                var fishingConfig = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
                 string skillName = "技能";
                 if (fishingConfig != null)
                 {
@@ -680,13 +682,14 @@ public class EquipPlayerView : MonoBehaviour
     private void OnSkill2UnlockClick()
     {
         Debug.Log("[EquipPlayerView] OnSkill2UnlockClick - 点击解锁技能2");
-        var characterConfig = CharacterConfigList.LoadFromResources();
+        var characterConfig = CharacterConfigListExtensions.LoadFromResources();
         if (characterConfig != null)
         {
-            (_, int skillId100) = characterConfig.GetCharacterSkillIds(currentCharacterId);
+            var skillIds = characterConfig.GetCharacterSkillIds(currentCharacterId);
+            int skillId100 = skillIds.skillId100;
             if (skillId100 > 0)
             {
-                var fishingConfig = CompleteFishingSkillConfig.LoadFromResources("JsonData/Ability/fishing_components");
+                var fishingConfig = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
                 string skillName = "技能";
                 if (fishingConfig != null)
                 {
