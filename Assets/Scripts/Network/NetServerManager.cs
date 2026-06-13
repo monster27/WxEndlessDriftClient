@@ -65,7 +65,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
     #region 玩家连接状态管理
 
     /// <summary>
-    /// 发送玩家退出请求（正常退出时调用）
+    /// 发送玩家退出请求（正常退出时调用）OnEquipBait 
     /// </summary>
     public void SendPlayerExit()
     {
@@ -318,8 +318,8 @@ public class NetServerManager : SingletonMono<NetServerManager>
         Logger.Log("[NetServerManager] 注册网络模式下的事件处理器");
 
         // 注册连续模式相关的请求处理器
-        CommunicateEvent.RegisterRequest<int, bool>(CommunicateEvent.EVENT_IS_IN_CONTINUOUS_MODE, _ => IsInContinuousMode());
-        CommunicateEvent.RegisterRequest<int, float>(CommunicateEvent.EVENT_GET_CONTINUOUS_MODE_REMAINING_TIME, _ => GetContinuousModeRemainingTime());
+        CommunicateEvent.RegisterRequest<int, bool>(CommunicateEvent.EVENT_IS_IN_CONTINUOUS_MODE, _ => isInContinuousMode);
+        CommunicateEvent.RegisterRequest<int, float>(CommunicateEvent.EVENT_GET_CONTINUOUS_MODE_REMAINING_TIME, _ => continuousModeRemainingTime);
         CommunicateEvent.RegisterRequest<int, int>(CommunicateEvent.EVENT_GET_CURRENT_SCENE_BAIT_COUNT, _ => GetCurrentSceneBaitCount());
 
         // 注册玩家数据相关的请求处理器
@@ -338,6 +338,7 @@ public class NetServerManager : SingletonMono<NetServerManager>
 
         // 注册装备/卸下事件处理器
         CommunicateEvent.Register<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_ITEM, OnEquipItem);
+        CommunicateEvent.Register<int>(CommunicateEvent.EVENT_EQUIP_BAIT, OnEquipBait);
 
         // 注册人物相关请求处理器
         CommunicateEvent.RegisterRequest<int, bool>(CommunicateEvent.EVENT_IS_CHARACTER_OBTAINED, characterId => IsCharacterObtained(characterId));
@@ -363,6 +364,17 @@ public class NetServerManager : SingletonMono<NetServerManager>
 
         // 注册装备解锁事件处理器
         CommunicateEvent.Register<int>("Equip_Unlock", OnUnlockEquipment);
+
+        // 注册商城相关请求处理器
+        CommunicateEvent.RegisterRequest<int, Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_GET_MALL_ITEMS, _ => GetMallItems());
+        CommunicateEvent.RegisterRequest<int, MallItemData>(CommunicateEvent.EVENT_GET_MALL_ITEM, itemId => GetMallItem(itemId));
+
+        // 注册购买商城物品事件处理器
+        CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_PURCHASE_MALL_ITEM, OnPurchaseMallItem);
+
+        // 注册窝料消耗事件处理器（投喂窝料进入连续钓鱼模式）
+        CommunicateEvent.Register(CommunicateEvent.EVENT_CONSUME_BAIT_AND_ENTER_CONTINUOUS_MODE, OnConsumeBaitAndEnterContinuousMode);
+        CommunicateEvent.RegisterRequest<int, int>(CommunicateEvent.EVENT_GET_CURRENT_SCENE_BAIT_COUNT, _ => GetCurrentSceneBaitCount());
     }
 
     private bool isInContinuousMode = false;
@@ -410,22 +422,18 @@ public class NetServerManager : SingletonMono<NetServerManager>
     private int equippedSkill1Id = 0;
     private int equippedSkill2Id = 0;
     private int equippedCharacterId = 3401;
+    private int equippedBaitId = 0;
     private int characterLevel = 1;
     private int currentCharacterExp = 0;
 
-    private bool IsInContinuousMode()
-    {
-        return isInContinuousMode;
-    }
-
-    private float GetContinuousModeRemainingTime()
-    {
-        return continuousModeRemainingTime;
-    }
-
     private int GetCurrentSceneBaitCount()
     {
-        return currentSceneBaitCount;
+        // 从背包中获取窝料(2501)的数量
+        if (playerInventory.ContainsKey(2501))
+        {
+            return playerInventory[2501];
+        }
+        return 0;
     }
 
     private Dictionary<int, int> GetPlayerInventory()
@@ -485,6 +493,8 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 return equippedSkill2Id;
             case EquipmentSlotType.Character:
                 return equippedCharacterId;
+            case EquipmentSlotType.Bait:
+                return equippedBaitId;
             default:
                 return 0;
         }
@@ -515,6 +525,29 @@ public class NetServerManager : SingletonMono<NetServerManager>
     }
 
     /// <summary>
+    /// 处理装备鱼饵请求
+    /// </summary>
+    private void OnEquipBait(int itemId)
+    {
+        if (!CheckNetworkConnection())
+            return;
+
+        Logger.Log($"[NetServerManager] 处理装备鱼饵请求: itemId={itemId}");
+
+        // 更新本地装备数据
+        UpdateLocalEquippedItem(EquipmentSlotType.Bait, itemId);
+
+        // 调用服务器API装备鱼饵（关键：必须调用服务器）
+        StartCoroutine(SendEquipRequest((int)EquipmentSlotType.Bait, itemId));
+
+        // 同步背包数据
+        PlayerDataManager.Instance?.SyncInventoryFromServer();
+
+        // 通知背包刷新
+        CommunicateEvent.Modify("Bag_RefreshItems");
+    }
+
+    /// <summary>
     /// 更新本地装备数据
     /// </summary>
     private void UpdateLocalEquippedItem(EquipmentSlotType slotType, int itemId)
@@ -538,6 +571,9 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 break;
             case EquipmentSlotType.Character:
                 equippedCharacterId = itemId;
+                break;
+            case EquipmentSlotType.Bait:
+                equippedBaitId = itemId;
                 break;
         }
         Logger.Log($"[NetServerManager] 本地装备数据已更新: {slotType} = {itemId}");
@@ -1103,8 +1139,34 @@ public class NetServerManager : SingletonMono<NetServerManager>
                         foreach (var item in data.items)
                         {
                             playerInventory[item.key] = item.value;
+                            Logger.Log($"[DEBUG] 收到背包物品: ID={item.key}, 数量={item.value}");
                         }
                         Logger.Log("[NetServerManager] 更新玩家背包: " + playerInventory.Count + " 件物品");
+
+                        // ========== 新增：强制通知背包数据更新 ==========
+                        CommunicateEvent.Modify<Dictionary<int, int>>("BagDataUpdated", playerInventory);
+
+                        // 检查鱼饵和窝料
+                        if (playerInventory.ContainsKey(2001))
+                        {
+                            Logger.Log("[DEBUG] 鱼饵2001存在，数量=" + playerInventory[2001]);
+                            CommunicateEvent.Modify("BaitDataUpdated");
+                        }
+                        else
+                        {
+                            Logger.Log("[DEBUG] 鱼饵2001不存在于背包数据中");
+                        }
+
+                        if (playerInventory.ContainsKey(2501))
+                        {
+                            Logger.Log("[DEBUG] 窝料2501存在，数量=" + playerInventory[2501]);
+                            CommunicateEvent.Modify("BaitCountChanged");
+                        }
+                        else
+                        {
+                            Logger.Log("[DEBUG] 窝料2501不存在于背包数据中");
+                        }
+                        // ========== 新增结束 ==========
                     }
                 }
                 catch (System.Exception ex)
@@ -1130,10 +1192,9 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 {
                     string json = request.downloadHandler.text;
                     Logger.Log("[NetServerManager] 人物列表响应: " + json);
-                    
+
                     unlockedCharacters.Clear();
-                    
-                    // 尝试用Newtonsoft解析数组
+
                     var characters = Newtonsoft.Json.JsonConvert.DeserializeObject<List<CharacterData>>(json);
                     if (characters != null)
                     {
@@ -1143,10 +1204,9 @@ public class NetServerManager : SingletonMono<NetServerManager>
                             Logger.Log($"[NetServerManager] 已解锁人物: {character.characterId}");
                         }
                     }
-                    
-                    // 始终包含默认人物
+
                     unlockedCharacters.Add(3401);
-                    
+
                     Logger.Log($"[NetServerManager] 同步人物列表完成，共 {unlockedCharacters.Count} 个已解锁人物");
                 }
                 catch (System.Exception ex)
@@ -1183,7 +1243,6 @@ public class NetServerManager : SingletonMono<NetServerManager>
                         int totalFish = GetTotalFishCount();
                         Logger.Log("[NetServerManager] 更新玩家鱼篓: " + fishInventory.Count + " 种鱼，总数量: " + totalFish);
 
-                        // 更新鱼篓满状态
                         isFishBagFull = totalFish >= fishBagCapacity;
                     }
                     else
@@ -1299,46 +1358,33 @@ public class NetServerManager : SingletonMono<NetServerManager>
                 Logger.LogError("[NetServerManager] 获取人物数据失败: " + request.error);
             }
         }
-        
-        // ========== 检查并添加基础人物3401 ==========
-        // 等待一小段时间确保所有数据加载完成
+
         yield return new WaitForSeconds(0.2f);
         yield return StartCoroutine(EnsureBasicCharacter());
-        // ========== 检查结束 ==========
-        
-        // ========== 关键修复：同步数据到 PlayerDataManager ==========
-        // 所有数据获取完成后，通知 PlayerDataManager 同步
+
         if (PlayerDataManager.Instance != null)
         {
             PlayerDataManager.Instance.SyncInventoryFromServer();
             PlayerDataManager.Instance.SyncGoldFromServer();
             Logger.Log("[NetServerManager] 已通知 PlayerDataManager 同步数据");
         }
-        // ========== 修复结束 ==========
-        
-        // ========== 同步人物列表到 PlayerInventoryServerManager ==========
-        // 使用事件机制避免编译顺序问题
+
         if (unlockedCharacters != null && unlockedCharacters.Count > 0)
         {
             var characterList = new List<int>(unlockedCharacters);
             CommunicateEvent.Modify<List<int>>("SyncUnlockedCharacters", characterList);
             Logger.Log($"[NetServerManager] 已发送同步人物列表事件，共 {unlockedCharacters.Count} 个人物");
         }
-        // ========== 同步结束 ==========
-        
-        // ========== 同步已解锁装备列表到 PlayerInventoryServerManager ==========
-        SyncUnlockedEquipmentFromServer();
-        // ========== 同步结束 ==========
 
-        // ========== 关键修复：根据装备的人物ID切换人物动画 ==========
+        SyncUnlockedEquipmentFromServer();
+        SyncMallItemsFromServer();
+
         if (PlayerAniManager.Instance != null && equippedCharacterId > 0)
         {
             Logger.Log($"[NetServerManager] 切换人物动画: characterId={equippedCharacterId}");
             PlayerAniManager.Instance.SwitchCharacter(equippedCharacterId);
         }
-        // ========== 修复结束 ==========
 
-        // 根据鱼篓满状态决定是否启动自动钓鱼
         if (isFishBagFull)
         {
             Logger.Log("[NetServerManager] 鱼篓已满，不启动自动钓鱼，播放懒动画");
@@ -1889,6 +1935,9 @@ public class NetServerManager : SingletonMono<NetServerManager>
         }
 
         CheckHeartbeatTimeout();
+
+        // 每帧更新连续模式剩余时间（基于服务器时间）
+        UpdateContinuousModeRemainingTime();
     }
 
     private void CheckHeartbeatTimeout()
@@ -2251,20 +2300,27 @@ public class NetServerManager : SingletonMono<NetServerManager>
         if (!CheckNetworkConnection())
             return;
 
+        // 如果没有传入 baitId，使用装备的鱼饵
+        int actualBaitId = baitId;
+        if (actualBaitId == 0 && equippedBaitId != 0)
+        {
+            actualBaitId = equippedBaitId;
+        }
+
         int sceneId = GetCurrentSceneId();
 
         NetUtils.LogRequest("DoFishing", new Dictionary<string, object>
         {
             { "playerId", _currentPlayerId },
             { "sceneId", sceneId },
-            { "baitId", baitId }
+            { "baitId", actualBaitId }
         });
 
         var requestData = new Dictionary<string, object>
         {
             { "playerId", _currentPlayerId },
             { "sceneId", sceneId },
-            { "baitId", baitId }
+            { "baitId", actualBaitId }
         };
         StartCoroutine(DoFishingCoroutine("/api/fishing/catch", requestData));
     }
@@ -2538,6 +2594,13 @@ public class NetServerManager : SingletonMono<NetServerManager>
         if (!CheckNetworkConnection())
             return;
 
+        // 如果没有传入 baitId，使用装备的鱼饵
+        int actualBaitId = baitId;
+        if (actualBaitId == 0 && equippedBaitId != 0)
+        {
+            actualBaitId = equippedBaitId;
+        }
+
         // 先检查鱼篓是否已满
         if (isFishBagFull)
         {
@@ -2552,14 +2615,14 @@ public class NetServerManager : SingletonMono<NetServerManager>
         {
             { "playerId", _currentPlayerId },
             { "sceneId", sceneId },
-            { "baitId", baitId }
+            { "baitId", actualBaitId }
         });
 
         var requestData = new Dictionary<string, object>
         {
             { "playerId", _currentPlayerId },
             { "sceneId", sceneId },
-            { "baitId", baitId }
+            { "baitId", actualBaitId }
         };
         StartCoroutine(SendRequest<AutoFishingResponse>("/api/fishing/auto/start", requestData, (response) =>
         {
@@ -2639,8 +2702,37 @@ public class NetServerManager : SingletonMono<NetServerManager>
                             isAutoFishing = response.isAutoFishing;
                             isPaused = response.isPaused;
                             trashStreak = response.trashStreak;
-                            continuousModeRemainingTime = response.continuousModeRemainingTime;
-                            currentFishingMode = response.continuousModeRemainingTime > 0 ? "Continuous" : "Normal";
+                            
+                            // ========== 修复：直接使用服务器返回的 continuousModeRemainingTime ==========
+                            // 如果服务器返回的值大于0，使用服务器的值
+                            if (response.continuousModeRemainingTime > 0)
+                            {
+                                continuousModeRemainingTime = response.continuousModeRemainingTime;
+                                isInContinuousMode = true;
+                            }
+                            else
+                            {
+                                // 如果服务器返回0，检查本地倒计时
+                                if (continuousModeRemainingTime > 0)
+                                {
+                                    // 本地递减
+                                    continuousModeRemainingTime -= 2f; // 轮询间隔为2秒
+                                    if (continuousModeRemainingTime <= 0)
+                                    {
+                                        continuousModeRemainingTime = 0;
+                                        isInContinuousMode = false;
+                                    }
+                                }
+                                else
+                                {
+                                    isInContinuousMode = false;
+                                }
+                            }
+                            
+                            currentFishingMode = continuousModeRemainingTime > 0 ? "Continuous" : "Normal";
+                            
+                            // 调试日志
+                            Logger.Log($"[NetServerManager] 轮询钓鱼状态: continuousModeRemainingTime={continuousModeRemainingTime:F1}, isInContinuousMode={isInContinuousMode}, currentFishingMode={currentFishingMode}");
 
                             // 服务器直接返回剩余秒数
                             if (response.nextFishingTime > 0)
@@ -2799,6 +2891,37 @@ public class NetServerManager : SingletonMono<NetServerManager>
                                 nextFishingDisplay = "等待中";
                             }
 
+                            // ========== 天气和时间同步 ==========
+                            // 服务器只传输ID，客户端根据配置表显示名称
+                            if (response.currentWeatherId > 0)
+                            {
+                                currentWeatherId = response.currentWeatherId;
+                                currentWeatherName = GetWeatherNameById(response.currentWeatherId);
+                                // 通知EnvManager和UI更新天气显示（使用客户端事件）
+                                CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_CLIENT_WEATHER_CHANGED, new Dictionary<string, object>
+                                {
+                                    { "weatherId", currentWeatherId },
+                                    { "weatherName", currentWeatherName }
+                                });
+                                Logger.Log($"[NetServerManager] 更新天气: ID={currentWeatherId}, 名称={currentWeatherName}");
+                            }
+                            
+                            if (response.timeSlotId > 0)
+                            {
+                                currentTimeSlotId = response.timeSlotId;
+                                currentTimeSlotName = GetTimeSlotNameById(response.timeSlotId);
+                                currentTimeStatus = (TimeStatus)response.timeStatus;
+                                // 通知EnvManager和UI更新时间显示（使用客户端事件）
+                                CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_CLIENT_TIME_SLOT_CHANGED, new Dictionary<string, object>
+                                {
+                                    { "timeSlotId", currentTimeSlotId },
+                                    { "timeSlotName", currentTimeSlotName },
+                                    { "timeStatus", (int)currentTimeStatus },
+                                    { "weatherId", currentWeatherId } // 同时传递当前天气ID
+                                });
+                                Logger.Log($"[NetServerManager] 更新时间: ID={currentTimeSlotId}, 名称={currentTimeSlotName}, 状态={currentTimeStatus}");
+                            }
+
                             Logger.Log("[NetServerManager] 更新钓鱼状态: 自动钓鱼=" + isAutoFishing +
                                      ", 停滞=" + isPaused + ", 鱼篓满=" + isFishBagFull +
                                      ", 垃圾连续=" + trashStreak + ", 鱼篓总数=" + GetTotalFishCount() +
@@ -2900,5 +3023,711 @@ public class NetServerManager : SingletonMono<NetServerManager>
     {
         public bool success { get; set; }
         public string message { get; set; }
+    }
+
+    // ==================== 商城相关方法 ====================
+
+    /// <summary>
+    /// 处理购买商城物品事件
+    /// </summary>
+    private void OnPurchaseMallItem((int itemId, int quantity) request)
+    {
+        var (itemId, quantity) = request;
+        Logger.Log($"[NetServerManager] OnPurchaseMallItem - itemId={itemId}, quantity={quantity}");
+        PurchaseMallItem(itemId, quantity, (success, message) =>
+        {
+            if (success)
+            {
+                Logger.Log($"[NetServerManager] 购买成功: {message}");
+            }
+            else
+            {
+                Logger.LogWarning($"[NetServerManager] 购买失败: {message}");
+            }
+        });
+    }
+
+    /// <summary>
+    /// 商城物品数据缓存
+    /// </summary>
+    private Dictionary<int, MallItemData> mallItems = new Dictionary<int, MallItemData>();
+
+    /// <summary>
+    /// 同步商城物品列表
+    /// </summary>
+    public void SyncMallItemsFromServer()
+    {
+        StartCoroutine(SyncMallItemsCoroutine());
+    }
+
+    private IEnumerator SyncMallItemsCoroutine()
+    {
+        string url = serverUrl + "/api/player/mall/items";
+        Logger.Log($"[NetServerManager] 同步商城物品列表: {url}");
+
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    Logger.Log("[NetServerManager] 商城物品列表响应: " + json);
+
+                    // 解析JSON
+                    var response = JsonUtility.FromJson<MallItemsResponse>(json);
+                    if (response != null && response.success && response.items != null)
+                    {
+                        mallItems.Clear();
+                        foreach (var item in response.items)
+                        {
+                            mallItems[item.itemId] = new MallItemData
+                            {
+                                id = item.itemId,
+                                price = item.price,
+                                stock = item.stock
+                            };
+                            Logger.Log($"[NetServerManager] 商城物品: ID={item.itemId}, 价格={item.price}, 库存={item.stock}");
+                        }
+
+                        Logger.Log($"[NetServerManager] 同步商城物品列表完成，共 {mallItems.Count} 个商品");
+
+                        // 通知商城数据更新
+                        CommunicateEvent.Modify<Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_MALL_DATA_CHANGED, mallItems);
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析商城物品列表失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 获取商城物品列表失败: {request.error}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 获取商城物品列表
+    /// </summary>
+    public Dictionary<int, MallItemData> GetMallItems()
+    {
+        return new Dictionary<int, MallItemData>(mallItems);
+    }
+
+    /// <summary>
+    /// 获取单个商城物品
+    /// </summary>
+    public MallItemData GetMallItem(int itemId)
+    {
+        return mallItems.ContainsKey(itemId) ? mallItems[itemId] : null;
+    }
+
+    /// <summary>
+    /// 购买商城物品
+    /// </summary>
+    public void PurchaseMallItem(int itemId, int quantity, System.Action<bool, string> callback)
+    {
+        StartCoroutine(PurchaseMallItemCoroutine(itemId, quantity, callback));
+    }
+
+    private IEnumerator PurchaseMallItemCoroutine(int itemId, int quantity, System.Action<bool, string> callback)
+    {
+        string url = serverUrl + "/api/player/mall/purchase";
+        string jsonData = $"{{\"PlayerId\":{_currentPlayerId},\"ItemId\":{itemId},\"Quantity\":{quantity}}}";
+
+        Logger.Log($"[NetServerManager] 购买商城物品请求: {jsonData}");
+
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string responseText = request.downloadHandler.text;
+                Logger.Log($"[NetServerManager] 购买商城物品响应: {responseText}");
+
+                try
+                {
+                    var response = JsonUtility.FromJson<PurchaseMallItemResponse>(responseText);
+                    if (response != null && response.success)
+                    {
+                        Logger.Log($"[NetServerManager] 成功购买物品 {itemId}, 数量 {quantity}, 总价 {response.totalPrice}");
+                        callback?.Invoke(true, response.message);
+
+                        // ========== 新增：立即更新本地背包数据 ==========
+                        if (playerInventory.ContainsKey(itemId))
+                        {
+                            playerInventory[itemId] += quantity;
+                            Logger.Log($"[NetServerManager] 本地背包数据更新: ItemId={itemId}, 新数量={playerInventory[itemId]}");
+                        }
+                        else
+                        {
+                            playerInventory[itemId] = quantity;
+                            Logger.Log($"[NetServerManager] 本地背包数据新增: ItemId={itemId}, 数量={quantity}");
+                        }
+                        // ========== 本地数据更新结束 ==========
+
+                        // 刷新背包数据
+                        PlayerDataManager.Instance?.SyncInventoryFromServer();
+
+                        // 通知商城数据更新
+                        CommunicateEvent.Modify("Mall_PurchaseSuccess", itemId);
+
+                        // 通知背包刷新
+                        CommunicateEvent.Modify("Bag_RefreshItems");
+
+                        // ========== 新增：专门通知物品数量变化 ==========
+                        CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_ITEM_QUANTITY_CHANGED, (itemId, playerInventory[itemId]));
+
+                        // 如果是窝料(2501)，专门通知窝料数量更新
+                        if (itemId == 2501)
+                        {
+                            CommunicateEvent.Modify("BaitCountChanged");
+                            Logger.Log("[NetServerManager] 发送窝料数量更新事件");
+
+                            // 立即同步连续模式状态
+                            StartCoroutine(SyncContinuousModeStatusCoroutine());
+                        }
+
+                        // 如果是鱼饵(2001-2007)，通知鱼饵数量更新
+                        if (itemId >= 2001 && itemId <= 2007)
+                        {
+                            CommunicateEvent.Modify("BaitCountChanged");
+                            CommunicateEvent.Modify("BaitDataUpdated");
+                            Logger.Log($"[NetServerManager] 发送鱼饵数量更新事件: itemId={itemId}");
+                        }
+                        // ========== 新增结束 ==========
+
+                        // 刷新商城数据
+                        SyncMallItemsFromServer();
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"[NetServerManager] 购买商城物品失败: {response?.message ?? "未知错误"}");
+                        callback?.Invoke(false, response?.message ?? "购买失败");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析购买商城物品响应失败: {ex.Message}");
+                    callback?.Invoke(false, "解析响应失败");
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 购买商城物品请求失败: {request.error}");
+                callback?.Invoke(false, request.error);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 商城物品列表响应
+    /// </summary>
+    [System.Serializable]
+    private class MallItemsResponse
+    {
+        public bool success;
+        public MallItemDataJson[] items;
+    }
+
+    [System.Serializable]
+    private class MallItemDataJson
+    {
+        public int itemId;
+        public int price;
+        public int stock;
+    }
+
+    /// <summary>
+    /// 购买商城物品响应
+    /// </summary>
+    [System.Serializable]
+    private class PurchaseMallItemResponse
+    {
+        public bool success;
+        public string message;
+        public int totalPrice;
+        public int remainingGold;
+    }
+
+    // ==================== 窝料/连续钓鱼模式相关方法 ====================
+
+    /// <summary>
+    /// 窝料结束时间戳（服务器时间，秒）
+    /// </summary>
+    private long baitEndTime = 0;
+
+    // ==================== 天气和时间相关字段 ====================
+    private int currentWeatherId = 0;          // 当前天气ID
+    private string currentWeatherName = "";    // 当前天气名称
+    private int currentTimeSlotId = 0;         // 当前时间段ID
+    private string currentTimeSlotName = "";   // 当前时间段名称
+    private TimeStatus currentTimeStatus = TimeStatus.Daytime; // 当前时间状态
+
+    /// <summary>
+    /// 处理消耗窝料并进入连续钓鱼模式事件
+    /// </summary>
+    private void OnConsumeBaitAndEnterContinuousMode()
+    {
+        Logger.Log("[NetServerManager] OnConsumeBaitAndEnterContinuousMode - 准备增加窝料时间");
+        StartCoroutine(AddBaitTimeCoroutine());
+    }
+
+    /// <summary>
+    /// 发送增加窝料时间请求到服务器
+    /// 服务器逻辑：如果没有使用窝料，设置当前时间为起点；如果已使用，加30秒
+    /// 返回窝料结束时间戳
+    /// </summary>
+    private IEnumerator AddBaitTimeCoroutine()
+    {
+        // 先尝试新的API
+        string newUrl = serverUrl + "/api/game/add-bait-time";
+        var requestData = new Dictionary<string, object>
+        {
+            { "playerId", _currentPlayerId },
+            { "addSeconds", 30 }
+        };
+
+        Logger.Log($"[NetServerManager] 调用增加窝料时间API: {newUrl}");
+
+        string jsonData = NetUtils.SerializeToJson(requestData);
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+
+        using (UnityWebRequest request = new UnityWebRequest(newUrl, "POST"))
+        {
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string responseText = request.downloadHandler.text;
+                Logger.Log($"[NetServerManager] 增加窝料时间响应: {responseText}");
+
+                try
+                {
+                    var response = JsonUtility.FromJson<AddBaitTimeResponse>(responseText);
+                    if (response != null && response.success)
+                    {
+                        // 保存服务器返回的窝料结束时间戳
+                        baitEndTime = response.baitEndTime;
+                        isInContinuousMode = true;
+                        currentFishingMode = "Continuous";
+
+                        // 根据服务器时间计算剩余时间
+                        UpdateContinuousModeRemainingTime();
+
+                        Logger.Log($"[NetServerManager] 成功增加窝料时间，结束时间戳: {baitEndTime}, 当前剩余时间: {continuousModeRemainingTime}秒");
+
+                        // 同步更新背包数据（窝料已消耗）
+                        PlayerDataManager.Instance?.SyncInventoryFromServer();
+
+                        // 通知背包刷新
+                        CommunicateEvent.Modify("Bag_RefreshItems");
+
+                        // 通知UI更新
+                        UpdateContinuousModeUI();
+                        yield break;
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"[NetServerManager] 增加窝料时间失败: {response?.message ?? "未知错误"}");
+                        UIManager.ShowMessage(response?.message ?? "操作失败");
+                        yield break;
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析增加窝料时间响应失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.LogWarning($"[NetServerManager] 新API不可用，尝试使用旧API: {request.error}");
+            }
+        }
+
+        // 如果新API不可用，使用旧的进入连续模式API
+        Logger.Log("[NetServerManager] 使用旧API进入连续钓鱼模式");
+        yield return StartCoroutine(EnterContinuousModeWithBaitEndTimeCoroutine());
+    }
+
+    /// <summary>
+    /// 使用旧API进入连续钓鱼模式，但同时获取baitEndTime
+    /// </summary>
+    private IEnumerator EnterContinuousModeWithBaitEndTimeCoroutine()
+    {
+        string url = serverUrl + "/api/game/enter-continuous-mode";
+
+        Logger.Log($"[NetServerManager] 调用进入连续钓鱼模式API（旧）: {url}");
+
+        using (UnityWebRequest request = UnityWebRequest.PostWwwForm(url, ""))
+        {
+            request.timeout = 10;
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string responseText = request.downloadHandler.text;
+                Logger.Log($"[NetServerManager] 进入连续钓鱼模式响应: {responseText}");
+
+                try
+                {
+                    var response = JsonUtility.FromJson<EnterContinuousModeWithBaitEndTimeResponse>(responseText);
+                    if (response != null && response.success)
+                    {
+                        isInContinuousMode = true;
+                        continuousModeRemainingTime = response.remainingTime;
+                        currentFishingMode = "Continuous";
+
+                        // 尝试获取baitEndTime
+                        if (response.baitEndTime > 0)
+                        {
+                            baitEndTime = response.baitEndTime;
+                            // 根据服务器时间计算剩余时间
+                            UpdateContinuousModeRemainingTime();
+                            Logger.Log($"[NetServerManager] 成功进入连续钓鱼模式，结束时间戳: {baitEndTime}, 当前剩余时间: {continuousModeRemainingTime}秒");
+                        }
+                        else
+                        {
+                            // 旧服务器不支持baitEndTime，使用remainingTime
+                            Logger.Log($"[NetServerManager] 成功进入连续钓鱼模式，剩余时间: {continuousModeRemainingTime}秒（旧API）");
+                            // 从remainingTime推算baitEndTime（兼容性处理）
+                            baitEndTime = (lastServerTime / 1000) + (long)continuousModeRemainingTime;
+                        }
+
+                        // 同步更新背包数据（窝料已消耗）
+                        PlayerDataManager.Instance?.SyncInventoryFromServer();
+
+                        // 通知背包刷新
+                        CommunicateEvent.Modify("Bag_RefreshItems");
+
+                        // 通知UI更新
+                        UpdateContinuousModeUI();
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"[NetServerManager] 进入连续钓鱼模式失败: {response?.message ?? "未知错误"}");
+                        UIManager.ShowMessage("窝料不足，无法进入连续钓鱼模式");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析进入连续钓鱼模式响应失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 进入连续钓鱼模式请求失败: {request.error}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 根据服务器时间更新连续模式剩余时间
+    /// </summary>
+    private void UpdateContinuousModeRemainingTime()
+    {
+        bool wasInContinuousMode = isInContinuousMode;
+        float previousRemainingTime = continuousModeRemainingTime;
+        
+        if (baitEndTime <= 0)
+        {
+            continuousModeRemainingTime = 0;
+            isInContinuousMode = false;
+            currentFishingMode = "Normal";
+            
+            if (wasInContinuousMode)
+            {
+                Logger.Log("[NetServerManager] 连续模式结束");
+            }
+            return;
+        }
+
+        // 获取当前服务器时间（毫秒转秒）
+        long currentServerTime = lastServerTime / 1000;
+        
+        // 如果服务器时间无效，使用客户端时间作为备选
+        if (currentServerTime <= 0)
+        {
+            currentServerTime = System.DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            Logger.LogWarning("[NetServerManager] 服务器时间无效，使用客户端时间");
+        }
+        
+        // 计算剩余时间
+        float remaining = baitEndTime - currentServerTime;
+        
+        // 调试日志
+        Logger.Log($"[NetServerManager] 计算剩余时间: baitEndTime={baitEndTime}, currentServerTime={currentServerTime}, remaining={remaining}");
+        
+        // 直接使用服务器计算的剩余时间（这是最可靠的方式）
+        if (remaining > 0)
+        {
+            continuousModeRemainingTime = remaining;
+            isInContinuousMode = true;
+            currentFishingMode = "Continuous";
+            
+            if (!wasInContinuousMode)
+            {
+                Logger.Log($"[NetServerManager] 进入连续模式，剩余时间: {continuousModeRemainingTime:F2}秒");
+            }
+        }
+        else
+        {
+            // 剩余时间已到
+            continuousModeRemainingTime = 0;
+            isInContinuousMode = false;
+            currentFishingMode = "Normal";
+            baitEndTime = 0;
+            
+            if (wasInContinuousMode)
+            {
+                Logger.Log("[NetServerManager] 连续模式结束");
+            }
+        }
+        
+        // 如果状态发生变化，通知其他模块
+        if (wasInContinuousMode != isInContinuousMode || 
+            Mathf.Abs(previousRemainingTime - continuousModeRemainingTime) > 0.1f)
+        {
+            // 通过事件通知状态变化
+            CommunicateEvent.Modify<float>("ContinuousModeTimeUpdated", continuousModeRemainingTime);
+        }
+    }
+
+    /// <summary>
+    /// 同步连续钓鱼模式状态
+    /// </summary>
+    public void SyncContinuousModeStatus()
+    {
+        StartCoroutine(SyncContinuousModeStatusCoroutine());
+    }
+
+    private IEnumerator SyncContinuousModeStatusCoroutine()
+    {
+        string url = serverUrl + "/api/game/continuous-mode/status";
+
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    var response = JsonUtility.FromJson<ContinuousModeStatus>(json);
+
+                    if (response != null)
+                    {
+                        // 保存服务器返回的窝料结束时间戳
+                        baitEndTime = response.baitEndTime;
+                        
+                        // 根据服务器时间计算剩余时间
+                        UpdateContinuousModeRemainingTime();
+
+                        Logger.Log($"[NetServerManager] 同步连续模式状态: isInContinuousMode={isInContinuousMode}, remainingTime={continuousModeRemainingTime}, baitEndTime={baitEndTime}");
+
+                        // ========== 添加UI更新 ==========
+                        // 通过事件通知UI更新倒计时
+                        CommunicateEvent.Modify<float>("ContinuousModeTimeUpdated", continuousModeRemainingTime);
+
+                        // 尝试查找并更新窝料倒计时UI
+                        try
+                        {
+                            GameObject countdownObj = GameObject.Find("Canvas/BaitCountdownText");
+                            if (countdownObj != null)
+                            {
+                                var countdownText = countdownObj.GetComponent<UnityEngine.UI.Text>();
+                                if (countdownText != null)
+                                {
+                                    if (isInContinuousMode && continuousModeRemainingTime > 0)
+                                    {
+                                        int minutes = (int)(continuousModeRemainingTime / 60);
+                                        int seconds = (int)(continuousModeRemainingTime % 60);
+                                        countdownText.text = $"{minutes:00}:{seconds:00}";
+                                        Logger.Log($"[NetServerManager] 更新倒计时UI: {minutes:00}:{seconds:00}");
+                                    }
+                                    else
+                                    {
+                                        countdownText.text = "00:00";
+                                    }
+                                }
+                            }
+                        }
+                        catch (System.Exception ex)
+                        {
+                            Logger.LogWarning($"[NetServerManager] 更新倒计时UI失败: {ex.Message}");
+                        }
+                        // ========== UI更新结束 ==========
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析连续模式状态失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 获取连续模式状态失败: {request.error}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 更新连续模式UI显示
+    /// </summary>
+    private void UpdateContinuousModeUI()
+    {
+        // 通过 CommunicateEvent 通知UI更新连续模式时间
+        CommunicateEvent.Modify<float>("ContinuousModeTimeUpdated", continuousModeRemainingTime);
+
+        // 如果有直接引用，也可以直接更新
+        if (UIManager.Instance != null)
+        {
+            // 查找倒计时文本组件（根据实际UI结构调整）
+            var countdownText = UIManager.Instance.transform.Find("Canvas/BaitCountdownText")?.GetComponent<UnityEngine.UI.Text>();
+            if (countdownText != null)
+            {
+                if (isInContinuousMode && continuousModeRemainingTime > 0)
+                {
+                    int minutes = (int)(continuousModeRemainingTime / 60);
+                    int seconds = (int)(continuousModeRemainingTime % 60);
+                    countdownText.text = $"{minutes:00}:{seconds:00}";
+                    Logger.Log($"[NetServerManager] 更新倒计时UI: {minutes:00}:{seconds:00}");
+                }
+                else
+                {
+                    countdownText.text = "00:00";
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 进入连续钓鱼模式响应
+    /// </summary>
+    [System.Serializable]
+    private class EnterContinuousModeResponse
+    {
+        public bool success;
+        public string message;
+        public float remainingTime;
+    }
+
+    /// <summary>
+    /// 进入连续钓鱼模式响应（带baitEndTime）
+    /// </summary>
+    [System.Serializable]
+    private class EnterContinuousModeWithBaitEndTimeResponse
+    {
+        public bool success;
+        public string message;
+        public float remainingTime;
+        public long baitEndTime; // 窝料结束时间戳（秒）
+    }
+
+    /// <summary>
+    /// 增加窝料时间响应
+    /// </summary>
+    [System.Serializable]
+    private class AddBaitTimeResponse
+    {
+        public bool success;
+        public string message;
+        public long baitEndTime; // 窝料结束时间戳（秒）
+    }
+
+    /// <summary>
+    /// 连续模式状态
+    /// </summary>
+    [System.Serializable]
+    private class ContinuousModeStatus
+    {
+        public bool isInContinuousMode;
+        public float remainingTime;
+        public long baitEndTime; // 新增：窝料结束时间戳（秒）
+    }
+
+    // ==================== 天气和时间相关方法 ====================
+
+    /// <summary>
+    /// 根据天气ID获取天气名称
+    /// </summary>
+    private string GetWeatherNameById(int weatherId)
+    {
+        // 尝试从配置数据中查找天气名称（配置文件中天气ID范围是301-316）
+        if (LoadDataManager.Instance != null && LoadDataManager.Instance.weathers != null)
+        {
+            var weather = LoadDataManager.Instance.weathers.Find(w => w.id == weatherId);
+            if (weather != null)
+            {
+                return weather.name;
+            }
+        }
+        
+        // 默认返回ID对应的名称
+        switch (weatherId)
+        {
+            case 301: return "晴天";
+            case 302: return "多云天";
+            case 303: return "阴天";
+            case 304: return "微风天";
+            case 305: return "小到中雨";
+            case 306: return "薄雾";
+            case 307: return "明月天";
+            case 308: return "雷阵雨天";
+            case 309: return "阵风天";
+            case 310: return "暴雨";
+            case 311: return "大雾天";
+            case 312: return "彩虹天";
+            case 313: return "热浪";
+            case 314: return "火烧云";
+            case 315: return "荧光海";
+            case 316: return "海市蜃楼";
+            default: return $"未知天气({weatherId})";
+        }
+    }
+
+    /// <summary>
+    /// 根据时间槽ID获取时间名称
+    /// </summary>
+    private string GetTimeSlotNameById(int timeSlotId)
+    {
+        // 尝试从配置数据中查找时间名称（配置文件中时间槽ID范围是401-404）
+        if (LoadDataManager.Instance != null && LoadDataManager.Instance.timeSlots != null)
+        {
+            var timeSlot = LoadDataManager.Instance.timeSlots.Find(t => t.id == timeSlotId);
+            if (timeSlot != null)
+            {
+                return timeSlot.name;
+            }
+        }
+        
+        // 默认返回ID对应的名称
+        switch (timeSlotId)
+        {
+            case 401: return "清晨";
+            case 402: return "日间";
+            case 403: return "傍晚";
+            case 404: return "深夜";
+            default: return $"未知时段({timeSlotId})";
+        }
     }
 }

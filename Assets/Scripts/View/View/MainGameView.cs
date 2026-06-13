@@ -40,6 +40,7 @@ public class MainGameView : BagViewBase
 
         CommunicateEvent.Register<Vector3>(CommunicateEvent.EVENT_SHOW_BAIT_COUNTDOWN_AT_POSITION, OnShowBaitCountdownAtPosition);
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
+        // 天气和时间变化事件由EnvManager统一处理，然后调用UpdateWeather和UpdateTime方法
 
         if (bagBtn != null)
         {
@@ -182,6 +183,10 @@ public class MainGameView : BagViewBase
         return isMenuOpen;
     }
 
+    // 本地连续模式剩余时间（用于UI倒计时显示）
+    private float localContinuousModeTime = 0f;
+    private bool isLocalTimeSynced = false;
+
     void Update()
     {
         UpdateBaitCountdown();
@@ -189,16 +194,39 @@ public class MainGameView : BagViewBase
 
     private void UpdateBaitCountdown()
     {
-        bool isContinuousMode = CommunicateEvent.Request<int, bool>(CommunicateEvent.EVENT_IS_IN_CONTINUOUS_MODE, 0);
+        // 每帧从服务器获取最新的剩余时间（用于同步）
+        float serverRemainingTime = CommunicateEvent.Request<int, float>(CommunicateEvent.EVENT_GET_CONTINUOUS_MODE_REMAINING_TIME, 0);
+        
+        // 确保剩余时间非负
+        serverRemainingTime = Mathf.Max(0f, serverRemainingTime);
+        
+        // 同步服务器时间到本地（当时间变化超过1秒时）
+        if (Mathf.Abs(serverRemainingTime - localContinuousModeTime) > 1f || !isLocalTimeSynced)
+        {
+            localContinuousModeTime = serverRemainingTime;
+            isLocalTimeSynced = true;
+        }
+        
+        // 本地倒计时递减
+        if (localContinuousModeTime > 0)
+        {
+            localContinuousModeTime -= Time.deltaTime;
+            if (localContinuousModeTime < 0)
+            {
+                localContinuousModeTime = 0;
+            }
+        }
+        
+        float remainingTime = localContinuousModeTime;
 
         if (baitCountdownObj != null)
         {
-            baitCountdownObj.SetActive(isContinuousMode);
+            // 只有当剩余时间大于0时才显示倒计时
+            baitCountdownObj.SetActive(remainingTime > 0);
         }
 
-        if (isContinuousMode && baitCountdownTxt != null)
+        if (remainingTime > 0 && baitCountdownTxt != null)
         {
-            float remainingTime = CommunicateEvent.Request<int, float>(CommunicateEvent.EVENT_GET_CONTINUOUS_MODE_REMAINING_TIME, 0);
             int minutes = Mathf.FloorToInt(remainingTime / 60f);
             int seconds = Mathf.FloorToInt(remainingTime % 60f);
             baitCountdownTxt.text = $"窝料: {minutes:00}:{seconds:00}";

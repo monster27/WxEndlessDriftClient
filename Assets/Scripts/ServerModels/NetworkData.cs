@@ -112,6 +112,12 @@ namespace ServerModels
         public float continuousModeRemainingTime;
         public float nextFishingTime;
         public LastCatchInfo lastCatch;
+        public long baitEndTime; // 窝料结束时间戳（秒）
+        
+        // 天气和时间相关字段（服务器只传输ID，客户端根据配置表显示名称）
+        public int currentWeatherId;    // 当前天气ID
+        public int timeSlotId;          // 当前时间段ID
+        public int timeStatus;          // 当前时间状态（0=白天，1=黄昏，2=夜晚）
     }
 
     [System.Serializable]
