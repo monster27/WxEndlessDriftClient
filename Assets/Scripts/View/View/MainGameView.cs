@@ -12,6 +12,7 @@ public class MainGameView : BagViewBase
     public Button mallBtn;
     public Button equipBtn;
     public Button weatherAndTimeBtn;
+    public Button centerCameraBtn;  // 居中摄像头按钮
 
     // 菜单控制按钮
     public Button menuOpenBtn;      // 打开菜单按钮
@@ -97,6 +98,10 @@ public class MainGameView : BagViewBase
         if (hideRightBtn != null)
         {
             hideRightBtn.onClick.AddListener(OnHideRightBtnClick);
+        }
+        if (centerCameraBtn != null)
+        {
+            centerCameraBtn.onClick.AddListener(OnCenterCameraBtnClick);
         }
 
         if (mainTile != null)
@@ -233,6 +238,18 @@ public class MainGameView : BagViewBase
         Debug.Log("[MainGameView] OnHideRightBtnClick - 点击隐藏右侧");
         isMenuOpen = false;
         SetMenuPanelState(isMenuOpen);
+    }
+
+    /// <summary>
+    /// 居中摄像头按钮点击
+    /// </summary>
+    private void OnCenterCameraBtnClick()
+    {
+        Debug.Log("[MainGameView] OnCenterCameraBtnClick - 点击居中摄像头");
+        if (CameraManager.Instance != null)
+        {
+            CameraManager.Instance.MoveToCenter();
+        }
     }
 
     /// <summary>
