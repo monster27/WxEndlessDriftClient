@@ -73,6 +73,24 @@ public class ManagerManager : SingletonMono<ManagerManager>
             logBuilder.AppendLine("  GameDataManager: 完成");
         }
 
+        // ====== NetServerManager 必须在 UIManager 之前初始化 ======
+        // 原因：UIManager初始化时会触发MainGameView的Init()，
+        // 其中会调用CommunicateEvent.Request获取数据，
+        // 需要NetServerManager先注册事件处理器
+        if (!isOfflineMode)
+        {
+            if (NetServerManager.Instance != null)
+            {
+                if (UIManager.Instance != null && UIManager.Instance.loadingView != null)
+                    UIManager.Instance.loadingView.AddLoadingTask("初始化网络服务器");
+                NetServerManager.Instance.Init();
+                NetServerManager.Instance.SetEnabled(true);
+                if (UIManager.Instance != null && UIManager.Instance.loadingView != null)
+                    UIManager.Instance.loadingView.CompleteLoadingTask("初始化网络服务器");
+                logBuilder.AppendLine("  NetServerManager (在线模式): 完成");
+            }
+        }
+
         if (UIManager.Instance != null)
         {
             UIManager.Instance.Init();
@@ -111,17 +129,6 @@ public class ManagerManager : SingletonMono<ManagerManager>
         }
         else
         {
-            if (NetServerManager.Instance != null)
-            {
-                if (UIManager.Instance != null && UIManager.Instance.loadingView != null)
-                    UIManager.Instance.loadingView.AddLoadingTask("初始化网络服务器");
-                NetServerManager.Instance.Init();
-                NetServerManager.Instance.SetEnabled(true);
-                if (UIManager.Instance != null && UIManager.Instance.loadingView != null)
-                    UIManager.Instance.loadingView.CompleteLoadingTask("初始化网络服务器");
-                logBuilder.AppendLine("  NetServerManager (在线模式): 完成");
-            }
-
             if (ServerManager.Instance != null)
             {
                 ServerManager.Instance.SetEnabled(false);

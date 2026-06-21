@@ -51,7 +51,15 @@ public class EnvironmentRenderManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            if (transform.parent == null)
+            {
+                DontDestroyOnLoad(gameObject);
+            }
+            else
+            {
+                transform.SetParent(null);
+                DontDestroyOnLoad(gameObject);
+            }
         }
         else
         {

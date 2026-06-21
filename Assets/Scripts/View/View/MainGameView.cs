@@ -7,12 +7,11 @@ using SharedModels;
 public class MainGameView : BagViewBase
 {
     public TimeStatus timeStatus;
-    public Button weatherBtn;
-    public Button gameTimeBtn;
     public Button bagBtn;
     public Button fishBagBtn;
     public Button mallBtn;
     public Button equipBtn;
+    public Button weatherAndTimeBtn;
 
     // 菜单控制按钮
     public Button menuOpenBtn;      // 打开菜单按钮
@@ -21,9 +20,12 @@ public class MainGameView : BagViewBase
 
     public Text weatherTxt;
     public Text gameTimeTxt;
+    public Image weatherIcon;
+    public Image timeIcon;
     public Text goldTxt;
     public Text baitCountdownTxt;
     public Text baitCountTxt;  // 窝料数量显示
+    public Text fishCountTxt;  // 鱼篓数量显示
     public MainTile mainTile;
 
     // 需要控制显隐的UI面板（例如侧边栏菜单）
@@ -38,6 +40,17 @@ public class MainGameView : BagViewBase
     // 菜单当前状态
     private bool isMenuOpen = false;
 
+    public enum DisplayMode
+    {
+        Text,
+        Icon
+    }
+
+    private DisplayMode currentDisplayMode = DisplayMode.Text;
+
+    private int currentWeatherId = 301;
+    private int currentTimeSlotId = 401;
+
     public override void Init()
     {
         if (isInitialized) return;
@@ -47,6 +60,10 @@ public class MainGameView : BagViewBase
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
         // 注册窝料数量变化事件
         CommunicateEvent.Register("BaitCountChanged", OnBaitCountChanged);
+        // 注册鱼饵数据更新事件
+        CommunicateEvent.Register("BaitDataUpdated", OnBaitDataUpdated);
+        // 注册鱼篓数据更新事件
+        CommunicateEvent.Register("FishBagDataUpdated", OnFishBagDataUpdated);
         // 天气和时间变化事件由EnvManager统一处理，然后调用UpdateWeather和UpdateTime方法
 
         if (bagBtn != null)
@@ -64,6 +81,10 @@ public class MainGameView : BagViewBase
         if (equipBtn != null)
         {
             equipBtn.onClick.AddListener(OnEquipBtnClick);
+        }
+        if (weatherAndTimeBtn != null)
+        {
+            weatherAndTimeBtn.onClick.AddListener(OnWeatherAndTimeBtnClick);
         }
         if (menuOpenBtn != null)
         {
@@ -90,6 +111,10 @@ public class MainGameView : BagViewBase
         // 初始化窝料数量显示
         UpdateBaitCountDisplay();
 
+        // 初始化显示模式为Text模式
+        currentDisplayMode = DisplayMode.Text;
+        UpdateDisplayMode();
+
         isInitialized = true;
     }
 
@@ -115,6 +140,69 @@ public class MainGameView : BagViewBase
     {
         Debug.Log("[MainGameView] OnEquipBtnClick - 点击装备按钮");
         CommunicateEvent.Modify("UI_OpenEquipment");
+    }
+
+    private void OnWeatherAndTimeBtnClick()
+    {
+        SwitchDisplayMode();
+    }
+
+    private void SwitchDisplayMode()
+    {
+        if (currentDisplayMode == DisplayMode.Text)
+        {
+            currentDisplayMode = DisplayMode.Icon;
+        }
+        else
+        {
+            currentDisplayMode = DisplayMode.Text;
+        }
+        UpdateDisplayMode();
+    }
+
+    private void UpdateDisplayMode()
+    {
+        if (weatherTxt != null) weatherTxt.gameObject.SetActive(currentDisplayMode == DisplayMode.Text);
+        if (gameTimeTxt != null) gameTimeTxt.gameObject.SetActive(currentDisplayMode == DisplayMode.Text);
+        if (weatherIcon != null) weatherIcon.gameObject.SetActive(currentDisplayMode == DisplayMode.Icon);
+        if (timeIcon != null) timeIcon.gameObject.SetActive(currentDisplayMode == DisplayMode.Icon);
+
+        if (currentDisplayMode == DisplayMode.Icon)
+        {
+            UpdateWeatherIcon(currentWeatherId);
+            UpdateTimeIcon(currentTimeSlotId);
+        }
+        Debug.Log($"[MainGameView] 切换显示模式: {currentDisplayMode}");
+    }
+
+    private void UpdateWeatherIcon(int weatherId)
+    {
+        if (weatherIcon == null) return;
+        string path = $"UI/Icon/WeatherIcon/{weatherId}";
+        Sprite sprite = Resources.Load<Sprite>(path);
+        if (sprite != null)
+        {
+            weatherIcon.sprite = sprite;
+        }
+        else
+        {
+            Debug.LogWarning($"[MainGameView] 未找到天气图标: {path}");
+        }
+    }
+
+    private void UpdateTimeIcon(int timeSlotId)
+    {
+        if (timeIcon == null) return;
+        string path = $"UI/Icon/TimeIcon/{timeSlotId}";
+        Sprite sprite = Resources.Load<Sprite>(path);
+        if (sprite != null)
+        {
+            timeIcon.sprite = sprite;
+        }
+        else
+        {
+            Debug.LogWarning($"[MainGameView] 未找到时段图标: {path}");
+        }
     }
 
     /// <summary>
@@ -275,6 +363,33 @@ public class MainGameView : BagViewBase
         UpdateBaitCountDisplay();
     }
 
+    private void OnBaitDataUpdated()
+    {
+        Debug.Log("[MainGameView] OnBaitDataUpdated - 鱼饵数据更新");
+        UpdateBaitCountDisplay();
+    }
+
+    private void OnFishBagDataUpdated()
+    {
+        Debug.Log("[MainGameView] OnFishBagDataUpdated - 鱼篓数据更新");
+        UpdateFishCountDisplay();
+    }
+
+    private void UpdateFishCountDisplay()
+    {
+        if (fishCountTxt == null) return;
+
+        Dictionary<int, int> fishInventory = PlayerDataManager.Instance?.GetFishInventory();
+        if (fishInventory == null) { fishCountTxt.text = " 0/0"; return; }
+
+        int totalCount = 0;
+        foreach (var kvp in fishInventory)
+            totalCount += kvp.Value;
+
+        int maxCapacity = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_FISH_BAG_CAPACITY, 0);
+        fishCountTxt.text = $"{totalCount}/{maxCapacity}";
+    }
+
     public void InitTimeNameDic()
     {
     }
@@ -283,6 +398,9 @@ public class MainGameView : BagViewBase
     {
         gameTimeTxt.text = timeName;
         timeStatus = status;
+        // 修复：TimeStatus 枚举值 0-3，需要映射到配置ID 401-404
+        currentTimeSlotId = 401 + (int)status;
+        UpdateTimeIcon(currentTimeSlotId);
     }
 
     public void UpdateWeather(int weatherId, string weatherName)
@@ -291,6 +409,8 @@ public class MainGameView : BagViewBase
         {
             weatherTxt.text = weatherName;
         }
+        currentWeatherId = weatherId;
+        UpdateWeatherIcon(currentWeatherId);
     }
 
     public void ShowCatchResult(string itemName, float weight, Sprite icon)
@@ -323,5 +443,7 @@ public class MainGameView : BagViewBase
     {
         CommunicateEvent.Unregister<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
         CommunicateEvent.Unregister("BaitCountChanged", OnBaitCountChanged);
+        CommunicateEvent.Unregister("BaitDataUpdated", OnBaitDataUpdated);
+        CommunicateEvent.Unregister("FishBagDataUpdated", OnFishBagDataUpdated);
     }
 }

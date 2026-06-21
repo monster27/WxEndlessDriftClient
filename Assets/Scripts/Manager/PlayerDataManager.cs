@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Text;
+using SharedModels;
 
 public class PlayerDataManager : SingletonMono<PlayerDataManager>
 {
@@ -39,6 +40,11 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
     {
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_CLIENT_GOLD_CHANGED, OnGoldChanged);
         CommunicateEvent.Register(CommunicateEvent.EVENT_SYNC_INVENTORY, SyncInventoryFromServer);
+        CommunicateEvent.Register<List<int>>("SyncUnlockedCharacters", OnSyncUnlockedCharacters);
+        CommunicateEvent.Register<List<int>>("SyncUnlockedEquipment", OnSyncUnlockedEquipment);
+        CommunicateEvent.Register<Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_MALL_DATA_CHANGED, OnMallDataChanged);
+        CommunicateEvent.Register<(int, int, int)>(CommunicateEvent.EVENT_CHARACTER_DATA_CHANGED, OnCharacterDataChanged);
+        CommunicateEvent.Register<Dictionary<int, int>>("BagDataUpdated", OnBagDataUpdated);
     }
 
     private void OnGoldChanged(Dictionary<string, object> data)
@@ -320,5 +326,31 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
     public bool ShouldEnterAutoFishingState()
     {
         return !IsFishBagFull();
+    }
+
+    private void OnSyncUnlockedCharacters(List<int> characterIds)
+    {
+        Debug.Log($"[PlayerDataManager] 收到人物解锁数据同步，共 {characterIds?.Count ?? 0} 个");
+    }
+
+    private void OnSyncUnlockedEquipment(List<int> equipmentIds)
+    {
+        Debug.Log($"[PlayerDataManager] 收到装备解锁数据同步，共 {equipmentIds?.Count ?? 0} 个");
+    }
+
+    private void OnMallDataChanged(Dictionary<int, MallItemData> mallItems)
+    {
+        Debug.Log($"[PlayerDataManager] 收到商城数据同步，共 {mallItems?.Count ?? 0} 个物品");
+    }
+
+    private void OnCharacterDataChanged((int, int, int) data)
+    {
+        Debug.Log($"[PlayerDataManager] 收到人物数据变化: 角色ID={data.Item1}, 等级={data.Item2}, 经验={data.Item3}");
+    }
+
+    private void OnBagDataUpdated(Dictionary<int, int> inventory)
+    {
+        Debug.Log($"[PlayerDataManager] 收到背包数据更新，共 {inventory?.Count ?? 0} 个物品");
+        SyncInventoryFromServer();
     }
 }
