@@ -9,6 +9,7 @@ namespace SharedModels
         public int FishId;
         public string FishName = "";
         public float Weight;
+        public int StarRatingId;
         public int GoldEarned;
         public int ExpEarned;
         public int GoldBalance;

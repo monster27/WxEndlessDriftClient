@@ -396,19 +396,38 @@ public class MainGameView : BagViewBase
 
     public void UpdateTime(TimeStatus status, string timeName)
     {
-        gameTimeTxt.text = timeName;
+        Debug.Log($"[MainGameView] UpdateTime called - status={status}, timeName={timeName}, gameTimeTxt={gameTimeTxt != null}");
+        
+        if (gameTimeTxt != null)
+        {
+            gameTimeTxt.text = timeName;
+            Debug.Log($"[MainGameView] 时间文本已更新: {timeName}");
+        }
+        else
+        {
+            Debug.LogWarning("[MainGameView] gameTimeTxt 为 null，无法更新文本");
+        }
+        
         timeStatus = status;
-        // 修复：TimeStatus 枚举值 0-3，需要映射到配置ID 401-404
         currentTimeSlotId = 401 + (int)status;
+        Debug.Log($"[MainGameView] currentTimeSlotId={currentTimeSlotId}");
         UpdateTimeIcon(currentTimeSlotId);
     }
 
     public void UpdateWeather(int weatherId, string weatherName)
     {
+        Debug.Log($"[MainGameView] UpdateWeather called - weatherId={weatherId}, weatherName={weatherName}, weatherTxt={weatherTxt != null}");
+        
         if (weatherTxt != null)
         {
             weatherTxt.text = weatherName;
+            Debug.Log($"[MainGameView] 天气文本已更新: {weatherName}");
         }
+        else
+        {
+            Debug.LogWarning("[MainGameView] weatherTxt 为 null，无法更新文本");
+        }
+        
         currentWeatherId = weatherId;
         UpdateWeatherIcon(currentWeatherId);
     }

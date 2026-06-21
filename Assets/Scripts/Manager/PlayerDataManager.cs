@@ -7,6 +7,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 {
     private Dictionary<int, int> playerInventory = new Dictionary<int, int>();
     private Dictionary<int, int> fishInventory = new Dictionary<int, int>();
+    private Dictionary<int, List<FishDetailData>> fishDetailData = new Dictionary<int, List<FishDetailData>>();
 
     private int fishBagCapacity = 20;
     private int gold = 0;
@@ -276,6 +277,25 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
     public Dictionary<int, int> GetFishInventory()
     {
         return fishInventory != null ? new Dictionary<int, int>(fishInventory) : new Dictionary<int, int>();
+    }
+
+    public Dictionary<int, List<FishDetailData>> GetFishDetailData()
+    {
+        return fishDetailData != null ? new Dictionary<int, List<FishDetailData>>(fishDetailData) : new Dictionary<int, List<FishDetailData>>();
+    }
+
+    public void UpdateFishDetailData(Dictionary<int, List<FishDetailData>> newDetailData)
+    {
+        fishDetailData = newDetailData ?? new Dictionary<int, List<FishDetailData>>();
+    }
+
+    public List<FishDetailData> GetFishDetailDataById(int fishId)
+    {
+        if (fishDetailData != null && fishDetailData.ContainsKey(fishId))
+        {
+            return fishDetailData[fishId];
+        }
+        return new List<FishDetailData>();
     }
 
     public void RefreshUI()

@@ -487,6 +487,37 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         return item != null ? item.color : "#FFFFFF";
     }
 
+    public List<StarRatingData> GetSortedStarRatings()
+    {
+        var sorted = new List<StarRatingData>(starRatings);
+        sorted.Sort((a, b) => a.sortOrder.CompareTo(b.sortOrder));
+        return sorted;
+    }
+
+    public StarRatingData GetStarRatingByWeight(float weightRatio)
+    {
+        var sortedRatings = GetSortedStarRatings();
+        if (sortedRatings.Count == 0) return null;
+
+        float prevMultiplier = 0.5f;
+        foreach (var rating in sortedRatings)
+        {
+            if (weightRatio >= prevMultiplier && weightRatio <= rating.multiplier)
+            {
+                return rating;
+            }
+            prevMultiplier = rating.multiplier;
+        }
+
+        return sortedRatings[sortedRatings.Count - 1];
+    }
+
+    public float GetStarRatingWeight(int id)
+    {
+        StarRatingData item = GetStarRatingById(id);
+        return item != null ? item.weight : 1.0f;
+    }
+
     // ==================== 鱼类品种查询方法区域 ====================
 
     public FishSpeciesData GetFishSpeciesById(int id)
@@ -943,9 +974,9 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         // 刷新鱼篓数据
         if (UIManager.Instance != null && UIManager.Instance.fishBagView != null && PlayerDataManager.Instance != null)
         {
-            // 【修复】直接获取数据，不要再调用 SyncInventoryFromServer 触发新的事件
             var fishInventory = PlayerDataManager.Instance.GetFishInventory();
             var itemDataMap = GetItemDataMap();
+            var fishDetailData = PlayerDataManager.Instance.GetFishDetailData();
 
             Debug.Log($"[LoadDataManager] 鱼篓数据: {fishInventory.Count} 种鱼");
             foreach (var item in fishInventory)
@@ -953,7 +984,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
                 Debug.Log($"  鱼ID: {item.Key}, 数量: {item.Value}");
             }
 
-            UIManager.Instance.fishBagView.UpdateFishBagWithInventory(fishInventory, itemDataMap);
+            UIManager.Instance.fishBagView.UpdateFishBagWithInventory(fishInventory, itemDataMap, fishDetailData);
         }
         else
         {

@@ -89,6 +89,12 @@ public class EnvManager : SingletonMono<EnvManager>
     /// </summary>
     private void OnTimeSlotChanged(Dictionary<string, object> eventData)
     {
+        Debug.Log($"[EnvManager] OnTimeSlotChanged 收到事件: {eventData.Count} 个参数");
+        foreach (var kvp in eventData)
+        {
+            Debug.Log($"  - {kvp.Key}: {kvp.Value}");
+        }
+        
         if (eventData.TryGetValue("timeStatus", out object statusObj) &&
             eventData.TryGetValue("timeSlotName", out object nameObj) &&
             eventData.TryGetValue("weatherId", out object weatherObj))
@@ -97,12 +103,28 @@ public class EnvManager : SingletonMono<EnvManager>
             string timeName = nameObj.ToString();
             int weatherId = System.Convert.ToInt32(weatherObj);
 
-            Debug.Log($"[EnvManager] 收到时间段变化事件: {status}, 名称: {timeName}, 天气: {weatherId}");
+            Debug.Log($"[EnvManager] 处理时间段变化: status={status}, 名称={timeName}, 天气={weatherId}");
 
             UpdateTimeStatus(status, timeName, weatherId);
 
-            int timeSlotId = (int)status + 401;
+            int timeSlotId = 401 + (int)status;
+            Debug.Log($"[EnvManager] 切换时段环境: timeSlotId={timeSlotId}");
             EnvironmentRenderManager.Instance?.SwitchTimeEnvironment(timeSlotId);
+            
+            // 通知UI更新
+            if (UIManager.Instance != null && UIManager.Instance.mainGameView != null)
+            {
+                Debug.Log("[EnvManager] 调用 UIManager.UpdateMainViewTimee 更新UI");
+                UIManager.Instance.UpdateMainViewTimee(status, timeName);
+            }
+            else
+            {
+                Debug.LogWarning($"[EnvManager] UIManager 或 mainGameView 为 null，无法更新UI");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[EnvManager] 事件数据格式不正确，缺少必要字段");
         }
     }
     
@@ -111,23 +133,38 @@ public class EnvManager : SingletonMono<EnvManager>
     /// </summary>
     private void OnWeatherChanged(Dictionary<string, object> eventData)
     {
+        Debug.Log($"[EnvManager] OnWeatherChanged 收到事件: {eventData.Count} 个参数");
+        foreach (var kvp in eventData)
+        {
+            Debug.Log($"  - {kvp.Key}: {kvp.Value}");
+        }
+        
         if (eventData.TryGetValue("weatherId", out object idObj) &&
             eventData.TryGetValue("weatherName", out object nameObj))
         {
             int weatherId = System.Convert.ToInt32(idObj);
             string weatherName = nameObj.ToString();
 
-            Debug.Log($"[EnvManager] 收到天气变化事件: ID={weatherId}, 名称: {weatherName}");
+            Debug.Log($"[EnvManager] 处理天气变化: ID={weatherId}, 名称={weatherName}");
 
             this.currentWeatherId = weatherId;
             this.currentWeatherName = weatherName;
 
             if (UIManager.Instance != null && UIManager.Instance.mainGameView != null)
             {
+                Debug.Log("[EnvManager] 调用 UIManager.UpdateMainViewWeather 更新UI");
                 UIManager.Instance.UpdateMainViewWeather(weatherId, weatherName);
+            }
+            else
+            {
+                Debug.LogWarning($"[EnvManager] UIManager 或 mainGameView 为 null，无法更新UI");
             }
 
             EnvironmentRenderManager.Instance?.SwitchWeatherEnvironment(weatherId);
+        }
+        else
+        {
+            Debug.LogWarning("[EnvManager] 天气事件数据格式不正确，缺少必要字段");
         }
     }
 
@@ -176,12 +213,24 @@ public class EnvManager : SingletonMono<EnvManager>
     {
         this.timeStatus = timeStatus;
         this.currentWeatherId = weatherId;
-        this.currentWeatherName = LoadDataManager.Instance.GetWeatherName(weatherId);
+        
+        // 使用服务器返回的天气名称，如果没有则从配置表获取
+        if (!string.IsNullOrEmpty(timeName))
+        {
+            this.currentWeatherName = LoadDataManager.Instance.GetWeatherName(weatherId);
+        }
+        
+        Debug.Log($"[EnvManager] UpdateTimeStatus - timeStatus={timeStatus}, timeName={timeName}, weatherId={weatherId}, weatherName={currentWeatherName}");
         
         if (UIManager.Instance != null && UIManager.Instance.mainGameView != null)
         {
+            Debug.Log("[EnvManager] 调用 UIManager 更新时间和天气");
             UIManager.Instance.UpdateMainViewTimee(timeStatus, timeName);
             UIManager.Instance.UpdateMainViewWeather(currentWeatherId, currentWeatherName);
+        }
+        else
+        {
+            Debug.LogWarning("[EnvManager] UIManager 或 mainGameView 为 null，无法更新UI");
         }
     }
 

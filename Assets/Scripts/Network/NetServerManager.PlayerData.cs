@@ -236,6 +236,8 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         yield return FetchPlayerInventory();
         yield return FetchUnlockedCharacters();
         yield return FetchPlayerFishBag();
+        // 注意：FetchPlayerFishBag 已经返回了 weight、starRatingId、caughtTimestamp 等详细数据
+        // 不需要单独调用 /detail 接口
         yield return FetchFishBagCapacity();
         yield return FetchPlayerEquipment();
         yield return FetchPlayerCharacter();
@@ -315,10 +317,31 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         {
             if (data?.items == null) return;
             fishInventory.Clear();
-            foreach (var item in data.items) fishInventory[item.key] = item.value;
+            fishDetailData.Clear();
+            foreach (var item in data.items) 
+            {
+                fishInventory[item.key] = item.value;
+                
+                if (item.weight > 0 || item.starRatingId > 0)
+                {
+                    if (!fishDetailData.ContainsKey(item.key))
+                    {
+                        fishDetailData[item.key] = new List<FishDetailData>();
+                    }
+                    fishDetailData[item.key].Add(new FishDetailData
+                    {
+                        fishId = item.key,
+                        weight = item.weight,
+                        starRatingId = item.starRatingId,
+                        calculatedPrice = 0,
+                        caughtTimestamp = item.caughtTimestamp
+                    });
+                }
+            }
             int total = GetTotalFishCount();
             isFishBagFull = total >= fishBagCapacity;
-            Logger.Log("[NetServerManager] 更新玩家鱼篓: " + fishInventory.Count + " 种鱼，总数量: " + total);
+            PlayerDataManager.Instance?.UpdateFishDetailData(fishDetailData);
+            Logger.Log("[NetServerManager] 更新玩家鱼篓: " + fishInventory.Count + " 种鱼，总数量: " + total + "，详细数据: " + fishDetailData.Count + " 种");
         }, "鱼篓数据");
     }
 
@@ -432,6 +455,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         yield return null;
         yield return FetchPlayerFishBag();
         yield return StartCoroutine(FetchPlayerInventoryFromServer());
+        // 注意：FetchPlayerFishBag 已经返回了详细数据，不需要单独调用 /detail 接口
         PlayerDataManager.Instance?.SyncInventoryFromServer();
     }
 
@@ -523,7 +547,16 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
     [Serializable] private class UnlockedEquipmentResponse { public bool success; public List<int> unlockedEquipment; }
     [Serializable] private class AddItemResponse { public bool success; public string message; }
     [Serializable] private class InventoryResponse { public List<ItemKV> items; }
-    [Serializable] private class ItemKV { public int key; public int value; }
+    [Serializable] private class ItemKV 
+    { 
+        public int key; 
+        public int value; 
+        public float weight;
+        public int starRatingId;
+        public long caughtTimestamp;
+    }
     [Serializable] private class GoldResponse { public int gold; }
     [Serializable] private class CapacityResponse { public int capacity; }
+
+    private Dictionary<int, List<FishDetailData>> fishDetailData = new Dictionary<int, List<FishDetailData>>();
 }

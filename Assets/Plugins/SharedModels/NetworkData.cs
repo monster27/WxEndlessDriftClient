@@ -42,6 +42,9 @@ namespace SharedModels
     {
         public int key;
         public int value;
+        public float weight;
+        public int starRatingId;
+        public long caughtTimestamp;
     }
 
     [Serializable]
@@ -163,6 +166,17 @@ namespace SharedModels
         public int expEarned;
         public bool isTrash;
         public float struggleTime;
+        public int starRatingId;
+    }
+
+    [Serializable]
+    public class FishDetailData
+    {
+        public int fishId;
+        public float weight;
+        public int starRatingId;
+        public int calculatedPrice;
+        public long caughtTimestamp;
     }
 
     [Serializable]

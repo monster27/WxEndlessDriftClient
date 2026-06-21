@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using View.Detail;
+using SharedModels;
 
 public class FishBagView : BagViewBase
 {
@@ -29,7 +30,7 @@ public class FishBagView : BagViewBase
         Weight
     }
 
-    private SortType currentSortType = SortType.CatchOrder;
+    private SortType currentSortType = SortType.Rarity;
 
     public override void Init()
     {
@@ -116,6 +117,12 @@ public class FishBagView : BagViewBase
     {
         RefreshItems();
 
+        // 打开时应用当前排序
+        if (fishDetail != null)
+        {
+            fishDetail.SortFishItems(currentSortType);
+        }
+
         gameObject.SetActive(true);
         SendEvent();
         UpdateTotalSellPrice();
@@ -147,30 +154,34 @@ public class FishBagView : BagViewBase
 
     public void UpdateFishItems(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap)
     {
-        UpdateFishDetail(fishInventory, itemDataMap);
+        UpdateFishDetail(fishInventory, itemDataMap, null);
     }
 
-    private void UpdateFishDetail(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap)
+    public void UpdateFishItems(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap, Dictionary<int, List<FishDetailData>> detailData)
+    {
+        UpdateFishDetail(fishInventory, itemDataMap, detailData);
+    }
+
+    private void UpdateFishDetail(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap, Dictionary<int, List<FishDetailData>> detailData = null)
     {
         if (fishDetail != null)
         {
-            // ========== 添加调试日志 ==========
-            Debug.Log($"[FishBagView] UpdateFishDetail - 传入数据: fishInventory数量={fishInventory?.Count ?? 0}, itemDataMap数量={itemDataMap?.Count ?? 0}");
-            // ========== 调试日志结束 ==========
+            Debug.Log($"[FishBagView] UpdateFishDetail - 传入数据: fishInventory数量={fishInventory?.Count ?? 0}, itemDataMap数量={itemDataMap?.Count ?? 0}, detailData数量={detailData?.Count ?? 0}");
+            fishDetail.UpdateFishItems(itemDataMap, fishInventory, detailData);
 
-            fishDetail.UpdateFishItems(itemDataMap, fishInventory);
+            // 数据更新后应用当前排序
+            fishDetail.SortFishItems(currentSortType);
         }
     }
 
     public void RefreshItems()
     {
-        // 直接从 PlayerDataManager 获取最新数据并更新UI
         if (PlayerDataManager.Instance != null)
         {
             var fishInventory = PlayerDataManager.Instance.GetFishInventory();
             var itemDataMap = LoadDataManager.Instance?.GetItemDataMap();
+            var fishDetailData = PlayerDataManager.Instance.GetFishDetailData();
 
-            // ========== 添加调试日志 ==========
             Debug.Log($"[FishBagView] RefreshItems - 鱼篓数据:");
             if (fishInventory != null)
             {
@@ -191,22 +202,29 @@ public class FishBagView : BagViewBase
             {
                 Debug.Log($"   物品数据映射数量: {itemDataMap.Count}");
             }
-            // ========== 调试日志结束 ==========
+
+            if (fishDetailData != null)
+            {
+                Debug.Log($"   详情数据数量: {fishDetailData.Count}");
+            }
 
             if (itemDataMap != null)
             {
-                UpdateFishDetail(fishInventory, itemDataMap);
+                UpdateFishDetail(fishInventory, itemDataMap, fishDetailData);
                 UpdateFishCountDisplay(fishInventory);
                 UpdateTotalSellPrice();
             }
         }
     }
 
-
-
     public void UpdateFishBagWithInventory(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap)
     {
-        UpdateFishDetail(fishInventory, itemDataMap);
+        UpdateFishBagWithInventory(fishInventory, itemDataMap, null);
+    }
+
+    public void UpdateFishBagWithInventory(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap, Dictionary<int, List<FishDetailData>> detailData)
+    {
+        UpdateFishDetail(fishInventory, itemDataMap, detailData);
         UpdateFishCountDisplay(fishInventory);
         UpdateTotalSellPrice();
     }

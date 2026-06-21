@@ -265,25 +265,38 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
     private void ProcessWeatherAndTimeSync(FishingStatusResponse response)
     {
+        Debug.Log($"[NetServerManager] ProcessWeatherAndTimeSync - currentWeatherId={response.currentWeatherId}, timeSlotId={response.timeSlotId}, timeStatus={response.timeStatus}");
+        
         if (response.currentWeatherId > 0)
         {
             currentWeatherId = response.currentWeatherId;
             currentWeatherName = GetWeatherNameById(response.currentWeatherId);
+            Debug.Log($"[NetServerManager] 触发天气变化事件: weatherId={currentWeatherId}, weatherName={currentWeatherName}");
             CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_CLIENT_WEATHER_CHANGED, new Dictionary<string, object>
             {
                 { "weatherId", currentWeatherId }, { "weatherName", currentWeatherName }
             });
         }
+        else
+        {
+            Debug.LogWarning($"[NetServerManager] 天气ID无效: {response.currentWeatherId}");
+        }
+        
         if (response.timeSlotId > 0)
         {
             currentTimeSlotId = response.timeSlotId;
             currentTimeSlotName = GetTimeSlotNameById(response.timeSlotId);
             currentTimeStatus = (TimeStatus)response.timeStatus;
+            Debug.Log($"[NetServerManager] 触发时段变化事件: timeSlotId={currentTimeSlotId}, timeSlotName={currentTimeSlotName}, timeStatus={(int)currentTimeStatus}");
             CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_CLIENT_TIME_SLOT_CHANGED, new Dictionary<string, object>
             {
                 { "timeSlotId", currentTimeSlotId }, { "timeSlotName", currentTimeSlotName },
                 { "timeStatus", (int)currentTimeStatus }, { "weatherId", currentWeatherId }
             });
+        }
+        else
+        {
+            Debug.LogWarning($"[NetServerManager] 时段ID无效: {response.timeSlotId}");
         }
     }
 
@@ -408,5 +421,5 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
     [Serializable] private class FishingCatchResponse { public bool success; public string message; public string fishName; public float weight; public int goldBalance; public bool isTrash; public int trashStreak; public float struggleTime; }
     [Serializable] private class AutoFishingResponse { public bool success; public string message; }
     [Serializable] private class FishingStatusResponse { public bool success; public bool isAutoFishing; public bool isPaused; public int trashStreak; public float nextFishingTime; public float continuousModeRemainingTime; public int fishingMode; public int currentWeatherId; public int timeSlotId; public int timeStatus; public LastCatchInfo lastCatch; }
-    [Serializable] private class LastCatchInfo { public int fishId; public string fishName; public float weight; public float struggleTime; public int goldEarned; }
+    [Serializable] private class LastCatchInfo { public int fishId; public string fishName; public float weight; public float struggleTime; public int goldEarned; public int starRatingId; }
 }

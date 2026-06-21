@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Text;
+using SharedModels;
 
 namespace View.Detail
 {
@@ -13,6 +14,8 @@ namespace View.Detail
         public Text nameText;
         public Text weightText;
         public Text priceText;
+        public Text starRatingText;
+        public Image starRatingImage;
         public Button selectButton;
         public Image selectedImage;
         public Image newCatchImage;
@@ -22,7 +25,8 @@ namespace View.Detail
         private ItemData itemData;
         private bool isSelected = false;
         private bool isNewCatch = false;
-        private bool isSold = false;  // 是否已售出（等待移除）
+        private bool isSold = false;
+        private FishDetailData fishDetail;
 
         public int ItemId => itemId;
         public int Quantity => quantity;
@@ -30,6 +34,36 @@ namespace View.Detail
         public ItemData ItemDataRef => itemData;
         public bool IsNewCatch => isNewCatch;
         public bool IsSold => isSold;
+        public FishDetailData FishDetail => fishDetail;
+
+        /// <summary>
+        /// 获取钓获时间戳（用于排序）
+        /// </summary>
+        public long CatchTimestamp => fishDetail?.caughtTimestamp ?? 0;
+
+        /// <summary>
+        /// 获取鱼的重量（用于排序）
+        /// </summary>
+        public float FishWeight => fishDetail?.weight ?? GetItemWeight(itemId);
+
+        /// <summary>
+        /// 获取鱼的稀有度（用于排序）
+        /// </summary>
+        public int FishRarityId
+        {
+            get
+            {
+                if (itemData != null)
+                {
+                    var fishData = LoadDataManager.Instance?.GetFishById(itemId);
+                    if (fishData != null)
+                    {
+                        return fishData.rarityId;
+                    }
+                }
+                return 0;
+            }
+        }
 
         public event System.Action<UI_FishBagPrefab> OnSelectionChanged;
 
@@ -46,11 +80,12 @@ namespace View.Detail
             }
         }
 
-        public void Init(int id, int qty, ItemData data, bool isNewCatchFlag = false)
+        public void Init(int id, int qty, ItemData data, bool isNewCatchFlag = false, FishDetailData detail = null)
         {
             itemId = id;
             quantity = qty;
             itemData = data;
+            fishDetail = detail;
             isSelected = false;
             isNewCatch = isNewCatchFlag;
             isSold = false;
@@ -84,12 +119,12 @@ namespace View.Detail
                 quantityText.gameObject.SetActive(false);
             }
 
-            if (weightText != null && itemData != null)
+            float displayWeight = fishDetail != null ? fishDetail.weight : GetItemWeight(itemId);
+            if (weightText != null)
             {
-                float weight = GetItemWeight(itemId);
-                if (weight > 0)
+                if (displayWeight > 0)
                 {
-                    weightText.text = $"{weight:F1}kg";
+                    weightText.text = $"{displayWeight:F2}kg";
                     weightText.gameObject.SetActive(true);
                 }
                 else
@@ -99,11 +134,13 @@ namespace View.Detail
                 }
             }
 
-            if (priceText != null && itemData != null)
+            int displayPrice = CalculateDisplayPrice();
+            if (priceText != null)
             {
-                if (itemData.sellPrice > 0)
+                if (displayPrice > 0)
                 {
-                    priceText.text = $"¥{itemData.sellPrice}";
+                    // 价格显示为小数点后两位
+                    priceText.text = $"¥{displayPrice:F2}";
                     priceText.gameObject.SetActive(true);
                 }
                 else
@@ -113,10 +150,69 @@ namespace View.Detail
                 }
             }
 
+            UpdateStarRatingDisplay();
+
             if (iconImage != null && itemData != null)
             {
                 LoadIcon();
             }
+        }
+
+        private void UpdateStarRatingDisplay()
+        {
+            int starRatingId = fishDetail != null ? fishDetail.starRatingId : 0;
+            
+            if (starRatingText != null)
+            {
+                if (starRatingId > 0 && LoadDataManager.Instance != null)
+                {
+                    var starRating = LoadDataManager.Instance.GetStarRatingById(starRatingId);
+                    if (starRating != null)
+                    {
+                        starRatingText.text = starRating.name;
+                        starRatingText.color = ParseColor(starRating.color);
+                        starRatingText.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        starRatingText.gameObject.SetActive(false);
+                    }
+                }
+                else
+                {
+                    starRatingText.gameObject.SetActive(false);
+                }
+            }
+
+            if (starRatingImage != null)
+            {
+                if (starRatingId > 0 && LoadDataManager.Instance != null)
+                {
+                    var starRating = LoadDataManager.Instance.GetStarRatingById(starRatingId);
+                    if (starRating != null)
+                    {
+                        starRatingImage.color = ParseColor(starRating.color);
+                        starRatingImage.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        starRatingImage.gameObject.SetActive(false);
+                    }
+                }
+                else
+                {
+                    starRatingImage.gameObject.SetActive(false);
+                }
+            }
+        }
+
+        private Color ParseColor(string colorCode)
+        {
+            if (ColorUtility.TryParseHtmlString(colorCode, out Color color))
+            {
+                return color;
+            }
+            return Color.white;
         }
 
         public void UpdateQuantity(int newQuantity)
@@ -205,13 +301,35 @@ namespace View.Detail
             return 0f;
         }
 
+        private int CalculateDisplayPrice()
+        {
+            if (fishDetail != null && fishDetail.calculatedPrice > 0)
+            {
+                return fishDetail.calculatedPrice;
+            }
+
+            if (itemData != null)
+            {
+                int basePrice = itemData.sellPrice;
+                
+                if (fishDetail != null && fishDetail.starRatingId > 0 && LoadDataManager.Instance != null)
+                {
+                    var starRating = LoadDataManager.Instance.GetStarRatingById(fishDetail.starRatingId);
+                    if (starRating != null)
+                    {
+                        return Mathf.RoundToInt(basePrice * starRating.multiplier);
+                    }
+                }
+                
+                return basePrice;
+            }
+            
+            return 0;
+        }
+
         public int GetTotalSellPrice()
         {
-            if (itemData != null && quantity > 0)
-            {
-                return itemData.sellPrice;
-            }
-            return 0;
+            return CalculateDisplayPrice();
         }
     }
 }
