@@ -18,6 +18,9 @@ namespace View.Detail
         // 缓存当前显示的鱼的数量
         private Dictionary<int, int> currentFishInventory = new Dictionary<int, int>();
 
+        // 缓存当前的物品数据映射
+        private Dictionary<int, ItemData> currentItemDataMap = new Dictionary<int, ItemData>();
+
         public void SetFishBagItemPrefab(GameObject prefab)
         {
             if (fishBagItemPrefab == null)
@@ -98,6 +101,7 @@ namespace View.Detail
 
             // 3. 更新缓存
             currentFishInventory = new Dictionary<int, int>(newInventory);
+            currentItemDataMap = new Dictionary<int, ItemData>(itemDataMap);
 
             // ========== 添加完成日志 ==========
             Debug.Log($"[FishDetail] ===== 更新完成，当前 fishPrefabs 中的物品种类: {fishPrefabs.Count} =====");
@@ -230,6 +234,85 @@ namespace View.Detail
                 }
             }
             return allPrefabs;
+        }
+
+        public void SortFishItems(FishBagView.SortType sortType)
+        {
+            Debug.Log($"[FishDetail] SortFishItems - 排序类型: {sortType}");
+
+            if (contentTransform == null || fishPrefabs.Count == 0)
+            {
+                Debug.Log("[FishDetail] SortFishItems - 没有需要排序的鱼");
+                return;
+            }
+
+            List<UI_FishBagPrefab> allActivePrefabs = GetAllFishPrefabs();
+            if (allActivePrefabs.Count == 0)
+            {
+                Debug.Log("[FishDetail] SortFishItems - 没有活动的鱼预制体");
+                return;
+            }
+
+            List<UI_FishBagPrefab> sortedPrefabs = allActivePrefabs.OrderBy(p => GetSortValue(p, sortType)).ToList();
+
+            for (int i = 0; i < sortedPrefabs.Count; i++)
+            {
+                sortedPrefabs[i].transform.SetSiblingIndex(i);
+            }
+
+            Debug.Log($"[FishDetail] SortFishItems - 完成排序，共 {sortedPrefabs.Count} 条鱼");
+        }
+
+        private float GetSortValue(UI_FishBagPrefab prefab, FishBagView.SortType sortType)
+        {
+            int itemId = prefab.ItemId;
+
+            switch (sortType)
+            {
+                case FishBagView.SortType.CatchOrder:
+                    return itemId;
+
+                case FishBagView.SortType.Rarity:
+                    return GetRarityValue(itemId);
+
+                case FishBagView.SortType.Price:
+                    return GetPriceValue(itemId);
+
+                case FishBagView.SortType.Weight:
+                    return GetWeightValue(itemId);
+
+                default:
+                    return itemId;
+            }
+        }
+
+        private float GetRarityValue(int itemId)
+        {
+            FishData fishData = LoadDataManager.Instance?.GetFishById(itemId);
+            if (fishData != null)
+            {
+                return fishData.rarityId;
+            }
+            return 0;
+        }
+
+        private float GetPriceValue(int itemId)
+        {
+            if (currentItemDataMap.TryGetValue(itemId, out ItemData itemData))
+            {
+                return itemData.sellPrice;
+            }
+            return 0;
+        }
+
+        private float GetWeightValue(int itemId)
+        {
+            FishData fishData = LoadDataManager.Instance?.GetFishById(itemId);
+            if (fishData != null)
+            {
+                return fishData.baseWeight;
+            }
+            return 0;
         }
 
         private UI_FishBagPrefab CreateFishItemPrefab(int itemId, int quantity, ItemData itemData, bool isNewCatch = false)

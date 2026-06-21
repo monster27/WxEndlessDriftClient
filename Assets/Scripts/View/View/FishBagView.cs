@@ -13,8 +13,23 @@ public class FishBagView : BagViewBase
     public Text totalSellPriceText;
     public GameObject fishBagItemPrefab;
 
+    public Button sortByCatchOrderButton;
+    public Button sortByRarityButton;
+    public Button sortByPriceButton;
+    public Button sortByWeightButton;
+
     private bool isAllSelected = false;
     private const string EVENT_FISHBAG_SELL = "FishBag_Sell";
+
+    public enum SortType
+    {
+        CatchOrder,
+        Rarity,
+        Price,
+        Weight
+    }
+
+    private SortType currentSortType = SortType.CatchOrder;
 
     public override void Init()
     {
@@ -50,6 +65,26 @@ public class FishBagView : BagViewBase
         if (sellButton != null)
         {
             sellButton.onClick.AddListener(OnSellButtonClick);
+        }
+
+        if (sortByCatchOrderButton != null)
+        {
+            sortByCatchOrderButton.onClick.AddListener(() => OnSortButtonClick(SortType.CatchOrder));
+        }
+
+        if (sortByRarityButton != null)
+        {
+            sortByRarityButton.onClick.AddListener(() => OnSortButtonClick(SortType.Rarity));
+        }
+
+        if (sortByPriceButton != null)
+        {
+            sortByPriceButton.onClick.AddListener(() => OnSortButtonClick(SortType.Price));
+        }
+
+        if (sortByWeightButton != null)
+        {
+            sortByWeightButton.onClick.AddListener(() => OnSortButtonClick(SortType.Weight));
         }
     }
 
@@ -338,5 +373,16 @@ public class FishBagView : BagViewBase
     {
         Debug.Log("[FishBagView] 收到数据更新事件，刷新鱼篓");
         RefreshItems();
+    }
+
+    private void OnSortButtonClick(SortType sortType)
+    {
+        currentSortType = sortType;
+        Debug.Log($"[FishBagView] 排序方式变更: {sortType}");
+
+        if (fishDetail != null)
+        {
+            fishDetail.SortFishItems(sortType);
+        }
     }
 }

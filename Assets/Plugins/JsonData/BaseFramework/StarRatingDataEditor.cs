@@ -13,6 +13,7 @@ public class StarRatingDataEditor : BaseDataEditor<StarRatingData>
     private string editName = "";
     private string editDescription = "";
     private float editMultiplier = 1.0f;
+    private float editWeight = 1.0f;
     private string editColor = "#CD7F32";
     private int editSortOrder = 1;
 
@@ -22,10 +23,11 @@ public class StarRatingDataEditor : BaseDataEditor<StarRatingData>
     private float col1 = 30;   // 颜色
     private float col2 = 60;   // ID
     private float col3 = 80;   // 名称
-    private float col4 = 80;   // 倍率
-    private float col5 = 70;   // 排序
-    private float col6 = 150;  // 描述
-    private float col7 = 100;  // 颜色码
+    private float col4 = 60;   // 倍率
+    private float col5 = 60;   // 权重
+    private float col6 = 70;   // 排序
+    private float col7 = 100;  // 描述
+    private float col8 = 100;  // 颜色码
 
     public StarRatingDataEditor() : base(RELATIVE_PATH) { }
 
@@ -70,9 +72,10 @@ public class StarRatingDataEditor : BaseDataEditor<StarRatingData>
         DrawResizableColumn("ID", ref col2, "col2");
         DrawResizableColumn("名称", ref col3, "col3");
         DrawResizableColumn("倍率", ref col4, "col4");
-        DrawResizableColumn("排序", ref col5, "col5");
-        DrawResizableColumn("描述", ref col6, "col6");
-        DrawResizableColumn("颜色码", ref col7, "col7");
+        DrawResizableColumn("权重", ref col5, "col5");
+        DrawResizableColumn("排序", ref col6, "col6");
+        DrawResizableColumn("描述", ref col7, "col7");
+        DrawResizableColumn("颜色码", ref col8, "col8");
 
         EditorGUILayout.LabelField("操作", GUILayout.Width(100));
         EditorGUILayout.EndHorizontal();
@@ -104,14 +107,15 @@ public class StarRatingDataEditor : BaseDataEditor<StarRatingData>
 		EditorGUILayout.LabelField($"[{item.id}]", GUILayout.Width(col2));
 		EditorGUILayout.LabelField(item.name, GUILayout.Width(col3));
 		EditorGUILayout.LabelField(item.multiplier.ToString(), GUILayout.Width(col4));
-		EditorGUILayout.LabelField(item.sortOrder.ToString(), GUILayout.Width(col5));
+		EditorGUILayout.LabelField(item.weight.ToString(), GUILayout.Width(col5));
+		EditorGUILayout.LabelField(item.sortOrder.ToString(), GUILayout.Width(col6));
 
 		// 显示描述（限制长度）
-		string shortDesc = item.description.Length > 15 ? item.description.Substring(0, 15) + "..." : item.description;
-		EditorGUILayout.LabelField(shortDesc, GUILayout.Width(col6));
+		string shortDesc = item.description.Length > 12 ? item.description.Substring(0, 12) + "..." : item.description;
+		EditorGUILayout.LabelField(shortDesc, GUILayout.Width(col7));
 
 		// 显示颜色码
-		EditorGUILayout.LabelField(item.color, GUILayout.Width(col7));
+		EditorGUILayout.LabelField(item.color, GUILayout.Width(col8));
 
 		GUI.backgroundColor = Color.white;
 		GUILayout.FlexibleSpace();
@@ -166,6 +170,11 @@ public class StarRatingDataEditor : BaseDataEditor<StarRatingData>
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("权重:", GUILayout.Width(40));
+            item.weight = EditorGUILayout.FloatField(item.weight);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("颜色码:", GUILayout.Width(40));
             item.color = EditorGUILayout.TextField(item.color);
             GUI.backgroundColor = GetColorFromCode(item.color);
@@ -211,9 +220,11 @@ public class StarRatingDataEditor : BaseDataEditor<StarRatingData>
         EditorGUILayout.LabelField("名称:", GUILayout.Width(30));
         editName = EditorGUILayout.TextField(editName, GUILayout.Width(80));
         EditorGUILayout.LabelField("倍率:", GUILayout.Width(30));
-        editMultiplier = EditorGUILayout.FloatField(editMultiplier, GUILayout.Width(60));
+        editMultiplier = EditorGUILayout.FloatField(editMultiplier, GUILayout.Width(50));
+        EditorGUILayout.LabelField("权重:", GUILayout.Width(30));
+        editWeight = EditorGUILayout.FloatField(editWeight, GUILayout.Width(50));
         EditorGUILayout.LabelField("排序:", GUILayout.Width(30));
-        editSortOrder = EditorGUILayout.IntField(editSortOrder, GUILayout.Width(60));
+        editSortOrder = EditorGUILayout.IntField(editSortOrder, GUILayout.Width(50));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
@@ -279,7 +290,7 @@ public class StarRatingDataEditor : BaseDataEditor<StarRatingData>
             foreach (var item in dataList) if (item.id > maxId) maxId = item.id;
             newId = maxId + 1;
         }
-        dataList.Add(new StarRatingData { id = newId, name = "新星级", description = "描述", multiplier = 1.0f, color = "#FFFFFF", sortOrder = dataList.Count + 1 });
+        dataList.Add(new StarRatingData { id = newId, name = "新星级", description = "描述", multiplier = 1.0f, weight = 1.0f, color = "#FFFFFF", sortOrder = dataList.Count + 1 });
         selectedIndex = dataList.Count - 1;
         SaveData();
         LoadData();
@@ -297,7 +308,7 @@ public class StarRatingDataEditor : BaseDataEditor<StarRatingData>
             EditorUtility.DisplayDialog("错误", $"ID {editId} 已存在", "确定");
             return;
         }
-        dataList.Add(new StarRatingData { id = editId, name = editName, description = editDescription, multiplier = editMultiplier, color = editColor, sortOrder = editSortOrder });
+        dataList.Add(new StarRatingData { id = editId, name = editName, description = editDescription, multiplier = editMultiplier, weight = editWeight, color = editColor, sortOrder = editSortOrder });
         dataList = dataList.OrderBy(item => item.id).ToList();
         SaveData();
         LoadData();
@@ -312,6 +323,7 @@ public class StarRatingDataEditor : BaseDataEditor<StarRatingData>
         editName = "";
         editDescription = "";
         editMultiplier = 1.0f;
+        editWeight = 1.0f;
         editColor = "#FFFFFF";
         editSortOrder = dataList.Count + 1;
         EditorUtility.DisplayDialog("成功", "新增成功", "确定");

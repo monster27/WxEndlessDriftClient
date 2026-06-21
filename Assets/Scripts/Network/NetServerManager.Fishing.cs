@@ -374,6 +374,11 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         Logger.Log($"[NetServerManager] 售卖鱼: {fishCountMap.Count}种, {itemIds.Count}条, 总价{totalPrice}");
 
         var requestData = new Dictionary<string, object> { { "items", sellItems }, { "totalPrice", totalPrice } };
+
+        // 【调试】打印实际发送的JSON
+        string jsonToSend = NetUtils.SerializeToJson(requestData);
+        Logger.Log($"[NetServerManager] 发送JSON: {jsonToSend}");
+
         StartCoroutine(SendRequest<object>($"/api/player/fish-bag/{_currentPlayerId}/sell", requestData,
             _ => { Logger.Log("[NetServerManager] 售卖鱼成功"); StartCoroutine(FetchPlayerDataAfterSell(itemIds, totalPrice)); },
             error => { Logger.LogWarning("[NetServerManager] 售卖鱼失败: " + error); UIManager.Instance?.ShowTip("售卖失败，请重试"); }));

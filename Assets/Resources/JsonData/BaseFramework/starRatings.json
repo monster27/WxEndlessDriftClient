@@ -5,6 +5,7 @@
             "name": "铜星",
             "description": "基础重量",
             "multiplier": 1.0,
+            "weight": 4.0,
             "color": "#CD7F32",
             "sortOrder": 1
         },
@@ -13,6 +14,7 @@
             "name": "银星",
             "description": "1.5倍重量",
             "multiplier": 1.5,
+            "weight": 3.0,
             "color": "#C0C0C0",
             "sortOrder": 2
         },
@@ -21,6 +23,7 @@
             "name": "金星",
             "description": "2倍重量",
             "multiplier": 2.0,
+            "weight": 2.0,
             "color": "#FFD700",
             "sortOrder": 3
         },
@@ -29,6 +32,7 @@
             "name": "虹星",
             "description": "3倍重量",
             "multiplier": 3.0,
+            "weight": 1.0,
             "color": "#FF69B4",
             "sortOrder": 4
         }

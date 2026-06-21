@@ -48,7 +48,7 @@ public class ItemListWrapper
 [System.Serializable] public class WeatherListWrapper { public List<WeatherData> weathers; }
 
 // 重量星级
-[System.Serializable] public class StarRatingData { public int id; public string name; public string description; public float multiplier; public string color; public int sortOrder; }
+[System.Serializable] public class StarRatingData { public int id; public string name; public string description; public float multiplier; public float weight; public string color; public int sortOrder; }
 [System.Serializable] public class StarRatingListWrapper { public List<StarRatingData> starRatings; }
 
 // 鱼类品种(浴缸中移动)

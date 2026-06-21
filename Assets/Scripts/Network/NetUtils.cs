@@ -143,7 +143,23 @@ public static class NetUtils
         
         if (value is Dictionary<string, object>)
             return SerializeToJson((Dictionary<string, object>)value);
-        
+
+        // 【修复】支持 List<Dictionary<string, object>>
+        if (value is List<Dictionary<string, object>>)
+        {
+            var list = (List<Dictionary<string, object>>)value;
+            var sb = new System.Text.StringBuilder();
+            sb.Append("[");
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (i > 0)
+                    sb.Append(",");
+                sb.Append(SerializeToJson(list[i]));
+            }
+            sb.Append("]");
+            return sb.ToString();
+        }
+
         // 【修复】支持 List<object>
         if (value is List<object>)
         {
