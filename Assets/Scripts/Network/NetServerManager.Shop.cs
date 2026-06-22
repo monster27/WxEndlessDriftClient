@@ -66,6 +66,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
                         Logger.Log($"[NetServerManager] 同步商城物品列表完成，共 {mallItems.Count} 个商品");
 
+                        // 【修复】使用 CommunicateEvent.EVENT_MALL_DATA_CHANGED
                         CommunicateEvent.Modify<Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_MALL_DATA_CHANGED, mallItems);
                     }
                 }

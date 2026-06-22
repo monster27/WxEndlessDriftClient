@@ -29,6 +29,30 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
     private int _currentPlayerId = 1;
 
+    // ========== 持久化控制 ==========
+    private bool _isInitCalled = false;
+    private bool _isPersistent = false;
+
+    // ========== 重写 Awake 实现持久化 ==========
+    protected override void Awake()
+    {
+        // 调用基类 Awake（基类会处理单例逻辑）
+        base.Awake();
+
+        // 确保对象在场景切换时不被销毁
+        if (!_isPersistent)
+        {
+            // 确保是根对象
+            if (transform.parent != null)
+            {
+                transform.SetParent(null);
+            }
+            DontDestroyOnLoad(gameObject);
+            _isPersistent = true;
+            Logger.LogColor("[NetServerManager] 已设置为 DontDestroyOnLoad，将在场景切换中保持存在", "cyan");
+        }
+    }
+
     public void SetCurrentPlayerId(int playerId)
     {
         _currentPlayerId = playerId;
@@ -42,12 +66,17 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
     public void Init()
     {
+        if (_isInitCalled)
+        {
+            Logger.Log("[NetServerManager] Init() 已被调用，跳过重复初始化");
+            return;
+        }
+
         RegisterNetworkEvents();
         RegisterServerEvents();
+        _isInitCalled = true;
 
         Logger.LogColor("[NetServerManager] 网络服务器管理器初始化完成，服务器地址: " + serverUrl, "green");
-
-        StartConnect();
     }
 
     public void SetEnabled(bool enabled)
@@ -56,7 +85,8 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
         if (enabled && networkState == NetUtils.NetworkState.Disconnected)
         {
-            StartConnect();
+            // 不自动连接，等待 StartInitialization 调用
+            Logger.Log("[NetServerManager] 网络已启用，等待初始化...");
         }
         else if (!enabled)
         {
@@ -66,8 +96,11 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         Logger.LogColor("[NetServerManager] 设置启用状态: " + enabled, "orange");
     }
 
-    private void StartConnect()
+    public void StartConnect()
     {
+        // 仅在未连接时连接
+        if (isConnected) return;
+
         if (connectCoroutine != null)
         {
             StopCoroutine(connectCoroutine);
@@ -95,12 +128,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
                 isConnected = true;
                 missedHeartbeats = 0;
 
-                StartCoroutine(FetchGameState());
-                StartCoroutine(FetchBaitCount());
-                StartCoroutine(FetchPlayerData());
-
-                StartCoroutine(PollFishingStatus());
-
+                // 开始心跳
                 StartHeartbeat();
             }
             else
@@ -227,7 +255,8 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             }
             else if (networkState == NetUtils.NetworkState.Disconnected)
             {
-                StartConnect();
+                // 不自动连接，由外部调用 StartInitialization
+                Logger.Log("[NetServerManager] 当前未连接，等待主动初始化");
             }
         }
 

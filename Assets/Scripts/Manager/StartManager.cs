@@ -5,8 +5,8 @@ using System.Collections;
 
 public class StartManager : MonoBehaviour
 {
-    [SerializeField] private string gameSceneName = "GameScene";
-    
+    [SerializeField] private string loadingSceneName = "LoadingScene";
+
     [Header("登录UI")]
     public InputField usernameInput;
     public InputField passwordInput;
@@ -16,7 +16,7 @@ public class StartManager : MonoBehaviour
     private void Start()
     {
         loginBtn.onClick.AddListener(OnLoginClicked);
-        
+
         // 尝试自动登录（从PlayerPrefs读取上次登录的用户）
         TryAutoLogin();
     }
@@ -25,7 +25,7 @@ public class StartManager : MonoBehaviour
     {
         string savedUsername = PlayerPrefs.GetString("LastUsername", "");
         string savedPassword = PlayerPrefs.GetString("LastPassword", "");
-        
+
         if (!string.IsNullOrEmpty(savedUsername) && !string.IsNullOrEmpty(savedPassword))
         {
             usernameInput.text = savedUsername;
@@ -38,19 +38,19 @@ public class StartManager : MonoBehaviour
     {
         string username = usernameInput.text.Trim();
         string password = passwordInput.text.Trim();
-        
+
         if (string.IsNullOrEmpty(username))
         {
             ShowStatus("请输入用户名", true);
             return;
         }
-        
+
         if (string.IsNullOrEmpty(password))
         {
             ShowStatus("请输入密码", true);
             return;
         }
-        
+
         ShowStatus("正在登录...", false);
         StartCoroutine(LoginCoroutine(username, password, false));
     }
@@ -60,25 +60,25 @@ public class StartManager : MonoBehaviour
         // 调用登录接口（服务器会自动注册新用户）
         string url = "http://localhost:5000/api/auth/login";
         string jsonData = $"{{\"username\":\"{username}\",\"password\":\"{password}\"}}";
-        
+
         using (UnityEngine.Networking.UnityWebRequest request = UnityEngine.Networking.UnityWebRequest.Post(url, jsonData, "application/json"))
         {
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
             request.uploadHandler = new UnityEngine.Networking.UploadHandlerRaw(bodyRaw);
             request.SetRequestHeader("Content-Type", "application/json");
             request.timeout = 10;
-            
+
             yield return request.SendWebRequest();
-            
+
             if (request.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
             {
                 string responseText = request.downloadHandler.text;
                 Debug.Log("登录响应: " + responseText);
-                
+
                 // 解析响应获取玩家ID
                 LoginResponse response = null;
                 bool parseSuccess = false;
-                
+
                 try
                 {
                     response = JsonUtility.FromJson<LoginResponse>(responseText);
@@ -88,7 +88,7 @@ public class StartManager : MonoBehaviour
                 {
                     ShowStatus("解析响应失败: " + ex.Message, true);
                 }
-                
+
                 if (parseSuccess && response != null && response.success)
                 {
                     // 保存登录状态
@@ -96,25 +96,30 @@ public class StartManager : MonoBehaviour
                     PlayerPrefs.SetString("LastPassword", password);
                     PlayerPrefs.SetInt("PlayerId", response.playerId);
                     PlayerPrefs.Save();
-                    
-                    // 【修复】设置当前玩家ID到 NetServerManager
-                    NetServerManager.Instance?.SetCurrentPlayerId(response.playerId);
+
+                    // 设置当前玩家ID到 NetServerManager
+                    if (NetServerManager.Instance != null)
+                    {
+                        NetServerManager.Instance.SetCurrentPlayerId(response.playerId);
+                        // 重置初始化状态（用于切换账号）
+                        NetServerManager.Instance.ResetInitialization();
+                    }
                     Debug.Log($"[StartManager] 登录成功，设置玩家ID为: {response.playerId}");
-                    
+
                     ShowStatus(response.isNewUser ? "注册成功!" : "登录成功!", false);
-                    
+
                     // 如果是新用户，初始化基础装备和人物
                     if (response.isNewUser)
                     {
                         Debug.Log($"[StartManager] 检测到新用户，开始初始化基础装备和人物...");
-                        // 等待一小段时间确保NetServerManager已初始化
                         yield return new WaitForSeconds(0.2f);
                         StartCoroutine(InitializeNewPlayer(response.playerId));
+                        yield return new WaitForSeconds(0.3f);
                     }
-                    
-                    // 延迟加载游戏场景
-                    yield return new WaitForSeconds(response.isNewUser ? 1.5f : 0.5f);
-                    LoadGameScene();
+
+                    // 跳转到加载场景（而不是直接跳转游戏场景）
+                    yield return new WaitForSeconds(response.isNewUser ? 0.8f : 0.3f);
+                    LoadLoadingScene();
                 }
                 else if (parseSuccess && response != null)
                 {
@@ -141,37 +146,40 @@ public class StartManager : MonoBehaviour
         statusText.color = isError ? Color.red : Color.green;
     }
 
-    public void LoadGameScene()
+    /// <summary>
+    /// 跳转到加载场景
+    /// </summary>
+    private void LoadLoadingScene()
     {
-        Debug.Log("加载游戏场景: " + gameSceneName);
-        SceneManager.LoadScene(gameSceneName);
+        Debug.Log("[StartManager] 跳转到加载场景: " + loadingSceneName);
+        SceneManager.LoadScene(loadingSceneName);
     }
-    
+
     /// <summary>
     /// 初始化新玩家 - 添加基础装备和人物
     /// </summary>
     private IEnumerator InitializeNewPlayer(int playerId)
     {
         Debug.Log($"[StartManager] 开始初始化新玩家: playerId={playerId}");
-        
+
         // 调用服务器的初始化API
         string url = "http://localhost:5000/api/player/init";
         string jsonData = $"{{\"playerId\":{playerId}}}";
-        
+
         using (UnityEngine.Networking.UnityWebRequest request = UnityEngine.Networking.UnityWebRequest.Post(url, jsonData, "application/json"))
         {
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
             request.uploadHandler = new UnityEngine.Networking.UploadHandlerRaw(bodyRaw);
             request.SetRequestHeader("Content-Type", "application/json");
             request.timeout = 10;
-            
+
             yield return request.SendWebRequest();
-            
+
             if (request.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
             {
                 string responseText = request.downloadHandler.text;
                 Debug.Log($"[StartManager] 新玩家初始化响应: {responseText}");
-                
+
                 try
                 {
                     var initResponse = JsonUtility.FromJson<InitResponse>(responseText);
@@ -196,20 +204,20 @@ public class StartManager : MonoBehaviour
             }
         }
     }
-    
+
     [System.Serializable]
     private class InitResponse
     {
         public bool success;
         public string message;
     }
-    
+
     [System.Serializable]
     private class LoginResponse
     {
         public bool success;
         public int playerId;
         public string message;
-        public bool isNewUser;  // 是否为新注册用户
+        public bool isNewUser;
     }
 }

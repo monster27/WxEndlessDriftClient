@@ -129,8 +129,11 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
     private int GetTotalFishCount() => fishInventory.Values.Sum();
 
-    // ========== 数据加载主流程 ==========
+    // ========== 数据加载主流程（兼容旧接口）==========
 
+    /// <summary>
+    /// 兼容旧接口：启动数据加载（建议使用 StartInitialization）
+    /// </summary>
     public void StartDataLoading()
     {
         if (isDataLoading)
@@ -213,8 +216,31 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         {
             if (data?.items == null) return;
             fishInventory.Clear();
-            foreach (var item in data.items) fishInventory[item.key] = item.value;
-            Logger.Log("[NetServerManager] 鱼篓数据加载完成: " + fishInventory.Count + " 种鱼");
+            fishDetailData.Clear();
+            foreach (var item in data.items)
+            {
+                fishInventory[item.key] = item.value;
+
+                if (item.weight > 0 || item.starRatingId > 0)
+                {
+                    if (!fishDetailData.ContainsKey(item.key))
+                    {
+                        fishDetailData[item.key] = new List<FishDetailData>();
+                    }
+                    fishDetailData[item.key].Add(new FishDetailData
+                    {
+                        fishId = item.key,
+                        weight = item.weight,
+                        starRatingId = item.starRatingId,
+                        calculatedPrice = 0,
+                        caughtTimestamp = item.caughtTimestamp
+                    });
+                }
+            }
+            int total = GetTotalFishCount();
+            isFishBagFull = total >= fishBagCapacity;
+            PlayerDataManager.Instance?.UpdateFishDetailData(fishDetailData);
+            Logger.Log("[NetServerManager] 鱼篓数据加载完成: " + fishInventory.Count + " 种鱼，总数量: " + total + "，详细数据: " + fishDetailData.Count + " 种");
         }, "鱼篓数据");
     }
 
@@ -236,8 +262,6 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         yield return FetchPlayerInventory();
         yield return FetchUnlockedCharacters();
         yield return FetchPlayerFishBag();
-        // 注意：FetchPlayerFishBag 已经返回了 weight、starRatingId、caughtTimestamp 等详细数据
-        // 不需要单独调用 /detail 接口
         yield return FetchFishBagCapacity();
         yield return FetchPlayerEquipment();
         yield return FetchPlayerCharacter();
@@ -245,7 +269,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         yield return new WaitForSeconds(0.2f);
         yield return StartCoroutine(EnsureBasicCharacter());
 
-        NotifyPlayerDataSynced();
+        NotifyPlayerDataSyncedInternal();
         SyncUnlockedEquipmentFromServer();
         SyncMallItemsFromServer();
 
@@ -318,10 +342,10 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             if (data?.items == null) return;
             fishInventory.Clear();
             fishDetailData.Clear();
-            foreach (var item in data.items) 
+            foreach (var item in data.items)
             {
                 fishInventory[item.key] = item.value;
-                
+
                 if (item.weight > 0 || item.starRatingId > 0)
                 {
                     if (!fishDetailData.ContainsKey(item.key))
@@ -384,17 +408,28 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         }, "人物数据");
     }
 
-    private void NotifyPlayerDataSynced()
+    /// <summary>
+    /// 内部通知数据同步完成（重命名避免二义性）
+    /// </summary>
+    /// <summary>
+    private void NotifyPlayerDataSyncedInternal()
     {
-        if (PlayerDataManager.Instance != null)
+        if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.IsReady)
         {
             PlayerDataManager.Instance.SyncInventoryFromServer();
             PlayerDataManager.Instance.SyncGoldFromServer();
         }
-        if (unlockedCharacters.Count > 0)
-            CommunicateEvent.Modify<List<int>>("SyncUnlockedCharacters", new List<int>(unlockedCharacters));
-    }
+        else
+        {
+            Logger.LogWarning("[NetServerManager] PlayerDataManager 尚未就绪，跳过数据同步");
+        }
 
+        // 【修复】使用 CommunicateEvent.EVENT_EQUIP_CHANGED 而不是 S2C_EVENT_EQUIP_CHANGED
+        if (unlockedCharacters.Count > 0)
+        {
+            CommunicateEvent.Modify<List<int>>("SyncUnlockedCharacters", new List<int>(unlockedCharacters));
+        }
+    }
     // ========== 数据同步 ==========
 
     public void SyncUnlockedCharactersFromServer() => StartCoroutine(SyncUnlockedCharactersCoroutine());
@@ -455,7 +490,6 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         yield return null;
         yield return FetchPlayerFishBag();
         yield return StartCoroutine(FetchPlayerInventoryFromServer());
-        // 注意：FetchPlayerFishBag 已经返回了详细数据，不需要单独调用 /detail 接口
         PlayerDataManager.Instance?.SyncInventoryFromServer();
     }
 
@@ -547,10 +581,11 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
     [Serializable] private class UnlockedEquipmentResponse { public bool success; public List<int> unlockedEquipment; }
     [Serializable] private class AddItemResponse { public bool success; public string message; }
     [Serializable] private class InventoryResponse { public List<ItemKV> items; }
-    [Serializable] private class ItemKV 
-    { 
-        public int key; 
-        public int value; 
+    [Serializable]
+    private class ItemKV
+    {
+        public int key;
+        public int value;
         public float weight;
         public int starRatingId;
         public long caughtTimestamp;
