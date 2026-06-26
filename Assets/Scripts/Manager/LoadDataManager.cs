@@ -56,6 +56,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         LoadAllData();
         PrintAllData();
         RegisterEvents();
+        DontDestroyOnLoad(gameObject);
     }
 
     private void RegisterEvents()
@@ -877,9 +878,9 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
             LoadAllData();
         }
 
-        if (UIManager.Instance != null && UIManager.Instance.bagView != null)
+        if (GameUIManager.Instance != null && GameUIManager.Instance.bagView != null)
         {
-            UIManager.Instance.bagView.InitBag();
+            GameUIManager.Instance.bagView.InitBag();
         }
     }
 
@@ -894,9 +895,9 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
             LoadAllData();
         }
 
-        if (UIManager.Instance != null && UIManager.Instance.fishBagView != null)
+        if (GameUIManager.Instance != null && GameUIManager.Instance.fishBagView != null)
         {
-            UIManager.Instance.fishBagView.InitFishBag();
+            GameUIManager.Instance.fishBagView.InitFishBag();
         }
     }
 
@@ -912,11 +913,11 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         }
 
         // 初始化背包数据
-        if (UIManager.Instance != null && UIManager.Instance.bagView != null && PlayerDataManager.Instance != null)
+        if (GameUIManager.Instance != null && GameUIManager.Instance.bagView != null && PlayerDataManager.Instance != null)
         {
             var inventory = PlayerDataManager.Instance.GetInventory();
             var itemDataMap = GetItemDataMap();
-            UIManager.Instance.bagView.UpdateBagItems(inventory, itemDataMap);
+            GameUIManager.Instance.bagView.UpdateBagItems(inventory, itemDataMap);
         }
     }
 
@@ -932,11 +933,11 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         }
 
         // 刷新背包数据
-        if (UIManager.Instance != null && UIManager.Instance.bagView != null && PlayerDataManager.Instance != null)
+        if (GameUIManager.Instance != null && GameUIManager.Instance.bagView != null && PlayerDataManager.Instance != null)
         {
             var inventory = PlayerDataManager.Instance.GetInventory();
             var itemDataMap = GetItemDataMap();
-            UIManager.Instance.bagView.UpdateBagItems(inventory, itemDataMap);
+            GameUIManager.Instance.bagView.UpdateBagItems(inventory, itemDataMap);
         }
     }
 
@@ -952,11 +953,11 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         }
 
         // 初始化鱼篓数据
-        if (UIManager.Instance != null && UIManager.Instance.fishBagView != null && PlayerDataManager.Instance != null)
+        if (GameUIManager.Instance != null && GameUIManager.Instance.fishBagView != null && PlayerDataManager.Instance != null)
         {
             var fishInventory = PlayerDataManager.Instance.GetFishInventory();
             var itemDataMap = GetItemDataMap();
-            UIManager.Instance.fishBagView.UpdateFishItems(fishInventory, itemDataMap);
+            GameUIManager.Instance.fishBagView.UpdateFishItems(fishInventory, itemDataMap);
         }
     }
 
@@ -972,7 +973,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         }
 
         // 刷新鱼篓数据
-        if (UIManager.Instance != null && UIManager.Instance.fishBagView != null && PlayerDataManager.Instance != null)
+        if (GameUIManager.Instance != null && GameUIManager.Instance.fishBagView != null && PlayerDataManager.Instance != null)
         {
             var fishInventory = PlayerDataManager.Instance.GetFishInventory();
             var itemDataMap = GetItemDataMap();
@@ -984,7 +985,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
                 Debug.Log($"  鱼ID: {item.Key}, 数量: {item.Value}");
             }
 
-            UIManager.Instance.fishBagView.UpdateFishBagWithInventory(fishInventory, itemDataMap, fishDetailData);
+            GameUIManager.Instance.fishBagView.UpdateFishBagWithInventory(fishInventory, itemDataMap, fishDetailData);
         }
         else
         {

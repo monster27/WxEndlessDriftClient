@@ -136,7 +136,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
                 Logger.LogError("[NetServerManager] 连接服务器失败: " + request.error);
                 networkState = NetUtils.NetworkState.Disconnected;
                 isConnected = false;
-                UIManager.Instance?.ShowTip("无法连接到服务器，请检查网络连接");
+                GameUIManager.Instance?.ShowTip("无法连接到服务器，请检查网络连接");
             }
         }
     }
@@ -317,7 +317,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         else
         {
             Logger.LogError("[NetServerManager] 请求失败: " + endpoint + ", 错误: " + request.error);
-            UIManager.Instance?.ShowTip("网络请求失败，请检查网络连接");
+            GameUIManager.Instance?.ShowTip("网络请求失败，请检查网络连接");
             onError?.Invoke(request.error);
         }
     }
@@ -342,6 +342,6 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
     private void ShowNetworkError()
     {
         Logger.LogError("[NetServerManager] 网络连接失败，请检查网络连接后重试");
-        UIManager.Instance?.ShowTip("网络连接失败，请检查网络连接后重试");
+        GameUIManager.Instance?.ShowTip("网络连接失败，请检查网络连接后重试");
     }
 }

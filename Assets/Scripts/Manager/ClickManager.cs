@@ -88,13 +88,13 @@ public class ClickManager : MonoBehaviour
         switch (clickable.objectType)
         {
             case ClickableType.Player:
-                UIManager.Instance.OpenEquipment();
+                GameUIManager.Instance.OpenEquipment();
                 break;
             case ClickableType.NestBaitsPlacement:
                 HandleNestBaitsPlacementClick(clickable.gameObject);
                 break;
             case ClickableType.FishBag:
-                UIManager.Instance.OpenFishBag();
+                GameUIManager.Instance.OpenFishBag();
                 break;
         }
     }
@@ -122,7 +122,7 @@ public class ClickManager : MonoBehaviour
         else
         {
             Debug.Log("[ClickManager] 窝料不足，无法使用");
-            UIManager.ShowMessage("窝料不足，无法进入连续钓鱼模式");
+            GameUIManager.ShowMessage("窝料不足，无法进入连续钓鱼模式");
         }
     }
 }

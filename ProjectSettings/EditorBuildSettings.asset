@@ -17,6 +17,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/GameScene.scene
     guid: 960a2085ba48a2c499c1a1ca574e9b40
+  - enabled: 1
+    path: Assets/Test/Scene/TeseScene2.scene
+    guid: 568f9e22e42996442aae5bc32d15a11f
   m_BuildProfiles: []
   m_configObjects: {}
   m_SlimFeaturesWeixinMiniGame:

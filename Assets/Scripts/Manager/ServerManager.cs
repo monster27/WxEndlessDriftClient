@@ -190,7 +190,7 @@ public class ServerManager : SingletonMono<ServerManager>
     public void NotifyShowCatchResult(string itemName, float weight, Sprite icon)
     {
         Debug.Log($"[ServerManager] 通知显示捕获结果: {itemName}");
-        UIManager.Instance?.ShowCatchResult(itemName, weight, icon);
+        GameUIManager.Instance?.ShowCatchResult(itemName, weight, icon);
     }
 
     public void OnServerFishingResult(FishingResult result)
@@ -327,7 +327,7 @@ public class ServerManager : SingletonMono<ServerManager>
 
     private void ShowCatchResult(int itemId)
     {
-        if (UIManager.Instance != null)
+        if (GameUIManager.Instance != null)
         {
             ItemData itemData = GetItemDataById(itemId);
             if (itemData != null)
@@ -341,7 +341,7 @@ public class ServerManager : SingletonMono<ServerManager>
                     icon = Resources.Load<Sprite>(itemData.iconPath);
                 }
 
-                UIManager.Instance.ShowCatchResult(itemName, weight, icon);
+                GameUIManager.Instance.ShowCatchResult(itemName, weight, icon);
             }
         }
     }

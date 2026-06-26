@@ -356,7 +356,7 @@ public class EquipmentView : MonoBehaviour
                         else
                         {
                             Debug.LogError($"[EquipmentView] 服务器技能解锁失败");
-                            UIManager.Instance.ShowTip("技能解锁失败");
+                            GameUIManager.Instance.ShowTip("技能解锁失败");
                             onConfirmWithResult?.Invoke(false);
                         }
                     });
@@ -378,7 +378,7 @@ public class EquipmentView : MonoBehaviour
                         else
                         {
                             Debug.LogError($"[EquipmentView] 服务器解锁失败: {message}");
-                            UIManager.Instance.ShowTip("解锁失败: " + message);
+                            GameUIManager.Instance.ShowTip("解锁失败: " + message);
                             onConfirmWithResult?.Invoke(false);
                         }
                     });

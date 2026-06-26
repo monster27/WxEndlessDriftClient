@@ -7,7 +7,7 @@ using System;
 using SharedModels;
 using Logger = Utils.Logger;
 
-public partial class NetServerManager : SingletonMono<NetServerManager>
+public partial class NetServerManager 
 {
     // 钓鱼状态
     private bool isAutoFishing = false;
@@ -150,7 +150,13 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         {
             if (!isFirstRequest) yield return new WaitForSeconds(2f);
             isFirstRequest = false;
-            if (!isConnected || this == null || gameObject == null) yield break;
+
+            // ⭐ 检查是否已销毁或断开
+            if (!isConnected || this == null || gameObject == null)
+            {
+                Logger.Log("[NetServerManager] PollFishingStatus 退出 - 连接断开或对象销毁");
+                yield break;
+            }
 
             using (var request = UnityWebRequest.Get(serverUrl + "/api/fishing/status?playerId=" + _currentPlayerId))
             {
@@ -167,6 +173,9 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
                 {
                     var response = JsonUtility.FromJson<FishingStatusResponse>(request.downloadHandler.text);
                     if (response == null || !response.success) continue;
+
+                    // ⭐ 打印关键信息，方便调试
+                    Logger.Log($"[NetServerManager] 轮询状态: auto={response.isAutoFishing}, paused={response.isPaused}, nextTime={response.nextFishingTime}, hasCatch={response.lastCatch != null}");
 
                     bool wasPaused = isPaused, wasFull = isFishBagFull;
                     isAutoFishing = response.isAutoFishing;
@@ -229,11 +238,81 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         pendingCatchInfo = lastCatch;
         if (lastCatch.goldEarned > 0) playerGold += lastCatch.goldEarned;
 
+        // ⭐ 获取鱼类稀有度颜色并设置到鱼饵提示动画
+        SetFishTipColorByFishId(lastCatch.fishId, struggleTime);
+
         NotifyPlayReelAnimation(struggleTime, () =>
         {
             if (pendingCatchInfo != null) { ShowCatchResultFromServer(pendingCatchInfo); pendingCatchInfo = null; }
             StartCoroutine(FetchFishInventoryFromServer());
         });
+    }
+
+    /// <summary>
+    /// 根据鱼类ID获取稀有度颜色，并设置到鱼饵提示动画
+    /// </summary>
+    private void SetFishTipColorByFishId(int fishId,float struggleTime)
+    {
+        try
+        {
+            // 1. 从 LoadDataManager 获取鱼类数据
+            if (LoadDataManager.Instance == null)
+            {
+                Logger.LogWarning("[NetServerManager] LoadDataManager 未初始化，无法设置鱼饵提示颜色");
+                return;
+            }
+
+            FishData fishData = LoadDataManager.Instance.GetFishById(fishId);
+            if (fishData == null)
+            {
+                Logger.LogWarning($"[NetServerManager] 未找到鱼类数据: fishId={fishId}");
+                return;
+            }
+
+            // 2. 获取稀有度ID
+            int rarityId = fishData.rarityId;
+            if (rarityId <= 0)
+            {
+                Logger.LogWarning($"[NetServerManager] 鱼类 {fishId} 的稀有度ID无效: {rarityId}");
+                return;
+            }
+
+            // 3. 获取稀有度数据
+            RarityData rarityData = LoadDataManager.Instance.GetRarityById(rarityId);
+            if (rarityData == null)
+            {
+                Logger.LogWarning($"[NetServerManager] 未找到稀有度数据: rarityId={rarityId}");
+                return;
+            }
+
+            // 4. 解析颜色
+            if (string.IsNullOrEmpty(rarityData.colorCode))
+            {
+                Logger.LogWarning($"[NetServerManager] 稀有度 {rarityId} 的颜色代码为空");
+                return;
+            }
+
+            if (!ColorUtility.TryParseHtmlString(rarityData.colorCode, out Color color))
+            {
+                Logger.LogWarning($"[NetServerManager] 解析颜色失败: colorCode={rarityData.colorCode}");
+                return;
+            }
+
+            // 5. 设置到鱼饵提示动画
+            if (PlayerAniManager.Instance != null)
+            {
+                PlayerAniManager.Instance.SetFishTip(color, struggleTime);
+                Logger.Log($"[NetServerManager] 设置鱼饵提示颜色: fishId={fishId}, rarityId={rarityId}, color={rarityData.colorCode} , struggleTime-{struggleTime}");
+            }
+            else
+            {
+                Logger.LogWarning("[NetServerManager] PlayerAniManager 未初始化，无法设置鱼饵提示颜色");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[NetServerManager] SetFishTipColorByFishId 异常: {ex.Message}");
+        }
     }
 
     private void ProcessReelAnimationRecovery(FishingStatusResponse response)
@@ -341,8 +420,8 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             struggleStartTime = 0f;
             currentStruggleTime = 0f;
             NotifySyncInventoryFromServer();
-            if (UIManager.Instance?.fishBagView != null && UIManager.Instance.fishBagView.gameObject.activeSelf)
-                UIManager.Instance.fishBagView.RefreshItems();
+            if (GameUIManager.Instance?.fishBagView != null && GameUIManager.Instance.fishBagView.gameObject.activeSelf)
+                GameUIManager.Instance.fishBagView.RefreshItems();
             if (isFishBagFull || isPaused) NotifyPlayLazyAnimation(); else NotifyPlayIdleAnimation();
         });
     }
@@ -353,7 +432,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
     {
         if (catchInfo == null) return;
         Sprite icon = GetItemIcon(catchInfo.fishId);
-        UIManager.Instance?.ShowCatchResult(catchInfo.fishName, catchInfo.weight, icon);
+        GameUIManager.Instance?.ShowCatchResult(catchInfo.fishName, catchInfo.weight, icon);
         SyncCharacterDataFromServer();
     }
 
@@ -394,26 +473,26 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
         StartCoroutine(SendRequest<object>($"/api/player/fish-bag/{_currentPlayerId}/sell", requestData,
             _ => { Logger.Log("[NetServerManager] 售卖鱼成功"); StartCoroutine(FetchPlayerDataAfterSell(itemIds, totalPrice)); },
-            error => { Logger.LogWarning("[NetServerManager] 售卖鱼失败: " + error); UIManager.Instance?.ShowTip("售卖失败，请重试"); }));
+            error => { Logger.LogWarning("[NetServerManager] 售卖鱼失败: " + error); GameUIManager.Instance?.ShowTip("售卖失败，请重试"); }));
     }
 
     public void NotifyAddFish(int fishId, int quantity) { }
     public void NotifyRefreshUI() => PlayerDataManager.Instance?.RefreshUI();
-    public void NotifyShowCatchResult(string itemName, float weight, Sprite icon) => UIManager.Instance?.ShowCatchResult(itemName, weight, icon);
+    public void NotifyShowCatchResult(string itemName, float weight, Sprite icon) => GameUIManager.Instance?.ShowCatchResult(itemName, weight, icon);
 
     public void NotifySyncInventoryFromServer()
     {
         if (PlayerDataManager.Instance == null) return;
         PlayerDataManager.Instance.SyncInventoryFromServer();
-        if (UIManager.Instance?.fishBagView != null && UIManager.Instance.fishBagView.gameObject.activeSelf)
+        if (GameUIManager.Instance?.fishBagView != null && GameUIManager.Instance.fishBagView.gameObject.activeSelf)
             PlayerAniManager.Instance.StartCoroutine(DelayedRefreshFishBag());
-        UIManager.Instance?.UpdateGoldDisplay(playerGold);
+        GameUIManager.Instance?.UpdateGoldDisplay(playerGold);
     }
 
     private IEnumerator DelayedRefreshFishBag()
     {
         yield return null;
-        UIManager.Instance?.fishBagView?.RefreshItems();
+        GameUIManager.Instance?.fishBagView?.RefreshItems();
     }
 
     // ========== 辅助数据类 ==========

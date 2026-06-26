@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using SharedModels;
 using Logger = Utils.Logger;
 
-public partial class NetServerManager : SingletonMono<NetServerManager>
+public partial class NetServerManager 
 {
     private float heartbeatTimer = 0f;
     private int missedHeartbeats = 0;
@@ -150,7 +150,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             networkState = NetUtils.NetworkState.Reconnecting;
             isConnected = false;
             missedHeartbeats = 0;
-            UIManager.Instance?.ShowTip("网络连接断开，正在尝试重新连接...");
+            GameUIManager.Instance?.ShowTip("网络连接断开，正在尝试重新连接...");
         }
     }
 

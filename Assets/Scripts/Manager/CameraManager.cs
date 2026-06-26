@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 /// <summary>
 /// 摄像头移动管理器
@@ -8,26 +10,31 @@ public class CameraManager : MonoBehaviour
 {
     public static CameraManager Instance { get; private set; }
 
-    // 摄像头引用
+    [Header("摄像头设置")]
     public Camera targetCamera;
 
-    // 移动范围
+    [Header("移动范围")]
     public float minX = 0f;
     public float maxX = 5.5f;
 
-    // 移动速度系数（手指滑动距离与摄像头移动距离的比例）
+    [Header("移动参数")]
+    [Tooltip("手指滑动距离与摄像头移动距离的比例")]
     public float moveScale = 1f;
 
-    // 平滑移动速度
+    [Tooltip("平滑移动速度")]
     public float smoothSpeed = 10f;
 
-    // 镜像移动 - 当启用时，手指滑动方向与摄像头移动方向相反
     [Header("移动设置")]
     [Tooltip("启用后，手指右滑摄像头左移，手指左滑摄像头右移")]
     public bool isMirrored = false;
 
+    [Header("UI检测")]
+    [Tooltip("是否检测UI点击，启用后点击UI不会触发摄像头移动")]
+    public bool checkUI = true;
+
     // 目标位置
     private float targetX;
+    private float currentX;
 
     // 手指状态
     private bool isDragging = false;
@@ -35,8 +42,9 @@ public class CameraManager : MonoBehaviour
     private float cameraStartX;
     private float lastTouchX;
 
-    // 当前摄像头位置
-    private float currentX;
+    // UI检测缓存
+    private PointerEventData pointerEventData;
+    private GraphicRaycaster[] graphicRaycasters;
 
     private void Awake()
     {
@@ -60,6 +68,12 @@ public class CameraManager : MonoBehaviour
             currentX = targetCamera.transform.position.x;
             targetX = currentX;
         }
+
+        // 缓存所有 GraphicRaycaster 组件
+        if (checkUI)
+        {
+            graphicRaycasters = FindObjectsOfType<GraphicRaycaster>();
+        }
     }
 
     private void Update()
@@ -67,13 +81,20 @@ public class CameraManager : MonoBehaviour
         HandleTouchInput();
 
         // 平滑移动到目标位置
-        if (targetCamera != null && Mathf.Abs(targetCamera.transform.position.x - targetX) > 0.01f)
+        SmoothMoveToTarget();
+    }
+
+    private void SmoothMoveToTarget()
+    {
+        if (targetCamera == null) return;
+
+        if (Mathf.Abs(targetCamera.transform.position.x - targetX) > 0.01f)
         {
             float newX = Mathf.Lerp(targetCamera.transform.position.x, targetX, smoothSpeed * Time.deltaTime);
             targetCamera.transform.position = new Vector3(newX, targetCamera.transform.position.y, targetCamera.transform.position.z);
             currentX = newX;
         }
-        else if (targetCamera != null)
+        else
         {
             // 确保精确到达目标位置
             targetCamera.transform.position = new Vector3(targetX, targetCamera.transform.position.y, targetCamera.transform.position.z);
@@ -88,10 +109,20 @@ public class CameraManager : MonoBehaviour
         {
             Touch touch = Input.GetTouch(0);
 
+            // 检测是否点击到UI
+            if (checkUI && IsPointerOverUI(touch.position))
+            {
+                // 如果点击到UI，终止拖拽
+                if (isDragging)
+                {
+                    isDragging = false;
+                }
+                return;
+            }
+
             switch (touch.phase)
             {
                 case TouchPhase.Began:
-                    // 手指按下，记录初始位置
                     isDragging = true;
                     dragStartX = touch.position.x;
                     cameraStartX = currentX;
@@ -99,32 +130,14 @@ public class CameraManager : MonoBehaviour
                     break;
 
                 case TouchPhase.Moved:
-                    // 手指移动，摄像头跟随移动
                     if (isDragging && targetCamera != null)
                     {
-                        float deltaX = touch.position.x - lastTouchX;
-                        lastTouchX = touch.position.x;
-
-                        // 根据镜像设置决定移动方向
-                        float direction = isMirrored ? 1f : -1f;
-                        float moveAmount = direction * deltaX * moveScale * 0.01f;
-                        float newX = cameraStartX + (touch.position.x - dragStartX) * moveScale * 0.01f;
-
-                        // 如果是镜像模式，反转移动方向
-                        if (isMirrored)
-                        {
-                            newX = cameraStartX - (touch.position.x - dragStartX) * moveScale * 0.01f;
-                        }
-
-                        // 限制范围
-                        newX = Mathf.Clamp(newX, minX, maxX);
-                        targetX = newX;
+                        UpdateCameraPosition(touch.position);
                     }
                     break;
 
                 case TouchPhase.Ended:
                 case TouchPhase.Canceled:
-                    // 手指抬起
                     isDragging = false;
                     break;
             }
@@ -132,37 +145,125 @@ public class CameraManager : MonoBehaviour
         // 支持鼠标模拟（编辑器测试用）
         else if (Application.isEditor)
         {
-            if (Input.GetMouseButtonDown(0))
-            {
-                isDragging = true;
-                dragStartX = Input.mousePosition.x;
-                cameraStartX = currentX;
-                lastTouchX = Input.mousePosition.x;
-            }
-            else if (Input.GetMouseButton(0) && isDragging)
-            {
-                float deltaX = Input.mousePosition.x - lastTouchX;
-                lastTouchX = Input.mousePosition.x;
+            HandleMouseInput();
+        }
+    }
 
-                float newX;
-                if (isMirrored)
-                {
-                    // 镜像模式：反向移动
-                    newX = cameraStartX - (Input.mousePosition.x - dragStartX) * moveScale * 0.01f;
-                }
-                else
-                {
-                    // 正常模式
-                    newX = cameraStartX + (Input.mousePosition.x - dragStartX) * moveScale * 0.01f;
-                }
-                newX = Mathf.Clamp(newX, minX, maxX);
-                targetX = newX;
-            }
-            else if (Input.GetMouseButtonUp(0))
+    private void HandleMouseInput()
+    {
+        Vector3 mousePosition = Input.mousePosition;
+
+        // 检测是否点击到UI
+        if (checkUI && IsPointerOverUI(mousePosition))
+        {
+            // 如果点击到UI，终止拖拽
+            if (isDragging)
             {
                 isDragging = false;
             }
+            return;
         }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            isDragging = true;
+            dragStartX = mousePosition.x;
+            cameraStartX = currentX;
+            lastTouchX = mousePosition.x;
+        }
+        else if (Input.GetMouseButton(0) && isDragging)
+        {
+            UpdateCameraPosition(mousePosition);
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            isDragging = false;
+        }
+    }
+
+    private void UpdateCameraPosition(Vector3 currentPosition)
+    {
+        float deltaX = currentPosition.x - lastTouchX;
+        lastTouchX = currentPosition.x;
+
+        float newX;
+        if (isMirrored)
+        {
+            // 镜像模式：反向移动
+            newX = cameraStartX - (currentPosition.x - dragStartX) * moveScale * 0.01f;
+        }
+        else
+        {
+            // 正常模式
+            newX = cameraStartX + (currentPosition.x - dragStartX) * moveScale * 0.01f;
+        }
+        newX = Mathf.Clamp(newX, minX, maxX);
+        targetX = newX;
+    }
+
+    /// <summary>
+    /// 检测是否点击到UI
+    /// </summary>
+    /// <param name="position">屏幕坐标位置</param>
+    /// <returns>是否点击到UI</returns>
+    private bool IsPointerOverUI(Vector3 position)
+    {
+        if (!checkUI)
+            return false;
+
+        // 使用 EventSystem 检测
+        if (EventSystem.current != null)
+        {
+            pointerEventData = new PointerEventData(EventSystem.current)
+            {
+                position = position
+            };
+
+            // 检测所有 Canvas
+            var results = new System.Collections.Generic.List<RaycastResult>();
+            EventSystem.current.RaycastAll(pointerEventData, results);
+
+            if (results.Count > 0)
+            {
+                return true;
+            }
+        }
+
+        // 备用检测：使用 GraphicRaycaster
+        if (graphicRaycasters != null && graphicRaycasters.Length > 0)
+        {
+            pointerEventData = new PointerEventData(EventSystem.current)
+            {
+                position = position
+            };
+
+            foreach (var raycaster in graphicRaycasters)
+            {
+                if (raycaster == null) continue;
+
+                var results = new System.Collections.Generic.List<RaycastResult>();
+                raycaster.Raycast(pointerEventData, results);
+
+                if (results.Count > 0)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 检测是否点击到UI（使用屏幕坐标）
+    /// </summary>
+    public bool IsPointerOverUI()
+    {
+        if (!checkUI)
+            return false;
+
+        Vector3 position = Input.touchCount > 0 ? (Vector3)Input.GetTouch(0).position : Input.mousePosition;
+        return IsPointerOverUI(position);
     }
 
     /// <summary>
@@ -183,11 +284,32 @@ public class CameraManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 移动摄像头到指定位置（平滑）
+    /// </summary>
+    public void MoveToXSmooth(float x, float speed = -1f)
+    {
+        targetX = Mathf.Clamp(x, minX, maxX);
+        if (speed > 0)
+        {
+            smoothSpeed = speed;
+        }
+        Debug.Log($"[CameraManager] 平滑移动摄像头到 X={targetX}");
+    }
+
+    /// <summary>
     /// 获取当前摄像头X位置
     /// </summary>
     public float GetCurrentX()
     {
         return currentX;
+    }
+
+    /// <summary>
+    /// 获取目标摄像头X位置
+    /// </summary>
+    public float GetTargetX()
+    {
+        return targetX;
     }
 
     /// <summary>
@@ -218,5 +340,44 @@ public class CameraManager : MonoBehaviour
     {
         isMirrored = enabled;
         Debug.Log($"[CameraManager] 镜像模式设置为: {(isMirrored ? "开启" : "关闭")}");
+    }
+
+    /// <summary>
+    /// 设置UI检测开关
+    /// </summary>
+    public void SetCheckUI(bool enabled)
+    {
+        checkUI = enabled;
+        Debug.Log($"[CameraManager] UI检测: {(checkUI ? "开启" : "关闭")}");
+    }
+
+    /// <summary>
+    /// 重置摄像头位置
+    /// </summary>
+    public void ResetPosition()
+    {
+        targetX = 0f;
+        currentX = 0f;
+        if (targetCamera != null)
+        {
+            targetCamera.transform.position = new Vector3(0f, targetCamera.transform.position.y, targetCamera.transform.position.z);
+        }
+        Debug.Log("[CameraManager] 摄像头位置已重置");
+    }
+
+    /// <summary>
+    /// 判断是否正在拖拽
+    /// </summary>
+    public bool IsDragging()
+    {
+        return isDragging;
+    }
+
+    /// <summary>
+    /// 强制停止拖拽
+    /// </summary>
+    public void StopDragging()
+    {
+        isDragging = false;
     }
 }

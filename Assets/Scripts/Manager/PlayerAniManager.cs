@@ -1,13 +1,15 @@
 using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using SharedModels;
 
-public class PlayerAniManager : SingletonMono<PlayerAniManager>
+public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
 {
     [Header("拖拽赋值（推荐）")]
     [SerializeField] private PlayerAniCtrl aniCtrl;
+    [SerializeField] private FishingTipAniCtrl fishTipAniCtrl;
+    [SerializeField] private NestAniCtrl nestAniCtrl;
 
     private Action pendingCallback;
     private float animationTimer = 0f;
@@ -17,101 +19,202 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
     private int currentCharacterId = 0;
 
     private const string ANI_PATH_PREFIX = "JsonData/PlayerAni/Ani/";
+    private bool isInitialized = false;
+    private bool isInitializing = false;
 
-    // ========== 获取 aniCtrl 的统一方法 ==========
-    private PlayerAniCtrl GetAniCtrl()
-    {
-        // 1. 优先使用拖拽赋值
-        if (aniCtrl != null)
-        {
-            return aniCtrl;
-        }
+    private const string FISH_TIP_TAG = "FishTip";
+    private int pendingCharacterId = 0;
 
-        // 2. 备用：通过 Tag 查找 Player 物体上的 PlayerAniCtrl
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null)
-        {
-            aniCtrl = playerObj.GetComponent<PlayerAniCtrl>();
-            if (aniCtrl == null)
-            {
-                aniCtrl = playerObj.GetComponentInChildren<PlayerAniCtrl>();
-            }
-            if (aniCtrl != null)
-            {
-                Debug.Log($"[PlayerAniManager] 通过 Tag('Player') 找到 PlayerAniCtrl，所在物体: {playerObj.name}");
-                return aniCtrl;
-            }
-        }
-
-        // 3. 最后备用：在整个场景中查找
-        aniCtrl = FindObjectOfType<PlayerAniCtrl>();
-        if (aniCtrl != null)
-        {
-            Debug.Log($"[PlayerAniManager] 通过 FindObjectOfType 找到 PlayerAniCtrl，所在物体: {aniCtrl.gameObject.name}");
-            return aniCtrl;
-        }
-
-        Debug.LogWarning("[PlayerAniManager] 无法找到 PlayerAniCtrl 组件！请拖拽赋值或确保场景中有 Tag 为 'Player' 的物体挂载 PlayerAniCtrl。");
-        return null;
-    }
-
-    protected override void Awake()
-    {
-        PlayerAniCtrl savedAniCtrl = aniCtrl;
-
-        base.Awake();
-
-        if (savedAniCtrl != null)
-        {
-            aniCtrl = savedAniCtrl;
-            Debug.Log("[PlayerAniManager] Awake - 从序列化引用恢复 PlayerAniCtrl");
-        }
-        else
-        {
-            GetAniCtrl();
-        }
-
-        if (aniCtrl != null)
-        {
-            Debug.Log("[PlayerAniManager] Awake - 获取到 PlayerAniCtrl 引用");
-        }
-        else
-        {
-            Debug.LogWarning("[PlayerAniManager] Awake - 未找到 PlayerAniCtrl，将在 Init 时再次尝试");
-        }
-    }
+    // 缓存队列
+    private Queue<Action> pendingActions = new Queue<Action>();
 
     public void Init()
     {
-        // 获取 aniCtrl 引用
-        PlayerAniCtrl ctrl = GetAniCtrl();
+        if (isInitialized) return;
+        if (isInitializing) return;
 
-        if (ctrl == null)
+        isInitializing = true;
+
+        try
         {
-            Debug.LogError("[PlayerAniManager] Init - 无法找到 PlayerAniCtrl 组件！请拖拽赋值或确保场景中有 Tag 为 'Player' 的物体。");
+            if (aniCtrl == null)
+            {
+                GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+                if (playerObj != null)
+                {
+                    aniCtrl = playerObj.GetComponent<PlayerAniCtrl>();
+                    if (aniCtrl == null)
+                    {
+                        aniCtrl = playerObj.GetComponentInChildren<PlayerAniCtrl>();
+                    }
+                }
+
+                if (aniCtrl == null)
+                {
+                    aniCtrl = FindObjectOfType<PlayerAniCtrl>();
+                }
+
+                if (aniCtrl != null)
+                {
+                    Debug.Log($"[PlayerAniManager] Init - 找到 PlayerAniCtrl: {aniCtrl.gameObject.name}");
+                }
+            }
+
+            if (aniCtrl == null)
+            {
+                Debug.LogWarning("[PlayerAniManager] Init - 未找到 PlayerAniCtrl，延迟初始化");
+                isInitializing = false;
+                StartCoroutine(DelayedInit());
+                return;
+            }
+
+            EnsureFishTipAniCtrl();
+            PreloadAllCharacterAnimations();
+
+            isInitialized = true;
+            isInitializing = false;
+            Debug.Log($"[PlayerAniManager] 初始化完成，已预加载 {characterAniDict.Count} 个人物的动画资源");
+
+            ExecutePendingActions();
+        }
+        catch (Exception e)
+        {
+            isInitializing = false;
+            Debug.LogError($"[PlayerAniManager] 初始化异常: {e.Message}");
+        }
+    }
+
+    private void EnsureFishTipAniCtrl()
+    {
+        if (fishTipAniCtrl != null) return;
+
+        GameObject fishTipObj = GameObject.FindGameObjectWithTag(FISH_TIP_TAG);
+        if (fishTipObj != null)
+        {
+            fishTipAniCtrl = fishTipObj.GetComponent<FishingTipAniCtrl>();
+            if (fishTipAniCtrl == null)
+            {
+                fishTipAniCtrl = fishTipObj.GetComponentInChildren<FishingTipAniCtrl>();
+            }
+            if (fishTipAniCtrl != null)
+            {
+                Debug.Log($"[PlayerAniManager] 通过 Tag 找到 FishingTipAniCtrl");
+                return;
+            }
+        }
+
+        fishTipAniCtrl = FindObjectOfType<FishingTipAniCtrl>();
+        if (fishTipAniCtrl != null)
+        {
+            Debug.Log($"[PlayerAniManager] 通过 FindObjectOfType 找到 FishingTipAniCtrl");
             return;
         }
 
-        aniCtrl = ctrl;
+        Debug.LogWarning("[PlayerAniManager] 未找到 FishingTipAniCtrl");
+    }
 
-        PreloadAllCharacterAnimations();
-
-        if (aniCtrl != null && characterAniDict.Count > 0)
+    private FishingTipAniCtrl GetFishTipAniCtrl()
+    {
+        if (fishTipAniCtrl == null)
         {
-            SwitchCharacter(3401);
+            EnsureFishTipAniCtrl();
+        }
+        return fishTipAniCtrl;
+    }
+
+    public void SetFishTip(Color color, float struggleTime = 2)
+    {
+        FishingTipAniCtrl ctrl = GetFishTipAniCtrl();
+        if (ctrl != null)
+        {
+            ctrl.SetBlinkState(color, struggleTime, 0.3f);
+        }
+    }
+
+    public void SetFishTip(int rarityId)
+    {
+        FishingTipAniCtrl ctrl = GetFishTipAniCtrl();
+        if (ctrl != null)
+        {
+            ctrl.SetBlinkState(rarityId, 0.3f);
+        }
+    }
+
+    public void StopFishTip()
+    {
+        FishingTipAniCtrl ctrl = GetFishTipAniCtrl();
+        if (ctrl != null)
+        {
+            ctrl.StopBlink();
+        }
+    }
+
+    private IEnumerator DelayedInit()
+    {
+        int retryCount = 0;
+        int maxRetries = 10;
+
+        while (retryCount < maxRetries)
+        {
+            yield return new WaitForSeconds(0.5f);
+            retryCount++;
+
+            if (aniCtrl == null)
+            {
+                GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+                if (playerObj != null)
+                {
+                    aniCtrl = playerObj.GetComponent<PlayerAniCtrl>();
+                    if (aniCtrl == null)
+                    {
+                        aniCtrl = playerObj.GetComponentInChildren<PlayerAniCtrl>();
+                    }
+                }
+
+                if (aniCtrl == null)
+                {
+                    aniCtrl = FindObjectOfType<PlayerAniCtrl>();
+                }
+            }
+
+            if (aniCtrl != null)
+            {
+                Debug.Log($"[PlayerAniManager] 延迟初始化成功 (重试 {retryCount} 次)");
+                isInitializing = false;
+
+                EnsureFishTipAniCtrl();
+                PreloadAllCharacterAnimations();
+                isInitialized = true;
+
+                if (pendingCharacterId > 0)
+                {
+                    DoSwitchCharacter(pendingCharacterId);
+                    pendingCharacterId = 0;
+                }
+
+                Debug.Log($"[PlayerAniManager] 延迟初始化完成");
+                ExecutePendingActions();
+
+                yield break;
+            }
+
+            if (retryCount % 3 == 0)
+            {
+                Debug.Log($"[PlayerAniManager] 延迟初始化等待中... (重试 {retryCount}/{maxRetries})");
+            }
         }
 
-        Debug.Log("[PlayerAniManager] 初始化完成，已预加载 " + characterAniDict.Count + " 个人物的动画资源");
+        Debug.LogWarning("[PlayerAniManager] 延迟初始化超时");
+        isInitializing = false;
     }
 
     private void PreloadAllCharacterAnimations()
     {
         List<CharacterConfig> configList = null;
 
-        // 检查是否处于网络模式
         if (NetServerManager.Instance != null && NetServerManager.Instance.IsConnected)
         {
-            Debug.Log("[PlayerAniManager] 网络模式，使用默认人物配置进行预加载");
+            Debug.Log("[PlayerAniManager] 网络模式，使用默认人物配置");
             configList = GetDefaultCharacterConfigs();
         }
         else if (CharacterServerManager.Instance != null)
@@ -121,7 +224,7 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
 
         if (configList == null || configList.Count == 0)
         {
-            Debug.LogWarning("[PlayerAniManager] 未找到人物配置，使用默认人物配置");
+            Debug.LogWarning("[PlayerAniManager] 使用默认人物配置");
             configList = GetDefaultCharacterConfigs();
         }
 
@@ -135,25 +238,17 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
     {
         return new List<CharacterConfig>
         {
-            new CharacterConfig { id = 3401, name = "默认人物", description = "默认角色" },
-            new CharacterConfig { id = 3402, name = "钓鱼大师", description = "大师角色" }
+            new CharacterConfig { id = 3401, name = "默认人物" },
+            new CharacterConfig { id = 3402, name = "钓鱼大师" }
         };
     }
 
     private void LoadCharacterAnimation(int characterId)
     {
-        CharacterAniData aniData;
+        if (characterAniDict.ContainsKey(characterId)) return;
 
-        if (characterAniDict.ContainsKey(characterId))
-        {
-            aniData = characterAniDict[characterId];
-        }
-        else
-        {
-            aniData = new CharacterAniData();
-            aniData.characterId = characterId;
-            characterAniDict[characterId] = aniData;
-        }
+        CharacterAniData aniData = new CharacterAniData();
+        aniData.characterId = characterId;
 
         CharacterConfig characterConfig = GetCharacterConfig(characterId);
         if (characterConfig != null)
@@ -164,44 +259,17 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
             aniData.reelSpeed = characterConfig.reelSpeed;
             aniData.lazyColumns = characterConfig.lazyColumns;
             aniData.lazySpeed = characterConfig.lazySpeed;
-            Debug.Log($"[PlayerAniManager] 从人物配置加载动画参数 - characterId: {characterId}, idle: {aniData.idleColumns}x{aniData.idleSpeed}, reel: {aniData.reelColumns}x{aniData.reelSpeed}, lazy: {aniData.lazyColumns}x{aniData.lazySpeed}");
         }
 
         string basePath = ANI_PATH_PREFIX + characterId;
 
-        Texture2D idleTex = Resources.Load<Texture2D>(basePath + "/Idle");
-        Texture2D lazyTex = Resources.Load<Texture2D>(basePath + "/Lazy");
-        Texture2D reelTex = Resources.Load<Texture2D>(basePath + "/Reel");
+        aniData.idleTexture = Resources.Load<Texture2D>(basePath + "/Idle");
+        aniData.lazyTexture = Resources.Load<Texture2D>(basePath + "/Lazy");
+        aniData.reelTexture = Resources.Load<Texture2D>(basePath + "/Reel");
 
-        if (idleTex != null)
-        {
-            aniData.idleTexture = idleTex;
-            Debug.Log($"[PlayerAniManager] 加载人物 {characterId} Idle 动画成功");
-        }
-        else
-        {
-            Debug.LogWarning($"[PlayerAniManager] 人物 {characterId} Idle 动画加载失败: {basePath}/Idle");
-        }
+        characterAniDict[characterId] = aniData;
 
-        if (lazyTex != null)
-        {
-            aniData.lazyTexture = lazyTex;
-            Debug.Log($"[PlayerAniManager] 人物 {characterId} Lazy 动画成功");
-        }
-        else
-        {
-            Debug.LogWarning($"[PlayerAniManager] 人物 {characterId} Lazy 动画加载失败: {basePath}/Lazy");
-        }
-
-        if (reelTex != null)
-        {
-            aniData.reelTexture = reelTex;
-            Debug.Log($"[PlayerAniManager] 人物 {characterId} Reel 动画成功");
-        }
-        else
-        {
-            Debug.LogWarning($"[PlayerAniManager] 人物 {characterId} Reel 动画加载失败: {basePath}/Reel");
-        }
+        Debug.Log($"[PlayerAniManager] 加载人物 {characterId} 动画完成");
     }
 
     private CharacterConfig GetCharacterConfig(int characterId)
@@ -220,58 +288,69 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
         return null;
     }
 
-    public void SwitchCharacter(int characterId)
+    /// <summary>
+    /// 获取当前装备的人物ID（从 NetServerManager 获取）
+    /// </summary>
+    private int GetEquippedCharacterId()
     {
-        if (currentCharacterId == characterId)
+        if (NetServerManager.Instance != null)
         {
-            Debug.Log($"[PlayerAniManager] SwitchCharacter - 人物ID相同，无需切换: {characterId}");
-            return;
+            // 通过 CommunicateEvent 请求当前装备的人物ID
+            try
+            {
+                int characterId = CommunicateEvent.Request<int, int>("VIEW_EVENT_GET_EQUIPPED_CHARACTER", 0);
+                if (characterId > 0)
+                {
+                    return characterId;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[PlayerAniManager] 获取装备人物ID失败: {ex.Message}");
+            }
         }
+        return 0;
+    }
 
-        // 获取 aniCtrl 引用
-        PlayerAniCtrl ctrl = GetAniCtrl();
-        if (ctrl == null)
-        {
-            Debug.LogError($"[PlayerAniManager] SwitchCharacter - 无法获取 PlayerAniCtrl，无法切换人物动画: {characterId}");
-            return;
-        }
-        aniCtrl = ctrl;
+    private void DoSwitchCharacter(int characterId)
+    {
+        if (currentCharacterId == characterId) return;
+        if (aniCtrl == null) return;
 
-        // 确保动画数据已加载
         if (!characterAniDict.ContainsKey(characterId))
         {
-            Debug.Log($"[PlayerAniManager] SwitchCharacter - 加载人物动画数据: {characterId}");
             LoadCharacterAnimation(characterId);
         }
 
-        if (!characterAniDict.ContainsKey(characterId))
+        if (!characterAniDict.ContainsKey(characterId)) return;
+
+        currentCharacterId = characterId;
+        var aniData = characterAniDict[characterId];
+
+        aniCtrl.SetAnimationParams(aniData.idleColumns, aniData.idleSpeed,
+            aniData.reelColumns, aniData.reelSpeed,
+            aniData.lazyColumns, aniData.lazySpeed);
+        aniCtrl.SetCharacterTextures(aniData.idleTexture, aniData.lazyTexture, aniData.reelTexture);
+
+        Debug.Log($"[PlayerAniManager] 切换人物: {characterId}");
+    }
+
+    public void SwitchCharacter(int characterId)
+    {
+        if (!isInitialized)
         {
-            Debug.LogWarning($"[PlayerAniManager] SwitchCharacter - 人物动画数据加载失败: {characterId}");
+            Debug.Log($"[PlayerAniManager] SwitchCharacter - 缓存请求: {characterId}");
+            pendingCharacterId = characterId;
+            Init();
             return;
         }
 
-        currentCharacterId = characterId;
-
-        if (aniCtrl != null)
-        {
-            var aniData = characterAniDict[characterId];
-            aniCtrl.SetAnimationParams(aniData.idleColumns, aniData.idleSpeed, aniData.reelColumns, aniData.reelSpeed, aniData.lazyColumns, aniData.lazySpeed);
-            aniCtrl.SetCharacterTextures(aniData.idleTexture, aniData.lazyTexture, aniData.reelTexture);
-            Debug.Log($"[PlayerAniManager] 切换人物动画: characterId={characterId}, 参数已更新");
-        }
-        else
-        {
-            Debug.LogWarning($"[PlayerAniManager] SwitchCharacter - aniCtrl is null, 无法更新人物动画: {characterId}");
-        }
+        DoSwitchCharacter(characterId);
     }
 
     public CharacterAniData GetCharacterAniData(int characterId)
     {
-        if (characterAniDict.ContainsKey(characterId))
-        {
-            return characterAniDict[characterId];
-        }
-        return null;
+        return characterAniDict.TryGetValue(characterId, out var data) ? data : null;
     }
 
     public int GetCurrentCharacterId()
@@ -279,122 +358,143 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
         return currentCharacterId;
     }
 
+    private void ExecutePendingActions()
+    {
+        if (!isInitialized || aniCtrl == null) return;
+
+        while (pendingActions.Count > 0)
+        {
+            Action action = pendingActions.Dequeue();
+            action?.Invoke();
+        }
+    }
+
     public void PlayIdleAnimation()
     {
-        Debug.Log("[PlayerAniManager] PlayIdleAnimation called");
-
-        PlayerAniCtrl ctrl = GetAniCtrl();
-        if (ctrl == null)
+        if (!isInitialized)
         {
-            Debug.LogWarning("[PlayerAniManager] PlayIdleAnimation - 无法获取 PlayerAniCtrl");
+            Debug.Log("[PlayerAniManager] PlayIdleAnimation - 缓存请求");
+            pendingActions.Enqueue(() => PlayIdleAnimation());
+            Init();
             return;
         }
-        aniCtrl = ctrl;
 
-        if (aniCtrl != null)
+        if (aniCtrl == null) return;
+
+        // 确保当前角色已加载
+        if (currentCharacterId == 0)
         {
-            aniCtrl.PlayIdleAnimation();
-            Debug.Log("[PlayerAniManager] PlayIdleAnimation executed");
+            EnsureDefaultCharacterLoaded();
         }
-        else
-        {
-            Debug.LogWarning("[PlayerAniManager] aniCtrl is null, cannot play idle animation");
-        }
-    }
 
-    public void PlayReelAnimation(float duration, Action callback)
-    {
-        Debug.Log($"[PlayerAniManager] PlayReelAnimation with callback, duration: {duration}");
-
-        PlayerAniCtrl ctrl = GetAniCtrl();
-        if (ctrl == null)
-        {
-            Debug.LogWarning("[PlayerAniManager] PlayReelAnimation - 无法获取 PlayerAniCtrl");
-            callback?.Invoke();
-            return;
-        }
-        aniCtrl = ctrl;
-
-        if (aniCtrl != null)
-        {
-            if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.IsFishBagFull())
-            {
-                Debug.Log("[PlayerAniManager] 鱼篓已满，不播放拉钩动画");
-                callback?.Invoke();
-                return;
-            }
-
-            if (isWaitingForAnimation)
-            {
-                Debug.Log("[PlayerAniManager] 已有拉钩动画正在播放，忽略新请求");
-                callback?.Invoke();
-                return;
-            }
-
-            aniCtrl.PlayReelAnimation();
-            pendingCallback = callback;
-            animationTimer = duration;
-            isWaitingForAnimation = true;
-        }
-        else
-        {
-            callback?.Invoke();
-        }
-    }
-
-    public void PlayReelAnimationWithTwoIds(int detectedFishId, int actualItemId, float struggleTime, bool isTrash, Action callback)
-    {
-        Debug.Log($"[PlayerAniManager] PlayReelAnimationWithTwoIds called - 第一个ID={detectedFishId}, 第二个ID={actualItemId}, 挣扎时间={struggleTime}秒, 是否垃圾={isTrash}");
-
-        PlayReelAnimation(struggleTime, () => {
-            Debug.Log("[PlayerAniManager] 拉杆动画结束，调用回调");
-            callback?.Invoke();
-        });
-    }
-
-    public void SwitchFromLazyToIdle()
-    {
-        Debug.Log("[PlayerAniManager] SwitchFromLazyToIdle called");
-
-        PlayerAniCtrl ctrl = GetAniCtrl();
-        if (ctrl == null)
-        {
-            Debug.LogWarning("[PlayerAniManager] SwitchFromLazyToIdle - 无法获取 PlayerAniCtrl");
-            return;
-        }
-        aniCtrl = ctrl;
-
-        if (aniCtrl != null)
-        {
-            aniCtrl.PlayIdleAnimation();
-            Debug.Log("[PlayerAniManager] Switched from Lazy to Idle animation");
-        }
+        aniCtrl.PlayIdleAnimation();
     }
 
     public void PlayLazyAnimation()
     {
-        Debug.Log("[PlayerAniManager] PlayLazyAnimation called");
-
-        PlayerAniCtrl ctrl = GetAniCtrl();
-        if (ctrl == null)
+        if (!isInitialized)
         {
-            Debug.LogWarning("[PlayerAniManager] PlayLazyAnimation - 无法获取 PlayerAniCtrl");
+            Debug.Log("[PlayerAniManager] PlayLazyAnimation - 缓存请求");
+            pendingActions.Enqueue(() => PlayLazyAnimation());
+            Init();
             return;
         }
-        aniCtrl = ctrl;
 
-        if (aniCtrl != null)
+        if (aniCtrl == null) return;
+
+        // 确保当前角色已加载
+        if (currentCharacterId == 0)
         {
-            aniCtrl.PlayLazyAnimation();
-            Debug.Log("[PlayerAniManager] PlayLazyAnimation executed");
+            EnsureDefaultCharacterLoaded();
+        }
+
+        StopFishTip();
+        aniCtrl.PlayLazyAnimation();
+        Debug.Log("[PlayerAniManager] 播放 Lazy 动画");
+    }
+
+    public void PlayReelAnimation(float duration, Action callback)
+    {
+        if (!isInitialized)
+        {
+            Debug.Log("[PlayerAniManager] PlayReelAnimation - 缓存请求");
+            pendingActions.Enqueue(() => PlayReelAnimation(duration, callback));
+            Init();
+            return;
+        }
+
+        if (aniCtrl == null)
+        {
+            callback?.Invoke();
+            return;
+        }
+
+        if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.IsFishBagFull())
+        {
+            Debug.Log("[PlayerAniManager] 鱼篓已满，不播放拉钩动画");
+            callback?.Invoke();
+            return;
+        }
+
+        if (isWaitingForAnimation)
+        {
+            Debug.Log("[PlayerAniManager] 已有拉钩动画正在播放");
+            callback?.Invoke();
+            return;
+        }
+
+        // 确保当前角色已加载
+        if (currentCharacterId == 0)
+        {
+            EnsureDefaultCharacterLoaded();
+        }
+
+        aniCtrl.PlayReelAnimation();
+        pendingCallback = callback;
+        animationTimer = duration;
+        isWaitingForAnimation = true;
+    }
+
+    public void PlayReelAnimationWithTwoIds(int detectedFishId, int actualItemId, float struggleTime, bool isTrash, Action callback)
+    {
+        PlayReelAnimation(struggleTime, callback);
+    }
+
+    public void SwitchFromLazyToIdle()
+    {
+        PlayIdleAnimation();
+    }
+
+    /// <summary>
+    /// 确保默认角色已加载
+    /// </summary>
+    private void EnsureDefaultCharacterLoaded()
+    {
+        int defaultId = 3401;
+        int equippedId = GetEquippedCharacterId();
+        if (equippedId > 0)
+        {
+            defaultId = equippedId;
+        }
+
+        if (currentCharacterId != defaultId)
+        {
+            DoSwitchCharacter(defaultId);
         }
         else
         {
-            Debug.LogWarning("[PlayerAniManager] aniCtrl is null, cannot play lazy animation");
+            // 如果角色ID相同但数据可能还没应用，重新应用一次
+            if (characterAniDict.TryGetValue(currentCharacterId, out var aniData))
+            {
+                aniCtrl.SetAnimationParams(aniData.idleColumns, aniData.idleSpeed,
+                    aniData.reelColumns, aniData.reelSpeed,
+                    aniData.lazyColumns, aniData.lazySpeed);
+                aniCtrl.SetCharacterTextures(aniData.idleTexture, aniData.lazyTexture, aniData.reelTexture);
+            }
         }
     }
 
-    void Update()
+    private void Update()
     {
         if (isWaitingForAnimation)
         {
@@ -404,30 +504,32 @@ public class PlayerAniManager : SingletonMono<PlayerAniManager>
                 isWaitingForAnimation = false;
                 pendingCallback?.Invoke();
                 pendingCallback = null;
+
+                if (pendingActions.Count > 0)
+                {
+                    Debug.Log($"[PlayerAniManager] Reel 完成，执行 {pendingActions.Count} 个缓存请求");
+                    ExecutePendingActions();
+                }
             }
         }
     }
 
     private void OnEnable()
     {
-        // 场景切换后，如果 aniCtrl 丢失，重新获取
-        if (aniCtrl == null)
+        if (isInitialized && aniCtrl != null && currentCharacterId > 0)
         {
-            GetAniCtrl();
-            if (aniCtrl != null)
+            if (characterAniDict.TryGetValue(currentCharacterId, out var aniData))
             {
-                Debug.Log("[PlayerAniManager] OnEnable - 重新获取到 PlayerAniCtrl 引用");
+                aniCtrl.SetAnimationParams(aniData.idleColumns, aniData.idleSpeed,
+                    aniData.reelColumns, aniData.reelSpeed,
+                    aniData.lazyColumns, aniData.lazySpeed);
+                aniCtrl.SetCharacterTextures(aniData.idleTexture, aniData.lazyTexture, aniData.reelTexture);
             }
         }
-    }
 
-    // ========== 编辑器辅助 ==========
-    private void OnValidate()
-    {
-        // 在 Inspector 中如果拖拽了 aniCtrl，直接使用
-        if (aniCtrl != null)
+        if (fishTipAniCtrl == null)
         {
-            Debug.Log("[PlayerAniManager] 已通过拖拽赋值 PlayerAniCtrl");
+            EnsureFishTipAniCtrl();
         }
     }
 }

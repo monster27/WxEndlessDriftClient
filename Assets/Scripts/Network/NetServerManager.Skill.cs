@@ -5,7 +5,7 @@ using System;
 using SharedModels;
 using Logger = Utils.Logger;
 
-public partial class NetServerManager : SingletonMono<NetServerManager>
+public partial class NetServerManager
 {
     public void UnlockSkill(int skillId, System.Action<bool> callback)
     {

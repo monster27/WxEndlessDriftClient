@@ -23,7 +23,7 @@ using System;
 /// - NetServerManager.Events.cs     事件注册
 /// - NetServerManager.Skill.cs      技能系统
 /// </summary>
-public partial class NetServerManager : SingletonMono<NetServerManager>
+public partial class NetServerManager
 {
     // 所有代码已拆分到各 partial class 文件中
     // 此文件仅保留类声明，作为入口文件

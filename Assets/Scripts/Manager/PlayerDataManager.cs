@@ -39,6 +39,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
         _isInitialized = true;
         _isReady = true;
+        DontDestroyOnLoad(gameObject);
         Debug.Log("[PlayerDataManager] 初始化完成");
     }
 
@@ -129,6 +130,9 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         // 鱼篓数据更新
         CommunicateEvent.Register("FishBagDataUpdated", OnFishBagDataUpdated);
 
+        // ✅ 注册UI数据更新请求事件
+        CommunicateEvent.Register("UI_RequestUpdateAllData", OnRequestUpdateAllData);
+
         Debug.Log("[PlayerDataManager] 事件注册完成");
     }
 
@@ -151,40 +155,12 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
     private void UpdateGoldUI()
     {
-        if (UIManager.Instance != null)
+        if (GameUIManager.Instance != null)
         {
-            UIManager.Instance.UpdateGoldDisplay(gold);
+            GameUIManager.Instance.UpdateGoldDisplay(gold);
         }
     }
 
-    /// <summary>
-    /// 直接添加鱼到鱼篓（不经过网络请求，用于轮询时临时更新）
-    /// </summary>
-    public void AddFishToInventoryDirectly(int fishId, int quantity)
-    {
-        if (fishInventory == null)
-        {
-            fishInventory = new Dictionary<int, int>();
-        }
-
-        if (fishInventory.ContainsKey(fishId))
-        {
-            fishInventory[fishId] += quantity;
-        }
-        else
-        {
-            fishInventory[fishId] = quantity;
-        }
-
-        Debug.Log($"[PlayerDataManager] 直接添加鱼到鱼篓: ID={fishId}, 数量={quantity}, 当前总数={GetTotalFishCount()}");
-
-        CommunicateEvent.Modify("FishBagDataUpdated");
-
-        if (UIManager.Instance?.fishBagView != null && UIManager.Instance.fishBagView.gameObject.activeSelf)
-        {
-            UIManager.Instance.fishBagView.RefreshItems();
-        }
-    }
 
     public void SyncGoldFromServer()
     {
@@ -201,6 +177,9 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             gold = CommunicateEvent.Request<int, int>("VIEW_EVENT_GET_GOLD", 0);
             Debug.LogFormat("[PlayerDataManager] 同步金币: {0}", gold);
             UpdateGoldUI();
+
+            // ✅ 通知UI更新金币
+            CommunicateEvent.Modify(CommunicateEvent.EVENT_CLIENT_GOLD_CHANGED, new Dictionary<string, object> { { "gold", gold } });
         }
         catch (System.Exception ex)
         {
@@ -296,9 +275,9 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             CommunicateEvent.Modify("FishBagDataUpdated");
             CommunicateEvent.Modify("Bag_RefreshItems");
 
-            if (UIManager.Instance?.fishBagView != null && UIManager.Instance.fishBagView.gameObject.activeSelf)
+            if (GameUIManager.Instance?.fishBagView != null && GameUIManager.Instance.fishBagView.gameObject.activeSelf)
             {
-                UIManager.Instance.fishBagView.RefreshItems();
+                GameUIManager.Instance.fishBagView.RefreshItems();
                 Debug.Log("[PlayerDataManager] 已刷新鱼篓UI");
             }
         }
@@ -316,24 +295,35 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
     private void CheckAndUpdateAnimationState()
     {
-        if (NetServerManager.Instance == null) return;
+        if (NetServerManager.Instance == null)
+        {
+            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - NetServerManager 为空，跳过");
+            return;
+        }
+
+        // ✅ 检查 PlayerAniManager 是否存在（只在 GameScene 中存在）
+        if (PlayerAniManager.Instance == null)
+        {
+            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - PlayerAniManager 不存在，跳过动画更新（当前场景可能不是 GameScene）");
+            return;
+        }
 
         bool isFull = IsFishBagFull();
 
         if (isFull)
         {
-            Debug.Log("[PlayerDataManager] 鱼篓已满，切换到懒动画");
+            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 鱼篓已满，切换到懒动画");
             NetServerManager.Instance.NotifyPlayLazyAnimation();
         }
         else
         {
             if (NetServerManager.Instance.IsPlayingReelAnimation)
             {
-                Debug.Log("[PlayerDataManager] 正在播放拉杆动画，保持当前动画");
+                Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 正在播放拉杆动画，保持当前动画");
                 return;
             }
 
-            Debug.Log("[PlayerDataManager] 鱼篓未满，切换到空闲动画");
+            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 鱼篓未满，切换到空闲动画");
             NetServerManager.Instance.NotifyPlayIdleAnimation();
         }
     }
@@ -427,15 +417,15 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
     public void RefreshUI()
     {
-        if (UIManager.Instance != null)
+        if (GameUIManager.Instance != null)
         {
-            if (UIManager.Instance.bagView != null)
+            if (GameUIManager.Instance.bagView != null)
             {
-                UIManager.Instance.bagView.RefreshItems();
+                GameUIManager.Instance.bagView.RefreshItems();
             }
-            if (UIManager.Instance.fishBagView != null)
+            if (GameUIManager.Instance.fishBagView != null)
             {
-                UIManager.Instance.fishBagView.RefreshItems();
+                GameUIManager.Instance.fishBagView.RefreshItems();
             }
         }
     }
@@ -505,6 +495,49 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
     {
         Debug.Log("[PlayerDataManager] 收到鱼篓数据更新事件");
         SyncInventoryFromServer();
+    }
+    /// <summary>
+    /// 处理UI数据更新请求
+    /// </summary>
+    private void OnRequestUpdateAllData()
+    {
+        Debug.Log("[PlayerDataManager] 收到UI数据更新请求");
+
+        // 同步最新数据
+        SyncInventoryFromServer();
+        SyncGoldFromServer();
+
+        // 数据同步完成后，通过GameUIManager更新UI
+        UpdateAllUI();
+    }
+
+    /// <summary>
+    /// 更新所有UI（通过GameUIManager）
+    /// </summary>
+    private void UpdateAllUI()
+    {
+        if (GameUIManager.Instance == null)
+        {
+            Debug.LogWarning("[PlayerDataManager] GameUIManager 不可用");
+            return;
+        }
+
+        // 更新金币
+        GameUIManager.Instance.UpdateGoldDisplay(gold);
+
+        // 更新鱼篓数量
+        int totalCount = GetTotalFishCount();
+        GameUIManager.Instance.UpdateFishCountDisplay(totalCount, fishBagCapacity);
+
+        // 更新窝料数量
+        int baitCount = 0;
+        if (playerInventory != null && playerInventory.TryGetValue(2501, out int count))
+        {
+            baitCount = count;
+        }
+        GameUIManager.Instance.UpdateBaitCountDisplay(baitCount);
+
+        Debug.Log($"[PlayerDataManager] UI数据更新完成 - 金币:{gold}, 鱼篓:{totalCount}/{fishBagCapacity}, 窝料:{baitCount}");
     }
 
     private void OnDestroy()

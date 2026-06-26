@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: EnvTimeMat
-  m_Shader: {fileID: 4800000, guid: 6739a0103f3e96142aeecde879ec497a, type: 3}
+  m_Name: NestBaitsAmoMat
+  m_Shader: {fileID: 4800000, guid: 74e53cc3ada912f439a41047d89e8936, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -16,13 +16,17 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2920
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _BlinkTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _BumpMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -44,15 +48,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 9a6ddf5e32cb94149bcee099171d18f1, type: 3}
+        m_Texture: {fileID: 2800000, guid: 12a6f41c02303c84caec8dc0ea4f011f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _NextTex:
-        m_Texture: {fileID: 2800000, guid: 977d3f2323dade243805ac10016604b9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -63,9 +63,22 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SecondTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _Blend: 0
+    - _BlinkEnabled: 0
+    - _BlinkInterval: 0.5
+    - _BlinkOffset: 0
+    - _BlinkOffsetX: 6
+    - _BlinkOffsetY: 0
+    - _BlinkScale: 1
     - _BumpScale: 1
+    - _Columns1: 6
+    - _Columns2: 4
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
@@ -77,13 +90,17 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _Rows1: 1
+    - _Rows2: 4
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
+    - _Speed1: 15
+    - _Speed2: 20
     - _SrcBlend: 1
-    - _Transition: 1
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
+    - _BlinkColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

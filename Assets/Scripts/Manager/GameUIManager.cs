@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using SharedModels;
 
-public class UIManager : SingletonMono<UIManager>
+public class GameUIManager : SingletonMonoFromScene<GameUIManager>
 {
     public MainGameView mainGameView;
     public BagView bagView;
@@ -12,7 +12,6 @@ public class UIManager : SingletonMono<UIManager>
     public TipView tipView;
     public EquipmentView equipmentView;
     public AdvertisingView advertisingView;
-    public LoadingView loadingView;
 
     public void Init()
     {
@@ -208,6 +207,28 @@ public class UIManager : SingletonMono<UIManager>
         if (advertisingView != null)
         {
             advertisingView.ShowAd(info, onConfirmWithResult, null, btnText);
+        }
+    }
+
+    /// <summary>
+    /// 更新鱼篓数量显示
+    /// </summary>
+    public void UpdateFishCountDisplay(int currentCount, int maxCapacity)
+    {
+        if (mainGameView != null)
+        {
+            mainGameView.UpdateFishCount(currentCount, maxCapacity);
+        }
+    }
+
+    /// <summary>
+    /// 更新窝料数量显示
+    /// </summary>
+    public void UpdateBaitCountDisplay(int baitCount)
+    {
+        if (mainGameView != null)
+        {
+            mainGameView.UpdateBaitCount(baitCount);
         }
     }
 }

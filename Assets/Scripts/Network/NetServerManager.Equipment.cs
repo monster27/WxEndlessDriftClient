@@ -6,7 +6,7 @@ using System;
 using SharedModels;
 using Logger = Utils.Logger;
 
-public partial class NetServerManager : SingletonMono<NetServerManager>
+public partial class NetServerManager 
 {
     // 装备数据
     private int equippedRodId = 3001;
@@ -302,7 +302,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         if (string.IsNullOrEmpty(equipmentType))
         {
             Logger.LogWarning($"[NetServerManager] 无法确定装备类型: equipId={equipId}");
-            UIManager.Instance?.ShowTip("装备类型错误");
+            GameUIManager.Instance?.ShowTip("装备类型错误");
             return;
         }
 
@@ -323,7 +323,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             (error) =>
             {
                 Logger.LogWarning($"[NetServerManager] 装备解锁失败: {error}");
-                UIManager.Instance?.ShowTip("解锁失败，请重试");
+                GameUIManager.Instance?.ShowTip("解锁失败，请重试");
             }));
     }
 
@@ -347,7 +347,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         CommunicateEvent.Modify("Character_Refresh");
         CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_ITEM_QUANTITY_CHANGED, (0, 0));
 
-        UIManager.Instance?.ShowTip("解锁成功！");
+        GameUIManager.Instance?.ShowTip("解锁成功！");
 
         Logger.Log("[NetServerManager] 装备解锁后已刷新玩家数据");
     }

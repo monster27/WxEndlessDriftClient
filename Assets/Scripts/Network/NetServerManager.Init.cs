@@ -9,36 +9,26 @@ using System;
 using Logger = Utils.Logger;
 using SharedModels;
 
-public partial class NetServerManager : SingletonMono<NetServerManager>
+public partial class NetServerManager
 {
     // ========== 初始化状态 ==========
 
-    /// <summary>初始化进度 (0-1)</summary>
     private float _initProgress = 0f;
     public float InitProgress => _initProgress;
 
-    /// <summary>是否已完成初始化</summary>
     private bool _isInitialized = false;
     public bool IsInitialized => _isInitialized;
 
-    /// <summary>初始化是否失败</summary>
     private bool _initFailed = false;
     public bool InitFailed => _initFailed;
 
-    /// <summary>初始化错误信息</summary>
     private string _initErrorMessage = "";
     public string InitErrorMessage => _initErrorMessage;
 
-    /// <summary>初始化步骤列表</summary>
     private List<InitStep> _initSteps = new List<InitStep>();
-
-    /// <summary>当前初始化步骤索引</summary>
     private int _currentStepIndex = 0;
-
-    /// <summary>当前初始化步骤名称</summary>
     public string CurrentStepName => _currentStepIndex < _initSteps.Count ? _initSteps[_currentStepIndex].Name : "完成";
 
-    /// <summary>初始化完成事件</summary>
     public event Action OnInitializationComplete;
     public event Action<string> OnInitializationFailed;
     public event Action<float, string> OnProgressUpdated;
@@ -62,9 +52,6 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
     // ========== 公开初始化方法 ==========
 
-    /// <summary>
-    /// 开始初始化网络数据（从服务器加载所有数据）
-    /// </summary>
     public void StartInitialization()
     {
         if (_isInitialized)
@@ -74,14 +61,12 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             return;
         }
 
-        // 防止重复调用
         if (_isInitializing)
         {
             Logger.Log("[NetServerManager] 正在初始化中，跳过重复调用");
             return;
         }
 
-        // 【关键】确保 Init() 已被调用（事件处理器已注册）
         if (!_isInitCalled)
         {
             Logger.LogWarning("[NetServerManager] Init() 尚未调用，自动调用 Init()");
@@ -93,7 +78,6 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             _isEnabled = true;
         }
 
-        // 先确保服务器连接
         if (!isConnected)
         {
             Logger.Log("[NetServerManager] 等待服务器连接...");
@@ -104,12 +88,8 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         StartCoroutine(InitializeCoroutine());
     }
 
-    // ========== 添加防重复标志 ==========
     private bool _isInitializing = false;
 
-    /// <summary>
-    /// 重置初始化状态（用于重新登录或切换账号）
-    /// </summary>
     public void ResetInitialization()
     {
         _initProgress = 0f;
@@ -120,7 +100,6 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         _initSteps.Clear();
         _isInitializing = false;
 
-        // 清空本地缓存数据
         playerInventory.Clear();
         fishInventory.Clear();
         fishDetailData.Clear();
@@ -135,19 +114,15 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
     private IEnumerator InitializeCoroutine()
     {
-        // 防止重复执行
         if (_isInitializing)
         {
             yield break;
         }
         _isInitializing = true;
 
-        // 先确保服务器连接
         if (!isConnected)
         {
             Logger.Log("[NetServerManager] 等待服务器连接...");
-
-            // 【修复】等待连接完成，而不是立即失败
             yield return StartCoroutine(WaitForConnection());
 
             if (!isConnected)
@@ -160,10 +135,8 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             }
         }
 
-        // 构建初始化步骤
         BuildInitSteps();
 
-        // 总权重
         float totalWeight = 0f;
         foreach (var step in _initSteps)
         {
@@ -173,7 +146,6 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         float completedWeight = 0f;
         _currentStepIndex = 0;
 
-        // 依次执行每个步骤
         for (int i = 0; i < _initSteps.Count; i++)
         {
             _currentStepIndex = i;
@@ -198,7 +170,6 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             OnProgressUpdated?.Invoke(Mathf.Min(stepProgress, 0.99f), step.Name);
         }
 
-        // 所有步骤完成
         _initProgress = 1f;
         _isInitialized = true;
         _initFailed = false;
@@ -207,32 +178,40 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         Logger.LogColor("[NetServerManager] 网络数据初始化完成！", "green");
         OnProgressUpdated?.Invoke(1f, "完成");
 
-        // 先触发完成事件，让其他模块（如 PlayerDataManager）先完成初始化
         OnInitializationComplete?.Invoke();
 
-        // 等待一帧，确保 PlayerDataManager 已经完成事件注册
         yield return null;
 
-        // 触发UI刷新
         NotifyPlayerDataSyncedInternal();
-
-        // 同步商城数据
         SyncMallItemsFromServer();
 
-        // 切换角色动画
-        if (PlayerAniManager.Instance != null && equippedCharacterId > 0)
-        {
-            PlayerAniManager.Instance.SwitchCharacter(equippedCharacterId);
-        }
+        // 安全切换角色动画
+        //if (equippedCharacterId > 0)
+        //{
+        //    if (PlayerAniManager.Instance != null)
+        //    {
+        //        PlayerAniManager.Instance.SwitchCharacter(equippedCharacterId);
+        //    }
+        //    else
+        //    {
+        //        Logger.LogWarning("[NetServerManager] PlayerAniManager 尚未初始化，跳过角色切换");
+        //    }
+        //}
 
-        // 开始自动钓鱼
+        // ⭐ 启动钓鱼状态轮询
+        Logger.Log("[NetServerManager] 启动钓鱼状态轮询...");
+        StartCoroutine(PollFishingStatus());
+
+        // ⭐ 启动自动钓鱼
         if (isFishBagFull)
         {
             NotifyPlayLazyAnimation();
+            Logger.Log("[NetServerManager] 鱼篓已满，播放Lazy动画");
         }
         else
         {
             AutoStartFishing();
+            Logger.Log("[NetServerManager] 自动钓鱼已启动");
         }
     }
 
@@ -253,13 +232,11 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
             if (networkState == NetUtils.NetworkState.Connecting)
             {
-                // 正在连接中，等待
                 Logger.Log($"[NetServerManager] 正在连接服务器... (等待中)");
                 yield return new WaitForSeconds(waitTime);
                 continue;
             }
 
-            // 连接失败或断开，尝试重连
             retryCount++;
             Logger.Log($"[NetServerManager] 连接失败，第 {retryCount}/{maxRetries} 次重试...");
             yield return StartCoroutine(ConnectToServer());

@@ -115,9 +115,9 @@ public class GameDataManager : SingletonMono<GameDataManager>
     
     private void UpdateFishBagUI()
     {
-        if (UIManager.Instance != null && UIManager.Instance.fishBagView != null)
+        if (GameUIManager.Instance != null && GameUIManager.Instance.fishBagView != null)
         {
-            UIManager.Instance.fishBagView.RefreshItems();
+            GameUIManager.Instance.fishBagView.RefreshItems();
         }
     }
     

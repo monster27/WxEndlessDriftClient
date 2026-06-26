@@ -6,7 +6,7 @@ using System;
 using SharedModels;
 using Logger = Utils.Logger;
 
-public partial class NetServerManager : SingletonMono<NetServerManager>
+public partial class NetServerManager
 {
     private bool isInContinuousMode = false;
     private float continuousModeRemainingTime = 0f;
@@ -71,7 +71,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
                         yield break;
                     }
                     Logger.LogWarning($"[NetServerManager] 增加窝料时间失败: {resp?.message ?? "未知错误"}");
-                    UIManager.ShowMessage(resp?.message ?? "操作失败");
+                    GameUIManager.ShowMessage(resp?.message ?? "操作失败");
                     yield break;
                 }
                 catch (Exception ex) { Logger.LogError($"[NetServerManager] 解析响应失败: {ex.Message}"); }
@@ -104,7 +104,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
                 }
                 else
                 {
-                    UIManager.ShowMessage("窝料不足，无法进入连续钓鱼模式");
+                    GameUIManager.ShowMessage("窝料不足，无法进入连续钓鱼模式");
                 }
             }
             catch (Exception ex) { Logger.LogError($"[NetServerManager] 解析响应失败: {ex.Message}"); }
@@ -227,7 +227,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
     private void UpdateContinuousModeUI()
     {
         CommunicateEvent.Modify<float>("ContinuousModeTimeUpdated", continuousModeRemainingTime);
-        var countdownText = UIManager.Instance?.transform.Find("Canvas/BaitCountdownText")?.GetComponent<UnityEngine.UI.Text>();
+        var countdownText = GameUIManager.Instance?.transform.Find("Canvas/BaitCountdownText")?.GetComponent<UnityEngine.UI.Text>();
         if (countdownText == null) return;
         if (isInContinuousMode && continuousModeRemainingTime > 0)
         {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using SharedModels;
 using Logger = Utils.Logger;
 
-public partial class NetServerManager : SingletonMono<NetServerManager>
+public partial class NetServerManager
 {
     private void RegisterNetworkEvents()
     {

@@ -179,6 +179,23 @@ namespace View.Detail
         /// </summary>
         public void UpdateItemsBySingleCategory(Dictionary<int, ItemData> itemDataMap, Dictionary<int, int> inventory, int categoryId)
         {
+            Debug.Log($"[BagDetail] UpdateItemsBySingleCategory - 分类ID: {categoryId}, 物品数: {inventory?.Count ?? 0}");
+
+            // 检查这个分类下有哪些物品
+            int count = 0;
+            foreach (var item in inventory)
+            {
+                if (itemDataMap.TryGetValue(item.Key, out ItemData itemData) && itemData != null)
+                {
+                    if (itemData.categoryId == categoryId)
+                    {
+                        count++;
+                        Debug.Log($"[BagDetail] 分类 {categoryId} 包含物品: ID={item.Key}, 名称={itemData.name}, 数量={item.Value}");
+                    }
+                }
+            }
+            Debug.Log($"[BagDetail] 分类 {categoryId} 共有 {count} 种物品");
+
             UpdateItemsBySubCategory(itemDataMap, inventory, new List<int> { categoryId });
         }
 

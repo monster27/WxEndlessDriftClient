@@ -112,10 +112,10 @@ public class EnvManager : SingletonMono<EnvManager>
             EnvironmentRenderManager.Instance?.SwitchTimeEnvironment(timeSlotId);
             
             // 通知UI更新
-            if (UIManager.Instance != null && UIManager.Instance.mainGameView != null)
+            if (GameUIManager.Instance != null && GameUIManager.Instance.mainGameView != null)
             {
                 Debug.Log("[EnvManager] 调用 UIManager.UpdateMainViewTimee 更新UI");
-                UIManager.Instance.UpdateMainViewTimee(status, timeName);
+                GameUIManager.Instance.UpdateMainViewTimee(status, timeName);
             }
             else
             {
@@ -150,10 +150,10 @@ public class EnvManager : SingletonMono<EnvManager>
             this.currentWeatherId = weatherId;
             this.currentWeatherName = weatherName;
 
-            if (UIManager.Instance != null && UIManager.Instance.mainGameView != null)
+            if (GameUIManager.Instance != null && GameUIManager.Instance.mainGameView != null)
             {
                 Debug.Log("[EnvManager] 调用 UIManager.UpdateMainViewWeather 更新UI");
-                UIManager.Instance.UpdateMainViewWeather(weatherId, weatherName);
+                GameUIManager.Instance.UpdateMainViewWeather(weatherId, weatherName);
             }
             else
             {
@@ -222,11 +222,11 @@ public class EnvManager : SingletonMono<EnvManager>
         
         Debug.Log($"[EnvManager] UpdateTimeStatus - timeStatus={timeStatus}, timeName={timeName}, weatherId={weatherId}, weatherName={currentWeatherName}");
         
-        if (UIManager.Instance != null && UIManager.Instance.mainGameView != null)
+        if (GameUIManager.Instance != null && GameUIManager.Instance.mainGameView != null)
         {
             Debug.Log("[EnvManager] 调用 UIManager 更新时间和天气");
-            UIManager.Instance.UpdateMainViewTimee(timeStatus, timeName);
-            UIManager.Instance.UpdateMainViewWeather(currentWeatherId, currentWeatherName);
+            GameUIManager.Instance.UpdateMainViewTimee(timeStatus, timeName);
+            GameUIManager.Instance.UpdateMainViewWeather(currentWeatherId, currentWeatherName);
         }
         else
         {

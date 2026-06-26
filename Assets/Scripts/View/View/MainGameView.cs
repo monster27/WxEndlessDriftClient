@@ -120,6 +120,9 @@ public class MainGameView : BagViewBase
         currentDisplayMode = DisplayMode.Text;
         UpdateDisplayMode();
 
+        // ✅ 发送事件请求更新所有UI数据
+        CommunicateEvent.Modify("UI_RequestUpdateAllData");
+
         isInitialized = true;
     }
 
@@ -364,10 +367,10 @@ public class MainGameView : BagViewBase
     {
         // 从服务器获取当前窝料数量
         currentBaitCount = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_CURRENT_SCENE_BAIT_COUNT, 0);
-        
+
         if (baitCountTxt != null)
         {
-            baitCountTxt.text = $"窝料: {currentBaitCount}";
+            baitCountTxt.text = $"窝料:{currentBaitCount}";
         }
     }
 
@@ -392,6 +395,28 @@ public class MainGameView : BagViewBase
         UpdateFishCountDisplay();
     }
 
+    /// <summary>
+    /// 更新鱼篓数量显示（由GameUIManager调用）
+    /// </summary>
+    public void UpdateFishCount(int currentCount, int maxCapacity)
+    {
+        if (fishCountTxt != null)
+        {
+            fishCountTxt.text = $"{currentCount}/{maxCapacity}";
+        }
+    }
+
+    /// <summary>
+    /// 更新窝料数量显示（由GameUIManager调用）
+    /// </summary>
+    public void UpdateBaitCount(int baitCount)
+    {
+        currentBaitCount = baitCount;
+        if (baitCountTxt != null)
+        {
+            baitCountTxt.text = $"窝料:{baitCount}";
+        }
+    }
     private void UpdateFishCountDisplay()
     {
         if (fishCountTxt == null) return;

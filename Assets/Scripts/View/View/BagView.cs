@@ -33,7 +33,6 @@ public class BagView : BagViewBase
     public List<CategoryConfig> categoryConfigs = new List<CategoryConfig>();
 
     private Dictionary<int, CategoryConfig> categoryIdToConfig = new Dictionary<int, CategoryConfig>();
-    private bool isDataUpdated = false;
 
     public override void Init()
     {
@@ -62,7 +61,8 @@ public class BagView : BagViewBase
         {
             if (config != null && config.categoryToggle != null)
             {
-                config.categoryToggle.onValueChanged.AddListener((isOn) => {
+                config.categoryToggle.onValueChanged.AddListener((isOn) =>
+                {
                     if (isOn)
                     {
                         OnCategoryToggle(config);
@@ -88,7 +88,7 @@ public class BagView : BagViewBase
                 }
             }
         }
-        
+
         // 显示当前选中分类的所有小分类BagDetail
         if (config != null)
         {
@@ -105,15 +105,12 @@ public class BagView : BagViewBase
     public void OpenBag()
     {
         // 检测数据是否更新过，如果没有更新过，先更新数据
-        if (!isDataUpdated)
-        {
-            RefreshItems();
-            isDataUpdated = true;
-        }
-        
+
+        RefreshItems();
+
         gameObject.SetActive(true);
         SendEvent();
-        
+
         // 默认点击第一个分类
         ClickFirstValidCategory();
     }
@@ -130,10 +127,20 @@ public class BagView : BagViewBase
 
     public void UpdateBagItems(Dictionary<int, int> inventory, Dictionary<int, ItemData> itemDataMap)
     {
+        Debug.Log($"[BagView] UpdateBagItems - 物品数: {inventory?.Count ?? 0}");
+
+        if (inventory == null || inventory.Count == 0)
+        {
+            Debug.LogWarning("[BagView] UpdateBagItems - 数据为空");
+            return;
+        }
+
+        foreach (var item in inventory)
+        {
+            Debug.Log($"[BagView] UpdateBagItems - 物品ID: {item.Key}, 数量: {item.Value}");
+        }
+
         UpdateAllBagDetails(inventory, itemDataMap);
-        isDataUpdated = true;
-        
-        // 默认点击第一个有效分类
         ClickFirstValidCategory();
     }
 
@@ -173,13 +180,28 @@ public class BagView : BagViewBase
 
     public void RefreshItems()
     {
+        Debug.Log("[BagView] RefreshItems 被调用");
+
+        if (PlayerDataManager.Instance != null)
+        {
+            var inventory = PlayerDataManager.Instance.GetInventory();
+            Debug.Log($"[BagView] PlayerDataManager 背包数据: {inventory?.Count ?? 0} 种物品");
+
+            if (inventory != null && inventory.Count > 0)
+            {
+                foreach (var item in inventory)
+                {
+                    Debug.Log($"  物品ID: {item.Key}, 数量: {item.Value}");
+                }
+            }
+        }
+         
         CommunicateEvent.Modify("Bag_RefreshItems");
     }
 
     public void UpdateBagWithInventory(Dictionary<int, int> inventory, Dictionary<int, ItemData> itemDataMap)
     {
         UpdateAllBagDetails(inventory, itemDataMap);
-        isDataUpdated = true;
     }
 
     /// <summary>

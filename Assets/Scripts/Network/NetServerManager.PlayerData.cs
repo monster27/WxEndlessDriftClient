@@ -7,7 +7,7 @@ using System;
 using SharedModels;
 using Logger = Utils.Logger;
 
-public partial class NetServerManager : SingletonMono<NetServerManager>
+public partial class NetServerManager 
 {
     // 玩家数据
     private Dictionary<int, int> playerInventory = new Dictionary<int, int>();
@@ -177,6 +177,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
     // ========== 各模块数据加载 Coroutine ==========
 
+    // 在 NetServerManager.PlayerData.cs 的 FetchPlayerInventoryCoroutine 中
     private IEnumerator FetchPlayerInventoryCoroutine()
     {
         yield return FetchGetJson<InventoryResponse>("/api/player/inventory/" + _currentPlayerId, data =>
@@ -188,6 +189,12 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
                 playerInventory[item.key] = item.value;
             }
             Logger.Log($"[NetServerManager] 背包数据加载完成: {playerInventory.Count} 件物品");
+
+            // ✅ 添加这行
+            if (PlayerDataManager.Instance != null)
+            {
+                PlayerDataManager.Instance.SyncInventoryFromServer();
+            }
         }, "背包数据");
     }
 
