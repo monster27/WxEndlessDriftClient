@@ -170,7 +170,6 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
     }
 
     #region Unity生命周期回调
-
     void OnApplicationPause(bool pause)
     {
         Logger.Log($"[NetServerManager] OnApplicationPause: {pause}");
@@ -188,12 +187,14 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         else
         {
             isApplicationPaused = false;
-            if (!isConnected)
+            // ⭐ 只有在启用状态且游戏已初始化完成时才重连
+            // 避免在启动阶段误触重连
+            if (_isEnabled && _isInitCalled && !isConnected)
             {
                 Logger.Log("[NetServerManager] 应用恢复但未连接到服务器，尝试重连");
                 RequestReconnect();
             }
-            else
+            else if (_isEnabled && isConnected)
             {
                 StartHeartbeat();
             }

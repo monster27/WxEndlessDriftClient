@@ -140,6 +140,7 @@ public partial class NetServerManager
     private void OnContinuousModeEntered()
     {
         PlayerDataManager.Instance?.SyncInventoryFromServer();
+        PlayerAniManager.Instance?.PlayNestAnimation();
         CommunicateEvent.Modify("Bag_RefreshItems");
         UpdateContinuousModeUI();
     }

@@ -75,12 +75,45 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
             isInitializing = false;
             Debug.Log($"[PlayerAniManager] 初始化完成，已预加载 {characterAniDict.Count} 个人物的动画资源");
 
+            // ⭐ 初始化完成后，检查鱼篓状态并播放对应动画
+            CheckFishBagStateAndPlayAnimation();
+
             ExecutePendingActions();
         }
         catch (Exception e)
         {
             isInitializing = false;
             Debug.LogError($"[PlayerAniManager] 初始化异常: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 检查鱼篓状态并播放对应动画
+    /// </summary>
+    private void CheckFishBagStateAndPlayAnimation()
+    {
+        if (PlayerDataManager.Instance == null)
+        {
+            Debug.Log("[PlayerAniManager] CheckFishBagState - PlayerDataManager 不存在");
+            return;
+        }
+
+        if (NetServerManager.Instance == null)
+        {
+            Debug.Log("[PlayerAniManager] CheckFishBagState - NetServerManager 不存在");
+            return;
+        }
+
+        bool isFull = PlayerDataManager.Instance.IsFishBagFull();
+        if (isFull)
+        {
+            Debug.Log("[PlayerAniManager] 初始化后检测到鱼篓已满，播放 Lazy 动画");
+            PlayLazyAnimation();
+        }
+        else
+        {
+            Debug.Log("[PlayerAniManager] 初始化后检测到鱼篓未满，播放 Idle 动画");
+            PlayIdleAnimation();
         }
     }
 
@@ -193,6 +226,10 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
                 }
 
                 Debug.Log($"[PlayerAniManager] 延迟初始化完成");
+
+                // ⭐ 延迟初始化完成后也检查鱼篓状态
+                CheckFishBagStateAndPlayAnimation();
+
                 ExecutePendingActions();
 
                 yield break;
@@ -369,6 +406,56 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         }
     }
 
+    /// <summary>
+    /// 播放窝料动画（使用 NestAniCtrl 中已配置好的序列帧图片）
+    /// </summary>
+    /// <param name="displayDuration">显示时长（秒），默认2秒</param>
+    public void PlayNestAnimation(float displayDuration = 2f)
+    {
+        if (!isInitialized)
+        {
+            Debug.Log("[PlayerAniManager] PlayNestAnimation - 尚未初始化，缓存请求");
+            pendingActions.Enqueue(() => PlayNestAnimation(displayDuration));
+            Init();
+            return;
+        }
+
+        if (nestAniCtrl == null)
+        {
+            Debug.LogWarning("[PlayerAniManager] PlayNestAnimation - nestAniCtrl 为空");
+            return;
+        }
+
+        // 设置显示时长，其他参数（序列帧图片、行列数、播放速度等）使用 NestAniCtrl 中已配置好的值
+        nestAniCtrl.SetDisplayDuration(displayDuration);
+        nestAniCtrl.PlayBaitAnimation();
+
+        Debug.Log($"[PlayerAniManager] 播放窝料动画，显示时长: {displayDuration}秒");
+    }
+
+    /// <summary>
+    /// 停止窝料动画
+    /// </summary>
+    public void StopNestAnimation()
+    {
+        if (!isInitialized)
+        {
+            Debug.Log("[PlayerAniManager] StopNestAnimation - 尚未初始化，缓存请求");
+            pendingActions.Enqueue(() => StopNestAnimation());
+            Init();
+            return;
+        }
+
+        if (nestAniCtrl == null)
+        {
+            Debug.LogWarning("[PlayerAniManager] StopNestAnimation - nestAniCtrl 为空");
+            return;
+        }
+
+        nestAniCtrl.StopAnimation();
+        Debug.Log("[PlayerAniManager] 停止窝料动画");
+    }
+
     public void PlayIdleAnimation()
     {
         if (!isInitialized)
@@ -388,6 +475,7 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         }
 
         aniCtrl.PlayIdleAnimation();
+        Debug.Log("[PlayerAniManager] 播放 Idle 动画");
     }
 
     public void PlayLazyAnimation()
@@ -453,6 +541,7 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         pendingCallback = callback;
         animationTimer = duration;
         isWaitingForAnimation = true;
+        Debug.Log($"[PlayerAniManager] 播放 Reel 动画，时长: {duration}秒");
     }
 
     public void PlayReelAnimationWithTwoIds(int detectedFishId, int actualItemId, float struggleTime, bool isTrash, Action callback)
