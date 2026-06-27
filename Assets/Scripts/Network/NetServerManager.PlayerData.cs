@@ -254,7 +254,9 @@ public partial class NetServerManager
                     fishId = item.key,
                     weight = item.weight,
                     starRatingId = item.starRatingId,
-                    caughtTimestamp = item.caughtTimestamp
+                    calculatedPrice = 0,
+                    caughtTimestamp = item.caughtTimestamp,
+                    isShiny = item.isShiny
                 });
             }
 
