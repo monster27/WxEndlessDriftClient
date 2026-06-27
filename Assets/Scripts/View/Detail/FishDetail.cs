@@ -226,7 +226,8 @@ namespace View.Detail
                 weight = GetItemWeight(itemId),
                 starRatingId = 0,
                 calculatedPrice = itemData?.sellPrice ?? 0,
-                caughtTimestamp = System.DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                caughtTimestamp = System.DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                isShiny = false
             };
         }
 

@@ -45,6 +45,7 @@ namespace SharedModels
         public float weight;
         public int starRatingId;
         public long caughtTimestamp;
+        public bool isShiny;  // 是否闪光鱼
     }
 
     [Serializable]
@@ -96,6 +97,7 @@ namespace SharedModels
         public bool isTrash;
         public int trashStreak;
         public float struggleTime;
+        public bool isShiny;  // 是否闪光鱼
     }
 
     [Serializable]
@@ -167,6 +169,7 @@ namespace SharedModels
         public bool isTrash;
         public float struggleTime;
         public int starRatingId;
+        public bool isShiny;  // 是否闪光鱼
     }
 
     [Serializable]
@@ -177,6 +180,7 @@ namespace SharedModels
         public int starRatingId;
         public int calculatedPrice;
         public long caughtTimestamp;
+        public bool isShiny;  // 是否闪光鱼
     }
 
     [Serializable]

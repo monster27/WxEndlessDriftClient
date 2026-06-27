@@ -498,7 +498,7 @@ public partial class NetServerManager
 
     // ========== 辅助数据类 ==========
 
-    [Serializable] private class FishingCatchResponse { public bool success; public string message; public string fishName; public float weight; public int goldBalance; public bool isTrash; public int trashStreak; public float struggleTime; }
+    [Serializable] private class FishingCatchResponse { public bool success; public string message; public string fishName; public float weight; public int goldBalance; public bool isTrash; public int trashStreak; public float struggleTime; public bool isShiny; }
     [Serializable] private class AutoFishingResponse { public bool success; public string message; }
     [Serializable] private class FishingStatusResponse { public bool success; public bool isAutoFishing; public bool isPaused; public int trashStreak; public float nextFishingTime; public float continuousModeRemainingTime; public int fishingMode; public int currentWeatherId; public int timeSlotId; public int timeStatus; public LastCatchInfo lastCatch; }
 
@@ -516,5 +516,6 @@ public partial class NetServerManager
         public float struggleTime;
         public int starRatingId;      // ✅ 新增：星级ID
         public long caughtTimestamp;  // ✅ 新增：捕获时间戳
+        public bool isShiny;          // ✅ 新增：是否闪光鱼
     }
 }

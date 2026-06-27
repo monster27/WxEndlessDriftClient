@@ -19,6 +19,7 @@ namespace View.Detail
         public Button selectButton;
         public Image selectedImage;
         public Image newCatchImage;
+        public Image shinyIconImage;  // ✅ 闪光图标
 
         private int itemId;
         private int quantity;
@@ -35,6 +36,7 @@ namespace View.Detail
         public bool IsNewCatch => isNewCatch;
         public bool IsSold => isSold;
         public FishDetailData FishDetail => fishDetail;
+        public bool IsShiny => fishDetail?.isShiny ?? false;
 
         public long CatchTimestamp => fishDetail?.caughtTimestamp ?? 0;
         public float FishWeight => fishDetail?.weight ?? GetItemWeight(itemId);
@@ -144,9 +146,34 @@ namespace View.Detail
             // ========== 显示星级（使用图片） ==========
             UpdateStarRatingDisplay();
 
+            // ========== 显示闪光图标 ==========
+            UpdateShinyIconDisplay();
+
             if (iconImage != null && itemData != null)
             {
                 LoadIcon();
+            }
+        }
+
+        /// <summary>
+        /// 更新闪光图标显示
+        /// </summary>
+        private void UpdateShinyIconDisplay()
+        {
+            bool isShiny = fishDetail?.isShiny ?? false;
+            Debug.Log($"[UI_FishBagPrefab] UpdateShinyIconDisplay - itemId={itemId}, isShiny={isShiny}");
+
+            if (shinyIconImage != null)
+            {
+                shinyIconImage.gameObject.SetActive(isShiny);
+                if (isShiny)
+                {
+                    Debug.Log($"[UI_FishBagPrefab] 闪光鱼图标显示: {itemId}");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[UI_FishBagPrefab] shinyIconImage 为 null! itemId={itemId}");
             }
         }
 

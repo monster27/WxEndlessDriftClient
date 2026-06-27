@@ -380,7 +380,8 @@ public partial class NetServerManager
                     weight = item.weight,
                     starRatingId = item.starRatingId,
                     calculatedPrice = 0,
-                    caughtTimestamp = item.caughtTimestamp
+                    caughtTimestamp = item.caughtTimestamp,
+                    isShiny = item.isShiny
                 });
             }
             int total = GetTotalFishCount();
@@ -610,6 +611,7 @@ public partial class NetServerManager
         public float weight;
         public int starRatingId;
         public long caughtTimestamp;
+        public bool isShiny;  // 是否闪光鱼
     }
     [Serializable] private class GoldResponse { public int gold; }
     [Serializable] private class CapacityResponse { public int capacity; }

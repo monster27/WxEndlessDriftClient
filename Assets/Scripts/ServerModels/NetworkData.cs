@@ -37,6 +37,10 @@ namespace ServerModels
     {
         public int key;
         public int value;
+        public float weight;
+        public int starRatingId;
+        public long caughtTimestamp;
+        public bool isShiny;  // 是否闪光鱼
     }
 
     [System.Serializable]
@@ -88,6 +92,7 @@ namespace ServerModels
         public bool isTrash;
         public int trashStreak;
         public float struggleTime;
+        public bool isShiny;  // 是否闪光鱼
     }
 
     [System.Serializable]
@@ -134,6 +139,7 @@ namespace ServerModels
         public int expEarned;
         public bool isTrash;
         public float struggleTime;
+        public bool isShiny;  // 是否闪光鱼
     }
 
     [System.Serializable]
