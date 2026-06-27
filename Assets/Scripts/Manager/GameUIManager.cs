@@ -142,7 +142,7 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         }
     }
 
-    public void ShowCatchResult(string itemName, float weight, Sprite icon)
+    public void ShowCatchResult(string itemName, float weight, Sprite icon, int starRatingId = 0)
     {
         if (mainGameView != null)
         {

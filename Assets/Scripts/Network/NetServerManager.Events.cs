@@ -22,6 +22,7 @@ public partial class NetServerManager
         CommunicateEvent.RegisterRequest<int, Dictionary<int, int>>("VIEW_EVENT_GET_INVENTORY", _ => GetPlayerInventory());
         CommunicateEvent.RegisterRequest<int, Dictionary<int, int>>("VIEW_EVENT_GET_FISH_INVENTORY", _ => GetPlayerFishInventory());
         CommunicateEvent.RegisterRequest<int, int>("VIEW_EVENT_GET_FISH_BAG_CAPACITY", _ => GetFishBagCapacity());
+        CommunicateEvent.RegisterRequest<int, Dictionary<int, List<FishDetailData>>>("VIEW_EVENT_GET_FISH_DETAIL_DATA", _ => GetFishDetailData());
         CommunicateEvent.RegisterRequest<int, int>("VIEW_EVENT_GET_GOLD", _ => GetPlayerGold());
 
         // ========== 金币同步 ==========

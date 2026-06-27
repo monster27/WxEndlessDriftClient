@@ -152,25 +152,63 @@ public class FishBagView : BagViewBase
         CommunicateEvent.Modify("FishBag_Open");
     }
 
+    /// <summary>
+    /// 更新鱼篓物品显示（带详情数据）
+    /// </summary>
+    /// <summary>
+    /// 更新鱼篓物品显示（带详情数据）
+    /// </summary>
+    public void UpdateFishItems(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap, Dictionary<int, List<FishDetailData>> fishDetailData = null)
+    {
+        if (fishInventory == null)
+        {
+            Debug.LogWarning("[FishBagView] UpdateFishItems: fishInventory 为空");
+            return;
+        }
+
+        // 如果传入的详情数据为空，尝试从 PlayerDataManager 获取
+        if (fishDetailData == null || fishDetailData.Count == 0)
+        {
+            if (PlayerDataManager.Instance != null)
+            {
+                fishDetailData = PlayerDataManager.Instance.GetFishDetailData();
+                Debug.Log($"[FishBagView] 从 PlayerDataManager 获取详情数据: {fishDetailData?.Count ?? 0} 种");
+            }
+        }
+
+        // 更新鱼篓详情显示
+        UpdateFishDetail(fishInventory, itemDataMap, fishDetailData);
+
+        // 更新鱼篓标题显示（使用现有的 UpdateFishCountDisplay 方法）
+        UpdateFishCountDisplay(fishInventory);
+    }
+
+    /// <summary>
+    /// 原有的两参数方法，保持兼容性
+    /// </summary>
     public void UpdateFishItems(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap)
     {
-        UpdateFishDetail(fishInventory, itemDataMap, null);
+        UpdateFishItems(fishInventory, itemDataMap, null);
     }
 
-    public void UpdateFishItems(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap, Dictionary<int, List<FishDetailData>> detailData)
+    public void UpdateFishDetail(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap, Dictionary<int, List<FishDetailData>> detailData)
     {
-        UpdateFishDetail(fishInventory, itemDataMap, detailData);
-    }
+        // 如果 detailData 为 null，尝试从 PlayerDataManager 获取
+        if (detailData == null && PlayerDataManager.Instance != null)
+        {
+            detailData = PlayerDataManager.Instance.GetFishDetailData();
+            Debug.Log($"[FishBagView] UpdateFishDetail - 从 PlayerDataManager 获取详情数据: {detailData?.Count ?? 0} 种");
+        }
 
-    private void UpdateFishDetail(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap, Dictionary<int, List<FishDetailData>> detailData = null)
-    {
+        Debug.Log($"[FishBagView] UpdateFishDetail - 传入数据: fishInventory数量={fishInventory?.Count ?? 0}, itemDataMap数量={itemDataMap?.Count ?? 0}, detailData数量={detailData?.Count ?? 0}");
+
         if (fishDetail != null)
         {
-            Debug.Log($"[FishBagView] UpdateFishDetail - 传入数据: fishInventory数量={fishInventory?.Count ?? 0}, itemDataMap数量={itemDataMap?.Count ?? 0}, detailData数量={detailData?.Count ?? 0}");
             fishDetail.UpdateFishItems(itemDataMap, fishInventory, detailData);
-
-            // 数据更新后应用当前排序
-            fishDetail.SortFishItems(currentSortType);
+        }
+        else
+        {
+            Debug.LogWarning("[FishBagView] UpdateFishDetail: fishDetail 为 null");
         }
     }
 

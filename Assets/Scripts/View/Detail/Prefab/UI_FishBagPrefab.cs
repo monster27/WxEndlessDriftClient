@@ -15,7 +15,7 @@ namespace View.Detail
         public Text weightText;
         public Text priceText;
         public Text starRatingText;
-        public Image starRatingImage;
+        public Image starRatingImage;      // ✅ 已有
         public Button selectButton;
         public Image selectedImage;
         public Image newCatchImage;
@@ -36,19 +36,9 @@ namespace View.Detail
         public bool IsSold => isSold;
         public FishDetailData FishDetail => fishDetail;
 
-        /// <summary>
-        /// 获取钓获时间戳（用于排序）
-        /// </summary>
         public long CatchTimestamp => fishDetail?.caughtTimestamp ?? 0;
-
-        /// <summary>
-        /// 获取鱼的重量（用于排序）
-        /// </summary>
         public float FishWeight => fishDetail?.weight ?? GetItemWeight(itemId);
 
-        /// <summary>
-        /// 获取鱼的稀有度（用于排序）
-        /// </summary>
         public int FishRarityId
         {
             get
@@ -119,6 +109,7 @@ namespace View.Detail
                 quantityText.gameObject.SetActive(false);
             }
 
+            // ========== 显示重量 ==========
             float displayWeight = fishDetail != null ? fishDetail.weight : GetItemWeight(itemId);
             if (weightText != null)
             {
@@ -134,13 +125,13 @@ namespace View.Detail
                 }
             }
 
+            // ========== 显示价格 ==========
             int displayPrice = CalculateDisplayPrice();
             if (priceText != null)
             {
                 if (displayPrice > 0)
                 {
-                    // 价格显示为小数点后两位
-                    priceText.text = $"¥{displayPrice:F2}";
+                    priceText.text = $"¥{displayPrice}";
                     priceText.gameObject.SetActive(true);
                 }
                 else
@@ -150,6 +141,7 @@ namespace View.Detail
                 }
             }
 
+            // ========== 显示星级（使用图片） ==========
             UpdateStarRatingDisplay();
 
             if (iconImage != null && itemData != null)
@@ -158,10 +150,64 @@ namespace View.Detail
             }
         }
 
+        /// <summary>
+        /// 更新星级显示 - 使用图片
+        /// </summary>
+        /// <summary>
+        /// 更新星级显示 - 使用图片
+        /// </summary>
         private void UpdateStarRatingDisplay()
         {
             int starRatingId = fishDetail != null ? fishDetail.starRatingId : 0;
-            
+
+            Debug.Log($"[UI_FishBagPrefab] UpdateStarRatingDisplay - itemId={itemId}, starRatingId={starRatingId}");
+
+            // 星级图片
+            if (starRatingImage != null)
+            {
+                // 打印当前状态
+                Debug.Log($"[UI_FishBagPrefab] starRatingImage 状态 - 自身激活: {starRatingImage.gameObject.activeSelf}, " +
+                          $"父节点激活: {(starRatingImage.transform.parent != null ? starRatingImage.transform.parent.gameObject.activeSelf : false)}, " +
+                          $"颜色Alpha: {starRatingImage.color.a}, 当前Sprite: {(starRatingImage.sprite != null ? starRatingImage.sprite.name : "null")}");
+
+                if (starRatingId > 0)
+                {
+                    Sprite starIcon = LoadStarRatingIcon(starRatingId);
+                    if (starIcon != null)
+                    {
+                        starRatingImage.sprite = starIcon;
+                        starRatingImage.gameObject.SetActive(true);
+
+                        // 确保颜色Alpha为1（完全可见）
+                        Color color = starRatingImage.color;
+                        color.a = 1f;
+                        starRatingImage.color = color;
+
+                        // 确保Image组件启用
+                        starRatingImage.enabled = true;
+
+                        Debug.Log($"[UI_FishBagPrefab] 星级图标加载成功: ID={starRatingId}, 路径=UI/StarRating/star_{starRatingId}, " +
+                                  $"图标尺寸: {starIcon.rect.width}x{starIcon.rect.height}, " +
+                                  $"设置后激活状态: {starRatingImage.gameObject.activeSelf}, Image.enabled: {starRatingImage.enabled}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[UI_FishBagPrefab] 星级图标加载失败: ID={starRatingId}");
+                        starRatingImage.gameObject.SetActive(false);
+                    }
+                }
+                else
+                {
+                    Debug.Log($"[UI_FishBagPrefab] starRatingId <= 0，隐藏星级图标");
+                    starRatingImage.gameObject.SetActive(false);
+                }
+            }
+            else
+            {
+                Debug.LogError($"[UI_FishBagPrefab] starRatingImage 为 null! itemId={itemId}");
+            }
+
+            // 星级文字（保留作为备选）
             if (starRatingText != null)
             {
                 if (starRatingId > 0 && LoadDataManager.Instance != null)
@@ -172,6 +218,7 @@ namespace View.Detail
                         starRatingText.text = starRating.name;
                         starRatingText.color = ParseColor(starRating.color);
                         starRatingText.gameObject.SetActive(true);
+                        Debug.Log($"[UI_FishBagPrefab] 星级文字显示: {starRating.name}");
                     }
                     else
                     {
@@ -183,27 +230,70 @@ namespace View.Detail
                     starRatingText.gameObject.SetActive(false);
                 }
             }
+        }
 
-            if (starRatingImage != null)
+        /// <summary>
+        /// 根据星级ID加载对应的星级图标
+        /// </summary>
+        private Sprite LoadStarRatingIcon(int starRatingId)
+        {
+            // 根据星级ID生成对应的路径
+            string path = $"UI/StarRating/star_{starRatingId}";
+            Sprite icon = Resources.Load<Sprite>(path);
+
+            if (icon != null)
             {
-                if (starRatingId > 0 && LoadDataManager.Instance != null)
+                Debug.Log($"[UI_FishBagPrefab] 星级图标加载成功: ID={starRatingId}, 路径={path}");
+                return icon;
+            }
+
+            Debug.LogWarning($"[UI_FishBagPrefab] 星级图标加载失败: ID={starRatingId}, 路径={path}");
+
+            // 备选：尝试其他路径
+            string[] fallbackPaths = new string[]
+            {
+        $"StarRating/{starRatingId}",
+        $"Images/StarRating/{starRatingId}",
+        $"UI/Icon/Star/{starRatingId}"
+            };
+
+            foreach (string fallbackPath in fallbackPaths)
+            {
+                icon = Resources.Load<Sprite>(fallbackPath);
+                if (icon != null)
                 {
-                    var starRating = LoadDataManager.Instance.GetStarRatingById(starRatingId);
-                    if (starRating != null)
-                    {
-                        starRatingImage.color = ParseColor(starRating.color);
-                        starRatingImage.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        starRatingImage.gameObject.SetActive(false);
-                    }
-                }
-                else
-                {
-                    starRatingImage.gameObject.SetActive(false);
+                    Debug.Log($"[UI_FishBagPrefab] 星级图标加载成功(备选路径): ID={starRatingId}, 路径={fallbackPath}");
+                    return icon;
                 }
             }
+
+            // 如果所有路径都失败，创建纯色图标
+            Debug.LogWarning($"[UI_FishBagPrefab] 所有路径加载失败，创建纯色备选图标: ID={starRatingId}");
+            return CreateFallbackSprite(starRatingId);
+        }
+
+        private Sprite CreateFallbackSprite(int starRatingId)
+        {
+            // 从 LoadDataManager 获取星级颜色
+            if (LoadDataManager.Instance != null)
+            {
+                var starRating = LoadDataManager.Instance.GetStarRatingById(starRatingId);
+                if (starRating != null && !string.IsNullOrEmpty(starRating.color))
+                {
+                    Texture2D tex = new Texture2D(64, 64);
+                    Color color = ParseColor(starRating.color);
+                    for (int x = 0; x < tex.width; x++)
+                    {
+                        for (int y = 0; y < tex.height; y++)
+                        {
+                            tex.SetPixel(x, y, color);
+                        }
+                    }
+                    tex.Apply();
+                    return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                }
+            }
+            return null;
         }
 
         private Color ParseColor(string colorCode)
@@ -242,12 +332,12 @@ namespace View.Detail
         }
 
         private void OnSelectButtonClick()
-    {
-        Debug.Log($"[UI_FishBagPrefab] OnSelectButtonClick - itemId={itemId}, isSelected={isSelected}");
-        if (isNewCatch)
         {
-            UpdateNewCatchStatus(false);
-        }
+            Debug.Log($"[UI_FishBagPrefab] OnSelectButtonClick - itemId={itemId}, isSelected={isSelected}");
+            if (isNewCatch)
+            {
+                UpdateNewCatchStatus(false);
+            }
 
             isSelected = !isSelected;
             UpdateSelectedVisual();
@@ -311,7 +401,7 @@ namespace View.Detail
             if (itemData != null)
             {
                 int basePrice = itemData.sellPrice;
-                
+
                 if (fishDetail != null && fishDetail.starRatingId > 0 && LoadDataManager.Instance != null)
                 {
                     var starRating = LoadDataManager.Instance.GetStarRatingById(fishDetail.starRatingId);
@@ -320,10 +410,10 @@ namespace View.Detail
                         return Mathf.RoundToInt(basePrice * starRating.multiplier);
                     }
                 }
-                
+
                 return basePrice;
             }
-            
+
             return 0;
         }
 

@@ -23,7 +23,7 @@ Shader "Custom/DefaultSprite"
     {
         Tags
         {
-            "Queue"="Transparent"
+            //"Queue"="Transparent"
             "IgnoreProjector"="True"
             "RenderType"="Transparent"
             "PreviewType"="Plane"

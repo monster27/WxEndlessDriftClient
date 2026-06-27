@@ -178,31 +178,53 @@ public class ZpfTool : Editor
     {
         // 从EditorPrefs获取保存的路径
         string serverProjectPath = EditorPrefs.GetString(SERVER_PATH_KEY, "");
-
-        // 检查路径是否有效
         bool pathValid = !string.IsNullOrEmpty(serverProjectPath) && Directory.Exists(serverProjectPath);
 
-        // 如果路径无效或为空，弹窗让用户选择
-        if (!pathValid)
+        // ✅ 总是显示选择对话框，让用户决定
+        string dialogMessage = "选择操作：";
+        string dialogTitle = "获取合并服务器代码";
+
+        // 构建按钮文本
+        string useCurrentPathBtn = "使用当前路径";
+        string selectNewPathBtn = "重新选择路径";
+        string cancelBtn = "取消";
+
+        // 如果有保存的路径，在消息中显示
+        if (pathValid)
         {
-            bool chooseNewPath = EditorUtility.DisplayDialog(
-                "选择服务器路径",
-                "未找到有效的服务器代码路径！\n\n" +
-                "请选择服务器工程根目录（包含 .csproj 或 .sln 文件的文件夹）。\n\n" +
-                "示例: E:\\TuanjieProject\\WxEndlessDriftServer",
-                "选择路径",
-                "取消"
-            );
+            dialogMessage = $"当前保存的路径：\n{serverProjectPath}\n\n选择操作：";
+        }
+        else
+        {
+            dialogMessage = "未找到有效的服务器代码路径！\n请选择服务器工程根目录。\n\n示例: E:\\TuanjieProject\\WxEndlessDriftServer";
+            useCurrentPathBtn = "选择路径"; // 没有有效路径时，这个按钮变成"选择路径"
+        }
 
-            if (!chooseNewPath)
-            {
-                return;
-            }
+        // ✅ 显示三个按钮的对话框
+        int result = EditorUtility.DisplayDialogComplex(
+            dialogTitle,
+            dialogMessage,
+            useCurrentPathBtn,      // 第一个按钮（绿色/蓝色）
+            cancelBtn,              // 第二个按钮（红色/取消）
+            selectNewPathBtn        // 第三个按钮（灰色/备用）
+        );
 
+        // result 返回值：
+        // 0 = 第一个按钮 (使用当前路径 / 选择路径)
+        // 1 = 第二个按钮 (取消)
+        // 2 = 第三个按钮 (重新选择路径)
+
+        if (result == 1) // 取消
+        {
+            return;
+        }
+
+        if (result == 2) // 重新选择路径
+        {
             // 打开文件夹选择对话框
             string selectedPath = EditorUtility.OpenFolderPanel(
                 "选择服务器工程目录",
-                serverProjectPath,
+                pathValid ? serverProjectPath : "",
                 ""
             );
 
@@ -212,46 +234,60 @@ public class ZpfTool : Editor
                 return;
             }
 
-            // 保存路径
+            // 保存新路径
             serverProjectPath = selectedPath;
             EditorPrefs.SetString(SERVER_PATH_KEY, serverProjectPath);
 
-            Debug.Log($"服务器路径已保存: {serverProjectPath}");
+            // 验证路径下是否有.cs文件
+            int csFileCount = Directory.GetFiles(serverProjectPath, "*.cs", SearchOption.AllDirectories).Length;
+            if (csFileCount == 0)
+            {
+                bool retry = EditorUtility.DisplayDialog(
+                    "警告",
+                    $"在路径 \"{serverProjectPath}\" 下未找到任何C#文件！\n\n这可能不是正确的服务器工程目录。\n是否重新选择？",
+                    "重新选择",
+                    "继续"
+                );
+
+                if (retry)
+                {
+                    // 重新选择
+                    EditorPrefs.DeleteKey(SERVER_PATH_KEY);
+                    MergeServerCodes();
+                    return;
+                }
+                // 用户选择继续，尽管没有.cs文件
+            }
+        }
+        else // result == 0 (使用当前路径 或 选择路径)
+        {
+            if (!pathValid)
+            {
+                // 没有有效路径时，第一个按钮是"选择路径"，需要打开文件夹选择
+                string selectedPath = EditorUtility.OpenFolderPanel(
+                    "选择服务器工程目录",
+                    "",
+                    ""
+                );
+
+                if (string.IsNullOrEmpty(selectedPath))
+                {
+                    EditorUtility.DisplayDialog("提示", "未选择任何路径，操作已取消。", "确定");
+                    return;
+                }
+
+                serverProjectPath = selectedPath;
+                EditorPrefs.SetString(SERVER_PATH_KEY, serverProjectPath);
+            }
+            // 否则使用当前路径
         }
 
-        // 再次确认路径存在
+        // 最后检查路径是否有效
         if (!Directory.Exists(serverProjectPath))
         {
             EditorUtility.DisplayDialog("错误", $"路径不存在！\n{serverProjectPath}\n\n请重新选择。", "确定");
-
-            // 清除无效路径
             EditorPrefs.DeleteKey(SERVER_PATH_KEY);
-
-            // 递归调用重新选择
             MergeServerCodes();
-            return;
-        }
-
-        // 检查目录下是否有.cs文件
-        int fileCount = Directory.GetFiles(serverProjectPath, "*.cs", SearchOption.AllDirectories).Length;
-
-        if (fileCount == 0)
-        {
-            bool chooseNewPath = EditorUtility.DisplayDialog(
-                "提示",
-                $"在路径 \"{serverProjectPath}\" 下未找到任何C#文件！\n\n" +
-                "这可能不是正确的服务器工程目录。\n" +
-                "是否重新选择路径？",
-                "重新选择",
-                "取消"
-            );
-
-            if (chooseNewPath)
-            {
-                // 清除保存的路径
-                EditorPrefs.DeleteKey(SERVER_PATH_KEY);
-                MergeServerCodes();
-            }
             return;
         }
 

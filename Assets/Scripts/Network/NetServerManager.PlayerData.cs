@@ -127,7 +127,16 @@ public partial class NetServerManager
         return playerInventory != null && playerInventory.TryGetValue(equipmentId, out int count) && count > 0;
     }
 
-    private int GetTotalFishCount() => fishInventory.Values.Sum();
+
+    private int GetTotalFishCount()
+    {
+        int total = 0;
+        foreach (var list in fishDetailData.Values)
+        {
+            total += list.Count;
+        }
+        return total;
+    }
 
     // ========== 数据加载主流程（兼容旧接口）==========
 
@@ -222,34 +231,40 @@ public partial class NetServerManager
         yield return FetchGetJson<InventoryResponse>("/api/player/fish-bag/" + _currentPlayerId, data =>
         {
             if (data?.items == null) return;
+
+            // 清空旧数据
             fishInventory.Clear();
             fishDetailData.Clear();
+
             foreach (var item in data.items)
             {
-                fishInventory[item.key] = item.value;
+                // item.key = fishId, item.value = 1 (因为每条鱼是独立的)
+                // 但这里我们不使用 fishInventory 作为显示数据源
+                if (!fishInventory.ContainsKey(item.key))
+                    fishInventory[item.key] = 0;
+                fishInventory[item.key] += item.value; // 这行保留用于统计总数，但主要显示靠 detailData
 
-                if (item.weight > 0 || item.starRatingId > 0)
+                // 存储每条鱼的详细信息
+                if (!fishDetailData.ContainsKey(item.key))
                 {
-                    if (!fishDetailData.ContainsKey(item.key))
-                    {
-                        fishDetailData[item.key] = new List<FishDetailData>();
-                    }
-                    fishDetailData[item.key].Add(new FishDetailData
-                    {
-                        fishId = item.key,
-                        weight = item.weight,
-                        starRatingId = item.starRatingId,
-                        calculatedPrice = 0,
-                        caughtTimestamp = item.caughtTimestamp
-                    });
+                    fishDetailData[item.key] = new List<FishDetailData>();
                 }
+                fishDetailData[item.key].Add(new FishDetailData
+                {
+                    fishId = item.key,
+                    weight = item.weight,
+                    starRatingId = item.starRatingId,
+                    caughtTimestamp = item.caughtTimestamp
+                });
             }
+
             int total = GetTotalFishCount();
             isFishBagFull = total >= fishBagCapacity;
             PlayerDataManager.Instance?.UpdateFishDetailData(fishDetailData);
-            Logger.Log("[NetServerManager] 鱼篓数据加载完成: " + fishInventory.Count + " 种鱼，总数量: " + total + "，详细数据: " + fishDetailData.Count + " 种");
+            Logger.Log("[NetServerManager] 鱼篓数据加载完成: " + fishInventory.Count + " 种鱼，总数量: " + total + "，详细数据: " + fishDetailData.Count + " 条");
         }, "鱼篓数据");
     }
+
 
     private IEnumerator FetchPlayerCharacterDataCoroutine()
     {
@@ -351,23 +366,22 @@ public partial class NetServerManager
             fishDetailData.Clear();
             foreach (var item in data.items)
             {
-                fishInventory[item.key] = item.value;
+                if (!fishInventory.ContainsKey(item.key))
+                    fishInventory[item.key] = 0;
+                fishInventory[item.key] += item.value;
 
-                if (item.weight > 0 || item.starRatingId > 0)
+                if (!fishDetailData.ContainsKey(item.key))
                 {
-                    if (!fishDetailData.ContainsKey(item.key))
-                    {
-                        fishDetailData[item.key] = new List<FishDetailData>();
-                    }
-                    fishDetailData[item.key].Add(new FishDetailData
-                    {
-                        fishId = item.key,
-                        weight = item.weight,
-                        starRatingId = item.starRatingId,
-                        calculatedPrice = 0,
-                        caughtTimestamp = item.caughtTimestamp
-                    });
+                    fishDetailData[item.key] = new List<FishDetailData>();
                 }
+                fishDetailData[item.key].Add(new FishDetailData
+                {
+                    fishId = item.key,
+                    weight = item.weight,
+                    starRatingId = item.starRatingId,
+                    calculatedPrice = 0,
+                    caughtTimestamp = item.caughtTimestamp
+                });
             }
             int total = GetTotalFishCount();
             isFishBagFull = total >= fishBagCapacity;
@@ -481,10 +495,10 @@ public partial class NetServerManager
     private IEnumerator FetchPlayerDataAfterSell(List<int> itemIds, int totalPrice)
     {
         yield return null;
-        yield return FetchPlayerFishBag();
+        yield return FetchPlayerFishBag();  // ✅ 使用修复后的 FetchPlayerFishBag
         yield return FetchPlayerGold();
 
-        isFishBagFull = fishInventory.Values.Sum() >= fishBagCapacity;
+        isFishBagFull = GetTotalFishCount() >= fishBagCapacity;
         if (!isFishBagFull && !isPlayingReelAnimation) NotifyPlayIdleAnimation();
         if (!isFishBagFull && !isAutoFishing) AutoStartFishing();
 
@@ -495,7 +509,7 @@ public partial class NetServerManager
     private IEnumerator FetchFishInventoryFromServer()
     {
         yield return null;
-        yield return FetchPlayerFishBag();
+        yield return FetchPlayerFishBag();  // ✅ 使用修复后的 FetchPlayerFishBag
         yield return StartCoroutine(FetchPlayerInventoryFromServer());
         PlayerDataManager.Instance?.SyncInventoryFromServer();
     }
@@ -601,4 +615,6 @@ public partial class NetServerManager
     [Serializable] private class CapacityResponse { public int capacity; }
 
     private Dictionary<int, List<FishDetailData>> fishDetailData = new Dictionary<int, List<FishDetailData>>();
+
+    public Dictionary<int, List<FishDetailData>> GetFishDetailData() => fishDetailData;
 }

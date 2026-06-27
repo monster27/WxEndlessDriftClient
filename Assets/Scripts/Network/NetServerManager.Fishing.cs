@@ -93,7 +93,7 @@ public partial class NetServerManager
                     });
                 }
 
-                isFishBagFull = fishInventory.Values.Sum() >= fishBagCapacity;
+                isFishBagFull = GetTotalFishCount() >= fishBagCapacity;
                 if (isFishBagFull && !isPlayingReelAnimation) NotifyPlayLazyAnimation();
             }
             catch (Exception ex)
@@ -432,7 +432,8 @@ public partial class NetServerManager
     {
         if (catchInfo == null) return;
         Sprite icon = GetItemIcon(catchInfo.fishId);
-        GameUIManager.Instance?.ShowCatchResult(catchInfo.fishName, catchInfo.weight, icon);
+        // ✅ 传递星级ID
+        GameUIManager.Instance?.ShowCatchResult(catchInfo.fishName, catchInfo.weight, icon, catchInfo.starRatingId);
         SyncCharacterDataFromServer();
     }
 
@@ -500,5 +501,20 @@ public partial class NetServerManager
     [Serializable] private class FishingCatchResponse { public bool success; public string message; public string fishName; public float weight; public int goldBalance; public bool isTrash; public int trashStreak; public float struggleTime; }
     [Serializable] private class AutoFishingResponse { public bool success; public string message; }
     [Serializable] private class FishingStatusResponse { public bool success; public bool isAutoFishing; public bool isPaused; public int trashStreak; public float nextFishingTime; public float continuousModeRemainingTime; public int fishingMode; public int currentWeatherId; public int timeSlotId; public int timeStatus; public LastCatchInfo lastCatch; }
-    [Serializable] private class LastCatchInfo { public int fishId; public string fishName; public float weight; public float struggleTime; public int goldEarned; public int starRatingId; }
+
+    // Shared/SharedModels/NetworkData.cs
+
+    [Serializable]
+    public class LastCatchInfo
+    {
+        public int fishId;
+        public string fishName;
+        public float weight;
+        public int goldEarned;
+        public int expEarned;
+        public bool isTrash;
+        public float struggleTime;
+        public int starRatingId;      // ✅ 新增：星级ID
+        public long caughtTimestamp;  // ✅ 新增：捕获时间戳
+    }
 }

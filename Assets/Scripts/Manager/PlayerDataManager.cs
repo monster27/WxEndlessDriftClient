@@ -215,20 +215,26 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
                 playerInventory = inventory;
                 Debug.Log($"[PlayerDataManager] 背包数据同步完成，物品数: {playerInventory?.Count ?? 0}");
             }
-            else
-            {
-                Debug.LogWarning("[PlayerDataManager] 获取背包数据返回 null");
-            }
 
-            // 2. 获取服务器最新的鱼篓数据
+            // 2. 获取服务器最新的鱼篓数据（数量汇总）
             var serverFishInventory = CommunicateEvent.Request<int, Dictionary<int, int>>("VIEW_EVENT_GET_FISH_INVENTORY", 0);
             Debug.Log($"[PlayerDataManager] 服务器鱼篓数据: {(serverFishInventory != null ? serverFishInventory.Count : 0)} 种物品");
 
-            if (serverFishInventory != null)
+            // ✅ 关键修复：同步鱼详情数据
+            // 通过 VIEW_EVENT_GET_FISH_DETAIL_DATA 从 NetServerManager 获取详情数据
+            var serverFishDetailData = CommunicateEvent.Request<int, Dictionary<int, List<FishDetailData>>>("VIEW_EVENT_GET_FISH_DETAIL_DATA", 0);
+            if (serverFishDetailData != null)
             {
-                foreach (var kvp in serverFishInventory)
+                fishDetailData = serverFishDetailData;
+                Debug.Log($"[PlayerDataManager] 鱼详情数据同步完成: {fishDetailData.Count} 种鱼");
+            }
+            else
+            {
+                // 降级方案：如果获取不到，从 NetServerManager 直接获取
+                if (NetServerManager.Instance != null)
                 {
-                    Debug.Log($"   服务器数据 - ID: {kvp.Key}, 数量: {kvp.Value}");
+                    // 需要 NetServerManager 暴露 GetFishDetailData 方法
+                    // 或者直接调用 NetServerManager.Instance.FetchPlayerFishBag()
                 }
             }
 
@@ -237,7 +243,6 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             {
                 fishInventory = new Dictionary<int, int>();
             }
-
             fishInventory.Clear();
             if (serverFishInventory != null)
             {
@@ -253,20 +258,13 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
             // 5. 打印最终数据
             Debug.Log($"[PlayerDataManager] 最终鱼篓数据: {fishInventory.Count} 种物品");
-            if (fishInventory.Count > 0)
+            int totalCount = 0;
+            foreach (var kvp in fishInventory)
             {
-                int totalCount = 0;
-                foreach (var kvp in fishInventory)
-                {
-                    totalCount += kvp.Value;
-                    Debug.Log($"   物品ID: {kvp.Key}, 数量: {kvp.Value}");
-                }
-                Debug.Log($"   鱼篓总数量: {totalCount}/{fishBagCapacity}");
+                totalCount += kvp.Value;
+                Debug.Log($"   物品ID: {kvp.Key}, 数量: {kvp.Value}");
             }
-            else
-            {
-                Debug.Log("   鱼篓为空");
-            }
+            Debug.Log($"   鱼篓总数量: {totalCount}/{fishBagCapacity}");
 
             PrintAllData();
             CheckAndUpdateAnimationState();
@@ -393,6 +391,15 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
     public Dictionary<int, int> GetFishInventory()
     {
+        if (fishDetailData != null && fishDetailData.Count > 0)
+        {
+            var result = new Dictionary<int, int>();
+            foreach (var kvp in fishDetailData)
+            {
+                result[kvp.Key] = kvp.Value.Count;
+            }
+            return result;
+        }
         return fishInventory != null ? new Dictionary<int, int>(fishInventory) : new Dictionary<int, int>();
     }
 
@@ -435,7 +442,14 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
     public int GetTotalFishCount()
     {
         int total = 0;
-        if (fishInventory != null)
+        if (fishDetailData != null && fishDetailData.Count > 0)
+        {
+            foreach (var kvp in fishDetailData)
+            {
+                total += kvp.Value.Count;
+            }
+        }
+        else if (fishInventory != null)
         {
             foreach (var kvp in fishInventory)
             {

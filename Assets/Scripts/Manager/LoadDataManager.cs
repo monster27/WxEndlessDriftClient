@@ -957,7 +957,13 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         {
             var fishInventory = PlayerDataManager.Instance.GetFishInventory();
             var itemDataMap = GetItemDataMap();
-            GameUIManager.Instance.fishBagView.UpdateFishItems(fishInventory, itemDataMap);
+            // ✅ 关键修复：从 PlayerDataManager 获取鱼详情数据
+            var fishDetailData = PlayerDataManager.Instance.GetFishDetailData();
+
+            Debug.Log($"[LoadDataManager] 鱼篓初始化 - 鱼种类: {fishInventory.Count}, 详情数据: {fishDetailData?.Count ?? 0} 种");
+
+            // ✅ 使用带详情参数的完整方法
+            GameUIManager.Instance.fishBagView.UpdateFishItems(fishInventory, itemDataMap, fishDetailData);
         }
     }
 
@@ -979,13 +985,10 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
             var itemDataMap = GetItemDataMap();
             var fishDetailData = PlayerDataManager.Instance.GetFishDetailData();
 
-            Debug.Log($"[LoadDataManager] 鱼篓数据: {fishInventory.Count} 种鱼");
-            foreach (var item in fishInventory)
-            {
-                Debug.Log($"  鱼ID: {item.Key}, 数量: {item.Value}");
-            }
+            Debug.Log($"[LoadDataManager] 鱼篓刷新 - 鱼种类: {fishInventory.Count}, 详情数据: {fishDetailData?.Count ?? 0} 种");
 
-            GameUIManager.Instance.fishBagView.UpdateFishBagWithInventory(fishInventory, itemDataMap, fishDetailData);
+            // 使用带详情参数的完整方法
+            GameUIManager.Instance.fishBagView.UpdateFishItems(fishInventory, itemDataMap, fishDetailData);
         }
         else
         {
