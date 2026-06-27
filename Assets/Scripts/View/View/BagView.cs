@@ -141,7 +141,28 @@ public class BagView : BagViewBase
         }
 
         UpdateAllBagDetails(inventory, itemDataMap);
-        ClickFirstValidCategory();
+
+        CategoryConfig currentCategory = GetCurrentCategory();
+        if (currentCategory != null)
+        {
+            OnCategoryToggle(currentCategory);
+        }
+        else
+        {
+            ClickFirstValidCategory();
+        }
+    }
+
+    private CategoryConfig GetCurrentCategory()
+    {
+        foreach (CategoryConfig config in categoryConfigs)
+        {
+            if (config != null && config.categoryToggle != null && config.categoryToggle.isOn)
+            {
+                return config;
+            }
+        }
+        return null;
     }
 
     private void ClickFirstValidCategory()

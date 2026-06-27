@@ -65,7 +65,8 @@ public partial class NetServerManager
                     {
                         if (ApplyContinuousModeResponse(resp.remainingTime, resp.baitEndTime))
                         {
-                            OnContinuousModeEntered();
+                            Dictionary<int, int> inventory = ParseInventoryFromResponse(resp.inventory);
+                            OnContinuousModeEntered(inventory);
                             yield break;
                         }
                         yield break;
@@ -100,7 +101,10 @@ public partial class NetServerManager
                 if (resp != null && resp.success)
                 {
                     if (ApplyContinuousModeResponse(resp.remainingTime, resp.baitEndTime))
-                        OnContinuousModeEntered();
+                    {
+                        Dictionary<int, int> inventory = ParseInventoryFromResponse(resp.inventory);
+                        OnContinuousModeEntered(inventory);
+                    }
                 }
                 else
                 {
@@ -137,12 +141,30 @@ public partial class NetServerManager
         return false;
     }
 
-    private void OnContinuousModeEntered()
+    private void OnContinuousModeEntered(Dictionary<int, int> inventory = null)
     {
-        PlayerDataManager.Instance?.SyncInventoryFromServer();
         PlayerAniManager.Instance?.PlayNestAnimation();
-        CommunicateEvent.Modify("Bag_RefreshItems");
         UpdateContinuousModeUI();
+        GameUIManager.Instance?.UpdateContinuousModeRemainingTime(continuousModeRemainingTime);
+        
+        if (inventory != null && inventory.Count > 0)
+        {
+            Logger.Log($"[NetServerManager] 使用服务器响应中的背包数据更新本地缓存，物品数: {inventory.Count}");
+            playerInventory.Clear();
+            foreach (var kvp in inventory)
+            {
+                playerInventory[kvp.Key] = kvp.Value;
+            }
+            
+            PlayerDataManager.Instance?.UpdateInventoryFromServer(inventory);
+        }
+        else
+        {
+            Logger.LogWarning("[NetServerManager] 响应中未包含背包数据，回退到同步模式");
+            PlayerDataManager.Instance?.SyncInventoryFromServer();
+            CommunicateEvent.Modify("Bag_RefreshItems");
+            CommunicateEvent.Modify("BaitCountChanged");
+        }
     }
 
     // ========== 剩余时间更新 ==========
@@ -240,8 +262,20 @@ public partial class NetServerManager
 
     // ========== 辅助数据类 ==========
 
-    [Serializable] private class EnterContinuousModeWithBaitEndTimeResponse { public bool success; public string message; public float remainingTime; public long baitEndTime; }
-    [Serializable] private class AddBaitTimeResponse { public bool success; public string message; public float remainingTime; public long baitEndTime; }
+    private Dictionary<int, int> ParseInventoryFromResponse(List<ItemKV> items)
+    {
+        var result = new Dictionary<int, int>();
+        if (items == null || items.Count == 0) return result;
+        
+        foreach (var item in items)
+        {
+            result[item.key] = item.value;
+        }
+        return result;
+    }
+
+    [Serializable] private class EnterContinuousModeWithBaitEndTimeResponse { public bool success; public string message; public float remainingTime; public long baitEndTime; public List<ItemKV> inventory; }
+    [Serializable] private class AddBaitTimeResponse { public bool success; public string message; public float remainingTime; public long baitEndTime; public List<ItemKV> inventory; }
     [Serializable] private class ContinuousModeStatus { public bool isInContinuousMode; public float remainingTime; public long baitEndTime; }
     [Serializable] private class BaitCountResponse { public int baitCount; }
 }

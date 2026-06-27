@@ -126,8 +126,8 @@ namespace View.Detail
                 }
                 else if (itemData.categoryId == 22)
                 {
-                    // 窝料：不需要装备，只显示数量
-                    Debug.Log($"[UI_BagPrefab] 窝料无需装备，当前数量: {quantity}");
+                    // 窝料：使用一个窝料，增加连续模式时间
+                    UseNestBait();
                 }
             }
         }
@@ -141,6 +141,21 @@ namespace View.Detail
             Debug.Log($"[UI_BagPrefab] 已发送装备鱼饵请求: {itemData?.name}");
             isEquipped = true;
             UpdateDisplay();
+        }
+
+        /// <summary>
+        /// 使用窝料：消耗一个窝料，增加连续模式时间
+        /// </summary>
+        private void UseNestBait()
+        {
+            if (quantity <= 0)
+            {
+                GameUIManager.ShowMessage("窝料数量不足");
+                return;
+            }
+
+            Debug.Log($"[UI_BagPrefab] 使用窝料: {itemData?.name}, 剩余数量: {quantity}");
+            CommunicateEvent.Modify(CommunicateEvent.EVENT_CONSUME_BAIT_AND_ENTER_CONTINUOUS_MODE);
         }
 
         /// <summary>

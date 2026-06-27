@@ -222,13 +222,24 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     }
 
     /// <summary>
-    /// 更新窝料数量显示
-    /// </summary>
-    public void UpdateBaitCountDisplay(int baitCount)
-    {
-        if (mainGameView != null)
+        /// 更新窝料数量显示
+        /// </summary>
+        public void UpdateBaitCountDisplay(int baitCount)
         {
-            mainGameView.UpdateBaitCount(baitCount);
+            if (mainGameView != null)
+            {
+                mainGameView.UpdateBaitCount(baitCount);
+            }
+        }
+
+        /// <summary>
+        /// 更新连续钓鱼模式剩余时间
+        /// </summary>
+        public void UpdateContinuousModeRemainingTime(float remainingTime)
+        {
+            if (mainGameView != null)
+            {
+                mainGameView.UpdateContinuousModeTime(remainingTime);
+            }
         }
     }
-}

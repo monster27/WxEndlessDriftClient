@@ -278,6 +278,17 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
                 GameUIManager.Instance.fishBagView.RefreshItems();
                 Debug.Log("[PlayerDataManager] 已刷新鱼篓UI");
             }
+
+            if (GameUIManager.Instance?.bagView != null && GameUIManager.Instance.bagView.gameObject.activeSelf)
+            {
+                var bagInventory = GetInventory();
+                var itemDataMap = LoadDataManager.Instance?.GetItemDataMap();
+                if (bagInventory != null && itemDataMap != null)
+                {
+                    GameUIManager.Instance.bagView.UpdateBagItems(bagInventory, itemDataMap);
+                    Debug.Log("[PlayerDataManager] 已刷新背包UI");
+                }
+            }
         }
         catch (System.Exception ex)
         {
@@ -289,6 +300,36 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         }
 
         Debug.Log("[PlayerDataManager] ===== 背包数据同步完成 =====");
+    }
+
+    /// <summary>
+    /// 用服务器返回的背包数据直接覆盖本地数据（事件驱动更新，避免额外网络请求）
+    /// </summary>
+    public void UpdateInventoryFromServer(Dictionary<int, int> newInventory)
+    {
+        if (newInventory == null)
+        {
+            Debug.LogWarning("[PlayerDataManager] UpdateInventoryFromServer: 新背包数据为空，跳过");
+            return;
+        }
+
+        playerInventory = new Dictionary<int, int>(newInventory);
+        Debug.Log($"[PlayerDataManager] 从服务器响应更新背包数据，物品数: {playerInventory.Count}");
+
+        CheckAndUpdateAnimationState();
+
+        CommunicateEvent.Modify("Bag_RefreshItems");
+        CommunicateEvent.Modify("BaitCountChanged");
+
+        if (GameUIManager.Instance?.bagView != null && GameUIManager.Instance.bagView.gameObject.activeSelf)
+        {
+            var itemDataMap = LoadDataManager.Instance?.GetItemDataMap();
+            if (itemDataMap != null)
+            {
+                GameUIManager.Instance.bagView.UpdateBagItems(playerInventory, itemDataMap);
+                Debug.Log("[PlayerDataManager] 已刷新背包UI");
+            }
+        }
     }
 
     private void CheckAndUpdateAnimationState()
