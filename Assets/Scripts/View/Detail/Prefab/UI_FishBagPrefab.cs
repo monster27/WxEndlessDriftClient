@@ -213,7 +213,7 @@ namespace View.Detail
                         // 确保Image组件启用
                         starRatingImage.enabled = true;
 
-                        Debug.Log($"[UI_FishBagPrefab] 星级图标加载成功: ID={starRatingId}, 路径=UI/StarRating/star_{starRatingId}, " +
+                        Debug.Log($"[UI_FishBagPrefab] 星级图标加载成功: ID={starRatingId}, 路径=UI/Icon/StarRating/star_{starRatingId}, " +
                                   $"图标尺寸: {starIcon.rect.width}x{starIcon.rect.height}, " +
                                   $"设置后激活状态: {starRatingImage.gameObject.activeSelf}, Image.enabled: {starRatingImage.enabled}");
                     }
@@ -265,7 +265,7 @@ namespace View.Detail
         private Sprite LoadStarRatingIcon(int starRatingId)
         {
             // 根据星级ID生成对应的路径
-            string path = $"UI/StarRating/star_{starRatingId}";
+            string path = $"UI/Icon/StarRating/star_{starRatingId}";
             Sprite icon = Resources.Load<Sprite>(path);
 
             if (icon != null)
