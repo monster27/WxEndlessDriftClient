@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Decoration2Mat
-  m_Shader: {fileID: 4800000, guid: 12e1900d580e0244eaaa977e71f04ff3, type: 3}
+  m_Shader: {fileID: 4800000, guid: 2126a80b725e6464e95915be105e6f10, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -16,7 +16,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2921
+  m_CustomRenderQueue: 2920
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -24,7 +24,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BlinkTex:
-        m_Texture: {fileID: 2800000, guid: 3311bcf2945c43f4c927f54f0254cd5c, type: 3}
+        m_Texture: {fileID: 2800000, guid: e5a883943529f924f82e6c9570265869, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -55,6 +55,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NextTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -63,8 +67,13 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SecondTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _Blend: 0
     - _BlinkEnabled: 0
     - _BlinkInterval: 0.5
     - _BlinkOffset: 0
@@ -72,6 +81,8 @@ Material:
     - _BlinkOffsetY: 0
     - _BlinkScale: 1
     - _BumpScale: 1
+    - _Columns1: 1
+    - _Columns2: 4
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
@@ -79,13 +90,21 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _LockFlip: 0
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _RenderQueue: 2
+    - _Rows1: 1
+    - _Rows2: 4
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
+    - _Speed1: 15
+    - _Speed2: 20
+    - _SpriteSheetEnabled: 0
     - _SrcBlend: 1
+    - _Transition: 0
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:

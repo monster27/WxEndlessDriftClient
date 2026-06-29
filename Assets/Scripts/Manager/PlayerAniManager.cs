@@ -4,19 +4,69 @@ using System.Collections;
 using System.Collections.Generic;
 using SharedModels;
 
+/// <summary>
+/// 玩家动画管理器
+/// 包含所有业务逻辑：人物切换、动画控制、稀有度颜色、窝料动画等
+/// </summary>
 public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
 {
-    [Header("拖拽赋值（推荐）")]
-    [SerializeField] private PlayerAniCtrl aniCtrl;
-    [SerializeField] private FishingTipAniCtrl fishTipAniCtrl;
-    [SerializeField] private NestAniCtrl nestAniCtrl;
+    // ========== 日志标签 ==========
+    private const string LOG_TAG = "SceneMat - PlayerAniManager";
 
+    // ========== 枚举定义 ==========
+    public enum PlayerAnimState
+    {
+        Idle,
+        Reel,
+        Lazy
+    }
+
+    // ========== 数据类 ==========
+    [System.Serializable]
+    public class CharacterAniData
+    {
+        public int characterId;
+        public Texture2D idleTexture;
+        public Texture2D lazyTexture;
+        public Texture2D reelTexture;
+        public int idleColumns = 15;
+        public float idleSpeed = 15f;
+        public int reelColumns = 12;
+        public float reelSpeed = 20f;
+        public int lazyColumns = 15;
+        public float lazySpeed = 18f;
+    }
+
+    // ========== 稀有度颜色系统 ==========
+    private static Dictionary<int, Color> rarityColorCache = new Dictionary<int, Color>();
+    private static bool isRarityDataLoaded = false;
+
+    // ========== Inspector 参数 ==========
+    [Header("=== 控制器引用 ===")]
+    [SerializeField] private SceneMatCtrl aniCtrl;
+    [SerializeField] private SceneMatCtrl fishTipAniCtrl;
+    [SerializeField] private SceneMatCtrl nestAniCtrl;
+
+    [Header("=== 配置参数 ===")]
+    [SerializeField] private float defaultBlinkInterval = 0.3f;
+    [SerializeField] private float defaultBlinkDuration = 2f;
+    [SerializeField] private int defaultCharacterId = 3401;
+
+    [Header("=== 窝料动画配置 ===")]
+    [SerializeField] private float nestFadeInDuration = 0.2f;
+    [SerializeField] private float nestFadeOutDuration = 0.5f;
+    [SerializeField] private int nestColumns = 4;
+    [SerializeField] private int nestRows = 1;
+    [SerializeField] private float nestFrameSpeed = 20f;
+
+    // ========== 私有变量 ==========
     private Action pendingCallback;
-    private float animationTimer = 0f;
     private bool isWaitingForAnimation = false;
+    private bool isAnimationPlaying = false;
 
     private Dictionary<int, CharacterAniData> characterAniDict = new Dictionary<int, CharacterAniData>();
     private int currentCharacterId = 0;
+    private PlayerAnimState currentPlayerState = PlayerAnimState.Idle;
 
     private const string ANI_PATH_PREFIX = "JsonData/PlayerAni/Ani/";
     private bool isInitialized = false;
@@ -24,14 +74,24 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
 
     private const string FISH_TIP_TAG = "FishTip";
     private int pendingCharacterId = 0;
-
-    // 缓存队列
     private Queue<Action> pendingActions = new Queue<Action>();
 
+    private Coroutine nestAnimationCoroutine;
+    private bool isNestPlaying = false;
+
+    // ========== 人物动画状态 ==========
+    private Coroutine playerAnimationCoroutine;
+
+    // ========== 公共属性 ==========
+    public int CurrentCharacterId => currentCharacterId;
+    public PlayerAnimState CurrentPlayerState => currentPlayerState;
+    public bool IsPlayingReel => isWaitingForAnimation;
+    public bool IsNestPlaying => isNestPlaying;
+
+    // ========== 初始化 ==========
     public void Init()
     {
-        if (isInitialized) return;
-        if (isInitializing) return;
+        if (isInitialized || isInitializing) return;
 
         isInitializing = true;
 
@@ -39,30 +99,37 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         {
             if (aniCtrl == null)
             {
-                GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-                if (playerObj != null)
+                SceneMatCtrl[] ctrls = FindObjectsOfType<SceneMatCtrl>();
+                foreach (var ctrl in ctrls)
                 {
-                    aniCtrl = playerObj.GetComponent<PlayerAniCtrl>();
-                    if (aniCtrl == null)
+                    if (ctrl.ElementId == SceneMatManager.ElementType.Player)
                     {
-                        aniCtrl = playerObj.GetComponentInChildren<PlayerAniCtrl>();
+                        aniCtrl = ctrl;
+                        break;
                     }
                 }
 
                 if (aniCtrl == null)
                 {
-                    aniCtrl = FindObjectOfType<PlayerAniCtrl>();
+                    GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+                    if (playerObj != null)
+                    {
+                        aniCtrl = playerObj.GetComponent<SceneMatCtrl>();
+                        if (aniCtrl == null)
+                        {
+                            aniCtrl = playerObj.GetComponentInChildren<SceneMatCtrl>();
+                        }
+                    }
                 }
 
-                if (aniCtrl != null)
+                if (aniCtrl == null)
                 {
-                    Debug.Log($"[PlayerAniManager] Init - 找到 PlayerAniCtrl: {aniCtrl.gameObject.name}");
+                    aniCtrl = FindObjectOfType<SceneMatCtrl>();
                 }
             }
 
             if (aniCtrl == null)
             {
-                Debug.LogWarning("[PlayerAniManager] Init - 未找到 PlayerAniCtrl，延迟初始化");
                 isInitializing = false;
                 StartCoroutine(DelayedInit());
                 return;
@@ -73,50 +140,61 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
 
             isInitialized = true;
             isInitializing = false;
-            Debug.Log($"[PlayerAniManager] 初始化完成，已预加载 {characterAniDict.Count} 个人物的动画资源");
 
-            // ⭐ 初始化完成后，检查鱼篓状态并播放对应动画
+            InitializeNestHidden();
+            StartCoroutine(EnsurePlayerInitializedAndPlayIdle());
+
             CheckFishBagStateAndPlayAnimation();
-
             ExecutePendingActions();
         }
         catch (Exception e)
         {
             isInitializing = false;
-            Debug.LogError($"[PlayerAniManager] 初始化异常: {e.Message}");
+            Debug.LogError($"[{LOG_TAG}] Init() - 初始化异常: {e.Message}");
         }
     }
 
     /// <summary>
-    /// 检查鱼篓状态并播放对应动画
+    /// 等待 Player 控制器初始化完成后播放 Idle 动画
     /// </summary>
+    private IEnumerator EnsurePlayerInitializedAndPlayIdle()
+    {
+        if (aniCtrl == null) yield break;
+
+        if (aniCtrl.IsInitialized)
+        {
+            PlayPlayerAnimation(PlayerAnimState.Idle);
+            yield break;
+        }
+
+        float waitTime = 0f;
+        float maxWaitTime = 3f;
+
+        while (!aniCtrl.IsInitialized && waitTime < maxWaitTime)
+        {
+            yield return new WaitForSeconds(0.1f);
+            waitTime += 0.1f;
+        }
+
+        yield return null;
+
+        PlayPlayerAnimation(PlayerAnimState.Idle);
+    }
+
+    // ========== 鱼篓状态检查 ==========
     private void CheckFishBagStateAndPlayAnimation()
     {
-        if (PlayerDataManager.Instance == null)
-        {
-            Debug.Log("[PlayerAniManager] CheckFishBagState - PlayerDataManager 不存在");
-            return;
-        }
-
-        if (NetServerManager.Instance == null)
-        {
-            Debug.Log("[PlayerAniManager] CheckFishBagState - NetServerManager 不存在");
-            return;
-        }
+        if (PlayerDataManager.Instance == null || NetServerManager.Instance == null) return;
 
         bool isFull = PlayerDataManager.Instance.IsFishBagFull();
+
         if (isFull)
         {
-            Debug.Log("[PlayerAniManager] 初始化后检测到鱼篓已满，播放 Lazy 动画");
-            PlayLazyAnimation();
-        }
-        else
-        {
-            Debug.Log("[PlayerAniManager] 初始化后检测到鱼篓未满，播放 Idle 动画");
-            PlayIdleAnimation();
+            PlayPlayerAnimation(PlayerAnimState.Lazy);
         }
     }
 
+    // ========== 钓鱼提示控制器查找 ==========
     private void EnsureFishTipAniCtrl()
     {
         if (fishTipAniCtrl != null) return;
@@ -124,64 +202,61 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         GameObject fishTipObj = GameObject.FindGameObjectWithTag(FISH_TIP_TAG);
         if (fishTipObj != null)
         {
-            fishTipAniCtrl = fishTipObj.GetComponent<FishingTipAniCtrl>();
+            fishTipAniCtrl = fishTipObj.GetComponent<SceneMatCtrl>();
             if (fishTipAniCtrl == null)
             {
-                fishTipAniCtrl = fishTipObj.GetComponentInChildren<FishingTipAniCtrl>();
+                fishTipAniCtrl = fishTipObj.GetComponentInChildren<SceneMatCtrl>();
             }
-            if (fishTipAniCtrl != null)
+            if (fishTipAniCtrl != null) return;
+        }
+
+        SceneMatCtrl[] ctrls = FindObjectsOfType<SceneMatCtrl>();
+        foreach (var ctrl in ctrls)
+        {
+            if (ctrl.ElementId == SceneMatManager.ElementType.FishTip)
             {
-                Debug.Log($"[PlayerAniManager] 通过 Tag 找到 FishingTipAniCtrl");
+                fishTipAniCtrl = ctrl;
                 return;
             }
         }
-
-        fishTipAniCtrl = FindObjectOfType<FishingTipAniCtrl>();
-        if (fishTipAniCtrl != null)
-        {
-            Debug.Log($"[PlayerAniManager] 通过 FindObjectOfType 找到 FishingTipAniCtrl");
-            return;
-        }
-
-        Debug.LogWarning("[PlayerAniManager] 未找到 FishingTipAniCtrl");
     }
 
-    private FishingTipAniCtrl GetFishTipAniCtrl()
-    {
-        if (fishTipAniCtrl == null)
-        {
-            EnsureFishTipAniCtrl();
-        }
-        return fishTipAniCtrl;
-    }
-
+    // ========== 闪烁功能 ==========
     public void SetFishTip(Color color, float struggleTime = 2)
     {
-        FishingTipAniCtrl ctrl = GetFishTipAniCtrl();
-        if (ctrl != null)
+        if (fishTipAniCtrl != null)
         {
-            ctrl.SetBlinkState(color, struggleTime, 0.3f);
+            fishTipAniCtrl.SetBlinkColor(color);
+            fishTipAniCtrl.SetBlinkInterval(defaultBlinkInterval);
+            fishTipAniCtrl.SetBlinkEnabled(true);
+            fishTipAniCtrl.StartCoroutine(AutoStopBlinkCoroutine(fishTipAniCtrl, struggleTime));
         }
     }
 
     public void SetFishTip(int rarityId)
     {
-        FishingTipAniCtrl ctrl = GetFishTipAniCtrl();
-        if (ctrl != null)
-        {
-            ctrl.SetBlinkState(rarityId, 0.3f);
-        }
+        Color color = GetRarityColor(rarityId);
+        SetFishTip(color, defaultBlinkDuration);
     }
 
     public void StopFishTip()
     {
-        FishingTipAniCtrl ctrl = GetFishTipAniCtrl();
-        if (ctrl != null)
+        if (fishTipAniCtrl != null)
         {
-            ctrl.StopBlink();
+            fishTipAniCtrl.SetBlinkEnabled(false);
         }
     }
 
+    private IEnumerator AutoStopBlinkCoroutine(SceneMatCtrl ctrl, float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        if (ctrl != null)
+        {
+            ctrl.SetBlinkEnabled(false);
+        }
+    }
+
+    // ========== 延迟初始化 ==========
     private IEnumerator DelayedInit()
     {
         int retryCount = 0;
@@ -197,22 +272,21 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
                 GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
                 if (playerObj != null)
                 {
-                    aniCtrl = playerObj.GetComponent<PlayerAniCtrl>();
+                    aniCtrl = playerObj.GetComponent<SceneMatCtrl>();
                     if (aniCtrl == null)
                     {
-                        aniCtrl = playerObj.GetComponentInChildren<PlayerAniCtrl>();
+                        aniCtrl = playerObj.GetComponentInChildren<SceneMatCtrl>();
                     }
                 }
 
                 if (aniCtrl == null)
                 {
-                    aniCtrl = FindObjectOfType<PlayerAniCtrl>();
+                    aniCtrl = FindObjectOfType<SceneMatCtrl>();
                 }
             }
 
             if (aniCtrl != null)
             {
-                Debug.Log($"[PlayerAniManager] 延迟初始化成功 (重试 {retryCount} 次)");
                 isInitializing = false;
 
                 EnsureFishTipAniCtrl();
@@ -225,114 +299,112 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
                     pendingCharacterId = 0;
                 }
 
-                Debug.Log($"[PlayerAniManager] 延迟初始化完成");
-
-                // ⭐ 延迟初始化完成后也检查鱼篓状态
                 CheckFishBagStateAndPlayAnimation();
-
                 ExecutePendingActions();
 
                 yield break;
             }
+        }
 
-            if (retryCount % 3 == 0)
+        isInitializing = false;
+        Debug.LogWarning("[PlayerAniManager] 延迟初始化超时");
+    }
+
+    // ========== 人物动画加载 ==========
+    private void PreloadAllCharacterAnimations()
+    {
+        if (LoadDataManager.Instance == null)
+        {
+            Debug.LogWarning($"[{LOG_TAG}] PreloadAllCharacterAnimations() - LoadDataManager 未初始化");
+            return;
+        }
+
+        var characterConfigs = LoadDataManager.Instance.characters;
+        if (characterConfigs == null || characterConfigs.Count == 0)
+        {
+            Debug.LogWarning($"[{LOG_TAG}] PreloadAllCharacterAnimations() - 没有人物配置数据");
+            return;
+        }
+
+        foreach (var config in characterConfigs)
+        {
+            LoadCharacterAnimation(config);
+        }
+    }
+
+    private void LoadCharacterAnimation(CharacterConfig config)
+    {
+        if (config == null) return;
+        if (characterAniDict.ContainsKey(config.id)) return;
+
+        CharacterAniData aniData = new CharacterAniData();
+        aniData.characterId = config.id;
+
+        aniData.idleColumns = config.idleColumns > 0 ? config.idleColumns : 15;
+        aniData.idleSpeed = config.idleSpeed > 0 ? config.idleSpeed : 15f;
+        aniData.reelColumns = config.reelColumns > 0 ? config.reelColumns : 12;
+        aniData.reelSpeed = config.reelSpeed > 0 ? config.reelSpeed : 20f;
+        aniData.lazyColumns = config.lazyColumns > 0 ? config.lazyColumns : 15;
+        aniData.lazySpeed = config.lazySpeed > 0 ? config.lazySpeed : 18f;
+
+        Debug.Log($"[{LOG_TAG}] LoadCharacterAnimation() - 人物 {config.id} ({config.name}) 动画参数: Idle={aniData.idleColumns}列/{aniData.idleSpeed}帧, Reel={aniData.reelColumns}列/{aniData.reelSpeed}帧, Lazy={aniData.lazyColumns}列/{aniData.lazySpeed}帧");
+
+        string basePath = "JsonData/PlayerAni/Ani/" + config.id;
+
+        string idlePath = !string.IsNullOrEmpty(config.idleTexturePath) ? config.idleTexturePath : basePath + "/Idle";
+        string reelPath = !string.IsNullOrEmpty(config.reelTexturePath) ? config.reelTexturePath : basePath + "/Reel";
+        string lazyPath = !string.IsNullOrEmpty(config.lazyTexturePath) ? config.lazyTexturePath : basePath + "/Lazy";
+
+        aniData.idleTexture = Resources.Load<Texture2D>(idlePath);
+        aniData.reelTexture = Resources.Load<Texture2D>(reelPath);
+        aniData.lazyTexture = Resources.Load<Texture2D>(lazyPath);
+
+        Debug.Log($"[{LOG_TAG}] ===== 纹理加载结果 for {config.id} ({config.name}) =====");
+        Debug.Log($"[{LOG_TAG}] Idle: {(aniData.idleTexture != null ? "✅ " + aniData.idleTexture.name : "❌ NULL")} (路径: {idlePath})");
+        Debug.Log($"[{LOG_TAG}] Reel: {(aniData.reelTexture != null ? "✅ " + aniData.reelTexture.name : "❌ NULL")} (路径: {reelPath})");
+        Debug.Log($"[{LOG_TAG}] Lazy: {(aniData.lazyTexture != null ? "✅ " + aniData.lazyTexture.name : "❌ NULL")} (路径: {lazyPath})");
+        Debug.Log($"[{LOG_TAG}] ============================================");
+
+        if (aniData.reelTexture == null)
+        {
+            Debug.LogWarning($"[{LOG_TAG}] Reel 纹理加载失败，尝试备用路径...");
+            string[] alternativePaths = new string[]
             {
-                Debug.Log($"[PlayerAniManager] 延迟初始化等待中... (重试 {retryCount}/{maxRetries})");
+                "JsonData/PlayerAni/Ani/" + config.id + "/Reel",
+                "PlayerAni/Ani/" + config.id + "/Reel",
+                "Ani/" + config.id + "/Reel"
+            };
+
+            foreach (string altPath in alternativePaths)
+            {
+                aniData.reelTexture = Resources.Load<Texture2D>(altPath);
+                if (aniData.reelTexture != null)
+                {
+                    Debug.Log($"[{LOG_TAG}] ✅ 使用备用路径加载 Reel 成功: {altPath}");
+                    break;
+                }
+            }
+
+            if (aniData.reelTexture == null)
+            {
+                Debug.LogError($"[{LOG_TAG}] ❌❌❌ Reel 纹理加载失败！请检查文件是否存在: {reelPath}");
             }
         }
 
-        Debug.LogWarning("[PlayerAniManager] 延迟初始化超时");
-        isInitializing = false;
+        characterAniDict[config.id] = aniData;
+        Debug.Log($"[{LOG_TAG}] LoadCharacterAnimation() - 加载人物 {config.id} 动画完成");
     }
 
-    private void PreloadAllCharacterAnimations()
+    private CharacterConfig GetCharacterConfigFromLoadData(int characterId)
     {
-        List<CharacterConfig> configList = null;
-
-        if (NetServerManager.Instance != null && NetServerManager.Instance.IsConnected)
-        {
-            Debug.Log("[PlayerAniManager] 网络模式，使用默认人物配置");
-            configList = GetDefaultCharacterConfigs();
-        }
-        else if (CharacterServerManager.Instance != null)
-        {
-            configList = CharacterServerManager.Instance.GetAllCharacterConfigs();
-        }
-
-        if (configList == null || configList.Count == 0)
-        {
-            Debug.LogWarning("[PlayerAniManager] 使用默认人物配置");
-            configList = GetDefaultCharacterConfigs();
-        }
-
-        foreach (var config in configList)
-        {
-            LoadCharacterAnimation(config.id);
-        }
+        if (LoadDataManager.Instance == null) return null;
+        return LoadDataManager.Instance.GetCharacterConfig(characterId);
     }
 
-    private List<CharacterConfig> GetDefaultCharacterConfigs()
-    {
-        return new List<CharacterConfig>
-        {
-            new CharacterConfig { id = 3401, name = "默认人物" },
-            new CharacterConfig { id = 3402, name = "钓鱼大师" }
-        };
-    }
-
-    private void LoadCharacterAnimation(int characterId)
-    {
-        if (characterAniDict.ContainsKey(characterId)) return;
-
-        CharacterAniData aniData = new CharacterAniData();
-        aniData.characterId = characterId;
-
-        CharacterConfig characterConfig = GetCharacterConfig(characterId);
-        if (characterConfig != null)
-        {
-            aniData.idleColumns = characterConfig.idleColumns;
-            aniData.idleSpeed = characterConfig.idleSpeed;
-            aniData.reelColumns = characterConfig.reelColumns;
-            aniData.reelSpeed = characterConfig.reelSpeed;
-            aniData.lazyColumns = characterConfig.lazyColumns;
-            aniData.lazySpeed = characterConfig.lazySpeed;
-        }
-
-        string basePath = ANI_PATH_PREFIX + characterId;
-
-        aniData.idleTexture = Resources.Load<Texture2D>(basePath + "/Idle");
-        aniData.lazyTexture = Resources.Load<Texture2D>(basePath + "/Lazy");
-        aniData.reelTexture = Resources.Load<Texture2D>(basePath + "/Reel");
-
-        characterAniDict[characterId] = aniData;
-
-        Debug.Log($"[PlayerAniManager] 加载人物 {characterId} 动画完成");
-    }
-
-    private CharacterConfig GetCharacterConfig(int characterId)
-    {
-        if (LoadDataManager.Instance != null)
-        {
-            return LoadDataManager.Instance.GetCharacterConfig(characterId);
-        }
-
-        CharacterConfigList configList = CharacterConfigListExtensions.LoadFromResources();
-        if (configList != null && configList.characters != null)
-        {
-            return configList.characters.Find(c => c.id == characterId);
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// 获取当前装备的人物ID（从 NetServerManager 获取）
-    /// </summary>
     private int GetEquippedCharacterId()
     {
         if (NetServerManager.Instance != null)
         {
-            // 通过 CommunicateEvent 请求当前装备的人物ID
             try
             {
                 int characterId = CommunicateEvent.Request<int, int>("VIEW_EVENT_GET_EQUIPPED_CHARACTER", 0);
@@ -341,7 +413,7 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
                     return characterId;
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Debug.LogWarning($"[PlayerAniManager] 获取装备人物ID失败: {ex.Message}");
             }
@@ -349,34 +421,50 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         return 0;
     }
 
+    // ========== 人物切换 ==========
     private void DoSwitchCharacter(int characterId)
     {
         if (currentCharacterId == characterId) return;
-        if (aniCtrl == null) return;
 
         if (!characterAniDict.ContainsKey(characterId))
         {
-            LoadCharacterAnimation(characterId);
+            var config = GetCharacterConfigFromLoadData(characterId);
+            if (config != null)
+            {
+                LoadCharacterAnimation(config);
+            }
+            else
+            {
+                Debug.LogWarning($"[{LOG_TAG}] DoSwitchCharacter() - 未找到人物 {characterId} 的配置");
+                return;
+            }
         }
 
-        if (!characterAniDict.ContainsKey(characterId)) return;
+        if (!characterAniDict.TryGetValue(characterId, out var aniData)) return;
 
         currentCharacterId = characterId;
-        var aniData = characterAniDict[characterId];
 
-        aniCtrl.SetAnimationParams(aniData.idleColumns, aniData.idleSpeed,
-            aniData.reelColumns, aniData.reelSpeed,
-            aniData.lazyColumns, aniData.lazySpeed);
-        aniCtrl.SetCharacterTextures(aniData.idleTexture, aniData.lazyTexture, aniData.reelTexture);
+        if (aniCtrl == null) return;
 
-        Debug.Log($"[PlayerAniManager] 切换人物: {characterId}");
+        if (!aniCtrl.IsInitialized)
+        {
+            aniCtrl.Initialize();
+        }
+
+        if (aniData.idleTexture != null)
+        {
+            aniCtrl.SetMainTexture(aniData.idleTexture);
+            aniCtrl.SetSpriteSheetParams(1, aniData.idleColumns, aniData.idleSpeed);
+            aniCtrl.SetSpriteSheetEnabled(false);
+
+            Debug.Log($"[{LOG_TAG}] DoSwitchCharacter() - 预设置 Idle 动画: {aniData.idleColumns}列, 速度={aniData.idleSpeed}");
+        }
     }
 
     public void SwitchCharacter(int characterId)
     {
         if (!isInitialized)
         {
-            Debug.Log($"[PlayerAniManager] SwitchCharacter - 缓存请求: {characterId}");
             pendingCharacterId = characterId;
             Init();
             return;
@@ -385,82 +473,124 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         DoSwitchCharacter(characterId);
     }
 
-    public CharacterAniData GetCharacterAniData(int characterId)
-    {
-        return characterAniDict.TryGetValue(characterId, out var data) ? data : null;
-    }
+    // ========== 人物动画播放核心 ==========
 
-    public int GetCurrentCharacterId()
+    /// <summary>
+    /// 播放人物动画（播放时启用序列帧，播放完成后自动关闭）
+    /// </summary>
+    private void PlayPlayerAnimation(PlayerAnimState state)
     {
-        return currentCharacterId;
-    }
+        Debug.Log($"[{LOG_TAG}] PlayPlayerAnimation() - 播放状态: {state}");
 
-    private void ExecutePendingActions()
-    {
-        if (!isInitialized || aniCtrl == null) return;
-
-        while (pendingActions.Count > 0)
+        if (aniCtrl == null)
         {
-            Action action = pendingActions.Dequeue();
-            action?.Invoke();
+            Debug.LogWarning($"[{LOG_TAG}] PlayPlayerAnimation() - aniCtrl 为空");
+            return;
         }
+
+        if (!aniCtrl.IsInitialized)
+        {
+            aniCtrl.Initialize();
+        }
+
+        if (currentCharacterId == 0)
+        {
+            EnsureDefaultCharacterLoaded();
+            if (!characterAniDict.TryGetValue(currentCharacterId, out var aniData))
+            {
+                Debug.LogWarning($"[{LOG_TAG}] PlayPlayerAnimation() - 未找到人物数据");
+                return;
+            }
+        }
+
+        if (!characterAniDict.TryGetValue(currentCharacterId, out var data))
+        {
+            Debug.LogWarning($"[{LOG_TAG}] PlayPlayerAnimation() - 未找到人物 {currentCharacterId} 的数据");
+            return;
+        }
+
+        // 停止当前动画协程
+        if (playerAnimationCoroutine != null)
+        {
+            Debug.Log($"[{LOG_TAG}] PlayPlayerAnimation() - 停止当前动画协程");
+            StopCoroutine(playerAnimationCoroutine);
+            playerAnimationCoroutine = null;
+            isAnimationPlaying = false;
+        }
+
+        // 根据状态设置纹理和参数
+        Texture2D targetTexture = null;
+        int columns = 4;
+        float speed = 15f;
+
+        switch (state)
+        {
+            case PlayerAnimState.Idle:
+                targetTexture = data.idleTexture;
+                columns = data.idleColumns;
+                speed = data.idleSpeed;
+                break;
+
+            case PlayerAnimState.Reel:
+                targetTexture = data.reelTexture;
+                columns = data.reelColumns;
+                speed = data.reelSpeed;
+                break;
+
+            case PlayerAnimState.Lazy:
+                targetTexture = data.lazyTexture;
+                columns = data.lazyColumns;
+                speed = data.lazySpeed;
+                break;
+        }
+
+        if (targetTexture != null)
+        {
+            aniCtrl.SetMainTexture(targetTexture);
+            aniCtrl.SetSpriteSheetParams(1, columns, speed);
+            Debug.Log($"[{LOG_TAG}] PlayPlayerAnimation() - 设置序列帧: {columns}列, 速度={speed}");
+        }
+        else
+        {
+            Debug.LogError($"[{LOG_TAG}] PlayPlayerAnimation() - 目标纹理为空！无法播放 {state} 动画！");
+            return;
+        }
+
+        aniCtrl.SetSpriteSheetEnabled(true);
+        currentPlayerState = state;
+
+        Debug.Log($"[{LOG_TAG}] PlayPlayerAnimation() - 序列帧已启用，播放状态: {state}");
     }
 
     /// <summary>
-    /// 播放窝料动画（使用 NestAniCtrl 中已配置好的序列帧图片）
+    /// 停止人物动画（关闭序列帧，显示单帧纹理）
     /// </summary>
-    /// <param name="displayDuration">显示时长（秒），默认2秒</param>
-    public void PlayNestAnimation(float displayDuration = 2f)
+    private void StopPlayerAnimation()
     {
-        if (!isInitialized)
+        Debug.Log($"[{LOG_TAG}] StopPlayerAnimation()");
+
+        if (aniCtrl == null) return;
+
+        if (playerAnimationCoroutine != null)
         {
-            Debug.Log("[PlayerAniManager] PlayNestAnimation - 尚未初始化，缓存请求");
-            pendingActions.Enqueue(() => PlayNestAnimation(displayDuration));
-            Init();
-            return;
+            StopCoroutine(playerAnimationCoroutine);
+            playerAnimationCoroutine = null;
+            isAnimationPlaying = false;
         }
 
-        if (nestAniCtrl == null)
-        {
-            Debug.LogWarning("[PlayerAniManager] PlayNestAnimation - nestAniCtrl 为空");
-            return;
-        }
-
-        // 设置显示时长，其他参数（序列帧图片、行列数、播放速度等）使用 NestAniCtrl 中已配置好的值
-        nestAniCtrl.SetDisplayDuration(displayDuration);
-        nestAniCtrl.PlayBaitAnimation();
-
-        Debug.Log($"[PlayerAniManager] 播放窝料动画，显示时长: {displayDuration}秒");
+        aniCtrl.SetSpriteSheetEnabled(false);
+        Debug.Log($"[{LOG_TAG}] StopPlayerAnimation() - 序列帧已关闭");
     }
+
+    // ========== 公共动画方法 ==========
 
     /// <summary>
-    /// 停止窝料动画
+    /// 播放 Idle 动画
     /// </summary>
-    public void StopNestAnimation()
-    {
-        if (!isInitialized)
-        {
-            Debug.Log("[PlayerAniManager] StopNestAnimation - 尚未初始化，缓存请求");
-            pendingActions.Enqueue(() => StopNestAnimation());
-            Init();
-            return;
-        }
-
-        if (nestAniCtrl == null)
-        {
-            Debug.LogWarning("[PlayerAniManager] StopNestAnimation - nestAniCtrl 为空");
-            return;
-        }
-
-        nestAniCtrl.StopAnimation();
-        Debug.Log("[PlayerAniManager] 停止窝料动画");
-    }
-
     public void PlayIdleAnimation()
     {
         if (!isInitialized)
         {
-            Debug.Log("[PlayerAniManager] PlayIdleAnimation - 缓存请求");
             pendingActions.Enqueue(() => PlayIdleAnimation());
             Init();
             return;
@@ -468,21 +598,21 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
 
         if (aniCtrl == null) return;
 
-        // 确保当前角色已加载
         if (currentCharacterId == 0)
         {
             EnsureDefaultCharacterLoaded();
         }
 
-        aniCtrl.PlayIdleAnimation();
-        Debug.Log("[PlayerAniManager] 播放 Idle 动画");
+        PlayPlayerAnimation(PlayerAnimState.Idle);
     }
 
+    /// <summary>
+    /// 播放 Lazy 动画
+    /// </summary>
     public void PlayLazyAnimation()
     {
         if (!isInitialized)
         {
-            Debug.Log("[PlayerAniManager] PlayLazyAnimation - 缓存请求");
             pendingActions.Enqueue(() => PlayLazyAnimation());
             Init();
             return;
@@ -490,22 +620,24 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
 
         if (aniCtrl == null) return;
 
-        // 确保当前角色已加载
         if (currentCharacterId == 0)
         {
             EnsureDefaultCharacterLoaded();
         }
 
         StopFishTip();
-        aniCtrl.PlayLazyAnimation();
-        Debug.Log("[PlayerAniManager] 播放 Lazy 动画");
+        PlayPlayerAnimation(PlayerAnimState.Lazy);
     }
 
+    /// <summary>
+    /// 播放 Reel 动画（播放指定时间后自动停止并关闭序列帧）
+    /// </summary>
     public void PlayReelAnimation(float duration, Action callback)
     {
+        Debug.Log($"[{LOG_TAG}] PlayReelAnimation() - ===== 收到请求，时长: {duration} =====");
+
         if (!isInitialized)
         {
-            Debug.Log("[PlayerAniManager] PlayReelAnimation - 缓存请求");
             pendingActions.Enqueue(() => PlayReelAnimation(duration, callback));
             Init();
             return;
@@ -519,29 +651,49 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
 
         if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.IsFishBagFull())
         {
-            Debug.Log("[PlayerAniManager] 鱼篓已满，不播放拉钩动画");
+            Debug.Log($"[{LOG_TAG}] PlayReelAnimation() - 鱼篓已满，跳过");
             callback?.Invoke();
             return;
         }
 
-        if (isWaitingForAnimation)
+        // 如果已有动画在播放，先完成回调
+        if (isWaitingForAnimation || isAnimationPlaying)
         {
-            Debug.Log("[PlayerAniManager] 已有拉钩动画正在播放");
-            callback?.Invoke();
+            Debug.Log($"[{LOG_TAG}] PlayReelAnimation() - 已有动画正在播放，等待完成");
+            pendingActions.Enqueue(() => callback?.Invoke());
             return;
         }
 
-        // 确保当前角色已加载
         if (currentCharacterId == 0)
         {
             EnsureDefaultCharacterLoaded();
         }
 
-        aniCtrl.PlayReelAnimation();
-        pendingCallback = callback;
-        animationTimer = duration;
+        // 直接播放 Reel 动画
+        PlayPlayerAnimation(PlayerAnimState.Reel);
+        isAnimationPlaying = true;
         isWaitingForAnimation = true;
-        Debug.Log($"[PlayerAniManager] 播放 Reel 动画，时长: {duration}秒");
+
+        if (playerAnimationCoroutine != null)
+        {
+            StopCoroutine(playerAnimationCoroutine);
+        }
+
+        Debug.Log($"[{LOG_TAG}] PlayReelAnimation() - ===== 开始播放，时长: {duration}秒，当前时间: {Time.time} =====");
+
+        playerAnimationCoroutine = StartCoroutine(AutoStopPlayerAnimation(duration, () =>
+        {
+            Debug.Log($"[{LOG_TAG}] PlayReelAnimation() - Reel 动画完成");
+            isWaitingForAnimation = false;
+            isAnimationPlaying = false;
+            playerAnimationCoroutine = null;
+            callback?.Invoke();
+
+            if (pendingActions.Count > 0)
+            {
+                ExecutePendingActions();
+            }
+        }));
     }
 
     public void PlayReelAnimationWithTwoIds(int detectedFishId, int actualItemId, float struggleTime, bool isTrash, Action callback)
@@ -554,12 +706,137 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         PlayIdleAnimation();
     }
 
-    /// <summary>
-    /// 确保默认角色已加载
-    /// </summary>
+    private IEnumerator AutoStopPlayerAnimation(float duration, Action onComplete)
+    {
+        Debug.Log($"[{LOG_TAG}] AutoStopPlayerAnimation() - 开始等待 {duration} 秒");
+        yield return new WaitForSeconds(duration);
+        Debug.Log($"[{LOG_TAG}] AutoStopPlayerAnimation() - 等待完成，关闭序列帧");
+
+        if (aniCtrl != null)
+        {
+            aniCtrl.SetSpriteSheetEnabled(false);
+            Debug.Log($"[{LOG_TAG}] AutoStopPlayerAnimation() - 序列帧已自动关闭");
+        }
+
+        onComplete?.Invoke();
+    }
+
+    // ========== 窝料动画 ==========
+    private void InitializeNestHidden()
+    {
+        if (nestAniCtrl == null) return;
+
+        nestAniCtrl.SetAlphaImmediate(0f);
+        nestAniCtrl.SetSpriteSheetEnabled(false);
+
+        StartCoroutine(DelayedConfirmNestHidden());
+    }
+
+    private IEnumerator DelayedConfirmNestHidden()
+    {
+        yield return null;
+
+        if (nestAniCtrl == null) yield break;
+
+        nestAniCtrl.SetAlphaImmediate(0f);
+        nestAniCtrl.SetSpriteSheetEnabled(false);
+
+        Material mat = nestAniCtrl.Material;
+        if (mat != null)
+        {
+            int colorPropId = Shader.PropertyToID("_Color");
+            Color currentColor = mat.GetColor(colorPropId);
+            if (currentColor.a > 0.01f)
+            {
+                currentColor.a = 0f;
+                mat.SetColor(colorPropId, currentColor);
+            }
+        }
+    }
+
+    public void PlayNestAnimation(float displayDuration = 2f)
+    {
+        if (!isInitialized)
+        {
+            pendingActions.Enqueue(() => PlayNestAnimation(displayDuration));
+            Init();
+            return;
+        }
+
+        if (nestAniCtrl == null) return;
+
+        if (isNestPlaying) return;
+
+        Texture2D baitTexture = nestAniCtrl.MainTexture;
+        if (baitTexture == null) return;
+
+        nestAniCtrl.SetMainTexture(baitTexture);
+        nestAniCtrl.SetSpriteSheetParams(nestRows, nestColumns, nestFrameSpeed);
+        nestAniCtrl.SetSpriteSheetEnabled(true);
+        nestAniCtrl.SetAlphaImmediate(0f);
+
+        isNestPlaying = true;
+
+        if (nestAnimationCoroutine != null)
+        {
+            StopCoroutine(nestAnimationCoroutine);
+        }
+        nestAnimationCoroutine = StartCoroutine(PlayNestAnimationSequence(displayDuration));
+    }
+
+    private IEnumerator PlayNestAnimationSequence(float displayDuration)
+    {
+        if (nestAniCtrl == null)
+        {
+            isNestPlaying = false;
+            yield break;
+        }
+
+        nestAniCtrl.FadeTo(1f, nestFadeInDuration);
+        yield return new WaitForSeconds(nestFadeInDuration);
+
+        float elapsed = 0f;
+        while (elapsed < displayDuration)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        nestAniCtrl.FadeTo(0f, nestFadeOutDuration);
+        yield return new WaitForSeconds(nestFadeOutDuration);
+
+        nestAniCtrl.SetSpriteSheetEnabled(false);
+
+        isNestPlaying = false;
+        nestAnimationCoroutine = null;
+    }
+
+    public void StopNestAnimation()
+    {
+        if (!isInitialized)
+        {
+            pendingActions.Enqueue(() => StopNestAnimation());
+            Init();
+            return;
+        }
+
+        if (nestAniCtrl == null) return;
+
+        if (nestAnimationCoroutine != null)
+        {
+            StopCoroutine(nestAnimationCoroutine);
+            nestAnimationCoroutine = null;
+        }
+
+        isNestPlaying = false;
+        nestAniCtrl.SetAlphaImmediate(0f);
+        nestAniCtrl.SetSpriteSheetEnabled(false);
+    }
+
+    // ========== 辅助方法 ==========
     private void EnsureDefaultCharacterLoaded()
     {
-        int defaultId = 3401;
+        int defaultId = defaultCharacterId;
         int equippedId = GetEquippedCharacterId();
         if (equippedId > 0)
         {
@@ -569,38 +846,101 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         if (currentCharacterId != defaultId)
         {
             DoSwitchCharacter(defaultId);
+            return;
         }
-        else
+
+        if (characterAniDict.TryGetValue(currentCharacterId, out var aniData))
         {
-            // 如果角色ID相同但数据可能还没应用，重新应用一次
-            if (characterAniDict.TryGetValue(currentCharacterId, out var aniData))
+            if (aniCtrl != null)
             {
-                aniCtrl.SetAnimationParams(aniData.idleColumns, aniData.idleSpeed,
-                    aniData.reelColumns, aniData.reelSpeed,
-                    aniData.lazyColumns, aniData.lazySpeed);
-                aniCtrl.SetCharacterTextures(aniData.idleTexture, aniData.lazyTexture, aniData.reelTexture);
+                if (aniData.idleTexture != null)
+                {
+                    aniCtrl.SetMainTexture(aniData.idleTexture);
+                    aniCtrl.SetSpriteSheetParams(1, aniData.idleColumns, aniData.idleSpeed);
+                }
+                aniCtrl.SetSpriteSheetEnabled(false);
             }
         }
     }
 
-    private void Update()
+    private void ExecutePendingActions()
     {
-        if (isWaitingForAnimation)
-        {
-            animationTimer -= Time.deltaTime;
-            if (animationTimer <= 0f)
-            {
-                isWaitingForAnimation = false;
-                pendingCallback?.Invoke();
-                pendingCallback = null;
+        if (!isInitialized || aniCtrl == null) return;
 
-                if (pendingActions.Count > 0)
+        while (pendingActions.Count > 0)
+        {
+            Action action = pendingActions.Dequeue();
+            action?.Invoke();
+        }
+    }
+
+    // ========== 稀有度颜色系统 ==========
+    private void LoadRarityData()
+    {
+        if (isRarityDataLoaded) return;
+
+        try
+        {
+            if (LoadDataManager.Instance == null) return;
+
+            List<RarityData> rarities = LoadDataManager.Instance.rarities;
+            if (rarities == null || rarities.Count == 0) return;
+
+            rarityColorCache.Clear();
+            foreach (var rarity in rarities)
+            {
+                if (!string.IsNullOrEmpty(rarity.colorCode) && ColorUtility.TryParseHtmlString(rarity.colorCode, out Color color))
                 {
-                    Debug.Log($"[PlayerAniManager] Reel 完成，执行 {pendingActions.Count} 个缓存请求");
-                    ExecutePendingActions();
+                    rarityColorCache[rarity.id] = color;
                 }
             }
+            isRarityDataLoaded = true;
         }
+        catch (Exception e)
+        {
+            Debug.LogError($"[PlayerAniManager] 加载稀有度数据异常: {e.Message}");
+        }
+    }
+
+    private Color GetRarityColor(int rarityId)
+    {
+        LoadRarityData();
+
+        if (rarityColorCache.TryGetValue(rarityId, out Color color))
+        {
+            return color;
+        }
+
+        if (LoadDataManager.Instance != null)
+        {
+            RarityData rarity = LoadDataManager.Instance.GetRarityById(rarityId);
+            if (rarity != null && !string.IsNullOrEmpty(rarity.colorCode) && ColorUtility.TryParseHtmlString(rarity.colorCode, out Color newColor))
+            {
+                rarityColorCache[rarityId] = newColor;
+                return newColor;
+            }
+        }
+
+        return Color.white;
+    }
+
+    // ========== 数据获取 ==========
+    public CharacterAniData GetCharacterAniData(int characterId)
+    {
+        return characterAniDict.TryGetValue(characterId, out var data) ? data : null;
+    }
+
+    public int GetCurrentCharacterId()
+    {
+        return currentCharacterId;
+    }
+
+    // ========== Unity 生命周期 ==========
+    private void Update()
+    {
+        // ===== 移除 Update 中的计时逻辑，完全使用协程控制 =====
+        // 所有动画计时现在由 AutoStopPlayerAnimation 协程管理
+        // 不再需要 Update 中的 animationTimer 倒计时
     }
 
     private void OnEnable()
@@ -609,10 +949,12 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         {
             if (characterAniDict.TryGetValue(currentCharacterId, out var aniData))
             {
-                aniCtrl.SetAnimationParams(aniData.idleColumns, aniData.idleSpeed,
-                    aniData.reelColumns, aniData.reelSpeed,
-                    aniData.lazyColumns, aniData.lazySpeed);
-                aniCtrl.SetCharacterTextures(aniData.idleTexture, aniData.lazyTexture, aniData.reelTexture);
+                if (aniData.idleTexture != null)
+                {
+                    aniCtrl.SetMainTexture(aniData.idleTexture);
+                    aniCtrl.SetSpriteSheetParams(1, aniData.idleColumns, aniData.idleSpeed);
+                }
+                aniCtrl.SetSpriteSheetEnabled(false);
             }
         }
 
@@ -621,19 +963,24 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
             EnsureFishTipAniCtrl();
         }
     }
-}
 
-public class CharacterAniData
-{
-    public int characterId;
-    public Texture2D idleTexture;
-    public Texture2D lazyTexture;
-    public Texture2D reelTexture;
+    private void OnDestroy()
+    {
+        if (nestAnimationCoroutine != null)
+        {
+            try { StopCoroutine(nestAnimationCoroutine); }
+            catch { }
+            nestAnimationCoroutine = null;
+        }
+        isNestPlaying = false;
 
-    public int idleColumns = 4;
-    public float idleSpeed = 15f;
-    public int reelColumns = 4;
-    public float reelSpeed = 20f;
-    public int lazyColumns = 4;
-    public float lazySpeed = 18f;
+        if (playerAnimationCoroutine != null)
+        {
+            try { StopCoroutine(playerAnimationCoroutine); }
+            catch { }
+            playerAnimationCoroutine = null;
+        }
+        isAnimationPlaying = false;
+        isWaitingForAnimation = false;
+    }
 }
