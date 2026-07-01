@@ -1,15 +1,12 @@
 using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 /// <summary>
-/// 场景材质管理器 - 控制游戏场景图片内容
-/// 包含所有数据类定义
+/// 场景材质管理器
 /// </summary>
-public class SceneMatManager : MonoBehaviour
+public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 {
     // ========== 枚举定义 ==========
     public enum ElementType
@@ -29,17 +26,20 @@ public class SceneMatManager : MonoBehaviour
         Weather
     }
 
+    // ========== 渲染队列层级（四个层次） ==========
     public enum RenderQueueLevel
     {
-        Background = 0,
-        Environment = 1,
-        Character = 2,
-        Foreground = 3,
-        UI = 4
+        TimeLayer = 0,
+        Background = 1,
+        GameLayer = 2,
+        EffectLayer = 3
     }
 
+    // ========== 资源基础路径 ==========
+    private const string RESOURCE_BASE_PATH = "GameScene/Scene/";
+
     // ========== 数据类定义 ==========
-    [System.Serializable]
+    [Serializable]
     public class TransformData
     {
         public Vector3 position;
@@ -50,57 +50,41 @@ public class SceneMatManager : MonoBehaviour
             position = Vector3.zero;
             scale = Vector3.one;
         }
-
-        public TransformData(Vector3 pos, Vector3 scl)
-        {
-            position = pos;
-            scale = scl;
-        }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class SceneElementData
     {
         public string id;
         public string name;
-        public string imagePath;
-        public Vector3 position;
-        public Vector3 scale;
-        public string renderLevel;
-        public bool isFlipped;
-        public bool isLockFlip;
-        public string sceneId;
+        public TransformData transform;
 
         public SceneElementData()
         {
             id = "";
             name = "";
-            imagePath = "";
-            position = Vector3.zero;
-            scale = Vector3.one;
-            renderLevel = "Environment";
-            isFlipped = false;
-            isLockFlip = false;
-            sceneId = "";
+            transform = new TransformData();
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class SceneData
     {
         public string sceneId;
         public string sceneName;
+        public bool isFlipped;
         public List<SceneElementData> elements;
 
         public SceneData()
         {
             sceneId = "";
             sceneName = "";
+            isFlipped = false;
             elements = new List<SceneElementData>();
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     public class SceneDataWrapper
     {
         public List<SceneData> scenes;
@@ -113,19 +97,21 @@ public class SceneMatManager : MonoBehaviour
 
     // ========== Inspector 参数 ==========
     [Header("=== 场景配置 ===")]
-    [SerializeField] private string currentSceneId = "1";
     [SerializeField] private bool loadOnStart = true;
+    [SerializeField] private string currentSceneId = "101";
+    [SerializeField] public string currentSceneName = "场景";
 
-    [Header("=== 渲染队列配置 ===")]
-    [SerializeField] private int backgroundQueue = 1000;
-    [SerializeField] private int environmentQueue = 2000;
-    [SerializeField] private int characterQueue = 3000;
-    [SerializeField] private int foregroundQueue = 4000;
-    [SerializeField] private int uiQueue = 5000;
+    // ========== 当前场景镜像状态（存储在Manager中） ==========
+    [SerializeField] private bool currentSceneFlip = false;
 
-    [Header("=== 资源路径 ===")]
-    [SerializeField] private string sceneDataPath = "JsonData/SceneTransData/mainTransData";
-    [SerializeField] private string imageResourcesPath = "GameScene/";
+    [Header("=== 渲染队列配置（四个层次） ===")]
+    [SerializeField] private int timeLayerQueue = 1000;
+    [SerializeField] private int backgroundQueue = 2000;
+    [SerializeField] private int gameLayerQueue = 3000;
+    [SerializeField] private int effectLayerQueue = 4000;
+
+    [Header("=== 数据路径 ===")]
+    [SerializeField] public string sceneDataPath = "JsonData/Game/SceneTransData/mainTransData";
 
     [Header("=== 控制器列表 ===")]
     [SerializeField] private List<SceneMatCtrl> sceneControllers = new List<SceneMatCtrl>();
@@ -133,27 +119,44 @@ public class SceneMatManager : MonoBehaviour
     // ========== 私有变量 ==========
     private SceneDataWrapper sceneDataWrapper;
     private Dictionary<ElementType, SceneMatCtrl> controllerDict = new Dictionary<ElementType, SceneMatCtrl>();
+    private Dictionary<RenderQueueLevel, int> renderQueueMap;
     private bool isDataLoaded = false;
+    private bool isInitialized = false;
 
     // ========== 公共属性 ==========
     public string CurrentSceneId => currentSceneId;
+    public string CurrentSceneName => currentSceneName;
     public List<SceneMatCtrl> SceneControllers => sceneControllers;
-
-    // ========== 渲染队列映射 ==========
-    private Dictionary<RenderQueueLevel, int> renderQueueMap;
+    public bool CurrentSceneFlip => currentSceneFlip;
+    public bool IsInitialized => isInitialized;
 
     // ========== Unity生命周期 ==========
     private void Awake()
     {
         InitializeRenderQueueMap();
+        Debug.Log($"[SceneMatManager] Awake - 渲染队列映射初始化完成: TimeLayer={timeLayerQueue}, Background={backgroundQueue}, GameLayer={gameLayerQueue}, EffectLayer={effectLayerQueue}");
     }
 
     private void Start()
     {
         if (loadOnStart)
         {
+            Debug.Log($"[SceneMatManager] Start - 开始初始化场景系统");
+
+            // 1. 先查找并注册所有控制器
+            FindAndRegisterAllControllers();
+
+            // 2. 加载场景数据
             LoadSceneData();
+
+            // 3. 应用场景数据
             ApplySceneData(currentSceneId);
+
+            // 4. 统一更新所有控制器的渲染队列
+            UpdateAllControllersRenderQueue();
+
+            isInitialized = true;
+            Debug.Log($"[SceneMatManager] Start - ✅ 场景系统初始化完成");
         }
     }
 
@@ -161,76 +164,64 @@ public class SceneMatManager : MonoBehaviour
     {
         renderQueueMap = new Dictionary<RenderQueueLevel, int>
         {
+            { RenderQueueLevel.TimeLayer, timeLayerQueue },
             { RenderQueueLevel.Background, backgroundQueue },
-            { RenderQueueLevel.Environment, environmentQueue },
-            { RenderQueueLevel.Character, characterQueue },
-            { RenderQueueLevel.Foreground, foregroundQueue },
-            { RenderQueueLevel.UI, uiQueue }
+            { RenderQueueLevel.GameLayer, gameLayerQueue },
+            { RenderQueueLevel.EffectLayer, effectLayerQueue }
         };
     }
 
     // ========== 控制器管理 ==========
 
-    /// <summary>
-    /// 注册控制器
-    /// </summary>
     public void RegisterController(SceneMatCtrl controller)
     {
         if (controller == null) return;
-
         if (!sceneControllers.Contains(controller))
         {
             sceneControllers.Add(controller);
+            Debug.Log($"[SceneMatManager] 注册控制器: {controller.ElementId} (游戏对象: {controller.gameObject.name})");
         }
-
         controllerDict[controller.ElementId] = controller;
     }
 
-    /// <summary>
-    /// 注销控制器
-    /// </summary>
     public void UnregisterController(SceneMatCtrl controller)
     {
         if (controller == null) return;
-
         sceneControllers.Remove(controller);
         if (controllerDict.ContainsKey(controller.ElementId))
         {
             controllerDict.Remove(controller.ElementId);
+            Debug.Log($"[SceneMatManager] 注销控制器: {controller.ElementId}");
         }
     }
 
-    /// <summary>
-    /// 通过元素类型获取控制器
-    /// </summary>
     public SceneMatCtrl GetController(ElementType elementType)
     {
-        if (controllerDict.TryGetValue(elementType, out SceneMatCtrl controller))
-        {
-            return controller;
-        }
-
-        // 如果在字典中找不到，从列表中查找
+        if (controllerDict.TryGetValue(elementType, out SceneMatCtrl controller)) return controller;
         return sceneControllers.Find(c => c.ElementId == elementType);
     }
 
-    /// <summary>
-    /// 通过字符串ID获取控制器
-    /// </summary>
     public SceneMatCtrl GetController(string elementId)
     {
-        if (Enum.TryParse<ElementType>(elementId, out ElementType type))
-        {
-            return GetController(type);
-        }
+        if (Enum.TryParse<ElementType>(elementId, out ElementType type)) return GetController(type);
         return null;
+    }
+
+    public List<SceneMatCtrl> GetControllersByParameterType(SceneMatCtrl.ParameterType paramType)
+    {
+        List<SceneMatCtrl> result = new List<SceneMatCtrl>();
+        foreach (var ctrl in sceneControllers)
+        {
+            if (ctrl != null && ctrl.ParamType == paramType)
+            {
+                result.Add(ctrl);
+            }
+        }
+        return result;
     }
 
     // ========== 场景数据加载 ==========
 
-    /// <summary>
-    /// 加载场景数据（从Resources）
-    /// </summary>
     public void LoadSceneData()
     {
         try
@@ -238,15 +229,17 @@ public class SceneMatManager : MonoBehaviour
             TextAsset jsonFile = Resources.Load<TextAsset>(sceneDataPath);
             if (jsonFile == null)
             {
-                Debug.LogError($"[SceneMatManager] 无法加载场景数据文件: {sceneDataPath}");
+                Debug.LogWarning($"[SceneMatManager] 无法加载场景数据文件: {sceneDataPath}，将创建新的数据");
+                sceneDataWrapper = new SceneDataWrapper();
+                isDataLoaded = true;
                 return;
             }
 
             sceneDataWrapper = JsonUtility.FromJson<SceneDataWrapper>(jsonFile.text);
             if (sceneDataWrapper == null || sceneDataWrapper.scenes == null)
             {
-                Debug.LogError("[SceneMatManager] 场景数据解析失败");
-                return;
+                Debug.LogWarning("[SceneMatManager] 场景数据解析失败，将创建新的数据");
+                sceneDataWrapper = new SceneDataWrapper();
             }
 
             isDataLoaded = true;
@@ -255,52 +248,17 @@ public class SceneMatManager : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogError($"[SceneMatManager] 加载场景数据异常: {e.Message}");
-        }
-    }
-
-    /// <summary>
-    /// 加载场景数据（从文件路径）
-    /// </summary>
-    public void LoadSceneDataFromFile(string filePath)
-    {
-        try
-        {
-            if (!File.Exists(filePath))
-            {
-                Debug.LogError($"[SceneMatManager] 文件不存在: {filePath}");
-                return;
-            }
-
-            string json = File.ReadAllText(filePath);
-            sceneDataWrapper = JsonUtility.FromJson<SceneDataWrapper>(json);
-            if (sceneDataWrapper == null || sceneDataWrapper.scenes == null)
-            {
-                Debug.LogError("[SceneMatManager] 场景数据解析失败");
-                return;
-            }
-
+            sceneDataWrapper = new SceneDataWrapper();
             isDataLoaded = true;
-            Debug.Log($"[SceneMatManager] 从文件加载场景数据完成，共 {sceneDataWrapper.scenes.Count} 个场景");
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"[SceneMatManager] 加载场景数据异常: {e.Message}");
         }
     }
 
-    /// <summary>
-    /// 获取场景数据
-    /// </summary>
     public SceneData GetSceneData(string sceneId)
     {
-        if (!isDataLoaded || sceneDataWrapper == null) return null;
-
+        if (sceneDataWrapper == null) return null;
         return sceneDataWrapper.scenes.Find(s => s.sceneId == sceneId);
     }
 
-    /// <summary>
-    /// 获取所有场景数据
-    /// </summary>
     public List<SceneData> GetAllSceneData()
     {
         return sceneDataWrapper?.scenes;
@@ -308,27 +266,30 @@ public class SceneMatManager : MonoBehaviour
 
     // ========== 应用场景数据 ==========
 
-    /// <summary>
-    /// 应用场景数据到所有控制器
-    /// </summary>
     public void ApplySceneData(string sceneId)
     {
-        if (!isDataLoaded)
-        {
-            LoadSceneData();
-            if (!isDataLoaded) return;
-        }
+        if (sceneDataWrapper == null) LoadSceneData();
+        if (sceneDataWrapper == null) return;
 
         SceneData sceneData = GetSceneData(sceneId);
         if (sceneData == null)
         {
             Debug.LogWarning($"[SceneMatManager] 未找到场景数据: {sceneId}");
-            return;
+            CreateDefaultSceneData(sceneId);
+            sceneData = GetSceneData(sceneId);
+            if (sceneData == null) return;
         }
 
-        currentSceneId = sceneId;
+        Debug.Log($"[SceneMatManager] 应用场景数据: {sceneId}, 名称: {sceneData.sceneName}, 元素数: {sceneData.elements.Count}");
 
-        // 应用每个元素的数据
+        currentSceneId = sceneId;
+        currentSceneName = sceneData.sceneName;
+
+        currentSceneFlip = sceneData.isFlipped;
+
+        ApplySceneFlip(currentSceneFlip);
+
+        int loadedCount = 0;
         foreach (var elementData in sceneData.elements)
         {
             SceneMatCtrl controller = GetController(elementData.id);
@@ -338,82 +299,260 @@ public class SceneMatManager : MonoBehaviour
                 continue;
             }
 
-            ApplyElementData(controller, elementData);
-        }
-
-        Debug.Log($"[SceneMatManager] 应用场景数据完成: {sceneId}");
-    }
-
-    private void ApplyElementData(SceneMatCtrl controller, SceneElementData data)
-    {
-        if (controller == null || data == null) return;
-
-        // 设置纹理
-        if (!string.IsNullOrEmpty(data.imagePath))
-        {
-            string fullPath = imageResourcesPath + data.imagePath;
-            controller.SetMainTextureByPath(fullPath);
-        }
-
-        // 设置位置和大小
-        controller.SetTransformData(data.position, data.scale);
-
-        // 设置渲染层级
-        if (!string.IsNullOrEmpty(data.renderLevel))
-        {
-            if (Enum.TryParse<RenderQueueLevel>(data.renderLevel, out RenderQueueLevel level))
+            if (elementData.transform != null)
             {
-                controller.SetRenderQueue(level);
+                controller.SetTransformData(elementData.transform.position, elementData.transform.scale);
             }
+
+            if (controller.ParamType != SceneMatCtrl.ParameterType.SceneParameter) continue;
+
+            if (!string.IsNullOrEmpty(elementData.name))
+            {
+                string imagePath = RESOURCE_BASE_PATH + sceneId + "/" + elementData.name;
+                controller.SetMainTextureByPath(imagePath);
+            }
+
+            controller.SetSceneId(sceneId);
+            loadedCount++;
         }
 
-        // 设置镜像
-        controller.SetFlip(data.isFlipped);
-        controller.SetLockFlip(data.isLockFlip);
+        ApplyStaticParameters();
 
-        // 设置场景ID
-        controller.SetSceneId(currentSceneId);
+        Debug.Log($"[SceneMatManager] 应用场景数据完成: {sceneId}, 名称: {currentSceneName}, 镜像: {currentSceneFlip}, 加载元素: {loadedCount} 个 (仅SceneParameter)");
+
+        // ===== ✅ 场景加载完成后，根据镜像状态调整摄像头位置 =====
+        AdjustCameraBySceneFlip();
     }
-
-    // ========== 渲染队列控制 ==========
 
     /// <summary>
-    /// 设置所有控制器的渲染队列层级
+    /// 根据场景镜像状态调整摄像头位置
+    /// 镜像模式：摄像头移动到最大位置 (maxX)
+    /// 非镜像模式：摄像头移动到最小位置 (minX)
+    /// </summary>
+    private void AdjustCameraBySceneFlip()
+    {
+        if (CameraManager.Instance == null)
+        {
+            Debug.LogWarning("[SceneMatManager] CameraManager 未找到，无法调整摄像头");
+            return;
+        }
+
+        // 同步 CameraManager 的镜像模式
+        CameraManager.Instance.SetMirrorMode(currentSceneFlip);
+
+        // 根据镜像模式调整摄像头位置
+        if (currentSceneFlip)
+        {
+            CameraManager.Instance.MoveToXSmooth(CameraManager.Instance.maxX, 5f);
+            Debug.Log($"[SceneMatManager] 场景镜像模式，摄像头移动到最大位置: {CameraManager.Instance.maxX}");
+        }
+        else
+        {
+            CameraManager.Instance.MoveToXSmooth(CameraManager.Instance.minX, 5f);
+            Debug.Log($"[SceneMatManager] 非镜像模式，摄像头移动到最小位置: {CameraManager.Instance.minX}");
+        }
+    }
+
+    /// <summary>
+    /// 应用场景级别的镜像
+    /// </summary>
+    private void ApplySceneFlip(bool isFlipped)
+    {
+        Debug.Log($"[SceneMatManager] 应用场景镜像: {isFlipped}");
+        foreach (var controller in sceneControllers)
+        {
+            if (controller == null) continue;
+            //if (controller.ParamType != SceneMatCtrl.ParameterType.SceneParameter) continue;
+            if (controller.IsCanFlip)
+            {
+                controller.SetFlip(isFlipped);
+            }
+        }
+    }
+
+    private void ApplyStaticParameters()
+    {
+        var staticControllers = GetControllersByParameterType(SceneMatCtrl.ParameterType.StaticParameter);
+        Debug.Log($"[SceneMatManager] 应用静态参数, 共 {staticControllers.Count} 个控制器");
+        foreach (var controller in staticControllers)
+        {
+            if (controller != null && controller.IsInitialized)
+            {
+                int queueValue = GetRenderQueueValue(controller.RenderQueue);
+                Debug.Log($"[SceneMatManager] 静态控制器 {controller.ElementId} 渲染队列: {controller.RenderQueue} -> {queueValue}");
+                controller.SetRenderQueueValue(queueValue);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 统一更新所有控制器的渲染队列
+    /// </summary>
+    public void UpdateAllControllersRenderQueue()
+    {
+        Debug.Log($"[SceneMatManager] ===== 开始更新所有控制器渲染队列 =====");
+        foreach (var controller in sceneControllers)
+        {
+            if (controller != null && controller.IsInitialized)
+            {
+                int queueValue = GetRenderQueueValue(controller.RenderQueue);
+                Debug.Log($"[SceneMatManager] 更新控制器 {controller.ElementId} ({controller.gameObject.name}) 渲染队列: {controller.RenderQueue} -> {queueValue}");
+                controller.SetRenderQueueValue(queueValue);
+            }
+            else if (controller != null && !controller.IsInitialized)
+            {
+                Debug.Log($"[SceneMatManager] 跳过未初始化的控制器: {controller.ElementId}");
+            }
+        }
+        Debug.Log($"[SceneMatManager] ===== 渲染队列更新完成 =====");
+    }
+
+    public void SwitchScene(string sceneId)
+    {
+        if (string.IsNullOrEmpty(sceneId))
+        {
+            Debug.LogError($"[SceneMatManager] 切换场景失败: sceneId为空");
+            return;
+        }
+
+        // ✅ 检查场景是否存在
+        SceneData targetSceneData = GetSceneData(sceneId);
+        if (targetSceneData == null)
+        {
+            Debug.LogWarning($"[SceneMatManager] 场景 {sceneId} 不存在，创建默认场景数据");
+            CreateDefaultSceneData(sceneId);
+        }
+
+        Debug.Log($"[SceneMatManager] 切换场景: {currentSceneId} -> {sceneId}");
+        ApplySceneData(sceneId);
+        UpdateAllControllersRenderQueue();
+    }
+
+    /// <summary>
+    /// 创建默认场景数据（当场景不存在时）
+    /// </summary>
+    private void CreateDefaultSceneData(string sceneId)
+    {
+        if (sceneDataWrapper == null) sceneDataWrapper = new SceneDataWrapper();
+
+        // ✅ 检查是否已存在（防止重复创建）
+        var existing = GetSceneData(sceneId);
+        if (existing != null) return;
+
+        var newScene = new SceneData
+        {
+            sceneId = sceneId,
+            sceneName = $"场景_{sceneId}",
+            isFlipped = false,
+            elements = new List<SceneElementData>()
+        };
+
+        sceneDataWrapper.scenes.Add(newScene);
+
+        // ✅ 同步更新 currentSceneName
+        if (currentSceneId == sceneId)
+        {
+            currentSceneName = newScene.sceneName;
+        }
+
+        Debug.Log($"[SceneMatManager] 已创建默认场景数据: {sceneId}, 名称: {newScene.sceneName}");
+    }
+
+    // ========== 场景镜像控制 ==========
+
+    /// <summary>
+    /// 设置场景镜像
+    /// </summary>
+    public void SetSceneFlip(bool isFlipped)
+    {
+        currentSceneFlip = isFlipped;
+        ApplySceneFlip(isFlipped);
+
+        // 更新场景数据中的镜像
+        var sceneData = GetSceneData(currentSceneId);
+        if (sceneData != null)
+        {
+            sceneData.isFlipped = isFlipped;
+        }
+
+        Debug.Log($"[SceneMatManager] 场景镜像已设置为: {isFlipped}");
+    }
+
+    /// <summary>
+    /// 获取场景镜像
+    /// </summary>
+    public bool GetSceneFlip()
+    {
+        return currentSceneFlip;
+    }
+
+    // ========== 渲染队列控制（由Manager统一管理） ==========
+
+    /// <summary>
+    /// 获取渲染队列值（由Manager统一管理）
+    /// </summary>
+    public int GetRenderQueueValue(RenderQueueLevel level)
+    {
+        int value = renderQueueMap.TryGetValue(level, out int val) ? val : 3000;
+        Debug.Log($"[SceneMatManager] GetRenderQueueValue - {level} -> {value}");
+        return value;
+    }
+
+    /// <summary>
+    /// 获取渲染队列映射的详细日志
+    /// </summary>
+    public void LogRenderQueueMap()
+    {
+        Debug.Log($"[SceneMatManager] ===== 渲染队列映射 =====");
+        foreach (var kvp in renderQueueMap)
+        {
+            Debug.Log($"[SceneMatManager] {kvp.Key} -> {kvp.Value}");
+        }
+        Debug.Log($"[SceneMatManager] =========================");
+    }
+
+    /// <summary>
+    /// 设置单个控制器的渲染队列
+    /// </summary>
+    public void SetControllerRenderQueue(SceneMatCtrl controller, RenderQueueLevel level)
+    {
+        if (controller == null) return;
+        int queueValue = GetRenderQueueValue(level);
+        Debug.Log($"[SceneMatManager] 设置控制器 {controller.ElementId} 渲染队列: {level} -> {queueValue}");
+        controller.SetRenderQueueValue(queueValue);
+    }
+
+    /// <summary>
+    /// 设置所有控制器的渲染队列
     /// </summary>
     public void SetAllRenderQueue(RenderQueueLevel level)
     {
         int queueValue = GetRenderQueueValue(level);
+        Debug.Log($"[SceneMatManager] 设置所有控制器渲染队列: {level} -> {queueValue}");
         foreach (var controller in sceneControllers)
         {
             if (controller != null)
             {
-                controller.SetRenderQueue(level);
+                controller.SetRenderQueueValue(queueValue);
             }
         }
     }
 
     /// <summary>
-    /// 设置特定元素的渲染队列
+    /// 按类型设置渲染队列
     /// </summary>
-    public void SetElementRenderQueue(ElementType elementType, RenderQueueLevel level)
+    public void SetRenderQueueByType(SceneMatCtrl.ParameterType paramType, RenderQueueLevel level)
     {
-        SceneMatCtrl controller = GetController(elementType);
-        if (controller != null)
+        int queueValue = GetRenderQueueValue(level);
+        var controllers = GetControllersByParameterType(paramType);
+        Debug.Log($"[SceneMatManager] 按类型 {paramType} 设置渲染队列: {level} -> {queueValue}, 共 {controllers.Count} 个控制器");
+        foreach (var controller in controllers)
         {
-            controller.SetRenderQueue(level);
+            if (controller != null)
+            {
+                controller.SetRenderQueueValue(queueValue);
+            }
         }
-    }
-
-    /// <summary>
-    /// 获取渲染队列值
-    /// </summary>
-    public int GetRenderQueueValue(RenderQueueLevel level)
-    {
-        if (renderQueueMap.TryGetValue(level, out int value))
-        {
-            return value;
-        }
-        return 2000;
     }
 
     /// <summary>
@@ -421,219 +560,159 @@ public class SceneMatManager : MonoBehaviour
     /// </summary>
     public void UpdateRenderQueueMap(RenderQueueLevel level, int value)
     {
+        Debug.Log($"[SceneMatManager] 更新渲染队列映射: {level} -> {value} (旧值: {renderQueueMap[level]})");
         renderQueueMap[level] = value;
     }
 
-    // ========== 镜像控制 ==========
+    // ========== 初始化场景 ==========
 
-    /// <summary>
-    /// 设置所有控制器的镜像状态（受锁定影响）
-    /// </summary>
-    public void SetAllFlip(bool flipped)
+    public void InitializeScene(string sceneId)
     {
+        Debug.Log($"[SceneMatManager] InitializeScene - 场景ID: {sceneId}");
+        FindAndRegisterAllControllers();
+
         foreach (var controller in sceneControllers)
         {
-            if (controller != null)
+            if (controller != null) controller.Initialize();
+        }
+
+        ApplySceneData(sceneId);
+        UpdateAllControllersRenderQueue();
+        isInitialized = true;
+        Debug.Log($"[SceneMatManager] InitializeScene - ✅ 完成");
+    }
+
+    // ========== 数据收集和保存 ==========
+
+    /// <summary>
+    /// 从所有控制器收集数据（保存所有场景，更新或新增当前场景）
+    /// </summary>
+    /// <summary>
+    /// 从所有控制器收集数据（保存所有场景，更新或新增当前场景）
+    /// </summary>
+    public void CollectDataFromControllers()
+    {
+        if (sceneDataWrapper == null) sceneDataWrapper = new SceneDataWrapper();
+
+        // ===== 查找当前场景是否存在 =====
+        SceneData currentSceneData = GetSceneData(currentSceneId);
+        bool isNewScene = false;
+
+        if (currentSceneData == null)
+        {
+            // ===== 不存在则创建新场景 =====
+            currentSceneData = new SceneData
             {
-                controller.SetFlip(flipped);
-            }
-        }
-    }
-
-    /// <summary>
-    /// 设置特定元素的镜像状态
-    /// </summary>
-    public void SetElementFlip(ElementType elementType, bool flipped)
-    {
-        SceneMatCtrl controller = GetController(elementType);
-        if (controller != null)
-        {
-            controller.SetFlip(flipped);
-        }
-    }
-
-    /// <summary>
-    /// 切换特定元素的镜像状态
-    /// </summary>
-    public void ToggleElementFlip(ElementType elementType)
-    {
-        SceneMatCtrl controller = GetController(elementType);
-        if (controller != null)
-        {
-            controller.ToggleFlip();
-        }
-    }
-
-    // ========== 纹理切换功能 ==========
-
-    /// <summary>
-    /// 切换所有控制器的主纹理（简便切换带渐变）
-    /// </summary>
-    public void SetAllMainTexture(Texture2D texture, float duration = 0.5f)
-    {
-        foreach (var controller in sceneControllers)
-        {
-            if (controller != null)
-            {
-                controller.SetMainTextureSmooth(texture, duration);
-            }
-        }
-    }
-
-    /// <summary>
-    /// 切换特定元素的主纹理
-    /// </summary>
-    public void SetElementMainTexture(ElementType elementType, Texture2D texture, bool smooth = false, float duration = 0.5f)
-    {
-        SceneMatCtrl controller = GetController(elementType);
-        if (controller != null)
-        {
-            if (smooth)
-            {
-                controller.SetMainTextureSmooth(texture, duration);
-            }
-            else
-            {
-                controller.SetMainTexture(texture);
-            }
-        }
-    }
-
-    /// <summary>
-    /// 通过路径切换纹理
-    /// </summary>
-    public void SetElementTextureByPath(ElementType elementType, string path, bool smooth = false, float duration = 0.5f)
-    {
-        Texture2D texture = Resources.Load<Texture2D>(path);
-        if (texture != null)
-        {
-            SetElementMainTexture(elementType, texture, smooth, duration);
+                sceneId = currentSceneId,
+                sceneName = currentSceneName,  // ✅ 使用 currentSceneName
+                isFlipped = currentSceneFlip,
+                elements = new List<SceneElementData>()
+            };
+            sceneDataWrapper.scenes.Add(currentSceneData);
+            isNewScene = true;
         }
         else
         {
-            Debug.LogError($"[SceneMatManager] 无法加载纹理: {path}");
+            // ✅ 【关键修复】强制使用编辑器中修改的名称覆盖
+            // 不管场景数据中原来的名称是什么，都用 currentSceneName 替换
+            currentSceneData.sceneName = currentSceneName;
+
+            // ✅ 同步镜像状态
+            currentSceneData.isFlipped = currentSceneFlip;
         }
-    }
 
-    // ========== 闪烁控制 ==========
-
-    /// <summary>
-    /// 设置特定元素的闪烁状态
-    /// </summary>
-    public void SetElementBlink(ElementType elementType, bool enabled)
-    {
-        SceneMatCtrl controller = GetController(elementType);
-        if (controller != null)
+        // ✅ 确保 currentSceneName 与场景数据一致（双向同步）
+        if (string.IsNullOrEmpty(currentSceneName) && currentSceneData != null)
         {
-            controller.SetBlinkEnabled(enabled);
+            currentSceneName = currentSceneData.sceneName;
         }
-    }
 
-    /// <summary>
-    /// 设置特定元素的闪烁颜色
-    /// </summary>
-    public void SetElementBlinkColor(ElementType elementType, Color color)
-    {
-        SceneMatCtrl controller = GetController(elementType);
-        if (controller != null)
-        {
-            controller.SetBlinkColor(color);
-        }
-    }
+        // ===== 保存旧数据用于对比 =====
+        string oldData = JsonUtility.ToJson(currentSceneData, true);
 
-    /// <summary>
-    /// 设置特定元素的闪烁图片
-    /// </summary>
-    public void SetElementBlinkTexture(ElementType elementType, Texture2D texture)
-    {
-        SceneMatCtrl controller = GetController(elementType);
-        if (controller != null)
-        {
-            controller.SetBlinkTexture(texture);
-        }
-    }
+        // ===== 清空当前场景的元素，重新收集 =====
+        currentSceneData.elements.Clear();
 
-    ///// <summary>
-    ///// 让特定元素闪烁一次
-    ///// </summary>
-    //public void BlinkElementOnce(ElementType elementType, Color color, float duration = 0.5f, float interval = 0.5f)
-    //{
-    //    SceneMatCtrl controller = GetController(elementType);
-    //    if (controller != null)
-    //    {
-    //        controller.BlinkOnce(color, duration, interval);
-    //    }
-    //}
-
-    /// <summary>
-    /// 设置特定元素的闪烁间隔
-    /// </summary>
-    public void SetElementBlinkInterval(ElementType elementType, float interval)
-    {
-        SceneMatCtrl controller = GetController(elementType);
-        if (controller != null)
-        {
-            controller.SetBlinkInterval(interval);
-        }
-    }
-
-    // ========== 工具方法 ==========
-
-    /// <summary>
-    /// 获取所有控制器
-    /// </summary>
-    public List<SceneMatCtrl> GetAllControllers()
-    {
-        return sceneControllers;
-    }
-
-    /// <summary>
-    /// 刷新所有控制器
-    /// </summary>
-    public void RefreshAllControllers()
-    {
+        // ===== 保存所有控制器到当前场景 =====
         foreach (var controller in sceneControllers)
         {
-            if (controller != null)
+            if (controller == null) continue;
+
+            var transformData = controller.GetTransformData();
+
+            string elementName = controller.ElementPath;
+            if (!string.IsNullOrEmpty(elementName))
             {
-                controller.SetSceneId(currentSceneId);
+                elementName = Path.GetFileNameWithoutExtension(elementName);
             }
-        }
-    }
+            else
+            {
+                elementName = controller.ElementId.ToString();
+            }
 
-    /// <summary>
-    /// 查找场景中的所有控制器并注册
-    /// </summary>
-    public void FindAndRegisterAllControllers()
-    {
-        SceneMatCtrl[] foundControllers = FindObjectsOfType<SceneMatCtrl>();
-        foreach (var controller in foundControllers)
+            var element = new SceneElementData
+            {
+                id = controller.ElementId.ToString(),
+                name = elementName
+            };
+
+            element.transform = new TransformData
+            {
+                position = transformData.position,
+                scale = transformData.scale
+            };
+
+            currentSceneData.elements.Add(element);
+        }
+
+        currentSceneData.isFlipped = currentSceneFlip;
+
+        string newData = JsonUtility.ToJson(currentSceneData, true);
+
+        // ===== 打印日志 =====
+        Debug.Log($"[SceneMatManager] ===== 场景数据更新 =====");
+        Debug.Log($"[SceneMatManager] 场景ID: {currentSceneData.sceneId}, 名称: {currentSceneData.sceneName}");
+        Debug.Log($"[SceneMatManager] currentSceneName (编辑器中的值): {currentSceneName}");
+        Debug.Log($"[SceneMatManager] 场景镜像: {currentSceneData.isFlipped}");
+        Debug.Log($"[SceneMatManager] 是否为新场景: {isNewScene}");
+        Debug.Log($"[SceneMatManager] 保存元素数量: {currentSceneData.elements.Count} (所有控制器)");
+        Debug.Log($"[SceneMatManager] JSON中共有 {sceneDataWrapper.scenes.Count} 个场景");
+
+        if (!isNewScene)
         {
-            RegisterController(controller);
+            Debug.Log($"[SceneMatManager] --- 替换前 ---\n{oldData}");
+            Debug.Log($"[SceneMatManager] --- 替换后 ---\n{newData}");
         }
-        Debug.Log($"[SceneMatManager] 找到并注册了 {foundControllers.Length} 个控制器");
+        else
+        {
+            Debug.Log($"[SceneMatManager] --- 新增场景 ---\n{newData}");
+        }
+
+        Debug.Log($"[SceneMatManager] =================================");
     }
 
-    /// <summary>
-    /// 保存场景数据到JSON字符串
-    /// </summary>
     public string SaveSceneDataToJson()
     {
-        if (sceneDataWrapper == null)
-        {
-            sceneDataWrapper = new SceneDataWrapper();
-        }
+        CollectDataFromControllers();
+
+        if (sceneDataWrapper == null) sceneDataWrapper = new SceneDataWrapper();
         return JsonUtility.ToJson(sceneDataWrapper, true);
     }
 
-    /// <summary>
-    /// 保存场景数据到文件
-    /// </summary>
     public void SaveSceneDataToFile(string filePath)
     {
         try
         {
-            string json = SaveSceneDataToJson();
+            CollectDataFromControllers();
+
+            string json = JsonUtility.ToJson(sceneDataWrapper, true);
+
+            string directory = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
             File.WriteAllText(filePath, json);
             Debug.Log($"[SceneMatManager] 数据已保存到: {filePath}");
         }
@@ -641,5 +720,69 @@ public class SceneMatManager : MonoBehaviour
         {
             Debug.LogError($"[SceneMatManager] 保存数据失败: {e.Message}");
         }
+    }
+
+    public void SaveToDefaultPath()
+    {
+        string fullPath = Path.Combine(Application.dataPath, "Resources", sceneDataPath + ".json");
+        SaveSceneDataToFile(fullPath);
+#if UNITY_EDITOR
+        UnityEditor.AssetDatabase.Refresh();
+#endif
+    }
+
+    // ========== 工具方法 ==========
+
+    public void FindAndRegisterAllControllers()
+    {
+        SceneMatCtrl[] foundControllers = FindObjectsOfType<SceneMatCtrl>(true);
+        sceneControllers.Clear();
+        controllerDict.Clear();
+
+        foreach (var controller in foundControllers)
+        {
+            RegisterController(controller);
+        }
+
+        Debug.Log($"[SceneMatManager] 找到并注册了 {foundControllers.Length} 个控制器");
+
+        // 打印所有注册的控制器
+        foreach (var kvp in controllerDict)
+        {
+            Debug.Log($"[SceneMatManager] 已注册: {kvp.Key} -> {kvp.Value.gameObject.name}");
+        }
+    }
+
+    public void RefreshAllControllers()
+    {
+        foreach (var controller in sceneControllers)
+        {
+            if (controller != null) controller.SetSceneId(currentSceneId);
+        }
+    }
+
+    /// <summary>
+    /// 获取完整图片路径
+    /// </summary>
+    public string GetFullImagePath(string sceneId, string imageName)
+    {
+        return RESOURCE_BASE_PATH + sceneId + "/" + imageName;
+    }
+
+    /// <summary>
+    /// 打印所有控制器的材质信息（用于调试）
+    /// </summary>
+    public void LogAllControllerMaterials()
+    {
+        Debug.Log($"[SceneMatManager] ===== 所有控制器材质信息 =====");
+        foreach (var controller in sceneControllers)
+        {
+            if (controller != null)
+            {
+                Material mat = controller.Material;
+                Debug.Log($"[SceneMatManager] {controller.ElementId} ({controller.gameObject.name}): 材质={mat?.name ?? "null"}, 实例ID={mat?.GetInstanceID() ?? 0}, 渲染队列={mat?.renderQueue ?? 0}, 初始化={controller.IsInitialized}");
+            }
+        }
+        Debug.Log($"[SceneMatManager] =================================");
     }
 }

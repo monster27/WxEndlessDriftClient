@@ -3,16 +3,14 @@ using System.Collections.Generic;
 
 /// <summary>
 /// 环境渲染管理器
-/// 负责管理环境图片的切换和渐变效果
+/// 负责管理环境图片的切换，依赖 SceneMatManager 和 SceneMatCtrl 进行渲染控制
+/// 只控制时段层（Time）和天气层（Weather）
 /// </summary>
 public class EnvironmentRenderManager : MonoBehaviour
 {
     public static EnvironmentRenderManager Instance { get; private set; }
 
     [Header("环境渲染配置")]
-    public Renderer environmentRenderer;
-    public Material transitionMaterial;
-
     [Header("时段环境图片 (ID -> Sprite)")]
     public List<TimeEnvironmentEntry> timeEnvironmentEntries = new List<TimeEnvironmentEntry>();
     public Sprite timeDefaultSprite;
@@ -21,30 +19,20 @@ public class EnvironmentRenderManager : MonoBehaviour
     public List<WeatherEnvironmentEntry> weatherEnvironmentEntries = new List<WeatherEnvironmentEntry>();
     public Sprite weatherDefaultSprite;
 
-    [Header("渐变设置")]
-    public float transitionDuration = 1f;
-
-    [Header("渲染层级设置")]
-    public LayerRenderSettings timeLayerSettings = new LayerRenderSettings("时段层", 1000);
-    public LayerRenderSettings backgroundLayerSettings = new LayerRenderSettings("背景层", 1100);
-    public LayerRenderSettings sceneLayerSettings = new LayerRenderSettings("场景层", 1200);
-    public LayerRenderSettings weatherLayerSettings = new LayerRenderSettings("天气层", 1300);
-
-    [Header("层级渲染器列表")]
-    public List<RendererData> timeRenderers = new List<RendererData>();
-    public List<RendererData> backgroundRenderers = new List<RendererData>();
-    public List<RendererData> sceneRenderers = new List<RendererData>();
-    public List<RendererData> weatherRenderers = new List<RendererData>();
+    [Header("SceneMatCtrl 引用")]
+    [Tooltip("时段层控制器 (Timelmg)")]
+    public SceneMatCtrl timeLayerController;
+    [Tooltip("天气层控制器 (Weather)")]
+    public SceneMatCtrl weatherLayerController;
 
     private Dictionary<int, Sprite> timeEnvironmentDict = new Dictionary<int, Sprite>();
     private Dictionary<int, Sprite> weatherEnvironmentDict = new Dictionary<int, Sprite>();
 
-    private bool isTransitioning = false;
-    private float transitionTimer = 0f;
-    private Sprite currentSprite;
-    private Sprite targetSprite;
+    private Sprite currentTimeSprite;
+    private Sprite currentWeatherSprite;
     private int currentTimeId = 401;
     private int currentWeatherId = 301;
+    private bool isInitialized = false;
 
     private void Awake()
     {
@@ -70,45 +58,7 @@ public class EnvironmentRenderManager : MonoBehaviour
     private void Start()
     {
         BuildDictionaries();
-        ApplyRenderQueueSettings();
         InitializeEnvironment();
-    }
-
-    private void Update()
-    {
-        if (isTransitioning)
-        {
-            UpdateTransition();
-        }
-    }
-
-    /// <summary>
-    /// 应用渲染队列设置
-    /// </summary>
-    private void ApplyRenderQueueSettings()
-    {
-        ApplyLayerRenderQueue(timeRenderers, timeLayerSettings);
-        ApplyLayerRenderQueue(backgroundRenderers, backgroundLayerSettings);
-        ApplyLayerRenderQueue(sceneRenderers, sceneLayerSettings);
-        ApplyLayerRenderQueue(weatherRenderers, weatherLayerSettings);
-    }
-
-    /// <summary>
-    /// 应用特定层级的渲染队列设置
-    /// </summary>
-    private void ApplyLayerRenderQueue(List<RendererData> rendererDatas, LayerRenderSettings layerSettings)
-    {
-        for (int i = 0; i < rendererDatas.Count; i++)
-        {
-            RendererData data = rendererDatas[i];
-            if (data.renderer != null && data.renderer.material != null)
-            {
-                // 基础渲染队列 + 层级偏移 + 单个渲染器偏移
-                int finalQueue = layerSettings.baseRenderQueue + layerSettings.offset + data.offset;
-                data.renderer.material.renderQueue = finalQueue;
-                Debug.Log($"[EnvironmentRenderManager] 设置{layerSettings.layerName}渲染器[{i}]队列: {finalQueue}");
-            }
-        }
     }
 
     /// <summary>
@@ -140,35 +90,160 @@ public class EnvironmentRenderManager : MonoBehaviour
     /// </summary>
     private void InitializeEnvironment()
     {
-        Sprite initialSprite = null;
-
-        if (timeEnvironmentDict.TryGetValue(currentTimeId, out initialSprite) && initialSprite != null)
+        // 初始化时段
+        Sprite initialTimeSprite = null;
+        if (timeEnvironmentDict.TryGetValue(currentTimeId, out initialTimeSprite) && initialTimeSprite != null)
         {
-            SetEnvironmentSprite(initialSprite);
+            currentTimeSprite = initialTimeSprite;
+            SetTimeSprite(initialTimeSprite);
         }
         else if (timeDefaultSprite != null)
         {
-            SetEnvironmentSprite(timeDefaultSprite);
+            currentTimeSprite = timeDefaultSprite;
+            SetTimeSprite(timeDefaultSprite);
         }
         else if (timeEnvironmentEntries.Count > 0 && timeEnvironmentEntries[0].sprite != null)
         {
-            SetEnvironmentSprite(timeEnvironmentEntries[0].sprite);
+            currentTimeSprite = timeEnvironmentEntries[0].sprite;
+            SetTimeSprite(timeEnvironmentEntries[0].sprite);
         }
         else
         {
             Debug.LogWarning("[EnvironmentRenderManager] 初始化时没有可用的时段图片");
         }
+
+        // 初始化天气
+        Sprite initialWeatherSprite = null;
+        if (weatherEnvironmentDict.TryGetValue(currentWeatherId, out initialWeatherSprite) && initialWeatherSprite != null)
+        {
+            currentWeatherSprite = initialWeatherSprite;
+            SetWeatherSprite(initialWeatherSprite);
+        }
+        else if (weatherDefaultSprite != null)
+        {
+            currentWeatherSprite = weatherDefaultSprite;
+            SetWeatherSprite(weatherDefaultSprite);
+        }
+        else
+        {
+            Debug.Log("[EnvironmentRenderManager] 初始化时没有可用的天气图片（天气可以为空）");
+        }
+
+        isInitialized = true;
+        Debug.Log($"[EnvironmentRenderManager] 环境初始化完成: TimeId={currentTimeId}, WeatherId={currentWeatherId}");
     }
 
     /// <summary>
-    /// 设置当前环境图片
+    /// 设置时段层图片
     /// </summary>
-    public void SetEnvironmentSprite(Sprite sprite)
+    public void SetTimeSprite(Sprite sprite)
     {
-        if (environmentRenderer == null || sprite == null) return;
+        if (timeLayerController == null)
+        {
+            Debug.LogWarning($"[EnvironmentRenderManager] 时段层控制器未设置");
+            return;
+        }
 
-        currentSprite = sprite;
-        environmentRenderer.material.mainTexture = sprite.texture;
+        if (sprite == null)
+        {
+            Debug.LogWarning($"[EnvironmentRenderManager] 时段图片为空，不进行渲染");
+            return;
+        }
+
+        Texture2D texture = SpriteToTexture2D(sprite);
+        if (texture != null)
+        {
+            timeLayerController.SetMainTexture(texture);
+            Debug.Log($"[EnvironmentRenderManager] 设置时段层图片: {sprite.name}");
+        }
+    }
+
+    /// <summary>
+    /// 设置时段层图片（带渐变）
+    /// </summary>
+    public void SetTimeSpriteSmooth(Sprite sprite, float duration = -1f)
+    {
+        if (timeLayerController == null)
+        {
+            Debug.LogWarning($"[EnvironmentRenderManager] 时段层控制器未设置");
+            return;
+        }
+
+        if (sprite == null)
+        {
+            Debug.LogWarning($"[EnvironmentRenderManager] 时段图片为空，不进行渲染");
+            return;
+        }
+
+        if (duration < 0) duration = 0.5f;
+
+        Texture2D texture = SpriteToTexture2D(sprite);
+        if (texture != null)
+        {
+            timeLayerController.SetMainTextureSmooth(texture, duration);
+            Debug.Log($"[EnvironmentRenderManager] 平滑设置时段层图片: {sprite.name}, 时长: {duration}s");
+        }
+    }
+
+    /// <summary>
+    /// 设置天气层图片
+    /// </summary>
+    public void SetWeatherSprite(Sprite sprite)
+    {
+        if (weatherLayerController == null)
+        {
+            Debug.LogWarning($"[EnvironmentRenderManager] 天气层控制器未设置");
+            return;
+        }
+
+        if (sprite == null)
+        {
+            Debug.LogWarning($"[EnvironmentRenderManager] 天气图片为空，不进行渲染");
+            return;
+        }
+
+        Texture2D texture = SpriteToTexture2D(sprite);
+        if (texture != null)
+        {
+            weatherLayerController.SetMainTexture(texture);
+            Debug.Log($"[EnvironmentRenderManager] 设置天气层图片: {sprite.name}");
+        }
+    }
+
+    /// <summary>
+    /// 设置天气层图片（带渐变）
+    /// </summary>
+    public void SetWeatherSpriteSmooth(Sprite sprite, float duration = -1f)
+    {
+        if (weatherLayerController == null)
+        {
+            Debug.LogWarning($"[EnvironmentRenderManager] 天气层控制器未设置");
+            return;
+        }
+
+        if (sprite == null)
+        {
+            Debug.LogWarning($"[EnvironmentRenderManager] 天气图片为空，不进行渲染");
+            return;
+        }
+
+        if (duration < 0) duration = 0.5f;
+
+        Texture2D texture = SpriteToTexture2D(sprite);
+        if (texture != null)
+        {
+            weatherLayerController.SetMainTextureSmooth(texture, duration);
+            Debug.Log($"[EnvironmentRenderManager] 平滑设置天气层图片: {sprite.name}, 时长: {duration}s");
+        }
+    }
+
+    /// <summary>
+    /// 将Sprite转换为Texture2D
+    /// </summary>
+    private Texture2D SpriteToTexture2D(Sprite sprite)
+    {
+        if (sprite == null) return null;
+        return sprite.texture;
     }
 
     /// <summary>
@@ -176,12 +251,18 @@ public class EnvironmentRenderManager : MonoBehaviour
     /// </summary>
     public void SwitchTimeEnvironment(int timeId)
     {
+        if (!isInitialized)
+        {
+            Debug.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换时段");
+            return;
+        }
+
         Sprite target = null;
 
         if (!timeEnvironmentDict.TryGetValue(timeId, out target) || target == null)
         {
             Debug.LogWarning($"[EnvironmentRenderManager] 时段ID {timeId} 未找到对应图片");
-            
+
             if (timeDefaultSprite != null)
             {
                 Debug.LogWarning($"[EnvironmentRenderManager] 使用时段默认图片");
@@ -194,11 +275,13 @@ public class EnvironmentRenderManager : MonoBehaviour
             }
         }
 
-        if (timeId == currentTimeId && currentSprite == target) return;
+        if (timeId == currentTimeId && currentTimeSprite == target) return;
 
         currentTimeId = timeId;
-        StartTransition(target);
-        Debug.Log($"[EnvironmentRenderManager] 切换时段环境: ID={timeId}");
+        currentTimeSprite = target;
+
+        SetTimeSpriteSmooth(target);
+        Debug.Log($"[EnvironmentRenderManager] 切换时段环境: ID={timeId}, 名称={(target != null ? target.name : "null")}");
     }
 
     /// <summary>
@@ -206,12 +289,18 @@ public class EnvironmentRenderManager : MonoBehaviour
     /// </summary>
     public void SwitchWeatherEnvironment(int weatherId)
     {
+        if (!isInitialized)
+        {
+            Debug.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换天气");
+            return;
+        }
+
         Sprite target = null;
 
         if (!weatherEnvironmentDict.TryGetValue(weatherId, out target) || target == null)
         {
             Debug.LogWarning($"[EnvironmentRenderManager] 天气ID {weatherId} 未找到对应图片");
-            
+
             if (weatherDefaultSprite != null)
             {
                 Debug.LogWarning($"[EnvironmentRenderManager] 使用天气默认图片");
@@ -224,107 +313,89 @@ public class EnvironmentRenderManager : MonoBehaviour
             }
         }
 
-        if (weatherId == currentWeatherId && currentSprite == target) return;
+        if (weatherId == currentWeatherId && currentWeatherSprite == target) return;
 
         currentWeatherId = weatherId;
-        StartTransition(target);
-        Debug.Log($"[EnvironmentRenderManager] 切换天气环境: ID={weatherId}");
+        currentWeatherSprite = target;
+
+        SetWeatherSpriteSmooth(target);
+        Debug.Log($"[EnvironmentRenderManager] 切换天气环境: ID={weatherId}, 名称={(target != null ? target.name : "null")}");
     }
 
     /// <summary>
-    /// 设置特定层级的Sprite
+    /// 立即切换时段环境（无渐变）
     /// </summary>
-    public void SetLayerSprite(LayerType layerType, Sprite sprite)
+    public void SwitchTimeEnvironmentImmediate(int timeId)
     {
-        List<RendererData> targetRenderers = GetLayerRenderers(layerType);
-        if (targetRenderers != null && sprite != null)
+        if (!isInitialized)
         {
-            foreach (var rendererData in targetRenderers)
-            {
-                if (rendererData.renderer != null)
-                {
-                    rendererData.renderer.material.mainTexture = sprite.texture;
-                }
-            }
-            Debug.Log($"[EnvironmentRenderManager] 设置{layerType}图片");
-        }
-        else if (sprite == null)
-        {
-            Debug.LogWarning($"[EnvironmentRenderManager] {layerType}图片为空，不进行渲染");
-        }
-    }
-
-    /// <summary>
-    /// 获取层级对应的渲染器列表
-    /// </summary>
-    private List<RendererData> GetLayerRenderers(LayerType layerType)
-    {
-        switch (layerType)
-        {
-            case LayerType.Time: return timeRenderers;
-            case LayerType.Background: return backgroundRenderers;
-            case LayerType.Scene: return sceneRenderers;
-            case LayerType.Weather: return weatherRenderers;
-            default: return null;
-        }
-    }
-
-    /// <summary>
-    /// 开始渐变过渡
-    /// </summary>
-    private void StartTransition(Sprite target)
-    {
-        if (environmentRenderer == null || target == null)
-        {
-            SetEnvironmentSprite(target);
+            Debug.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换时段");
             return;
         }
 
-        targetSprite = target;
+        Sprite target = null;
 
-        if (transitionMaterial != null)
+        if (!timeEnvironmentDict.TryGetValue(timeId, out target) || target == null)
         {
-            transitionMaterial.SetTexture("_MainTex", currentSprite.texture);
-            transitionMaterial.SetTexture("_NextTex", target.texture);
-            transitionMaterial.SetFloat("_Transition", 0f);
-            environmentRenderer.material = transitionMaterial;
-        }
-        else
-        {
-            environmentRenderer.material.mainTexture = target.texture;
+            Debug.LogWarning($"[EnvironmentRenderManager] 时段ID {timeId} 未找到对应图片");
+
+            if (timeDefaultSprite != null)
+            {
+                Debug.LogWarning($"[EnvironmentRenderManager] 使用时段默认图片");
+                target = timeDefaultSprite;
+            }
+            else
+            {
+                Debug.LogWarning("[EnvironmentRenderManager] 时段默认图片也未设置，不进行渲染");
+                return;
+            }
         }
 
-        isTransitioning = true;
-        transitionTimer = 0f;
+        if (timeId == currentTimeId && currentTimeSprite == target) return;
+
+        currentTimeId = timeId;
+        currentTimeSprite = target;
+
+        SetTimeSprite(target);
+        Debug.Log($"[EnvironmentRenderManager] 立即切换时段环境: ID={timeId}");
     }
 
     /// <summary>
-    /// 更新渐变过渡
+    /// 立即切换天气环境（无渐变）
     /// </summary>
-    private void UpdateTransition()
+    public void SwitchWeatherEnvironmentImmediate(int weatherId)
     {
-        transitionTimer += Time.deltaTime;
-        float progress = Mathf.Clamp01(transitionTimer / transitionDuration);
-
-        if (transitionMaterial != null)
+        if (!isInitialized)
         {
-            transitionMaterial.SetFloat("_Transition", progress);
+            Debug.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换天气");
+            return;
         }
 
-        if (progress >= 1f)
-        {
-            CompleteTransition();
-        }
-    }
+        Sprite target = null;
 
-    /// <summary>
-    /// 完成渐变过渡
-    /// </summary>
-    private void CompleteTransition()
-    {
-        isTransitioning = false;
-        SetEnvironmentSprite(targetSprite);
-        Debug.Log($"[EnvironmentRenderManager] 环境切换完成");
+        if (!weatherEnvironmentDict.TryGetValue(weatherId, out target) || target == null)
+        {
+            Debug.LogWarning($"[EnvironmentRenderManager] 天气ID {weatherId} 未找到对应图片");
+
+            if (weatherDefaultSprite != null)
+            {
+                Debug.LogWarning($"[EnvironmentRenderManager] 使用天气默认图片");
+                target = weatherDefaultSprite;
+            }
+            else
+            {
+                Debug.LogWarning("[EnvironmentRenderManager] 天气默认图片也未设置，不进行渲染（天气可以没有渲染效果）");
+                return;
+            }
+        }
+
+        if (weatherId == currentWeatherId && currentWeatherSprite == target) return;
+
+        currentWeatherId = weatherId;
+        currentWeatherSprite = target;
+
+        SetWeatherSprite(target);
+        Debug.Log($"[EnvironmentRenderManager] 立即切换天气环境: ID={weatherId}");
     }
 
     /// <summary>
@@ -336,6 +407,39 @@ public class EnvironmentRenderManager : MonoBehaviour
     /// 获取当前天气ID
     /// </summary>
     public int GetCurrentWeatherId() => currentWeatherId;
+
+    /// <summary>
+    /// 获取当前时段Sprite
+    /// </summary>
+    public Sprite GetCurrentTimeSprite() => currentTimeSprite;
+
+    /// <summary>
+    /// 获取当前天气Sprite
+    /// </summary>
+    public Sprite GetCurrentWeatherSprite() => currentWeatherSprite;
+
+    /// <summary>
+    /// 重新初始化环境（在场景切换后调用）
+    /// </summary>
+    public void Reinitialize()
+    {
+        Debug.Log($"[EnvironmentRenderManager] 重新初始化环境");
+        BuildDictionaries();
+
+        // 重新应用当前时段和天气
+        if (currentTimeSprite != null)
+        {
+            SetTimeSprite(currentTimeSprite);
+        }
+
+        if (currentWeatherSprite != null)
+        {
+            SetWeatherSprite(currentWeatherSprite);
+        }
+
+        isInitialized = true;
+        Debug.Log($"[EnvironmentRenderManager] 重新初始化完成: TimeId={currentTimeId}, WeatherId={currentWeatherId}");
+    }
 }
 
 [System.Serializable]
@@ -352,39 +456,4 @@ public class WeatherEnvironmentEntry
     public int id;
     public string name = "天气名称";
     public Sprite sprite;
-}
-
-[System.Serializable]
-public class RendererData
-{
-    public Renderer renderer;
-    public int offset;
-
-    public RendererData()
-    {
-        offset = 0;
-    }
-}
-
-[System.Serializable]
-public class LayerRenderSettings
-{
-    public string layerName;
-    public int baseRenderQueue;
-    public int offset;
-
-    public LayerRenderSettings(string name, int baseQueue)
-    {
-        layerName = name;
-        baseRenderQueue = baseQueue;
-        offset = 0;
-    }
-}
-
-public enum LayerType
-{
-    Time,
-    Background,
-    Scene,
-    Weather
 }

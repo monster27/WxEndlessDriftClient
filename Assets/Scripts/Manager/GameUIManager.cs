@@ -12,6 +12,7 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     public TipView tipView;
     public EquipmentView equipmentView;
     public AdvertisingView advertisingView;
+    public MapView mapView;  // ✅ 新增
 
     public void Init()
     {
@@ -35,6 +36,11 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
             equipmentView.Init();
         }
 
+        if (mapView != null)  // ✅ 新增
+        {
+            mapView.Init();
+        }
+
         RegisterEvents();
     }
 
@@ -44,9 +50,13 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         CommunicateEvent.Register("UI_OpenFishBag", OpenFishBag);
         CommunicateEvent.Register("UI_OpenMall", OpenMall);
         CommunicateEvent.Register("UI_OpenEquipment", OpenEquipment);
+        CommunicateEvent.Register("UI_OpenMap", OpenMap);  // ✅ 新增
 
         CommunicateEvent.Register<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, ShowTip);
         CommunicateEvent.Register<CommunicateEvent.AdvertisingRequest>(CommunicateEvent.EVENT_UI_SHOW_ADVERTISING, OnShowAdvertisingRequest);
+
+        // ✅ 新增：注册场景切换请求事件
+        CommunicateEvent.Register<Dictionary<string, object>>("SceneSwitchRequest", OnSceneSwitchRequest);
     }
 
     private void OnShowAdvertisingRequest(CommunicateEvent.AdvertisingRequest request)
@@ -142,6 +152,40 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         }
     }
 
+    // ✅ 新增：打开地图
+    public void OpenMap()
+    {
+        if (mapView != null)
+        {
+            mapView.OpenMap();
+        }
+    }
+
+    // ✅ 新增：关闭地图
+    public void CloseMap()
+    {
+        if (mapView != null)
+        {
+            mapView.CloseBag();
+        }
+    }
+
+    // ✅ 新增：场景切换请求处理
+    private void OnSceneSwitchRequest(Dictionary<string, object> data)
+    {
+        if (data == null || !data.ContainsKey("sceneId"))
+        {
+            Debug.LogWarning("[GameUIManager] 场景切换请求数据无效");
+            return;
+        }
+
+        int sceneId = (int)data["sceneId"];
+        Debug.Log($"[GameUIManager] 收到场景切换请求: {sceneId}");
+
+        // 发送到服务器处理
+        CommunicateEvent.Modify<int>("Server_SceneSwitch", sceneId);
+    }
+
     public void ShowCatchResult(string itemName, float weight, Sprite icon, int starRatingId = 0)
     {
         if (mainGameView != null)
@@ -222,24 +266,24 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     }
 
     /// <summary>
-        /// 更新窝料数量显示
-        /// </summary>
-        public void UpdateBaitCountDisplay(int baitCount)
+    /// 更新窝料数量显示
+    /// </summary>
+    public void UpdateBaitCountDisplay(int baitCount)
+    {
+        if (mainGameView != null)
         {
-            if (mainGameView != null)
-            {
-                mainGameView.UpdateBaitCount(baitCount);
-            }
-        }
-
-        /// <summary>
-        /// 更新连续钓鱼模式剩余时间
-        /// </summary>
-        public void UpdateContinuousModeRemainingTime(float remainingTime)
-        {
-            if (mainGameView != null)
-            {
-                mainGameView.UpdateContinuousModeTime(remainingTime);
-            }
+            mainGameView.UpdateBaitCount(baitCount);
         }
     }
+
+    /// <summary>
+    /// 更新连续钓鱼模式剩余时间
+    /// </summary>
+    public void UpdateContinuousModeRemainingTime(float remainingTime)
+    {
+        if (mainGameView != null)
+        {
+            mainGameView.UpdateContinuousModeTime(remainingTime);
+        }
+    }
+}

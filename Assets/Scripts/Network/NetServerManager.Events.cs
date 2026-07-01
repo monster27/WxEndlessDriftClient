@@ -18,7 +18,7 @@ public partial class NetServerManager
         CommunicateEvent.RegisterRequest<int, float>(CommunicateEvent.EVENT_GET_CONTINUOUS_MODE_REMAINING_TIME, _ => continuousModeRemainingTime);
         CommunicateEvent.RegisterRequest<int, int>(CommunicateEvent.EVENT_GET_CURRENT_SCENE_BAIT_COUNT, _ => GetCurrentSceneBaitCount());
 
-        // ========== 玩家数据 - 使用 VIEW_EVENT_GET_* 前缀，与 PlayerDataManager 一致 ==========
+        // ========== 玩家数据 ==========
         CommunicateEvent.RegisterRequest<int, Dictionary<int, int>>("VIEW_EVENT_GET_INVENTORY", _ => GetPlayerInventory());
         CommunicateEvent.RegisterRequest<int, Dictionary<int, int>>("VIEW_EVENT_GET_FISH_INVENTORY", _ => GetPlayerFishInventory());
         CommunicateEvent.RegisterRequest<int, int>("VIEW_EVENT_GET_FISH_BAG_CAPACITY", _ => GetFishBagCapacity());
@@ -67,6 +67,9 @@ public partial class NetServerManager
 
         // ========== 窝料消耗 ==========
         CommunicateEvent.Register(CommunicateEvent.EVENT_CONSUME_BAIT_AND_ENTER_CONTINUOUS_MODE, OnConsumeBaitAndEnterContinuousMode);
+
+        // ✅ 新增：场景切换
+        CommunicateEvent.Register<int>("Server_SceneSwitch", SwitchPlayerScene);
 
         Logger.Log("[NetServerManager] 事件处理器注册完成！");
     }

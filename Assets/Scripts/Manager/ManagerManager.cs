@@ -17,38 +17,9 @@ public class ManagerManager : SingletonMono<ManagerManager>
     {
         Debug.Log($"[ManagerManager] 场景加载完成: {scene.name}");
 
-        // 场景加载完成后，立即确保 Player 对象存在
-        //EnsurePlayerExists();
-
         InitGameSceneManagers();
     }
 
-    //private void EnsurePlayerExists()
-    //{
-    //    GameObject player = GameObject.FindGameObjectWithTag("Player");
-    //    if (player == null)
-    //    {
-    //        player = GameObject.Find("Player");
-    //    }
-
-    //    if (player == null)
-    //    {
-    //        Debug.Log("[ManagerManager] 未找到 Player 对象，正在创建...");
-    //        player = new GameObject("Player");
-    //        player.tag = "Player";
-    //        PlayerAniCtrl aniCtrl = player.AddComponent<PlayerAniCtrl>();
-    //        Debug.Log("[ManagerManager] 创建 Player 对象并添加 PlayerAniCtrl");
-    //    }
-    //    else
-    //    {
-    //        PlayerAniCtrl aniCtrl = player.GetComponent<PlayerAniCtrl>();
-    //        if (aniCtrl == null)
-    //        {
-    //            aniCtrl = player.AddComponent<PlayerAniCtrl>();
-    //            Debug.Log("[ManagerManager] 为现有 Player 对象添加 PlayerAniCtrl");
-    //        }
-    //    }
-    //}
 
     private void InitGameSceneManagers()
     {
@@ -140,6 +111,35 @@ public class ManagerManager : SingletonMono<ManagerManager>
         {
             PlayerAniManager.Instance.Init();
             logBuilder.AppendLine("  PlayerAniManager: 完成");
+        }
+
+        // ====================================================================
+        // 9. 场景切换 - 根据服务器数据切换场景
+        // ====================================================================
+        if (NetServerManager.Instance != null && NetServerManager.Instance.IsInitialized)
+        {
+            // 获取服务器返回的场景ID
+            int sceneId = EnvManager.Instance.currentSceneId;
+
+            // 调用 SceneMatManager 切换场景
+            SceneMatManager sceneMatManager = FindObjectOfType<SceneMatManager>();
+            if (sceneMatManager != null)
+            {
+                string sceneIdStr = sceneId.ToString();
+                Debug.Log($"[ManagerManager] 切换到场景: {sceneIdStr}");
+                sceneMatManager.SwitchScene(sceneIdStr);
+                logBuilder.AppendLine($"  场景切换: {sceneIdStr}");
+            }
+            else
+            {
+                Debug.LogWarning("[ManagerManager] SceneMatManager 未找到，无法切换场景");
+                logBuilder.AppendLine("  场景切换: 失败 (SceneMatManager 未找到)");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[ManagerManager] NetServerManager 未初始化完成，跳过场景切换");
+            logBuilder.AppendLine("  场景切换: 跳过 (NetServerManager 未就绪)");
         }
 
         // ====================================================================

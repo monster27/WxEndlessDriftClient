@@ -266,6 +266,7 @@ public partial class NetServerManager
         _initSteps.Add(new InitStep("加载金币数据", FetchPlayerGoldCoroutine, 1.0f));
         _initSteps.Add(new InitStep("加载人物列表", FetchUnlockedCharactersCoroutine, 1.0f));
         _initSteps.Add(new InitStep("加载鱼篓容量", FetchFishBagCapacityCoroutine, 1.0f));
+        _initSteps.Add(new InitStep("加载场景数据", FetchPlayerSceneDataCoroutine, 1.0f)); 
         _initSteps.Add(new InitStep("加载连续模式状态", FetchContinuousModeStatusCoroutine, 0.5f));
         _initSteps.Add(new InitStep("加载窝料数量", FetchBaitCountCoroutine, 0.5f));
         _initSteps.Add(new InitStep("确保基础人物", EnsureBasicCharacterCoroutine, 1.0f));

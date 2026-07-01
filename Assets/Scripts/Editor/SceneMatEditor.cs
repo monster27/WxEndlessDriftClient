@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 
 /// <summary>
-/// 场景材质编辑器 - 用于编辑场景数据
+/// 场景材质编辑器
 /// </summary>
 [CustomEditor(typeof(SceneMatManager))]
 public class SceneMatEditor : Editor
@@ -16,18 +16,9 @@ public class SceneMatEditor : Editor
     private int selectedSceneIndex = -1;
     private string[] sceneOptions;
     private Vector2 scrollPosition;
+    private Vector2 elementScrollPosition;
 
-    // 临时编辑数据
-    private SceneMatManager.SceneElementData editingElement;
-    private int editingElementIndex = -1;
-    private bool isEditingElement = false;
-
-    // 渲染层级选项
-    private string[] levelOptions = { "Background", "Environment", "Character", "Foreground", "UI" };
-
-    // 编辑用的临时位置和缩放值（因为SceneElementData使用的是Vector3）
-    private Vector3 tempPosition;
-    private Vector3 tempScale;
+    private string operationLog = "";
 
     private void OnEnable()
     {
@@ -42,7 +33,6 @@ public class SceneMatEditor : Editor
         EditorGUILayout.Space(10);
         EditorGUILayout.LabelField("=== 场景数据编辑器 ===", EditorStyles.boldLabel);
 
-        // 场景选择
         DrawSceneSelector();
 
         if (selectedScene != null)
@@ -50,19 +40,16 @@ public class SceneMatEditor : Editor
             DrawSceneDataEditor();
         }
 
-        // 操作按钮
         DrawActionButtons();
-
-        // 数据验证
-        DrawDataValidation();
-
-        // 保存按钮
         DrawSaveButton();
+        DrawOperationLog();
     }
 
     private void LoadSceneOptions()
     {
         if (manager == null) return;
+
+        manager.LoadSceneData();
 
         var scenes = manager.GetAllSceneData();
         if (scenes == null || scenes.Count == 0)
@@ -73,11 +60,18 @@ public class SceneMatEditor : Editor
 
         sceneOptions = scenes.Select(s => $"{s.sceneId}: {s.sceneName}").ToArray();
 
-        if (selectedSceneIndex >= 0 && selectedSceneIndex < scenes.Count)
+        string currentId = manager.CurrentSceneId;
+        for (int i = 0; i < scenes.Count; i++)
         {
-            selectedScene = scenes[selectedSceneIndex];
+            if (scenes[i].sceneId == currentId)
+            {
+                selectedSceneIndex = i;
+                selectedScene = scenes[i];
+                break;
+            }
         }
-        else if (scenes.Count > 0)
+
+        if (selectedSceneIndex == -1 && scenes.Count > 0)
         {
             selectedScene = scenes[0];
             selectedSceneIndex = 0;
@@ -86,6 +80,9 @@ public class SceneMatEditor : Editor
 
     private void DrawSceneSelector()
     {
+        EditorGUILayout.LabelField($"当前场景ID: {manager.CurrentSceneId}", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField($"当前场景名称: {manager.CurrentSceneName}", EditorStyles.boldLabel);
+
         if (sceneOptions == null || sceneOptions.Length == 0)
         {
             LoadSceneOptions();
@@ -96,6 +93,7 @@ public class SceneMatEditor : Editor
             }
         }
 
+        // 场景选择下拉框
         int newIndex = EditorGUILayout.Popup("选择场景", selectedSceneIndex, sceneOptions);
         if (newIndex != selectedSceneIndex)
         {
@@ -104,15 +102,84 @@ public class SceneMatEditor : Editor
             if (scenes != null && selectedSceneIndex >= 0 && selectedSceneIndex < scenes.Count)
             {
                 selectedScene = scenes[selectedSceneIndex];
+                // ✅ 同步更新 currentSceneName
+                if (selectedScene != null)
+                {
+                    manager.currentSceneName = selectedScene.sceneName;
+                }
             }
         }
+
+        // ===== 切换场景按钮 =====
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("切换场景", GUILayout.Height(30)))
+        {
+            if (selectedScene != null)
+            {
+                string sceneId = selectedScene.sceneId;
+
+                Debug.Log($"[SceneMatEditor] ===== 切换场景: {sceneId} =====");
+                Debug.Log($"[SceneMatEditor] 场景名称: {selectedScene.sceneName}");
+                Debug.Log($"[SceneMatEditor] 场景镜像: {selectedScene.isFlipped}");
+                Debug.Log($"[SceneMatEditor] 元素数量: {selectedScene.elements?.Count ?? 0}");
+
+                // 打印前3个元素的位置信息
+                if (selectedScene.elements != null)
+                {
+                    for (int i = 0; i < Math.Min(selectedScene.elements.Count, 5); i++)
+                    {
+                        var elem = selectedScene.elements[i];
+                        if (elem.transform != null)
+                        {
+                            Debug.Log($"[SceneMatEditor] 元素 {i + 1}: {elem.id}, 位置=({elem.transform.position.x:F2}, {elem.transform.position.y:F2}, {elem.transform.position.z:F2}), 大小=({elem.transform.scale.x:F2}, {elem.transform.scale.y:F2}, {elem.transform.scale.z:F2})");
+                        }
+                    }
+                }
+
+                // ===== 应用场景数据（位置和大小） =====
+                manager.ApplySceneData(sceneId);
+
+                string logMsg = $"✅ 切换到场景: {sceneId} - {selectedScene.sceneName}，加载了 {selectedScene.elements?.Count ?? 0} 个元素，镜像: {(selectedScene.isFlipped ? "开启" : "关闭")}";
+                AddLog(logMsg);
+                Debug.Log($"[SceneMatEditor] {logMsg}");
+                Debug.Log($"[SceneMatEditor] ===== 切换完成 =====");
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("提示", "请先选择一个场景", "确定");
+            }
+        }
+        EditorGUILayout.EndHorizontal();
     }
 
     private void DrawSceneDataEditor()
     {
-        EditorGUILayout.LabelField($"场景: {selectedScene.sceneName} (ID: {selectedScene.sceneId})", EditorStyles.boldLabel);
+        if (selectedScene == null) return;
 
-        EditorGUILayout.LabelField($"元素数量: {selectedScene.elements?.Count ?? 0}", EditorStyles.miniLabel);
+        // ===== 显示完整的场景信息 =====
+        EditorGUILayout.Space(5);
+        EditorGUILayout.LabelField("=== 场景详细信息 ===", EditorStyles.boldLabel);
+
+        EditorGUILayout.BeginVertical(GUI.skin.box);
+        EditorGUILayout.LabelField($"场景ID: {selectedScene.sceneId}", EditorStyles.boldLabel);
+
+        // ✅ 添加场景名称编辑框
+        string newSceneName = EditorGUILayout.TextField("场景名称:", selectedScene.sceneName);
+        if (newSceneName != selectedScene.sceneName)
+        {
+            selectedScene.sceneName = newSceneName;
+            // ✅ 同步更新 currentSceneName
+            if (selectedScene.sceneId == manager.CurrentSceneId)
+            {
+                manager.currentSceneName = newSceneName;
+            }
+            EditorUtility.SetDirty(manager);
+            AddLog($"📝 场景名称已更新: {selectedScene.sceneId} -> {newSceneName}");
+        }
+
+        EditorGUILayout.LabelField($"是否镜像: {(selectedScene.isFlipped ? "✅ 开启" : "❌ 关闭")}", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField($"元素数量: {selectedScene.elements?.Count ?? 0}");
+        EditorGUILayout.EndVertical();
 
         if (selectedScene.elements == null || selectedScene.elements.Count == 0)
         {
@@ -120,7 +187,11 @@ public class SceneMatEditor : Editor
             return;
         }
 
-        scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Height(300));
+        // ===== 显示元素列表 =====
+        EditorGUILayout.Space(5);
+        EditorGUILayout.LabelField($"=== 元素列表 ({selectedScene.elements.Count} 个) ===", EditorStyles.boldLabel);
+
+        elementScrollPosition = EditorGUILayout.BeginScrollView(elementScrollPosition, GUILayout.Height(300));
 
         for (int i = 0; i < selectedScene.elements.Count; i++)
         {
@@ -130,172 +201,37 @@ public class SceneMatEditor : Editor
 
         EditorGUILayout.EndScrollView();
 
-        if (GUILayout.Button("添加新元素"))
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("刷新场景列表（重新读取JSON）"))
         {
-            AddNewElement();
+            LoadSceneOptions();
+            AddLog("🔄 已重新读取JSON数据，刷新场景列表");
         }
-
-        if (isEditingElement && editingElement != null)
-        {
-            DrawElementEditor();
-        }
+        EditorGUILayout.EndHorizontal();
     }
 
     private void DrawElementItem(SceneMatManager.SceneElementData element, int index)
     {
+        EditorGUILayout.BeginVertical(GUI.skin.box);
+
+        // 第一行：ID 和 名称
         EditorGUILayout.BeginHorizontal();
-
-        string displayText = $"{element.id}: {element.name}";
-        EditorGUILayout.LabelField(displayText, GUILayout.Width(150));
-
-        // 使用 position 和 scale
-        EditorGUILayout.LabelField($"位置: ({element.position.x:F2}, {element.position.y:F2}, {element.position.z:F2})", GUILayout.Width(150));
-
-        EditorGUILayout.LabelField($"镜像: {(element.isFlipped ? "是" : "否")}", GUILayout.Width(60));
-
-        if (GUILayout.Button("编辑", GUILayout.Width(50)))
-        {
-            StartEditingElement(index);
-        }
-
-        if (GUILayout.Button("删除", GUILayout.Width(50)))
-        {
-            if (EditorUtility.DisplayDialog("删除元素", $"确定要删除元素 {element.id}: {element.name} 吗？", "确定", "取消"))
-            {
-                selectedScene.elements.RemoveAt(index);
-                EditorUtility.SetDirty(manager);
-            }
-        }
-
+        EditorGUILayout.LabelField($"#{index + 1}", GUILayout.Width(30));
+        EditorGUILayout.LabelField($"ID: {element.id}", EditorStyles.boldLabel, GUILayout.Width(120));
+        EditorGUILayout.LabelField($"名称: {element.name}", GUILayout.Width(150));
         EditorGUILayout.EndHorizontal();
-    }
 
-    private void StartEditingElement(int index)
-    {
-        if (selectedScene.elements == null || index >= selectedScene.elements.Count) return;
-
-        editingElementIndex = index;
-        editingElement = new SceneMatManager.SceneElementData();
-        CopyElementData(selectedScene.elements[index], editingElement);
-
-        // 初始化临时位置和缩放
-        tempPosition = editingElement.position;
-        tempScale = editingElement.scale;
-
-        isEditingElement = true;
-    }
-
-    private void CopyElementData(SceneMatManager.SceneElementData source, SceneMatManager.SceneElementData target)
-    {
-        target.id = source.id;
-        target.name = source.name;
-        target.imagePath = source.imagePath;
-        target.position = source.position;
-        target.scale = source.scale;
-        target.renderLevel = source.renderLevel;
-        target.isFlipped = source.isFlipped;
-        target.isLockFlip = source.isLockFlip;
-        target.sceneId = source.sceneId;
-    }
-
-    private void DrawElementEditor()
-    {
-        EditorGUILayout.Space(10);
-        EditorGUILayout.LabelField("=== 编辑元素 ===", EditorStyles.boldLabel);
-
-        if (editingElement == null) return;
-
-        // 元素类型下拉选择
-        string[] elementTypeNames = Enum.GetNames(typeof(SceneMatManager.ElementType));
-        int currentTypeIndex = Array.IndexOf(elementTypeNames, editingElement.id);
-        if (currentTypeIndex < 0) currentTypeIndex = 0;
-        int newTypeIndex = EditorGUILayout.Popup("元素类型", currentTypeIndex, elementTypeNames);
-        editingElement.id = elementTypeNames[newTypeIndex];
-
-        editingElement.name = EditorGUILayout.TextField("名称", editingElement.name);
-        editingElement.imagePath = EditorGUILayout.TextField("图片路径", editingElement.imagePath);
-
-        EditorGUILayout.LabelField("位置", EditorStyles.boldLabel);
-        tempPosition.x = EditorGUILayout.FloatField("X", tempPosition.x);
-        tempPosition.y = EditorGUILayout.FloatField("Y", tempPosition.y);
-        tempPosition.z = EditorGUILayout.FloatField("Z", tempPosition.z);
-
-        EditorGUILayout.LabelField("大小", EditorStyles.boldLabel);
-        tempScale.x = EditorGUILayout.FloatField("X", tempScale.x);
-        tempScale.y = EditorGUILayout.FloatField("Y", tempScale.y);
-        tempScale.z = EditorGUILayout.FloatField("Z", tempScale.z);
-
-        // 更新编辑元素的position和scale
-        editingElement.position = tempPosition;
-        editingElement.scale = tempScale;
-
-        int currentLevelIndex = Array.IndexOf(levelOptions, editingElement.renderLevel);
-        if (currentLevelIndex < 0) currentLevelIndex = 1;
-        int newLevelIndex = EditorGUILayout.Popup("渲染层级", currentLevelIndex, levelOptions);
-        editingElement.renderLevel = levelOptions[newLevelIndex];
-
-        editingElement.isFlipped = EditorGUILayout.Toggle("是否镜像", editingElement.isFlipped);
-        editingElement.isLockFlip = EditorGUILayout.Toggle("锁定镜像", editingElement.isLockFlip);
-
-        EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("保存修改"))
+        // 第二行：位置和大小
+        if (element.transform != null)
         {
-            SaveElementEdit();
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField($"位置: ({element.transform.position.x:F2}, {element.transform.position.y:F2}, {element.transform.position.z:F2})", GUILayout.Width(200));
+            EditorGUILayout.LabelField($"大小: ({element.transform.scale.x:F2}, {element.transform.scale.y:F2}, {element.transform.scale.z:F2})", GUILayout.Width(200));
+            EditorGUILayout.EndHorizontal();
         }
 
-        if (GUILayout.Button("取消"))
-        {
-            isEditingElement = false;
-            editingElement = null;
-            editingElementIndex = -1;
-        }
-        EditorGUILayout.EndHorizontal();
-    }
-
-    private void SaveElementEdit()
-    {
-        if (selectedScene.elements == null)
-        {
-            selectedScene.elements = new List<SceneMatManager.SceneElementData>();
-        }
-
-        if (editingElementIndex < 0 || editingElementIndex >= selectedScene.elements.Count)
-        {
-            selectedScene.elements.Add(editingElement);
-        }
-        else
-        {
-            CopyElementData(editingElement, selectedScene.elements[editingElementIndex]);
-        }
-
-        isEditingElement = false;
-        editingElement = null;
-        editingElementIndex = -1;
-        EditorUtility.SetDirty(manager);
-    }
-
-    private void AddNewElement()
-    {
-        string[] elementTypeNames = Enum.GetNames(typeof(SceneMatManager.ElementType));
-
-        editingElement = new SceneMatManager.SceneElementData
-        {
-            id = elementTypeNames.Length > 0 ? elementTypeNames[0] : "NewElement",
-            name = "新元素",
-            imagePath = "",
-            position = Vector3.zero,
-            scale = Vector3.one,
-            renderLevel = "Environment",
-            isFlipped = false,
-            isLockFlip = false,
-            sceneId = ""
-        };
-
-        tempPosition = editingElement.position;
-        tempScale = editingElement.scale;
-
-        editingElementIndex = -1;
-        isEditingElement = true;
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space(2);
     }
 
     private void DrawActionButtons()
@@ -303,38 +239,47 @@ public class SceneMatEditor : Editor
         EditorGUILayout.Space(10);
         EditorGUILayout.LabelField("=== 操作 ===", EditorStyles.boldLabel);
 
-        if (GUILayout.Button("查找并注册所有控制器"))
-        {
-            manager.FindAndRegisterAllControllers();
-            EditorUtility.SetDirty(manager);
-        }
-
-        if (GUILayout.Button("从控制器同步数据"))
-        {
-            SyncFromControllers();
-        }
-
-        if (GUILayout.Button("验证场景数据"))
-        {
-            ValidateSceneData();
-        }
-
+        // ===== 切换场景镜像 =====
         EditorGUILayout.BeginHorizontal();
-        string testSceneId = EditorGUILayout.TextField("校验场景ID", manager.CurrentSceneId);
-        if (GUILayout.Button("校验", GUILayout.Width(60)))
+        if (GUILayout.Button("切换场景镜像", GUILayout.Height(25)))
         {
-            CheckSceneId(testSceneId);
+            if (selectedScene != null)
+            {
+                bool currentFlip = selectedScene.isFlipped;
+                bool newFlip = !currentFlip;
+
+                // 更新场景数据
+                selectedScene.isFlipped = newFlip;
+                manager.SetSceneFlip(newFlip);
+
+                AddLog($"🔄 场景镜像切换为: {(newFlip ? "开启" : "关闭")}");
+                EditorUtility.SetDirty(manager);
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("提示", "请先选择一个场景", "确定");
+            }
+        }
+
+        // ✅ 添加从当前场景加载按钮
+        if (GUILayout.Button("从当前场景加载", GUILayout.Height(25)))
+        {
+            if (selectedScene != null)
+            {
+                // 从当前场景的控制器加载数据
+                manager.CollectDataFromControllers();
+                // 重新加载场景数据
+                manager.LoadSceneData();
+                LoadSceneOptions();
+                AddLog($"📥 已从当前场景加载数据: {selectedScene.sceneId}");
+                EditorUtility.DisplayDialog("加载完成", $"已从场景 {selectedScene.sceneId} 加载数据", "确定");
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("提示", "请先选择一个场景", "确定");
+            }
         }
         EditorGUILayout.EndHorizontal();
-    }
-
-    private void DrawDataValidation()
-    {
-        EditorGUILayout.Space(10);
-        if (GUILayout.Button("显示数据校验结果"))
-        {
-            ValidateAndShowResults();
-        }
     }
 
     private void DrawSaveButton()
@@ -342,177 +287,85 @@ public class SceneMatEditor : Editor
         EditorGUILayout.Space(10);
         EditorGUILayout.LabelField("=== 保存 ===", EditorStyles.boldLabel);
 
-        if (GUILayout.Button("保存场景数据到JSON"))
+        string defaultPath = Path.Combine("Assets/Resources", manager.sceneDataPath + ".json");
+        EditorGUILayout.LabelField($"默认保存路径: {defaultPath}", EditorStyles.miniLabel);
+
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("保存到默认路径"))
+        {
+            // ✅ 关键修复：从 Inspector 中读取 currentSceneName 的值
+            SerializedProperty sceneNameProp = serializedObject.FindProperty("currentSceneName");
+            if (sceneNameProp != null)
+            {
+                string inspectorName = sceneNameProp.stringValue;
+                if (!string.IsNullOrEmpty(inspectorName))
+                {
+                    manager.currentSceneName = inspectorName;
+                    Debug.Log($"[SceneMatEditor] 从 Inspector 读取场景名称: {inspectorName}");
+                }
+            }
+
+            // ✅ 同步更新选中的场景数据
+            if (selectedScene != null)
+            {
+                selectedScene.sceneName = manager.currentSceneName;
+            }
+
+            // 先收集控制器数据
+            manager.CollectDataFromControllers();
+
+            // 保存到文件
+            manager.SaveToDefaultPath();
+            AssetDatabase.Refresh();
+
+            // 重新加载数据
+            manager.LoadSceneData();
+            LoadSceneOptions();
+
+            string sceneInfo = "";
+            if (selectedScene != null)
+            {
+                sceneInfo = $"场景: {selectedScene.sceneId} - {selectedScene.sceneName}, 元素: {selectedScene.elements?.Count ?? 0}, 镜像: {(selectedScene.isFlipped ? "开启" : "关闭")}";
+            }
+
+            AddLog($"💾 保存完成: {defaultPath} ({sceneInfo})");
+            EditorUtility.DisplayDialog("保存成功", $"数据已保存到:\n{defaultPath}\n\n{sceneInfo}", "确定");
+        }
+
+        if (GUILayout.Button("另存为..."))
         {
             SaveSceneDataToJson();
         }
+        EditorGUILayout.EndHorizontal();
     }
 
-    // ========== 功能方法 ==========
-
-    private void SyncFromControllers()
+    private void DrawOperationLog()
     {
-        var controllers = manager.GetAllControllers();
-        if (controllers == null || controllers.Count == 0)
+        if (string.IsNullOrEmpty(operationLog)) return;
+
+        EditorGUILayout.Space(10);
+        EditorGUILayout.LabelField("=== 操作日志 ===", EditorStyles.boldLabel);
+
+        EditorGUILayout.BeginVertical(GUI.skin.box);
+        EditorGUILayout.LabelField(operationLog, EditorStyles.wordWrappedLabel, GUILayout.MinHeight(60));
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("清空日志", GUILayout.Width(80)))
         {
-            manager.FindAndRegisterAllControllers();
-            controllers = manager.GetAllControllers();
-
-            if (controllers == null || controllers.Count == 0)
-            {
-                EditorUtility.DisplayDialog("同步数据", "没有找到控制器", "确定");
-                return;
-            }
+            operationLog = "";
         }
-
-        if (selectedScene == null)
-        {
-            EditorUtility.DisplayDialog("同步数据", "请先选择一个场景", "确定");
-            return;
-        }
-
-        selectedScene.elements.Clear();
-
-        foreach (var controller in controllers)
-        {
-            if (controller == null) continue;
-
-            var element = new SceneMatManager.SceneElementData
-            {
-                id = controller.ElementId.ToString(),
-                name = controller.gameObject.name,
-                imagePath = controller.ElementPath,
-                position = controller.transform.position,
-                scale = controller.transform.localScale,
-                renderLevel = controller.RenderQueue.ToString(),
-                isFlipped = controller.IsFlipped,
-                isLockFlip = controller.IsLockFlip,
-                sceneId = manager.CurrentSceneId
-            };
-
-            selectedScene.elements.Add(element);
-        }
-
-        EditorUtility.SetDirty(manager);
-        EditorUtility.DisplayDialog("同步数据", $"成功同步 {controllers.Count} 个控制器的数据", "确定");
+        EditorGUILayout.EndHorizontal();
     }
 
-    private void ValidateSceneData()
+    private void AddLog(string message)
     {
-        if (selectedScene == null || selectedScene.elements == null)
+        string timestamp = DateTime.Now.ToString("HH:mm:ss");
+        operationLog = $"[{timestamp}] {message}\n" + operationLog;
+        if (operationLog.Length > 2000)
         {
-            EditorUtility.DisplayDialog("数据验证", "没有可验证的数据", "确定");
-            return;
+            operationLog = operationLog.Substring(0, 2000);
         }
-
-        List<string> errors = new List<string>();
-        List<string> warnings = new List<string>();
-
-        var validTypes = Enum.GetNames(typeof(SceneMatManager.ElementType));
-
-        foreach (var element in selectedScene.elements)
-        {
-            if (!Array.Exists(validTypes, t => t == element.id))
-            {
-                warnings.Add($"元素 \"{element.id}\" 不是有效的 ElementType");
-            }
-        }
-
-        var idGroups = selectedScene.elements.GroupBy(e => e.id);
-        foreach (var group in idGroups)
-        {
-            if (group.Count() > 1)
-            {
-                errors.Add($"重复的ID: {group.Key} (出现 {group.Count()} 次)");
-            }
-        }
-
-        foreach (var element in selectedScene.elements)
-        {
-            if (string.IsNullOrEmpty(element.id))
-            {
-                errors.Add($"元素 \"{element.name}\" 的ID为空");
-            }
-
-            if (string.IsNullOrEmpty(element.imagePath))
-            {
-                warnings.Add($"元素 {element.id} 的图片路径为空");
-            }
-
-            if (element.scale.x == 0 || element.scale.y == 0 || element.scale.z == 0)
-            {
-                warnings.Add($"元素 {element.id} 的scale值为0，可能无法显示");
-            }
-
-            if (!Array.Exists(levelOptions, t => t == element.renderLevel))
-            {
-                warnings.Add($"元素 {element.id} 的渲染层级 \"{element.renderLevel}\" 无效");
-            }
-        }
-
-        string message = $"验证完成！\n\n";
-        if (errors.Count > 0)
-        {
-            message += $"错误 ({errors.Count}):\n{string.Join("\n", errors)}\n\n";
-        }
-        if (warnings.Count > 0)
-        {
-            message += $"警告 ({warnings.Count}):\n{string.Join("\n", warnings)}\n\n";
-        }
-        if (errors.Count == 0 && warnings.Count == 0)
-        {
-            message += "所有数据验证通过！";
-        }
-
-        EditorUtility.DisplayDialog("数据验证结果", message, "确定");
-    }
-
-    private void ValidateAndShowResults()
-    {
-        ValidateSceneData();
-    }
-
-    private void CheckSceneId(string sceneId)
-    {
-        if (string.IsNullOrEmpty(sceneId))
-        {
-            EditorUtility.DisplayDialog("校验结果", "请输入场景ID", "确定");
-            return;
-        }
-
-        var sceneData = manager.GetSceneData(sceneId);
-        if (sceneData == null)
-        {
-            EditorUtility.DisplayDialog("校验结果", $"未找到场景ID: {sceneId}", "确定");
-            return;
-        }
-
-        var currentScene = selectedScene;
-        if (currentScene != null && currentScene.sceneId == sceneId)
-        {
-            EditorUtility.DisplayDialog("校验结果", $"场景ID {sceneId} 一致！\n场景名称: {sceneData.sceneName}\n元素数量: {sceneData.elements?.Count ?? 0}", "确定");
-            return;
-        }
-
-        string message = $"=== 场景信息 ===\n";
-        message += $"场景ID: {sceneId}\n";
-        message += $"场景名称: {sceneData.sceneName}\n";
-        message += $"元素数量: {sceneData.elements?.Count ?? 0}\n\n";
-
-        message += "=== 元素列表 ===\n";
-        if (sceneData.elements != null)
-        {
-            foreach (var element in sceneData.elements)
-            {
-                message += $"- {element.id}: {element.name}\n";
-                message += $"  位置: ({element.position.x:F2}, {element.position.y:F2}, {element.position.z:F2})\n";
-                message += $"  大小: ({element.scale.x:F2}, {element.scale.y:F2}, {element.scale.z:F2})\n";
-                message += $"  渲染层级: {element.renderLevel}\n";
-                message += $"  镜像: {(element.isFlipped ? "是" : "否")}\n\n";
-            }
-        }
-
-        EditorUtility.DisplayDialog("场景信息", message, "确定");
     }
 
     private void SaveSceneDataToJson()
@@ -522,9 +375,28 @@ public class SceneMatEditor : Editor
 
         try
         {
+            // ✅ 先确保场景名称已同步
+            if (selectedScene != null && !string.IsNullOrEmpty(selectedScene.sceneName))
+            {
+                manager.currentSceneName = selectedScene.sceneName;
+            }
+
+            string sceneInfo = "";
+            if (selectedScene != null)
+            {
+                sceneInfo = $"场景: {selectedScene.sceneId} - {selectedScene.sceneName}, 元素: {selectedScene.elements?.Count ?? 0}, 镜像: {(selectedScene.isFlipped ? "开启" : "关闭")}";
+            }
+
+            manager.CollectDataFromControllers();
             manager.SaveSceneDataToFile(path);
             AssetDatabase.Refresh();
-            EditorUtility.DisplayDialog("保存成功", $"数据已保存到:\n{path}", "确定");
+
+            // ✅ 重新加载数据以刷新列表
+            manager.LoadSceneData();
+            LoadSceneOptions();
+
+            AddLog($"💾 另存为: {path} ({sceneInfo})");
+            EditorUtility.DisplayDialog("保存成功", $"数据已保存到:\n{path}\n\n{sceneInfo}", "确定");
         }
         catch (Exception e)
         {

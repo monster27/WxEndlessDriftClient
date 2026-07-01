@@ -13,6 +13,7 @@ public class MainGameView : BagViewBase
     public Button equipBtn;
     public Button weatherAndTimeBtn;
     public Button centerCameraBtn;  // 居中摄像头按钮
+    public Button MapBtn;
 
     // 菜单控制按钮
     public Button menuOpenBtn;      // 打开菜单按钮
@@ -59,13 +60,9 @@ public class MainGameView : BagViewBase
 
         CommunicateEvent.Register<Vector3>(CommunicateEvent.EVENT_SHOW_BAIT_COUNTDOWN_AT_POSITION, OnShowBaitCountdownAtPosition);
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
-        // 注册窝料数量变化事件
         CommunicateEvent.Register("BaitCountChanged", OnBaitCountChanged);
-        // 注册鱼饵数据更新事件
         CommunicateEvent.Register("BaitDataUpdated", OnBaitDataUpdated);
-        // 注册鱼篓数据更新事件
         CommunicateEvent.Register("FishBagDataUpdated", OnFishBagDataUpdated);
-        // 天气和时间变化事件由EnvManager统一处理，然后调用UpdateWeather和UpdateTime方法
 
         if (bagBtn != null)
         {
@@ -103,6 +100,11 @@ public class MainGameView : BagViewBase
         {
             centerCameraBtn.onClick.AddListener(OnCenterCameraBtnClick);
         }
+        // ✅ 新增：地图按钮
+        if (MapBtn != null)
+        {
+            MapBtn.onClick.AddListener(OnMapBtnClick);
+        }
 
         if (mainTile != null)
         {
@@ -110,20 +112,21 @@ public class MainGameView : BagViewBase
             mainTile.Init(initialPos);
         }
 
-        // 初始化菜单状态
         SetMenuPanelState(isMenuOpen);
-
-        // 初始化窝料数量显示
         UpdateBaitCountDisplay();
-
-        // 初始化显示模式为Text模式
         currentDisplayMode = DisplayMode.Text;
         UpdateDisplayMode();
 
-        // ✅ 发送事件请求更新所有UI数据
         CommunicateEvent.Modify("UI_RequestUpdateAllData");
 
         isInitialized = true;
+    }
+
+    // ✅ 新增：地图按钮点击
+    private void OnMapBtnClick()
+    {
+        Debug.Log("[MainGameView] OnMapBtnClick - 点击地图按钮");
+        CommunicateEvent.Modify("UI_OpenMap");
     }
 
     private void OnBagBtnClick()

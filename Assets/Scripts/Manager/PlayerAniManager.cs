@@ -349,7 +349,7 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
 
         Debug.Log($"[{LOG_TAG}] LoadCharacterAnimation() - 人物 {config.id} ({config.name}) 动画参数: Idle={aniData.idleColumns}列/{aniData.idleSpeed}帧, Reel={aniData.reelColumns}列/{aniData.reelSpeed}帧, Lazy={aniData.lazyColumns}列/{aniData.lazySpeed}帧");
 
-        string basePath = "JsonData/PlayerAni/Ani/" + config.id;
+        string basePath = "GameScene/Player/Ani/" + config.id;
 
         string idlePath = !string.IsNullOrEmpty(config.idleTexturePath) ? config.idleTexturePath : basePath + "/Idle";
         string reelPath = !string.IsNullOrEmpty(config.reelTexturePath) ? config.reelTexturePath : basePath + "/Reel";

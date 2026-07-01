@@ -72,18 +72,63 @@ public class EnvManager : SingletonMono<EnvManager>
             }
         }
     }
-    
+
     /// <summary>
     /// 注册服务器事件监听（通过ServerManager中转）
     /// </summary>
+    // 添加场景切换响应注册
     private void RegisterServerEvents()
     {
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_CLIENT_TIME_SLOT_CHANGED, OnTimeSlotChanged);
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_CLIENT_WEATHER_CHANGED, OnWeatherChanged);
 
-        Debug.Log("[EnvManager] 已注册服务器事件监听（通过ServerManager）");
+        // ✅ 新增：监听场景切换响应
+        CommunicateEvent.Register<Dictionary<string, object>>("SceneSwitchResponse", OnSceneSwitchResponse);
     }
-    
+
+    // ✅ 新增：场景切换响应处理
+    private void OnSceneSwitchResponse(Dictionary<string, object> data)
+    {
+        if (data == null || !data.ContainsKey("success")) return;
+
+        bool success = (bool)data["success"];
+        if (!success)
+        {
+            string message = data.ContainsKey("message") ? (string)data["message"] : "场景切换失败";
+            GameUIManager.Instance?.ShowTip(message);
+            return;
+        }
+
+        int sceneId = data.ContainsKey("sceneId") ? (int)data["sceneId"] : currentSceneId;
+
+        Debug.Log($"[EnvManager] 场景切换成功: {sceneId}");
+
+        // ✅ 显示切换成功提示
+        string sceneName = GetSceneName(sceneId);
+        GameUIManager.Instance?.ShowTip($"已切换到: {sceneName}");
+
+        // 更新当前场景ID
+        currentSceneId = sceneId;
+
+        // 通知SceneMatManager切换场景
+        SceneMatManager.Instance?.SwitchScene(sceneId.ToString());
+    }
+
+    private string GetSceneName(int sceneId)
+    {
+        if (LoadDataManager.Instance?.islands != null)
+        {
+            foreach (var island in LoadDataManager.Instance.islands)
+            {
+                if (island.id == sceneId)
+                {
+                    return island.name;
+                }
+            }
+        }
+        return $"场景 {sceneId}";
+    }
+
     /// <summary>
     /// 时间段变化事件处理
     /// </summary>

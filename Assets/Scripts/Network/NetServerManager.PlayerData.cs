@@ -94,6 +94,38 @@ public partial class NetServerManager
         }
     }
 
+    // NetServerManager.PlayerData.cs - 在 FetchAllPlayerData 或初始化步骤中添加
+
+    private IEnumerator FetchPlayerSceneDataCoroutine()
+    {
+        yield return FetchGetJson<PlayerSceneData>("/api/player/scene/" + _currentPlayerId, data =>
+        {
+            if (data != null && data.sceneId > 0)
+            {
+                EnvManager.Instance.currentSceneId = data.sceneId;
+                Logger.Log($"[NetServerManager] 初始化 - 场景ID: {data.sceneId}");
+            }
+            else
+            {
+                // 默认场景
+                EnvManager.Instance.currentSceneId = 1;
+                Logger.LogWarning("[NetServerManager] 初始化 - 使用默认场景ID: 1");
+            }
+
+            // ✅ 场景加载完成后，通知SceneMatManager切换
+            if (SceneMatManager.Instance != null)
+            {
+                SceneMatManager.Instance.SwitchScene(EnvManager.Instance.currentSceneId.ToString());
+            }
+        }, "场景数据");
+    }
+
+    [Serializable]
+    private class PlayerSceneData
+    {
+        public int sceneId;
+    }
+
     // ========== 数据查询 ==========
 
     private Dictionary<int, int> GetPlayerInventory() => playerInventory;
@@ -527,6 +559,85 @@ public partial class NetServerManager
             Logger.Log("[NetServerManager] 普通背包数据已更新: " + playerInventory.Count + " 件物品");
             CommunicateEvent.Modify<Dictionary<int, int>>("BagDataUpdated", playerInventory);
         }, "背包数据");
+    }
+
+    // ========== 场景切换 ==========
+
+    /// <summary>
+    /// 切换玩家场景
+    /// </summary>
+    public void SwitchPlayerScene(int sceneId)
+    {
+        if (!CheckNetworkConnection())
+            return;
+
+        Debug.Log($"[NetServerManager] 切换玩家场景: PlayerId={_currentPlayerId}, SceneId={sceneId}");
+        StartCoroutine(SwitchPlayerSceneCoroutine(sceneId));
+    }
+
+    private IEnumerator SwitchPlayerSceneCoroutine(int sceneId)
+    {
+        var requestData = new Dictionary<string, object>
+    {
+        { "sceneId", sceneId }
+    };
+
+        string url = $"/api/player/scene/{_currentPlayerId}";
+
+        yield return SendRequest<SceneSwitchResponse>(url, requestData,
+            (response) =>
+            {
+                if (response != null && response.success)
+                {
+                    Debug.Log($"[NetServerManager] 场景切换成功: {sceneId}");
+
+                    // 更新本地场景
+                    EnvManager.Instance.currentSceneId = sceneId;
+
+                    // 通知客户端场景切换成功
+                    var responseData = new Dictionary<string, object>
+                    {
+                    { "success", true },
+                    { "sceneId", sceneId }
+                    };
+                    CommunicateEvent.Modify<Dictionary<string, object>>("SceneSwitchResponse", responseData);
+
+                    // 通知SceneMatManager切换场景
+                    SceneMatManager.Instance?.SwitchScene(sceneId.ToString());
+                }
+                else
+                {
+                    Debug.LogWarning($"[NetServerManager] 场景切换失败: {response?.message ?? "未知错误"}");
+                    var responseData = new Dictionary<string, object>
+                    {
+                    { "success", false },
+                    { "sceneId", sceneId },
+                    { "message", response?.message ?? "切换失败" }
+                    };
+                    CommunicateEvent.Modify<Dictionary<string, object>>("SceneSwitchResponse", responseData);
+                }
+            },
+            (error) =>
+            {
+                Debug.LogError($"[NetServerManager] 场景切换请求失败: {error}");
+                var responseData = new Dictionary<string, object>
+                {
+                { "success", false },
+                { "sceneId", sceneId },
+                { "message", "网络请求失败" }
+                };
+                CommunicateEvent.Modify<Dictionary<string, object>>("SceneSwitchResponse", responseData);
+            },
+            forcePost: true
+        );
+    }
+
+    [System.Serializable]
+    private class SceneSwitchResponse
+    {
+        public bool success;
+        public string message;
+        public int sceneId;
     }
 
     // ========== 基础人物管理 ==========

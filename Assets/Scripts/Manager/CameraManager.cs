@@ -350,7 +350,41 @@ public class CameraManager : MonoBehaviour
         checkUI = enabled;
         Debug.Log($"[CameraManager] UI检测: {(checkUI ? "开启" : "关闭")}");
     }
+    /// <summary>
+    /// 根据镜像模式自动调整摄像头位置
+    /// 镜像模式：拉到最大X (maxX)
+    /// 非镜像模式：拉到最小X (minX)
+    /// </summary>
+    public void AdjustPositionByMirrorMode()
+    {
+        if (isMirrored)
+        {
+            MoveToX(maxX);
+            Debug.Log($"[CameraManager] 镜像模式：摄像头拉到最大位置 X={maxX}");
+        }
+        else
+        {
+            MoveToX(minX);
+            Debug.Log($"[CameraManager] 非镜像模式：摄像头拉到最小位置 X={minX}");
+        }
+    }
 
+    /// <summary>
+    /// 根据镜像模式自动调整摄像头位置（平滑移动）
+    /// </summary>
+    public void AdjustPositionByMirrorModeSmooth(float speed = -1f)
+    {
+        if (isMirrored)
+        {
+            MoveToXSmooth(maxX, speed);
+            Debug.Log($"[CameraManager] 镜像模式：摄像头平滑移动到最大位置 X={maxX}");
+        }
+        else
+        {
+            MoveToXSmooth(minX, speed);
+            Debug.Log($"[CameraManager] 非镜像模式：摄像头平滑移动到最小位置 X={minX}");
+        }
+    }
     /// <summary>
     /// 重置摄像头位置
     /// </summary>
