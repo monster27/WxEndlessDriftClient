@@ -6,7 +6,9 @@
             "description": "常见的淡水鱼，寓意吉祥，适合新手钓手",
             "islandId": 101,
             "rarityId": 201,
-            "preferredIslandIds": [],
+            "preferredIslandIds": [
+                -1
+            ],
             "preferredTimeIds": [
                 401,
                 402
@@ -29,7 +31,9 @@
             "description": "大型淡水鱼，力道十足，考验钓技",
             "islandId": 101,
             "rarityId": 202,
-            "preferredIslandIds": [],
+            "preferredIslandIds": [
+                -1
+            ],
             "preferredTimeIds": [
                 403
             ],
@@ -54,7 +58,7 @@
             "islandId": 102,
             "rarityId": 204,
             "preferredIslandIds": [
-                0
+                -1
             ],
             "preferredTimeIds": [
                 402,

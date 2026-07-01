@@ -171,7 +171,7 @@ public class ZpfTool : Editor
     }
 
     /// <summary>
-    /// 获取服务器工程所有C#代码并合并到粘贴板
+    /// 获取服务器工程所有C#代码和JSON文件并合并到粘贴板
     /// </summary>
     [MenuItem("Tools/获取合并服务器代码")]
     public static void MergeServerCodes()
@@ -238,13 +238,15 @@ public class ZpfTool : Editor
             serverProjectPath = selectedPath;
             EditorPrefs.SetString(SERVER_PATH_KEY, serverProjectPath);
 
-            // 验证路径下是否有.cs文件
+            // 验证路径下是否有.cs或.json文件
             int csFileCount = Directory.GetFiles(serverProjectPath, "*.cs", SearchOption.AllDirectories).Length;
-            if (csFileCount == 0)
+            int jsonFileCount = Directory.GetFiles(serverProjectPath, "*.json", SearchOption.AllDirectories).Length;
+
+            if (csFileCount == 0 && jsonFileCount == 0)
             {
                 bool retry = EditorUtility.DisplayDialog(
                     "警告",
-                    $"在路径 \"{serverProjectPath}\" 下未找到任何C#文件！\n\n这可能不是正确的服务器工程目录。\n是否重新选择？",
+                    $"在路径 \"{serverProjectPath}\" 下未找到任何C#或JSON文件！\n\n这可能不是正确的服务器工程目录。\n是否重新选择？",
                     "重新选择",
                     "继续"
                 );
@@ -256,7 +258,7 @@ public class ZpfTool : Editor
                     MergeServerCodes();
                     return;
                 }
-                // 用户选择继续，尽管没有.cs文件
+                // 用户选择继续，尽管没有文件
             }
         }
         else // result == 0 (使用当前路径 或 选择路径)
@@ -310,14 +312,15 @@ public class ZpfTool : Editor
             "Migrations",
             "wwwroot",
             "node_modules",
-            ".git"
+            ".git",
+            "packages",
+            "TestResults"
         };
 
         // 需要排除的文件扩展名
         string[] excludeExtensions = new string[]
         {
             ".meta",
-            ".json",
             ".xml",
             ".config",
             ".csproj",
@@ -327,56 +330,96 @@ public class ZpfTool : Editor
             ".pidb",
             ".db",
             ".sqlite",
-            ".log"
+            ".log",
+            ".dll",
+            ".exe",
+            ".pdb",
+            ".cache",
+            ".editorconfig",
+            ".gitignore",
+            ".gitattributes"
         };
 
-        // 收集所有.cs文件
+        // 收集所有.cs和.json文件
         List<string> allCsFiles = new List<string>();
+        List<string> allJsonFiles = new List<string>();
         Dictionary<string, string> fileContents = new Dictionary<string, string>();
 
         // 递归遍历目录
-        GetAllCsFiles(serverProjectPath, allCsFiles, excludeFolders, excludeExtensions);
+        GetAllFiles(serverProjectPath, allCsFiles, allJsonFiles, excludeFolders, excludeExtensions);
 
-        if (allCsFiles.Count == 0)
+        int totalFiles = allCsFiles.Count + allJsonFiles.Count;
+
+        if (totalFiles == 0)
         {
-            EditorUtility.DisplayDialog("提示", $"在路径 {serverProjectPath} 下未找到任何C#文件！", "确定");
+            EditorUtility.DisplayDialog("提示", $"在路径 {serverProjectPath} 下未找到任何C#或JSON文件！", "确定");
             return;
         }
 
         StringBuilder mergedContent = new StringBuilder();
-        int fileCount = 0;
 
         // 添加文件头信息
         mergedContent.AppendLine("// ============================================");
-        mergedContent.AppendLine($"// 服务器代码合并 - 共找到 {allCsFiles.Count} 个C#文件");
+        mergedContent.AppendLine($"// 服务器代码合并 - 文件统计信息");
+        mergedContent.AppendLine($"// ============================================");
         mergedContent.AppendLine($"// 合并时间: {System.DateTime.Now}");
-        mergedContent.AppendLine($"// 路径: {serverProjectPath}");
+        mergedContent.AppendLine($"// 根路径: {serverProjectPath}");
+        mergedContent.AppendLine($"// 总文件数: {totalFiles}");
+        mergedContent.AppendLine($"//   - C#文件: {allCsFiles.Count}");
+        mergedContent.AppendLine($"//   - JSON文件: {allJsonFiles.Count}");
+        mergedContent.AppendLine("// ============================================");
+        mergedContent.AppendLine();
+        mergedContent.AppendLine("// ============================================");
+        mergedContent.AppendLine("// 📁 文件目录结构");
+        mergedContent.AppendLine("// ============================================");
+
+        // 打印目录结构
+        string directoryStructure = GetDirectoryStructure(serverProjectPath, allCsFiles, allJsonFiles);
+        mergedContent.AppendLine(directoryStructure);
+        mergedContent.AppendLine();
+        mergedContent.AppendLine("// ============================================");
+        mergedContent.AppendLine("// 📄 文件内容");
         mergedContent.AppendLine("// ============================================");
         mergedContent.AppendLine();
 
-        // 按文件夹路径排序
-        allCsFiles.Sort();
+        // 按文件类型分组排序（先显示.cs，再显示.json）
+        var allFiles = new List<string>();
+        allFiles.AddRange(allCsFiles);
+        allFiles.AddRange(allJsonFiles);
+        allFiles.Sort();
 
-        foreach (string filePath in allCsFiles)
+        int csFileCount = 0;
+        int jsonFileCount = 0;
+
+        foreach (string filePath in allFiles)
         {
             try
             {
                 string content = File.ReadAllText(filePath, Encoding.UTF8);
                 string relativePath = GetRelativePath(serverProjectPath, filePath);
                 string fileName = Path.GetFileName(filePath);
+                string fileType = Path.GetExtension(filePath).ToLower();
+                string fileTypeLabel = fileType == ".cs" ? "C#" : "JSON";
+
+                // 记录文件类型统计
+                if (fileType == ".cs")
+                    csFileCount++;
+                else if (fileType == ".json")
+                    jsonFileCount++;
 
                 // 添加文件分隔标记和内容
                 mergedContent.AppendLine("// ============================================");
-                mergedContent.AppendLine($"// 文件: {fileName}");
-                mergedContent.AppendLine($"// 相对路径: {relativePath}");
-                mergedContent.AppendLine($"// 完整路径: {filePath}");
+                mergedContent.AppendLine($"// 📄 文件: {fileName}");
+                mergedContent.AppendLine($"// 📁 类型: {fileTypeLabel}");
+                mergedContent.AppendLine($"// 📂 相对路径: {relativePath}");
+                mergedContent.AppendLine($"// 📍 完整路径: {filePath}");
+                mergedContent.AppendLine($"// 📊 文件大小: {new FileInfo(filePath).Length} 字节");
                 mergedContent.AppendLine("// ============================================");
                 mergedContent.AppendLine(content);
                 mergedContent.AppendLine();
                 mergedContent.AppendLine();
 
                 fileContents[relativePath] = content;
-                fileCount++;
             }
             catch (System.Exception ex)
             {
@@ -386,75 +429,91 @@ public class ZpfTool : Editor
 
         // 添加文件统计信息
         mergedContent.AppendLine("// ============================================");
-        mergedContent.AppendLine($"// 总计合并 {fileCount} 个C#文件");
+        mergedContent.AppendLine($"// 📊 总计合并文件: {totalFiles}");
+        mergedContent.AppendLine($"//   - C#文件: {csFileCount}");
+        mergedContent.AppendLine($"//   - JSON文件: {jsonFileCount}");
         mergedContent.AppendLine("// ============================================");
 
         // 复制到粘贴板
         GUIUtility.systemCopyBuffer = mergedContent.ToString();
 
         // 显示成功信息
-        string message = $"✅ 成功合并 {fileCount} 个C#文件！\n\n";
-
-        // 显示保存的路径
+        string message = $"✅ 成功合并 {totalFiles} 个文件！\n\n";
         message += $"📁 路径: {serverProjectPath}\n\n";
+        message += $"📊 文件统计:\n";
+        message += $"  - C#文件: {csFileCount} 个\n";
+        message += $"  - JSON文件: {jsonFileCount} 个\n\n";
 
-        // 按文件夹分组显示文件列表
+        // 显示文件列表（限制显示数量）
+        int displayLimit = 50;
+        int displayedCount = 0;
+
+        message += "📄 文件列表（按目录分组）:\n";
+
         var groupedFiles = fileContents.Keys
-            .Select(path => new { FullPath = path, Directory = Path.GetDirectoryName(path) })
-            .GroupBy(x => x.Directory)
-            .OrderBy(g => g.Key);
+            .Select(path => new { FullPath = path, Directory = Path.GetDirectoryName(path), FileName = Path.GetFileName(path) })
+            .OrderBy(x => x.Directory)
+            .ThenBy(x => x.FileName);
 
-        int fileListCount = 0;
-        foreach (var group in groupedFiles)
+        string currentDir = null;
+        foreach (var item in groupedFiles)
         {
-            string displayName = string.IsNullOrEmpty(group.Key) ? "根目录" : group.Key;
-            message += $"  📁 {displayName}\n";
-            foreach (var item in group)
+            if (currentDir != item.Directory)
             {
-                if (fileListCount < 30) // 限制显示数量
-                {
-                    message += $"    📄 {Path.GetFileName(item.FullPath)}\n";
-                }
-                fileListCount++;
+                currentDir = item.Directory;
+                string displayDir = string.IsNullOrEmpty(currentDir) ? "(根目录)" : currentDir;
+                message += $"\n  📁 {displayDir}\n";
             }
+
+            if (displayedCount < displayLimit)
+            {
+                string fileIcon = Path.GetExtension(item.FileName).ToLower() == ".cs" ? "📄" : "📋";
+                message += $"    {fileIcon} {item.FileName}\n";
+            }
+            displayedCount++;
         }
 
-        if (fileListCount > 30)
+        if (displayedCount > displayLimit)
         {
-            message += $"    ... 还有 {fileListCount - 30} 个文件\n";
+            message += $"\n  ... 还有 {displayedCount - displayLimit} 个文件未显示\n";
         }
 
-        message += $"\n📋 内容已复制到粘贴板，可以直接粘贴使用。";
+        message += $"\n📋 完整内容已复制到粘贴板，可以直接粘贴使用。";
+        message += $"\n💡 提示：粘贴板包含完整的目录结构和文件内容。";
 
         // 显示对话框
         EditorUtility.DisplayDialog("合并完成", message, "确定");
 
         // 输出到控制台
-        Debug.Log($"✅ 已合并 {fileCount} 个服务器C#文件，内容已复制到粘贴板。");
+        Debug.Log($"✅ 已合并 {totalFiles} 个服务器文件（{csFileCount}个C# + {jsonFileCount}个JSON），内容已复制到粘贴板。");
         Debug.Log($"📁 服务器路径: {serverProjectPath}");
-
-        // 输出完整文件列表到控制台
-        Debug.Log("完整文件列表:\n" + string.Join("\n", allCsFiles));
     }
 
     /// <summary>
-    /// 递归获取所有.cs文件
+    /// 递归获取所有.cs和.json文件
     /// </summary>
-    private static void GetAllCsFiles(string directory, List<string> csFiles, string[] excludeFolders, string[] excludeExtensions)
+    private static void GetAllFiles(string directory, List<string> csFiles, List<string> jsonFiles, string[] excludeFolders, string[] excludeExtensions)
     {
         try
         {
             // 获取当前目录下所有.cs文件
-            string[] files = Directory.GetFiles(directory, "*.cs", SearchOption.TopDirectoryOnly);
-
-            foreach (string file in files)
+            string[] csFileList = Directory.GetFiles(directory, "*.cs", SearchOption.TopDirectoryOnly);
+            foreach (string file in csFileList)
             {
-                // 检查文件扩展名是否在排除列表中
                 string ext = Path.GetExtension(file);
                 if (excludeExtensions.Contains(ext))
                     continue;
-
                 csFiles.Add(file);
+            }
+
+            // 获取当前目录下所有.json文件
+            string[] jsonFileList = Directory.GetFiles(directory, "*.json", SearchOption.TopDirectoryOnly);
+            foreach (string file in jsonFileList)
+            {
+                string ext = Path.GetExtension(file);
+                if (excludeExtensions.Contains(ext))
+                    continue;
+                jsonFiles.Add(file);
             }
 
             // 递归遍历子目录
@@ -472,7 +531,7 @@ public class ZpfTool : Editor
                 if (dirName.StartsWith("."))
                     continue;
 
-                GetAllCsFiles(subDir, csFiles, excludeFolders, excludeExtensions);
+                GetAllFiles(subDir, csFiles, jsonFiles, excludeFolders, excludeExtensions);
             }
         }
         catch (System.Exception ex)
@@ -482,22 +541,108 @@ public class ZpfTool : Editor
     }
 
     /// <summary>
-    /// 获取相对路径
+    /// 获取目录结构树
+    /// </summary>
+    private static string GetDirectoryStructure(string basePath, List<string> csFiles, List<string> jsonFiles)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        // 获取所有目录
+        var allDirectories = new HashSet<string>();
+        foreach (var file in csFiles)
+        {
+            string dir = Path.GetDirectoryName(file);
+            if (!string.IsNullOrEmpty(dir))
+                allDirectories.Add(dir);
+        }
+        foreach (var file in jsonFiles)
+        {
+            string dir = Path.GetDirectoryName(file);
+            if (!string.IsNullOrEmpty(dir))
+                allDirectories.Add(dir);
+        }
+
+        // 按层级排序
+        var sortedDirs = allDirectories.OrderBy(d => d).ToList();
+
+        // 构建树形结构
+        foreach (var dir in sortedDirs)
+        {
+            string relativeDir = GetRelativePath(basePath, dir);
+            if (string.IsNullOrEmpty(relativeDir))
+                continue;
+
+            // 计算缩进层级
+            int depth = relativeDir.Count(c => c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar);
+            string indent = new string(' ', depth * 2);
+
+            string dirName = Path.GetFileName(dir);
+            if (string.IsNullOrEmpty(dirName))
+                dirName = "根目录";
+
+            // 统计该目录下的文件数
+            int csCount = csFiles.Where(f => Path.GetDirectoryName(f) == dir).Count();
+            int jsonCount = jsonFiles.Where(f => Path.GetDirectoryName(f) == dir).Count();
+            string fileInfo = "";
+            if (csCount > 0 || jsonCount > 0)
+            {
+                fileInfo = $" ({csCount}个C#";
+                if (jsonCount > 0)
+                    fileInfo += $", {jsonCount}个JSON";
+                fileInfo += ")";
+            }
+
+            sb.AppendLine($"// {indent}📁 {dirName}{fileInfo}");
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// 获取相对路径（修复了边界情况）
     /// </summary>
     private static string GetRelativePath(string basePath, string fullPath)
     {
         if (string.IsNullOrEmpty(basePath) || string.IsNullOrEmpty(fullPath))
             return fullPath;
 
-        // 确保路径格式一致
-        basePath = Path.GetFullPath(basePath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-        fullPath = Path.GetFullPath(fullPath);
+        try
+        {
+            // 确保路径格式一致
+            string normalizedBase = Path.GetFullPath(basePath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            string normalizedFull = Path.GetFullPath(fullPath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-        if (!fullPath.StartsWith(basePath))
+            // 如果路径相同，返回空字符串或当前目录
+            if (string.Equals(normalizedBase, normalizedFull, System.StringComparison.OrdinalIgnoreCase))
+                return ".";
+
+            // 检查fullPath是否以basePath开头
+            if (!normalizedFull.StartsWith(normalizedBase, System.StringComparison.OrdinalIgnoreCase))
+                return fullPath;
+
+            // 如果fullPath等于basePath，返回"."
+            if (normalizedFull.Length == normalizedBase.Length)
+                return ".";
+
+            // 确保basePath后面有路径分隔符
+            int startIndex = normalizedBase.Length;
+            if (normalizedFull[startIndex] == Path.DirectorySeparatorChar ||
+                normalizedFull[startIndex] == Path.AltDirectorySeparatorChar)
+            {
+                startIndex++;
+            }
+
+            // 如果startIndex超出长度，返回"."
+            if (startIndex >= normalizedFull.Length)
+                return ".";
+
+            return normalizedFull.Substring(startIndex);
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"获取相对路径失败: basePath={basePath}, fullPath={fullPath}, 错误: {ex.Message}");
             return fullPath;
-
-        string relativePath = fullPath.Substring(basePath.Length + 1);
-        return relativePath;
+        }
     }
 
     /// <summary>

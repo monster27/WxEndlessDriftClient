@@ -118,8 +118,6 @@ public class FishDataEditor : BaseDataEditor<FishData>
         GUILayout.Space(10);
     }
 
-    // 使用基类的DrawResizableColumn方法
-
     private void DrawDataRow(int index)
     {
         FishData item = dataList[index];
@@ -261,7 +259,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("存在岛屿ID:", GUILayout.Width(80));
             editIslandId = EditorGUILayout.IntField(editIslandId, GUILayout.Width(60));
-            EditorGUILayout.LabelField("(0=所有岛屿)", GUILayout.Width(90));
+            EditorGUILayout.LabelField("(0=所有岛屿，-1=无)", GUILayout.Width(120));  // 修改1：更清晰的说明
 
             EditorGUILayout.LabelField("偏向岛屿ID:", GUILayout.Width(80));
             editPreferredIslandIds = EditorGUILayout.TextField(editPreferredIslandIds, GUILayout.Width(200));
@@ -477,7 +475,15 @@ public class FishDataEditor : BaseDataEditor<FishData>
 
         EditorGUILayout.EndVertical();
         GUILayout.Space(10);
-        EditorGUILayout.HelpBox("提示：存在岛屿ID为0表示所有岛屿可钓到。偏向岛屿列表为空表示无偏向。多个ID请用英文逗号分隔。", MessageType.Info);
+
+        // 修改2：更详细的提示信息
+        EditorGUILayout.HelpBox(
+            "提示：\n" +
+            "• 存在岛屿ID：0=所有岛屿可钓到，-1=无（不适用于任何岛屿）\n" +
+            "• 偏向岛屿列表：为空表示无偏向，多个ID请用英文逗号分隔\n" +
+            "• 其他偏向列表（时间/鱼饵/天气）：用法同上",
+            MessageType.Info
+        );
     }
 
     private void LoadData()
@@ -658,7 +664,5 @@ public class FishDataEditor : BaseDataEditor<FishData>
         }
         return false;
     }
-
-
 }
 #endif

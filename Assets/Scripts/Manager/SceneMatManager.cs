@@ -261,8 +261,8 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
             if (elementData.transform != null)
             {
                 // ✅ 从 SerializableVector3 转换为 Unity Vector3
-                Vector3 position = elementData.transform.position.ToUnityVector();
-                Vector3 scale = elementData.transform.scale.ToUnityVector();
+                Vector3 position = ToUnityVector(elementData.transform.position);
+                Vector3 scale = ToUnityVector(elementData.transform.scale);
                 controller.SetTransformData(position, scale);
             }
 
@@ -283,6 +283,13 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         Debug.Log($"[SceneMatManager] 应用场景数据完成: {sceneId}, 名称: {currentSceneName}, 镜像: {currentSceneFlip}, 加载元素: {loadedCount} 个");
 
         AdjustCameraBySceneFlip();
+    }
+    /// <summary>
+    /// 转换为Unity Vector3
+    /// </summary>
+    public UnityEngine.Vector3 ToUnityVector(SerializableVector3 v)
+    {
+        return new UnityEngine.Vector3(v.x, v.y, v.z);
     }
 
     private void AdjustCameraBySceneFlip()

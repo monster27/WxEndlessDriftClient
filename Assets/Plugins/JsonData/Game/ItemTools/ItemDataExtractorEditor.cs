@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 // ==================== ItemDataExtractorEditor.cs ====================
 using UnityEditor;
 using UnityEngine;
@@ -557,3 +558,4 @@ public class ItemDataExtractorEditor : EditorWindow
         public List<TrashData> trashList;
     }
 }
+#endif

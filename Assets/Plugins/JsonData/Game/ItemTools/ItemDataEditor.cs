@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 // ==================== ItemDataEditor.cs ====================
 using UnityEditor;
 using UnityEngine;
@@ -321,3 +322,5 @@ public class ItemDataEditor : EditorWindow
         Debug.Log($"[物品编辑器] 已保存 {items.Count} 条物品数据");
     }
 }
+
+#endif

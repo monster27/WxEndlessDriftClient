@@ -15,11 +15,12 @@ namespace View.Detail
         public Text weightText;
         public Text priceText;
         public Text starRatingText;
-        public Image starRatingImage;      // ✅ 已有
+        public Image starRatingImage;          // 星级图标
+        public Image rarityBackgroundImage;    // ✅ 新增：稀有度背景颜色图片
         public Button selectButton;
         public Image selectedImage;
         public Image newCatchImage;
-        public Image shinyIconImage;  // ✅ 闪光图标
+        public Image shinyIconImage;           // 闪光图标
 
         private int itemId;
         private int quantity;
@@ -143,6 +144,9 @@ namespace View.Detail
                 }
             }
 
+            // ========== ✅ 新增：更新稀有度背景颜色 ==========
+            UpdateRarityBackground();
+
             // ========== 显示星级（使用图片） ==========
             UpdateStarRatingDisplay();
 
@@ -153,6 +157,44 @@ namespace View.Detail
             {
                 LoadIcon();
             }
+        }
+
+        /// <summary>
+        /// ✅ 新增：更新稀有度背景颜色
+        /// </summary>
+        private void UpdateRarityBackground()
+        {
+            if (rarityBackgroundImage == null)
+            {
+                return;
+            }
+
+            // 获取稀有度ID
+            int rarityId = FishRarityId;
+
+            if (rarityId <= 0)
+            {
+                // 没有稀有度信息，使用默认颜色
+                rarityBackgroundImage.color = Color.white;
+                rarityBackgroundImage.gameObject.SetActive(false);
+                return;
+            }
+
+            // 从 LoadDataManager 获取稀有度配置
+            var rarityData = LoadDataManager.Instance?.GetRarityById(rarityId);
+            if (rarityData == null)
+            {
+                rarityBackgroundImage.color = Color.white;
+                rarityBackgroundImage.gameObject.SetActive(false);
+                return;
+            }
+
+            // 解析颜色代码并应用
+            Color rarityColor = ParseColor(rarityData.colorCode);
+            rarityBackgroundImage.color = rarityColor;
+            rarityBackgroundImage.gameObject.SetActive(true);
+
+            Debug.Log($"[UI_FishBagPrefab] 稀有度背景更新: itemId={itemId}, rarityId={rarityId}, color={rarityData.colorCode}");
         }
 
         /// <summary>
@@ -177,9 +219,6 @@ namespace View.Detail
             }
         }
 
-        /// <summary>
-        /// 更新星级显示 - 使用图片
-        /// </summary>
         /// <summary>
         /// 更新星级显示 - 使用图片
         /// </summary>
@@ -279,9 +318,9 @@ namespace View.Detail
             // 备选：尝试其他路径
             string[] fallbackPaths = new string[]
             {
-        $"StarRating/{starRatingId}",
-        $"Images/StarRating/{starRatingId}",
-        $"UI/Icon/Star/{starRatingId}"
+                $"StarRating/{starRatingId}",
+                $"Images/StarRating/{starRatingId}",
+                $"UI/Icon/Star/{starRatingId}"
             };
 
             foreach (string fallbackPath in fallbackPaths)

@@ -639,8 +639,8 @@ public class SceneMatCtrl : MonoBehaviour
 
         if (data.transform != null)
         {
-            Vector3 position = data.transform.position.ToUnityVector();
-            Vector3 scale = data.transform.scale.ToUnityVector();
+            Vector3 position = ToUnityVector(data.transform.position);
+            Vector3 scale = ToUnityVector(data.transform.scale);
             Debug.Log($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - 📍 位置: ({position.x:F2}, {position.y:F2}, {position.z:F2}), 大小: ({scale.x:F2}, {scale.y:F2}, {scale.z:F2})");
             SetTransformData(position, scale);
         }
@@ -650,6 +650,14 @@ public class SceneMatCtrl : MonoBehaviour
         }
 
         Debug.Log($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - ✅ 数据加载完成");
+    }
+
+    /// <summary>
+    /// 转换为Unity Vector3
+    /// </summary>
+    public UnityEngine.Vector3 ToUnityVector(SerializableVector3 v)
+    {
+        return new UnityEngine.Vector3(v.x, v.y,v.z);
     }
 
     // ==========================================

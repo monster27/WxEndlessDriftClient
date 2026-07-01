@@ -92,10 +92,10 @@ public class SerializableVector3
     /// <summary>
     /// 转换为Unity Vector3
     /// </summary>
-    public UnityEngine.Vector3 ToUnityVector()
-    {
-        return new UnityEngine.Vector3(x, y, z);
-    }
+    //public UnityEngine.Vector3 ToUnityVector(float x, float y, float z)
+    //{
+    //    return new UnityEngine.Vector3(x, y, z);
+    //}
 }
 
 /// <summary>
