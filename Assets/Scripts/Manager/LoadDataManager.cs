@@ -1,4 +1,3 @@
-// ==================== LoadDataManager.cs ====================
 using System.Collections.Generic;
 using UnityEngine;
 using System.Text;
@@ -22,6 +21,10 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     private string fishingComponentsJsonPath = "JsonData/Ability/fishing_components";
     private string charactersJsonPath = "JsonData/BaseFramework/characters";
 
+    // ==================== 场景数据路径 ====================
+    [Header("场景数据路径")]
+    private string sceneDataPath = "JsonData/Game/SceneTransData/mainTransData";
+
     // ==================== 数据存储区域 ====================
     public List<IslandData> islands = new List<IslandData>();
     public List<RarityData> rarities = new List<RarityData>();
@@ -38,6 +41,10 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     public List<FishingComponentConfig> fishingComponents = new List<FishingComponentConfig>();
     public List<CharacterConfig> characters = new List<CharacterConfig>();
 
+    // ==================== 场景数据存储 ====================
+    public SceneDataWrapper sceneDataWrapper = new SceneDataWrapper();
+    public bool isSceneDataLoaded = false;
+
     // 数据内容存储字符串
     private StringBuilder dataLog = new StringBuilder();
     // 数据加载完成标志
@@ -48,7 +55,6 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     protected override void Awake()
     {
         base.Awake();
-        // 初始化逻辑已移至Init方法
     }
 
     public void Init()
@@ -61,12 +67,10 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
 
     private void RegisterEvents()
     {
-        // 注册背包相关事件
         CommunicateEvent.Register("Bag_Open", HandleBagOpenEvent);
         CommunicateEvent.Register("Bag_Init", HandleBagInitEvent);
         CommunicateEvent.Register("Bag_RefreshItems", HandleBagRefreshItemsEvent);
 
-        // 注册鱼篓相关事件
         CommunicateEvent.Register("FishBag_Open", HandleFishBagOpenEvent);
         CommunicateEvent.Register("FishBag_Init", HandleFishBagInitEvent);
         CommunicateEvent.Register("FishBag_RefreshItems", HandleFishBagRefreshItemsEvent);
@@ -93,17 +97,107 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         LoadAbilityData();
         LoadFishingComponentsData();
         LoadCharactersData();
+        LoadSceneData();  // ✅ 加载场景数据
 
         dataLog.AppendLine("===================================");
         isDataLoaded = true;
 
-        // 触发数据加载完成事件
         if (onDataLoaded != null)
         {
             Debug.Log("[LoadDataManager] 触发数据加载完成事件");
             onDataLoaded();
         }
     }
+
+    // ==================== 场景数据加载 ====================
+
+    /// <summary>
+    /// 加载场景数据
+    /// </summary>
+    public void LoadSceneData()
+    {
+        try
+        {
+            string json = RWJsonData.LoadJsonFromResources(sceneDataPath);
+            if (string.IsNullOrEmpty(json))
+            {
+                Debug.LogWarning($"[LoadDataManager] 无法加载场景数据文件: {sceneDataPath}，创建空数据");
+                sceneDataWrapper = new SceneDataWrapper();
+                isSceneDataLoaded = true;
+                return;
+            }
+
+            sceneDataWrapper = RWJsonData.ParseJson<SceneDataWrapper>(json);
+            if (sceneDataWrapper == null || sceneDataWrapper.scenes == null)
+            {
+                Debug.LogWarning("[LoadDataManager] 场景数据解析失败，创建空数据");
+                sceneDataWrapper = new SceneDataWrapper();
+            }
+
+            isSceneDataLoaded = true;
+            Debug.Log($"[LoadDataManager] 加载场景数据完成，共 {sceneDataWrapper.scenes.Count} 个场景");
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[LoadDataManager] 加载场景数据异常: {e.Message}");
+            sceneDataWrapper = new SceneDataWrapper();
+            isSceneDataLoaded = true;
+        }
+    }
+
+    /// <summary>
+    /// 获取场景数据
+    /// </summary>
+    public SceneData GetSceneData(string sceneId)
+    {
+        if (sceneDataWrapper == null || sceneDataWrapper.scenes == null) return null;
+        return sceneDataWrapper.scenes.Find(s => s.sceneId == sceneId);
+    }
+
+    /// <summary>
+    /// 获取所有场景数据
+    /// </summary>
+    public List<SceneData> GetAllSceneData()
+    {
+        return sceneDataWrapper?.scenes;
+    }
+
+    /// <summary>
+    /// 保存场景数据（运行时保存到内存，编辑器模式保存到文件）
+    /// </summary>
+    public void SaveSceneData(SceneDataWrapper data)
+    {
+        if (data == null) return;
+        sceneDataWrapper = data;
+        isSceneDataLoaded = true;
+
+#if UNITY_EDITOR
+        SaveSceneDataToFile();
+#endif
+    }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// 保存场景数据到文件（仅编辑器使用）
+    /// </summary>
+    public void SaveSceneDataToFile()
+    {
+        if (sceneDataWrapper == null) return;
+
+        string json = JsonUtility.ToJson(sceneDataWrapper, true);
+        string fullPath = System.IO.Path.Combine(Application.dataPath, "Resources", sceneDataPath + ".json");
+
+        string directory = System.IO.Path.GetDirectoryName(fullPath);
+        if (!string.IsNullOrEmpty(directory) && !System.IO.Directory.Exists(directory))
+        {
+            System.IO.Directory.CreateDirectory(directory);
+        }
+
+        System.IO.File.WriteAllText(fullPath, json);
+        UnityEditor.AssetDatabase.Refresh();
+        Debug.Log($"[LoadDataManager] 场景数据已保存到: {fullPath}");
+    }
+#endif
 
     private void LoadIslandData()
     {
@@ -871,7 +965,6 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     {
         Debug.Log("[LoadDataManager] 接收到背包打开事件");
 
-        // 检查数据加载状态
         if (!isDataLoaded)
         {
             Debug.Log("[LoadDataManager] 数据未加载，开始加载数据");
@@ -888,7 +981,6 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     {
         Debug.Log("[LoadDataManager] 接收到鱼篓打开事件");
 
-        // 检查数据加载状态
         if (!isDataLoaded)
         {
             Debug.Log("[LoadDataManager] 数据未加载，开始加载数据");
@@ -905,14 +997,12 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     {
         Debug.Log("[LoadDataManager] 接收到背包初始化事件");
 
-        // 检查数据加载状态
         if (!isDataLoaded)
         {
             Debug.Log("[LoadDataManager] 数据未加载，开始加载数据");
             LoadAllData();
         }
 
-        // 初始化背包数据
         if (GameUIManager.Instance != null && GameUIManager.Instance.bagView != null && PlayerDataManager.Instance != null)
         {
             var inventory = PlayerDataManager.Instance.GetInventory();
@@ -925,14 +1015,12 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     {
         Debug.Log("[LoadDataManager] 接收到背包刷新事件");
 
-        // 检查数据加载状态
         if (!isDataLoaded)
         {
             Debug.Log("[LoadDataManager] 数据未加载，开始加载数据");
             LoadAllData();
         }
 
-        // 刷新背包数据
         if (GameUIManager.Instance != null && GameUIManager.Instance.bagView != null && PlayerDataManager.Instance != null)
         {
             var inventory = PlayerDataManager.Instance.GetInventory();
@@ -945,24 +1033,20 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     {
         Debug.Log("[LoadDataManager] 接收到鱼篓初始化事件");
 
-        // 检查数据加载状态
         if (!isDataLoaded)
         {
             Debug.Log("[LoadDataManager] 数据未加载，开始加载数据");
             LoadAllData();
         }
 
-        // 初始化鱼篓数据
         if (GameUIManager.Instance != null && GameUIManager.Instance.fishBagView != null && PlayerDataManager.Instance != null)
         {
             var fishInventory = PlayerDataManager.Instance.GetFishInventory();
             var itemDataMap = GetItemDataMap();
-            // ✅ 关键修复：从 PlayerDataManager 获取鱼详情数据
             var fishDetailData = PlayerDataManager.Instance.GetFishDetailData();
 
             Debug.Log($"[LoadDataManager] 鱼篓初始化 - 鱼种类: {fishInventory.Count}, 详情数据: {fishDetailData?.Count ?? 0} 种");
 
-            // ✅ 使用带详情参数的完整方法
             GameUIManager.Instance.fishBagView.UpdateFishItems(fishInventory, itemDataMap, fishDetailData);
         }
     }
@@ -971,14 +1055,12 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     {
         Debug.Log("[LoadDataManager] 接收到鱼篓刷新事件");
 
-        // 检查数据加载状态
         if (!isDataLoaded)
         {
             Debug.Log("[LoadDataManager] 数据未加载，开始加载数据");
             LoadAllData();
         }
 
-        // 刷新鱼篓数据
         if (GameUIManager.Instance != null && GameUIManager.Instance.fishBagView != null && PlayerDataManager.Instance != null)
         {
             var fishInventory = PlayerDataManager.Instance.GetFishInventory();
@@ -987,7 +1069,6 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
 
             Debug.Log($"[LoadDataManager] 鱼篓刷新 - 鱼种类: {fishInventory.Count}, 详情数据: {fishDetailData?.Count ?? 0} 种");
 
-            // 使用带详情参数的完整方法
             GameUIManager.Instance.fishBagView.UpdateFishItems(fishInventory, itemDataMap, fishDetailData);
         }
         else
@@ -999,12 +1080,12 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     public Dictionary<int, ItemData> GetItemDataMap()
     {
         Dictionary<int, ItemData> itemDataMap = new Dictionary<int, ItemData>();
-        
+
         foreach (ItemData itemData in items)
         {
             itemDataMap[itemData.id] = itemData;
         }
-        
+
         foreach (BaitData bait in baits)
         {
             if (!itemDataMap.ContainsKey(bait.id))
@@ -1023,7 +1104,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
                 itemDataMap[bait.id] = itemData;
             }
         }
-        
+
         return itemDataMap;
     }
 

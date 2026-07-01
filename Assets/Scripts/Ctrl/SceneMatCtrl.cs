@@ -127,7 +127,6 @@ public class SceneMatCtrl : MonoBehaviour
             return;
         }
 
-        // 使用 sharedMaterial 避免创建材质实例
         material = targetRenderer.sharedMaterial;
         if (material == null)
         {
@@ -140,7 +139,6 @@ public class SceneMatCtrl : MonoBehaviour
         ReadMaterialProperties();
         ApplyAllProperties();
 
-        // 注册到Manager
         SceneMatManager manager = FindObjectOfType<SceneMatManager>();
         if (manager != null)
         {
@@ -149,10 +147,9 @@ public class SceneMatCtrl : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"[{LOG_TAG}] {gameObject.name}.Initialize() - 找不到SceneMatManager，渲染队列将使用默认值");
+            Debug.LogWarning($"[{LOG_TAG}] {gameObject.name}.Initialize() - 找不到SceneMatManager");
         }
 
-        // 更新渲染队列（由Manager统一管理）
         UpdateRenderQueue();
 
         isInitialized = true;
@@ -233,24 +230,18 @@ public class SceneMatCtrl : MonoBehaviour
     {
         if (material == null) return;
 
-        // 由Manager统一管理渲染队列值
         SceneMatManager manager = FindObjectOfType<SceneMatManager>();
         if (manager != null)
         {
             int queueValue = manager.GetRenderQueueValue(renderQueue);
             if (material.renderQueue != queueValue)
             {
-                Debug.Log($"[{LOG_TAG}] {gameObject.name}.UpdateRenderQueue() - 📊 设置渲染队列: {renderQueue} -> {queueValue} (材质: {material.name}, 实例ID: {material.GetInstanceID()})");
+                Debug.Log($"[{LOG_TAG}] {gameObject.name}.UpdateRenderQueue() - 📊 设置渲染队列: {renderQueue} -> {queueValue}");
                 material.renderQueue = queueValue;
-            }
-            else
-            {
-                Debug.Log($"[{LOG_TAG}] {gameObject.name}.UpdateRenderQueue() - 📊 渲染队列已是最新值: {queueValue}");
             }
         }
         else
         {
-            // 如果找不到Manager，使用默认值
             if (material.renderQueue != 3000)
             {
                 Debug.LogWarning($"[{LOG_TAG}] {gameObject.name}.UpdateRenderQueue() - ⚠️ 找不到SceneMatManager，使用默认队列: 3000");
@@ -267,13 +258,10 @@ public class SceneMatCtrl : MonoBehaviour
     {
         if (texture == null || material == null) return;
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTexture() - 🖼️ 设置主纹理: {texture.name}, 尺寸: {texture.width}x{texture.height} (材质实例ID: {material.GetInstanceID()})");
-
+        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTexture() - 🖼️ 设置主纹理: {texture.name}");
         mainTexture = texture;
         material.SetTexture(MainTex, texture);
         OnMainTextureChanged?.Invoke(texture);
-
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTexture() - ✅ 主纹理设置完成: {texture.name}");
     }
 
     public virtual void SetMainTextureByPath(string path)
@@ -295,7 +283,6 @@ public class SceneMatCtrl : MonoBehaviour
 
         elementPath = path;
         SetMainTexture(texture);
-
         Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - ✅ 纹理加载成功: {path}");
     }
 
@@ -320,8 +307,6 @@ public class SceneMatCtrl : MonoBehaviour
     {
         if (material == null || this == null || gameObject == null) yield break;
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SmoothTextureTransition() - 🎬 执行平滑切换");
-
         Color originalColor = tintColor;
         Color startColor = tintColor;
         Color targetColor = tintColor;
@@ -336,7 +321,6 @@ public class SceneMatCtrl : MonoBehaviour
             yield return null;
         }
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SmoothTextureTransition() - 切换到新纹理: {newTexture.name}");
         mainTexture = newTexture;
         material.SetTexture(MainTex, newTexture);
 
@@ -354,7 +338,6 @@ public class SceneMatCtrl : MonoBehaviour
 
         material.SetColor(ColorProp, originalColor);
         OnMainTextureChanged?.Invoke(newTexture);
-
         Debug.Log($"[{LOG_TAG}] {gameObject.name}.SmoothTextureTransition() - ✅ 平滑切换完成: {newTexture.name}");
     }
 
@@ -364,14 +347,12 @@ public class SceneMatCtrl : MonoBehaviour
 
     public virtual void SetBlinkColor(Color color)
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetBlinkColor() - 🎨 设置闪烁颜色: {color}");
         blinkColor = color;
         if (material != null) material.SetColor(BlinkColor, color);
     }
 
     public virtual void SetBlinkEnabled(bool enabled)
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetBlinkEnabled() - 💡 闪烁: {(enabled ? "开启" : "关闭")}");
         enableBlink = enabled;
         if (material != null)
         {
@@ -384,7 +365,6 @@ public class SceneMatCtrl : MonoBehaviour
 
     public virtual void SetBlinkTexture(Texture2D texture)
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetBlinkTexture() - 🖼️ 设置闪烁纹理: {(texture != null ? texture.name : "null")}");
         blinkTexture = texture;
         if (material != null)
         {
@@ -396,14 +376,12 @@ public class SceneMatCtrl : MonoBehaviour
 
     public virtual void SetBlinkInterval(float interval)
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetBlinkInterval() - ⏱️ 闪烁间隔: {interval}");
         blinkInterval = Mathf.Max(interval, 0.01f);
         if (material != null) material.SetFloat(BlinkInterval, blinkInterval);
     }
 
     public virtual void SetBlinkOffset(float offset)
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetBlinkOffset() - ⏱️ 闪烁偏移: {offset}");
         blinkOffset = offset;
         if (material != null) material.SetFloat(BlinkOffset, offset);
     }
@@ -411,14 +389,12 @@ public class SceneMatCtrl : MonoBehaviour
     public virtual void StartBlink()
     {
         if (!isInitialized || blinkTexture == null) return;
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.StartBlink() - 💡 开始闪烁");
         SetBlinkEnabled(true);
     }
 
     public virtual void StopBlink()
     {
         if (!isInitialized) return;
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.StopBlink() - 💡 停止闪烁");
         SetBlinkEnabled(false);
     }
 
@@ -434,7 +410,6 @@ public class SceneMatCtrl : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetFlip() - 🔄 镜像: {(flip ? "开启" : "关闭")}");
         isFlipped = flip;
         if (material != null) material.SetFloat(Flip, flip ? 1f : 0f);
     }
@@ -442,7 +417,6 @@ public class SceneMatCtrl : MonoBehaviour
     public virtual void ToggleFlip()
     {
         if (!isCanFlip) return;
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.ToggleFlip() - 🔄 切换镜像: {(!isFlipped ? "开启" : "关闭")}");
         SetFlip(!isFlipped);
     }
 
@@ -452,20 +426,15 @@ public class SceneMatCtrl : MonoBehaviour
 
     public virtual void SetRenderQueue(SceneMatManager.RenderQueueLevel level)
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetRenderQueue() - 📊 设置渲染层级: {level}");
         renderQueue = level;
         UpdateRenderQueue();
     }
 
     public virtual void SetRenderQueueValue(int queueValue)
     {
-        if (material != null)
+        if (material != null && material.renderQueue != queueValue)
         {
-            if (material.renderQueue != queueValue)
-            {
-                Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetRenderQueueValue() - 📊 直接设置渲染队列值: {queueValue} (材质: {material.name}, 实例ID: {material.GetInstanceID()})");
-                material.renderQueue = queueValue;
-            }
+            material.renderQueue = queueValue;
         }
     }
 
@@ -477,19 +446,19 @@ public class SceneMatCtrl : MonoBehaviour
     {
         if (this == null || gameObject == null) return;
 
-        string scaleStr = scale.HasValue ? $"({scale.Value.x:F2}, {scale.Value.y:F2}, {scale.Value.z:F2})" : "不变";
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetTransformData() - 📍 位置: ({position.x:F2}, {position.y:F2}, {position.z:F2}), 大小: {scaleStr}");
-
         transform.position = position;
         if (scale.HasValue) transform.localScale = scale.Value;
     }
 
-    public virtual SceneMatManager.TransformData GetTransformData()
+    /// <summary>
+    /// 获取变换数据 - 使用 JsonDataStructures 中的 TransformData
+    /// </summary>
+    public SceneElementTransformData GetTransformData()
     {
-        return new SceneMatManager.TransformData
+        return new SceneElementTransformData
         {
-            position = transform.position,
-            scale = transform.localScale
+            position = SerializableVector3.FromUnityVector(transform.position.x, transform.position.y, transform.position.z),
+            scale = SerializableVector3.FromUnityVector(transform.localScale.x, transform.localScale.y, transform.localScale.z)
         };
     }
 
@@ -501,8 +470,6 @@ public class SceneMatCtrl : MonoBehaviour
     {
         if (material == null) return;
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetSpriteSheetParams() - 🎞️ 序列帧参数: {rows}x{columns}, 速度: {speed}");
-
         cachedRows = rows;
         cachedColumns = columns;
         cachedSpeed = speed;
@@ -513,7 +480,6 @@ public class SceneMatCtrl : MonoBehaviour
 
     public virtual void SetSpriteSheetEnabled(bool enabled)
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetSpriteSheetEnabled() - 🎞️ 序列帧: {(enabled ? "开启" : "关闭")}");
         cachedSpriteSheetEnabled = enabled;
         if (material != null) material.SetFloat(SpriteSheetEnabled, enabled ? 1f : 0f);
     }
@@ -529,17 +495,12 @@ public class SceneMatCtrl : MonoBehaviour
 
     public virtual void SetNextTexture(Texture2D texture)
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetNextTexture() - 🖼️ 设置过渡纹理: {(texture != null ? texture.name : "null")}");
         if (material != null && texture != null) material.SetTexture(NextTex, texture);
     }
 
     public virtual void SetTransition(float value)
     {
-        if (material != null)
-        {
-            Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetTransition() - 🎬 过渡进度: {value:F2}");
-            material.SetFloat(Transition, Mathf.Clamp01(value));
-        }
+        if (material != null) material.SetFloat(Transition, Mathf.Clamp01(value));
     }
 
     public virtual void TransitionTo(Texture2D texture, float duration = 1f)
@@ -550,7 +511,6 @@ public class SceneMatCtrl : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.TransitionTo() - 🎬 开始过渡到: {texture.name}, 时长: {duration}秒");
         SetNextTexture(texture);
         if (transitionCoroutine != null) StopCoroutine(transitionCoroutine);
         transitionCoroutine = StartCoroutine(SmoothTransition(duration));
@@ -559,8 +519,6 @@ public class SceneMatCtrl : MonoBehaviour
     protected virtual IEnumerator SmoothTransition(float duration)
     {
         if (material == null) yield break;
-
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SmoothTransition() - 🎬 执行过渡");
 
         float elapsed = 0f;
         while (elapsed < duration)
@@ -573,21 +531,14 @@ public class SceneMatCtrl : MonoBehaviour
         Texture2D nextTex = material.GetTexture(NextTex) as Texture2D;
         if (nextTex != null)
         {
-            Debug.Log($"[{LOG_TAG}] {gameObject.name}.SmoothTransition() - 切换到目标纹理: {nextTex.name}");
             mainTexture = nextTex;
             material.SetTexture(MainTex, nextTex);
             material.SetFloat(Transition, 0f);
             OnMainTextureChanged?.Invoke(mainTexture);
         }
-        else
-        {
-            Debug.LogWarning($"[{LOG_TAG}] {gameObject.name}.SmoothTransition() - 过渡纹理为空，跳过");
-        }
 
         transitionCoroutine = null;
         OnFadeComplete?.Invoke();
-
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SmoothTransition() - ✅ 过渡完成");
     }
 
     // ==========================================
@@ -598,8 +549,6 @@ public class SceneMatCtrl : MonoBehaviour
     {
         if (material == null) { onComplete?.Invoke(); return; }
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.FadeTo() - 🎭 淡入淡出: {targetAlpha}, 时长: {duration}秒");
-
         if (duration <= 0f)
         {
             Color color = material.GetColor(ColorProp);
@@ -607,7 +556,6 @@ public class SceneMatCtrl : MonoBehaviour
             material.SetColor(ColorProp, color);
             tintColor = color;
             onComplete?.Invoke();
-            Debug.Log($"[{LOG_TAG}] {gameObject.name}.FadeTo() - ✅ 直接设置透明度: {targetAlpha}");
             return;
         }
 
@@ -618,8 +566,6 @@ public class SceneMatCtrl : MonoBehaviour
     protected virtual IEnumerator FadeToCoroutine(float targetAlpha, float duration, Action onComplete)
     {
         if (material == null) { onComplete?.Invoke(); yield break; }
-
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.FadeToCoroutine() - 🎭 开始淡入淡出");
 
         Color color = material.GetColor(ColorProp);
         float startAlpha = color.a;
@@ -641,27 +587,21 @@ public class SceneMatCtrl : MonoBehaviour
         fadeCoroutine = null;
         OnFadeComplete?.Invoke();
         onComplete?.Invoke();
-
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.FadeToCoroutine() - ✅ 淡入淡出完成, 透明度: {targetAlpha}");
     }
 
     public virtual void FadeIn(float duration = 0.5f, Action onComplete = null)
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.FadeIn() - 🎭 淡入, 时长: {duration}秒");
         FadeTo(1f, duration, onComplete);
     }
 
     public virtual void FadeOut(float duration = 0.5f, Action onComplete = null)
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.FadeOut() - 🎭 淡出, 时长: {duration}秒");
         FadeTo(0f, duration, onComplete);
     }
 
     public virtual void SetAlphaImmediate(float alpha)
     {
         if (material == null) return;
-
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetAlphaImmediate() - 🎭 立即设置透明度: {alpha}");
 
         Color color = material.GetColor(ColorProp);
         color.a = Mathf.Clamp01(alpha);
@@ -675,21 +615,19 @@ public class SceneMatCtrl : MonoBehaviour
 
     public virtual void SetSceneId(string id)
     {
-        if (sceneId != id)
-        {
-            Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetSceneId() - 📋 场景ID: {sceneId} -> {id}");
-            sceneId = id;
-        }
+        if (sceneId != id) sceneId = id;
     }
 
     public virtual void SetTintColor(Color color)
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetTintColor() - 🎨 着色颜色: {color}");
         tintColor = color;
         if (material != null) material.SetColor(ColorProp, color);
     }
 
-    public virtual void LoadFromData(SceneMatManager.SceneElementData data)
+    /// <summary>
+    /// 从数据加载 - 使用 JsonDataStructures 中的 SceneElementData
+    /// </summary>
+    public virtual void LoadFromData(SceneElementData data)
     {
         if (data == null)
         {
@@ -701,8 +639,10 @@ public class SceneMatCtrl : MonoBehaviour
 
         if (data.transform != null)
         {
-            Debug.Log($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - 📍 位置: ({data.transform.position.x:F2}, {data.transform.position.y:F2}, {data.transform.position.z:F2}), 大小: ({data.transform.scale.x:F2}, {data.transform.scale.y:F2}, {data.transform.scale.z:F2})");
-            SetTransformData(data.transform.position, data.transform.scale);
+            Vector3 position = data.transform.position.ToUnityVector();
+            Vector3 scale = data.transform.scale.ToUnityVector();
+            Debug.Log($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - 📍 位置: ({position.x:F2}, {position.y:F2}, {position.z:F2}), 大小: ({scale.x:F2}, {scale.y:F2}, {scale.z:F2})");
+            SetTransformData(position, scale);
         }
         else
         {
@@ -718,14 +658,8 @@ public class SceneMatCtrl : MonoBehaviour
 
     protected virtual void OnDestroy()
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.OnDestroy() - 🗑️ 销毁 (材质实例ID: {material?.GetInstanceID()})");
-
-        // 从Manager注销
         SceneMatManager manager = FindObjectOfType<SceneMatManager>();
-        if (manager != null)
-        {
-            manager.UnregisterController(this);
-        }
+        if (manager != null) manager.UnregisterController(this);
 
         if (fadeCoroutine != null) { StopCoroutine(fadeCoroutine); fadeCoroutine = null; }
         if (transitionCoroutine != null) { StopCoroutine(transitionCoroutine); transitionCoroutine = null; }
@@ -734,7 +668,6 @@ public class SceneMatCtrl : MonoBehaviour
 
     protected virtual void OnEnable()
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.OnEnable() - ✅ 启用");
         if (isInitialized && material != null)
         {
             ApplyAllProperties();
@@ -744,7 +677,6 @@ public class SceneMatCtrl : MonoBehaviour
 
     protected virtual void OnDisable()
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.OnDisable() - ⛔ 禁用");
         if (enableBlink && material != null)
         {
             material.SetFloat(BlinkEnabled, 0f);
