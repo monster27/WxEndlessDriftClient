@@ -276,7 +276,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchPlayerGoldCoroutine()
     {
-        yield return FetchGetJson<GoldResponse>("/api/player/gold/" + _currentPlayerId, data =>
+        yield return FetchGetJson<GoldResponse>(ServerUrls.Player.GoldById(_currentPlayerId), data =>
         {
             if (data != null)
             {
@@ -293,7 +293,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchUnlockedCharactersCoroutine()
     {
-        yield return FetchGetJson("/api/player/characters/" + _currentPlayerId, json =>
+        yield return FetchGetJson(ServerUrls.Player.Characters(_currentPlayerId), json =>
         {
             unlockedCharacters.Clear();
             try
@@ -325,7 +325,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchFishBagCapacityCoroutine()
     {
-        yield return FetchGetJson<CapacityResponse>("/api/inventory/fish/" + _currentPlayerId + "/capacity", data =>
+        yield return FetchGetJson<CapacityResponse>(ServerUrls.Inventory.FishCapacityById(_currentPlayerId), data =>
         {
             if (data != null)
             {
@@ -342,7 +342,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchContinuousModeStatusCoroutine()
     {
-        yield return FetchGetJson<ContinuousModeStatus>("/api/game/continuous-mode/status", data =>
+        yield return FetchGetJson<ContinuousModeStatus>(ServerUrls.Game.ContinuousModeStatus, data =>
         {
             if (data != null)
             {
@@ -355,7 +355,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchBaitCountCoroutine()
     {
-        yield return FetchGetJson<BaitCountResponse>("/api/game/bait/count", data =>
+        yield return FetchGetJson<BaitCountResponse>(ServerUrls.Game.BaitCount, data =>
         {
             if (data != null)
             {

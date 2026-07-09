@@ -34,7 +34,7 @@ public partial class NetServerManager
 
     private IEnumerator SyncMallItemsCoroutine()
     {
-        string url = serverUrl + "/api/player/mall/items";
+        string url = serverUrl + ServerUrls.Player.MallItems;
         Logger.Log($"[NetServerManager] 同步商城物品列表: {url}");
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))
@@ -99,7 +99,7 @@ public partial class NetServerManager
 
     private IEnumerator PurchaseMallItemCoroutine(int itemId, int quantity, System.Action<bool, string> callback)
     {
-        string url = serverUrl + "/api/player/mall/purchase";
+        string url = serverUrl + ServerUrls.Player.MallPurchase;
         string jsonData = $"{{\"PlayerId\":{_currentPlayerId},\"ItemId\":{itemId},\"Quantity\":{quantity}}}";
 
         Logger.Log($"[NetServerManager] 购买商城物品请求: {jsonData}");

@@ -19,7 +19,7 @@ public partial class NetServerManager
     private IEnumerator FetchGameState()
     {
         if (!isConnected) yield break;
-        yield return FetchGetJson<ContinuousModeStatus>("/api/game/continuous-mode/status", data =>
+        yield return FetchGetJson<ContinuousModeStatus>(ServerUrls.Game.ContinuousModeStatus, data =>
         {
             if (data == null) return;
             isInContinuousMode = data.isInContinuousMode;
@@ -30,7 +30,7 @@ public partial class NetServerManager
     private IEnumerator FetchBaitCount()
     {
         if (!isConnected) yield break;
-        yield return FetchGetJson<BaitCountResponse>("/api/game/bait/count", data =>
+        yield return FetchGetJson<BaitCountResponse>(ServerUrls.Game.BaitCount, data =>
         {
             if (data != null) currentSceneBaitCount = data.baitCount;
         }, "鱼饵数量");
@@ -48,7 +48,7 @@ public partial class NetServerManager
         });
 
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
-        using (var request = new UnityWebRequest(serverUrl + "/api/game/add-bait-time", "POST"))
+        using (var request = new UnityWebRequest(serverUrl + ServerUrls.Game.AddBaitTime, "POST"))
         {
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
@@ -84,7 +84,7 @@ public partial class NetServerManager
 
     private IEnumerator EnterContinuousModeWithBaitEndTimeCoroutine()
     {
-        using (var request = UnityWebRequest.PostWwwForm(serverUrl + "/api/game/enter-continuous-mode", ""))
+        using (var request = UnityWebRequest.PostWwwForm(serverUrl + ServerUrls.Game.ContinuousModeEnter, ""))
         {
             request.timeout = 10;
             yield return request.SendWebRequest();
@@ -237,7 +237,7 @@ public partial class NetServerManager
 
     private IEnumerator SyncContinuousModeStatusCoroutine()
     {
-        yield return FetchGetJson<ContinuousModeStatus>("/api/game/continuous-mode/status", resp =>
+        yield return FetchGetJson<ContinuousModeStatus>(ServerUrls.Game.ContinuousModeStatus, resp =>
         {
             if (resp == null) return;
             baitEndTime = resp.baitEndTime;

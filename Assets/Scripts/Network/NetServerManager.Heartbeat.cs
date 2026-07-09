@@ -35,7 +35,7 @@ public partial class NetServerManager
             { "timestamp", System.DateTimeOffset.UtcNow.ToUnixTimeSeconds() }
         };
 
-        StartCoroutine(SendRequest<object>("/api/player/" + _currentPlayerId + "/exit", requestData,
+        StartCoroutine(SendRequest<object>(ServerUrls.Player.Exit(_currentPlayerId), requestData,
             onSuccess: (response) =>
             {
                 Logger.LogColor("[NetServerManager] 玩家退出请求成功", "green");
@@ -59,7 +59,7 @@ public partial class NetServerManager
             { "timestamp", System.DateTimeOffset.UtcNow.ToUnixTimeSeconds() }
         };
 
-        StartCoroutine(SendRequest<object>("/api/player/" + _currentPlayerId + "/reconnect", requestData,
+        StartCoroutine(SendRequest<object>(ServerUrls.Player.Reconnect(_currentPlayerId), requestData,
             onSuccess: (response) =>
             {
                 Logger.LogColor("[NetServerManager] 重连请求成功，开始恢复钓鱼状态", "green");
@@ -124,7 +124,7 @@ public partial class NetServerManager
             { "clientTime", System.DateTimeOffset.UtcNow.ToUnixTimeSeconds() }
         };
 
-        StartCoroutine(SendRequest<object>("/api/player/" + _currentPlayerId + "/heartbeat", requestData,
+        StartCoroutine(SendRequest<object>(ServerUrls.Player.Heartbeat(_currentPlayerId), requestData,
             onSuccess: (response) =>
             {
                 Logger.LogColor("[NetServerManager] 心跳发送成功", "cyan");
@@ -164,7 +164,7 @@ public partial class NetServerManager
             { "clientTime", clientTime }
         };
 
-        yield return SendRequest<HeartbeatResponse>("/api/heartbeat", requestData,
+        yield return SendRequest<HeartbeatResponse>(ServerUrls.Heartbeat.HeartbeatApi, requestData,
             (response) =>
             {
                 if (response != null)

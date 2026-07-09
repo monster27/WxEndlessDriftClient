@@ -14,7 +14,7 @@ public partial class NetServerManager
 
     private IEnumerator UnlockSkillCoroutine(int skillId, System.Action<bool> callback)
     {
-        string url = serverUrl + "/api/player/skills/unlock";
+        string url = serverUrl + ServerUrls.Skill.Unlock;
         string jsonData = $"{{\"PlayerId\":{_currentPlayerId},\"ComponentId\":{skillId}}}";
 
         Logger.Log($"[NetServerManager] 解锁技能请求: {jsonData}");
@@ -69,7 +69,7 @@ public partial class NetServerManager
 
     private IEnumerator UpgradeSkillCoroutine(int skillId, int newLevel, System.Action<bool> callback)
     {
-        string url = serverUrl + "/api/player/skills/upgrade";
+        string url = serverUrl + ServerUrls.Skill.Upgrade;
         string jsonData = $"{{\"PlayerId\":{_currentPlayerId},\"ComponentId\":{skillId},\"NewLevel\":{newLevel}}}";
 
         Logger.Log($"[NetServerManager] 升级技能请求: {jsonData}");

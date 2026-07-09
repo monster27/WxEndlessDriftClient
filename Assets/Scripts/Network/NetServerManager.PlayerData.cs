@@ -98,7 +98,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchPlayerSceneDataCoroutine()
     {
-        yield return FetchGetJson<PlayerSceneData>("/api/player/scene/" + _currentPlayerId, data =>
+        yield return FetchGetJson<PlayerSceneData>(ServerUrls.Player.SceneById(_currentPlayerId), data =>
         {
             if (data != null && data.sceneId > 0)
             {
@@ -221,7 +221,7 @@ public partial class NetServerManager
     // 在 NetServerManager.PlayerData.cs 的 FetchPlayerInventoryCoroutine 中
     private IEnumerator FetchPlayerInventoryCoroutine()
     {
-        yield return FetchGetJson<InventoryResponse>("/api/player/inventory/" + _currentPlayerId, data =>
+        yield return FetchGetJson<InventoryResponse>(ServerUrls.Player.InventoryById(_currentPlayerId), data =>
         {
             if (data?.items == null) return;
             playerInventory.Clear();
@@ -241,7 +241,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchPlayerEquipmentCoroutine()
     {
-        yield return FetchGetJson<EquipmentResponse>("/api/player/equipment/" + _currentPlayerId, data =>
+        yield return FetchGetJson<EquipmentResponse>(ServerUrls.Player.EquipmentById(_currentPlayerId), data =>
         {
             if (data == null) return;
             equippedRodId = data.rodId > 0 ? data.rodId : 3001;
@@ -260,7 +260,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchPlayerFishInventoryCoroutine()
     {
-        yield return FetchGetJson<InventoryResponse>("/api/player/fish-bag/" + _currentPlayerId, data =>
+        yield return FetchGetJson<InventoryResponse>(ServerUrls.Player.FishBagById(_currentPlayerId), data =>
         {
             if (data?.items == null) return;
 
@@ -302,7 +302,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchPlayerCharacterDataCoroutine()
     {
-        yield return FetchGetJson("/api/player/character/" + _currentPlayerId, json =>
+        yield return FetchGetJson(ServerUrls.Player.CharacterById(_currentPlayerId), json =>
         {
             Logger.Log("[NetServerManager] 人物数据加载完成: " + json);
         }, "人物数据");
@@ -338,7 +338,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchPlayerGold()
     {
-        yield return FetchGetJson<GoldResponse>("/api/player/gold/" + _currentPlayerId, data =>
+        yield return FetchGetJson<GoldResponse>(ServerUrls.Player.GoldById(_currentPlayerId), data =>
         {
             if (data != null) playerGold = data.gold;
             Logger.Log("[NetServerManager] 更新玩家金币: " + playerGold);
@@ -347,7 +347,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchPlayerInventory()
     {
-        yield return FetchGetJson<InventoryResponse>("/api/player/inventory/" + _currentPlayerId, data =>
+        yield return FetchGetJson<InventoryResponse>(ServerUrls.Player.InventoryById(_currentPlayerId), data =>
         {
             if (data?.items == null) return;
             playerInventory.Clear();
@@ -361,7 +361,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchUnlockedCharacters()
     {
-        yield return FetchGetJson("/api/player/characters/" + _currentPlayerId, json =>
+        yield return FetchGetJson(ServerUrls.Player.Characters(_currentPlayerId), json =>
         {
             unlockedCharacters.Clear();
             try
@@ -393,7 +393,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchPlayerFishBag()
     {
-        yield return FetchGetJson<InventoryResponse>("/api/player/fish-bag/" + _currentPlayerId, data =>
+        yield return FetchGetJson<InventoryResponse>(ServerUrls.Player.FishBagById(_currentPlayerId), data =>
         {
             if (data?.items == null) return;
             fishInventory.Clear();
@@ -427,7 +427,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchFishBagCapacity()
     {
-        yield return FetchGetJson<CapacityResponse>("/api/inventory/fish/" + _currentPlayerId + "/capacity", data =>
+        yield return FetchGetJson<CapacityResponse>(ServerUrls.Inventory.FishCapacityById(_currentPlayerId), data =>
         {
             if (data != null) fishBagCapacity = data.capacity;
             Logger.Log("[NetServerManager] 更新鱼篓容量: " + fishBagCapacity);
@@ -436,7 +436,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchPlayerEquipment()
     {
-        yield return FetchGetJson<EquipmentResponse>("/api/player/equipment/" + _currentPlayerId, data =>
+        yield return FetchGetJson<EquipmentResponse>(ServerUrls.Player.EquipmentById(_currentPlayerId), data =>
         {
             if (data == null) return;
             equippedRodId = data.rodId > 0 ? data.rodId : 3001;
@@ -454,7 +454,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchPlayerCharacter()
     {
-        yield return FetchGetJson<CharacterSyncResponse>("/api/player/character/" + _currentPlayerId, data =>
+        yield return FetchGetJson<CharacterSyncResponse>(ServerUrls.Player.CharacterById(_currentPlayerId), data =>
         {
             if (data == null) return;
             equippedCharacterId = data.characterId > 0 ? data.characterId : 3401;
@@ -492,7 +492,7 @@ public partial class NetServerManager
 
     private IEnumerator SyncUnlockedCharactersCoroutine()
     {
-        yield return FetchGetJson("/api/player/characters/" + _currentPlayerId, json =>
+        yield return FetchGetJson(ServerUrls.Player.Characters(_currentPlayerId), json =>
         {
             unlockedCharacters.Clear();
             var listResp = JsonUtility.FromJson<CharacterListResponse>(json);
@@ -515,7 +515,7 @@ public partial class NetServerManager
 
     private IEnumerator SyncUnlockedEquipmentCoroutine()
     {
-        yield return FetchGetJson<UnlockedEquipmentResponse>("/api/player/" + _currentPlayerId + "/unlocked-equipment", resp =>
+        yield return FetchGetJson<UnlockedEquipmentResponse>(ServerUrls.Player.UnlockedEquipment(_currentPlayerId), resp =>
         {
             if (resp == null || !resp.success || resp.unlockedEquipment == null) return;
             unlockedEquipment.Clear();
@@ -551,7 +551,7 @@ public partial class NetServerManager
 
     private IEnumerator FetchPlayerInventoryFromServer()
     {
-        yield return FetchGetJson<InventoryResponse>("/api/player/inventory/" + _currentPlayerId, data =>
+        yield return FetchGetJson<InventoryResponse>(ServerUrls.Player.InventoryById(_currentPlayerId), data =>
         {
             if (data?.items == null) return;
             playerInventory.Clear();
@@ -582,7 +582,7 @@ public partial class NetServerManager
         { "sceneId", sceneId }
     };
 
-        string url = $"/api/player/scene/{_currentPlayerId}";
+        string url = ServerUrls.Player.SceneById(_currentPlayerId);
 
         yield return SendRequest<SceneSwitchResponse>(url, requestData,
             (response) =>
@@ -661,7 +661,7 @@ public partial class NetServerManager
     private IEnumerator AddCharacterToInventory(int characterId)
     {
         string json = $"{{\"playerId\":{_currentPlayerId},\"itemId\":{characterId},\"quantity\":1}}";
-        yield return FetchPostJson("/api/player/inventory/add", json, responseText =>
+        yield return FetchPostJson(ServerUrls.Player.InventoryAdd, json, responseText =>
         {
             var resp = JsonUtility.FromJson<AddItemResponse>(responseText);
             if (resp != null && resp.success)
@@ -675,7 +675,7 @@ public partial class NetServerManager
     private IEnumerator AddCharacterToPlayerCharacter(int characterId)
     {
         string json = $"{{\"playerId\":{_currentPlayerId},\"characterId\":{characterId}}}";
-        yield return FetchPostJson("/api/player/character/add", json, responseText =>
+        yield return FetchPostJson(ServerUrls.Player.CharacterAdd, json, responseText =>
         {
             var resp = JsonUtility.FromJson<AddItemResponse>(responseText);
             if (resp != null && resp.success)
@@ -691,7 +691,7 @@ public partial class NetServerManager
     private IEnumerator UnlockCharacterCoroutine(int characterId, Action<bool> callback)
     {
         string json = $"{{\"playerId\":{_currentPlayerId},\"characterId\":{characterId}}}";
-        yield return FetchPostJson("/api/player/character/add", json, responseText =>
+        yield return FetchPostJson(ServerUrls.Player.CharacterAdd, json, responseText =>
         {
             var resp = JsonUtility.FromJson<AddItemResponse>(responseText);
             if (resp != null && resp.success)

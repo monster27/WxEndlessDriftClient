@@ -11,7 +11,8 @@ using System;
 
 public partial class NetServerManager : SingletonMono<NetServerManager>
 {
-    private string serverUrl = "http://localhost:5000";
+    private string serverUrl = ServerUrls.GetFullUrl("");
+    
 
     private bool _isEnabled = true;
     public bool IsEnabled => _isEnabled;
@@ -71,7 +72,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             Logger.Log("[NetServerManager] Init() 已被调用，跳过重复初始化");
             return;
         }
-
+        serverUrl = ServerUrls.GetFullUrl("");
         RegisterNetworkEvents();
         RegisterServerEvents();
         _isInitCalled = true;
@@ -116,7 +117,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         networkState = NetUtils.NetworkState.Connecting;
         Logger.LogColor("[NetServerManager] 正在连接到服务器: " + serverUrl, "yellow");
 
-        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + "/api/ping"))
+        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + ServerUrls.Heartbeat.Ping))
         {
             request.timeout = 5;
             yield return request.SendWebRequest();

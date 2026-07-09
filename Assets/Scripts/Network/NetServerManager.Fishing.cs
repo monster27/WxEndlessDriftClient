@@ -42,7 +42,7 @@ public partial class NetServerManager
             { "playerId", _currentPlayerId }, { "sceneId", sceneId }, { "baitId", actualBaitId }
         };
         NetUtils.LogRequest("DoFishing", requestData);
-        StartCoroutine(DoFishingCoroutine("/api/fishing/catch", requestData));
+        StartCoroutine(DoFishingCoroutine(ServerUrls.Fishing.Catch, requestData));
     }
 
     private IEnumerator DoFishingCoroutine(string url, Dictionary<string, object> requestData)
@@ -115,7 +115,7 @@ public partial class NetServerManager
         {
             { "playerId", _currentPlayerId }, { "sceneId", sceneId }, { "baitId", actualBaitId }
         };
-        StartCoroutine(SendRequest<AutoFishingResponse>("/api/fishing/auto/start", requestData, resp =>
+        StartCoroutine(SendRequest<AutoFishingResponse>(ServerUrls.Fishing.AutoStart, requestData, resp =>
         {
             if (resp != null && resp.success) { isAutoFishing = true; Logger.Log("[NetServerManager] 自动钓鱼已启动"); }
             else Logger.LogWarning("[NetServerManager] 启动自动钓鱼失败: " + (resp?.message ?? "未知错误"));
@@ -126,7 +126,7 @@ public partial class NetServerManager
     {
         if (!CheckNetworkConnection()) return;
         var requestData = new Dictionary<string, object> { { "playerId", _currentPlayerId } };
-        StartCoroutine(SendRequest<AutoFishingResponse>("/api/fishing/auto/stop", requestData, resp =>
+        StartCoroutine(SendRequest<AutoFishingResponse>(ServerUrls.Fishing.AutoStop, requestData, resp =>
         {
             if (resp != null && resp.success) { isAutoFishing = false; Logger.Log("[NetServerManager] 自动钓鱼已停止"); }
         }));
@@ -158,7 +158,7 @@ public partial class NetServerManager
                 yield break;
             }
 
-            using (var request = UnityWebRequest.Get(serverUrl + "/api/fishing/status?playerId=" + _currentPlayerId))
+            using (var request = UnityWebRequest.Get(serverUrl + ServerUrls.Fishing.StatusByPlayerId(_currentPlayerId)))
             {
                 request.timeout = 5;
                 yield return request.SendWebRequest();
@@ -472,7 +472,7 @@ public partial class NetServerManager
         string jsonToSend = NetUtils.SerializeToJson(requestData);
         Logger.Log($"[NetServerManager] 发送JSON: {jsonToSend}");
 
-        StartCoroutine(SendRequest<object>($"/api/player/fish-bag/{_currentPlayerId}/sell", requestData,
+        StartCoroutine(SendRequest<object>(ServerUrls.Player.SellFish(_currentPlayerId), requestData,
             _ => { Logger.Log("[NetServerManager] 售卖鱼成功"); StartCoroutine(FetchPlayerDataAfterSell(itemIds, totalPrice)); },
             error => { Logger.LogWarning("[NetServerManager] 售卖鱼失败: " + error); GameUIManager.Instance?.ShowTip("售卖失败，请重试"); }));
     }

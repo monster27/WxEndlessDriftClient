@@ -13,7 +13,7 @@ public class ServerTestView : MonoBehaviour
     public Button btnStopAutoFishing;
     public Text outputText;
 
-    private string serverUrl = "http://localhost:5000";
+    private string serverUrl = ServerUrls.GetFullUrl("");
     private UnityEngine.Networking.UnityWebRequest request;
 
     void Start()
@@ -58,7 +58,7 @@ public class ServerTestView : MonoBehaviour
         UpdateOutput("正在获取玩家信息...\n");
 
         // 获取玩家数据
-        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + "/api/player/1"))
+        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + ServerUrls.Player.GetById(1)))
         {
             request.timeout = 5;
             yield return request.SendWebRequest();
@@ -75,7 +75,7 @@ public class ServerTestView : MonoBehaviour
         }
 
         // 获取玩家装备
-        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + "/api/player/equipment/1"))
+        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + ServerUrls.Player.EquipmentById(1)))
         {
             request.timeout = 5;
             yield return request.SendWebRequest();
@@ -92,7 +92,7 @@ public class ServerTestView : MonoBehaviour
         }
 
         // 获取玩家人物
-        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + "/api/player/character/1"))
+        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + ServerUrls.Player.CharacterById(1)))
         {
             request.timeout = 5;
             yield return request.SendWebRequest();
@@ -109,7 +109,7 @@ public class ServerTestView : MonoBehaviour
         }
 
         // 获取玩家金币
-        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + "/api/player/gold/1"))
+        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + ServerUrls.Player.GoldById(1)))
         {
             request.timeout = 5;
             yield return request.SendWebRequest();
@@ -126,7 +126,7 @@ public class ServerTestView : MonoBehaviour
         }
 
         // 获取玩家背包
-        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + "/api/player/inventory/1"))
+        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + ServerUrls.Player.InventoryById(1)))
         {
             request.timeout = 5;
             yield return request.SendWebRequest();
@@ -143,7 +143,7 @@ public class ServerTestView : MonoBehaviour
         }
 
         // 获取鱼篓
-        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + "/api/player/fish-inventory/1"))
+        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + ServerUrls.Inventory.FishInventoryById(1)))
         {
             request.timeout = 5;
             yield return request.SendWebRequest();
@@ -160,7 +160,7 @@ public class ServerTestView : MonoBehaviour
         }
 
         // 获取鱼篓容量
-        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + "/api/player/fish-bag-capacity/1"))
+        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + ServerUrls.Inventory.FishBagCapacityById(1)))
         {
             request.timeout = 5;
             yield return request.SendWebRequest();
@@ -193,7 +193,7 @@ public class ServerTestView : MonoBehaviour
         UpdateOutput("正在获取钓鱼状态...\n");
 
         // 获取钓鱼状态
-        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + "/api/fishing/status?playerId=1"))
+        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + ServerUrls.Fishing.StatusByPlayerId(1)))
         {
             request.timeout = 5;
             yield return request.SendWebRequest();
@@ -232,7 +232,7 @@ public class ServerTestView : MonoBehaviour
         }
 
         // 获取连续钓鱼模式状态
-        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + "/api/game/continuous-mode/status"))
+        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + ServerUrls.Game.ContinuousModeStatus))
         {
             request.timeout = 5;
             yield return request.SendWebRequest();
@@ -249,7 +249,7 @@ public class ServerTestView : MonoBehaviour
         }
 
         // 获取自动钓鱼状态
-        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + "/api/fishing/auto/status?playerId=1"))
+        using (var request = UnityEngine.Networking.UnityWebRequest.Get(serverUrl + ServerUrls.Fishing.AutoStatusByPlayerId(1)))
         {
             request.timeout = 5;
             yield return request.SendWebRequest();
@@ -284,7 +284,7 @@ public class ServerTestView : MonoBehaviour
         string jsonData = "{\"playerId\":1,\"sceneId\":1,\"baitId\":2501,\"intervalMs\":3000}";
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
 
-        using (var request = new UnityEngine.Networking.UnityWebRequest(serverUrl + "/api/fishing/auto/start", "POST"))
+        using (var request = new UnityEngine.Networking.UnityWebRequest(serverUrl + ServerUrls.Fishing.AutoStart, "POST"))
         {
             request.uploadHandler = new UnityEngine.Networking.UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new UnityEngine.Networking.DownloadHandlerBuffer();
@@ -321,7 +321,7 @@ public class ServerTestView : MonoBehaviour
         string jsonData = "{\"playerId\":1}";
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
 
-        using (var request = new UnityEngine.Networking.UnityWebRequest(serverUrl + "/api/fishing/auto/stop", "POST"))
+        using (var request = new UnityEngine.Networking.UnityWebRequest(serverUrl + ServerUrls.Fishing.AutoStop, "POST"))
         {
             request.uploadHandler = new UnityEngine.Networking.UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new UnityEngine.Networking.DownloadHandlerBuffer();

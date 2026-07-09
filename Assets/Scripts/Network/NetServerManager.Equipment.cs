@@ -154,7 +154,7 @@ public partial class NetServerManager
 
     private IEnumerator SendEquipRequest(int slotType, int itemId)
     {
-        string url = $"/api/player/equipment/{_currentPlayerId}/{slotType}/equip/{itemId}";
+        string url = ServerUrls.Player.EquipItem(_currentPlayerId, slotType, itemId);
         Logger.Log($"[NetServerManager] 发送装备请求: {url}");
 
         using (UnityWebRequest request = UnityWebRequest.PostWwwForm(serverUrl + url, ""))
@@ -211,7 +211,7 @@ public partial class NetServerManager
         if (!_isEnabled || _currentPlayerId <= 0)
             return;
 
-        string url = $"/api/player/character/{_currentPlayerId}";
+        string url = ServerUrls.Player.CharacterById(_currentPlayerId);
         StartCoroutine(SendRequest<CharacterSyncResponse>(url, null,
             (response) =>
             {
@@ -237,7 +237,7 @@ public partial class NetServerManager
     {
         yield return new WaitForSeconds(0.3f);
 
-        string url = $"/api/player/character/{_currentPlayerId}";
+        string url = ServerUrls.Player.CharacterById(_currentPlayerId);
         Logger.Log($"[NetServerManager] 正在从服务器获取人物数据: {url}");
 
         using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + url))
@@ -313,7 +313,7 @@ public partial class NetServerManager
             { "equipmentType", equipmentType }
         };
 
-        StartCoroutine(SendRequest<object>("/api/equipment/unlock", requestData,
+        StartCoroutine(SendRequest<object>(ServerUrls.Equipment.Unlock, requestData,
             (response) =>
             {
                 Logger.Log($"[NetServerManager] 装备解锁成功: equipId={equipId}");
@@ -370,7 +370,7 @@ public partial class NetServerManager
         };
 
         StartCoroutine(SendRequest<UnlockEquipmentResponse>(
-            "/api/fishing/unlock-equipment",
+            ServerUrls.Fishing.UnlockEquipment,
             requestData,
             (response) =>
             {

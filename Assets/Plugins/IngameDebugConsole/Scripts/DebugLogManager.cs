@@ -169,7 +169,7 @@ namespace IngameDebugConsole
 		private bool avoidScreenCutout = true;
 
 		[SerializeField]
-		[Tooltip( "If a log is longer than this limit, it will be truncated. This helps avoid reaching Unity's 65000 vertex limit for UI canvases" )]
+		[Tooltip( "If a log is longer than this limit, it will be truncated. This helps avoid reaching Unity's 65001 vertex limit for UI canvases" )]
 		private int maxLogLength = 10000;
 
 #if UNITY_EDITOR || UNITY_STANDALONE || UNITY_WEBGL
