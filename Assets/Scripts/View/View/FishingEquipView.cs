@@ -59,6 +59,9 @@ public class FishingEquipView : MonoBehaviour
     /// <summary>
     /// 装备刷新事件处理
     /// </summary>
+    /// <summary>
+    /// 装备刷新事件处理
+    /// </summary>
     private void OnEquipmentRefresh()
     {
         Debug.Log("[FishingEquipView] 收到装备刷新事件，更新显示");
@@ -165,7 +168,7 @@ public class FishingEquipView : MonoBehaviour
 
         List<int> currentIds = GetCurrentIds();
         totalCount = currentIds.Count;
-        
+
         int totalPages = Mathf.CeilToInt((float)totalCount / itemsPerPage);
         totalPages = Mathf.Max(1, totalPages);
         currentPage = Mathf.Clamp(currentPage, 0, totalPages - 1);
@@ -187,10 +190,15 @@ public class FishingEquipView : MonoBehaviour
                 {
                     name = GetDefaultName(currentType);
                 }
+
+                // ⭐ 每次重新获取状态
                 EquipState state = GetEquipState(currentType, equipId);
 
                 item.SetData(currentType, equipId, icon, name, state, OnEquipItemClick, OnEquipAction, OnWatchAd);
                 item.gameObject.SetActive(true);
+
+                // ✅ 添加日志调试
+                Debug.Log($"[FishingEquipView] 更新装备项: ID={equipId}, Name={name}, State={state}");
             }
             else
             {
@@ -217,32 +225,24 @@ public class FishingEquipView : MonoBehaviour
     private EquipState GetEquipState(FishingEquipType type, int equipId)
     {
         EquipmentSlotType slotType = GetSlotType(type);
+
+        // ✅ 从本地缓存获取装备ID
         int equippedId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, slotType);
 
+        // ✅ 如果当前装备ID等于该物品ID，返回 OwnerUse
         if (equippedId == equipId)
         {
             return EquipState.OwnerUse;
         }
 
-        // 首先检查是否已解锁（已拥有）
-        bool isUnlocked = false;
-        if (NetServerManager.Instance != null)
-        {
-            isUnlocked = NetServerManager.Instance.IsEquipmentUnlocked(equipId);
-        }
-        
-        if (isUnlocked)
-        {
-            return EquipState.OwnerUnUse;
-        }
-
-        // 旧逻辑：检查背包（保留作为后备）
+        // ✅ 检查背包中是否有该物品
         var inventory = CommunicateEvent.Request<int, Dictionary<int, int>>(CommunicateEvent.EVENT_GET_INVENTORY, 0);
-        if (inventory.ContainsKey(equipId))
+        if (inventory != null && inventory.TryGetValue(equipId, out int count) && count > 0)
         {
             return EquipState.OwnerUnUse;
         }
 
+        // ✅ 如果既没有装备，也不在背包中，返回 Locked
         return EquipState.Locked;
     }
 

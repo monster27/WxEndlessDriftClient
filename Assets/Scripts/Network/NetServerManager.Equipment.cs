@@ -6,7 +6,7 @@ using System;
 using SharedModels;
 using Logger = Utils.Logger;
 
-public partial class NetServerManager 
+public partial class NetServerManager
 {
     // 装备数据
     private int equippedRodId = 3001;
@@ -89,7 +89,140 @@ public partial class NetServerManager
         return 100;
     }
 
-    // ========== 装备操作 ==========
+    // ========== 装备操作（带回调版本） ==========
+
+    /// <summary>
+    /// 装备物品（带回调，与广告逻辑一致）
+    /// </summary>
+    public void EquipItemWithCallback(EquipmentSlotType slotType, int itemId, System.Action<bool, string> onComplete)
+    {
+        if (!CheckNetworkConnection())
+        {
+            onComplete?.Invoke(false, "网络未连接");
+            return;
+        }
+
+        Logger.Log($"[NetServerManager] 处理装备请求: slotType={slotType}, itemId={itemId}");
+
+        int slotTypeInt = (int)slotType;
+        StartCoroutine(SendEquipRequestWithCallback(slotTypeInt, itemId, onComplete));
+    }
+
+    /// <summary>
+    /// 发送装备请求（带回调版本）- 使用服务器返回的完整数据
+    /// </summary>
+    // NetServerManager.Equipment.cs - 修改 SendEquipRequestWithCallback
+
+    private IEnumerator SendEquipRequestWithCallback(int slotType, int itemId, System.Action<bool, string> onComplete)
+    {
+        string url = ServerUrls.Player.EquipItem(_currentPlayerId, slotType, itemId);
+        Logger.Log($"[NetServerManager] 发送装备请求: {url}");
+
+        using (UnityWebRequest request = UnityWebRequest.PostWwwForm(serverUrl + url, ""))
+        {
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    Logger.Log($"[NetServerManager] 装备响应: {json}");
+
+                    var response = JsonUtility.FromJson<EquipResponse>(json);
+
+                    if (response != null && response.success)
+                    {
+                        Logger.Log($"[NetServerManager] 装备成功: slotType={slotType}, itemId={itemId}");
+
+                        // ✅ 1. 先更新本地装备数据
+                        if (response.equipment != null)
+                        {
+                            equippedRodId = response.equipment.rodId > 0 ? response.equipment.rodId : 3001;
+                            equippedLineId = response.equipment.lineId > 0 ? response.equipment.lineId : 3101;
+                            equippedHookId = response.equipment.hookId > 0 ? response.equipment.hookId : 3201;
+                            equippedSkill1Id = response.equipment.skill1Id;
+                            equippedSkill2Id = response.equipment.skill2Id;
+                            equippedCharacterId = response.equipment.characterId > 0 ? response.equipment.characterId : 3401;
+                            equippedBaitId = response.equipment.baitId;
+                            characterLevel = response.equipment.characterLevel > 0 ? response.equipment.characterLevel : 1;
+
+                            Logger.Log($"[NetServerManager] 装备数据已更新: Rod={equippedRodId}, Char={equippedCharacterId}, Bait={equippedBaitId}");
+                        }
+
+                        if (response.inventory != null)
+                        {
+                            var inventoryDict = new Dictionary<int, int>();
+                            foreach (var item in response.inventory)
+                            {
+                                inventoryDict[item.key] = item.value;
+                            }
+                            playerInventory = inventoryDict;
+                            Logger.Log($"[NetServerManager] 背包数据已更新: {playerInventory.Count} 个物品");
+
+                            if (PlayerDataManager.Instance != null)
+                            {
+                                PlayerDataManager.Instance.UpdateInventoryFromServer(playerInventory);
+                            }
+                        }
+
+                        if (response.fishBag != null)
+                        {
+                            var fishBagDict = new Dictionary<int, int>();
+                            foreach (var item in response.fishBag)
+                            {
+                                fishBagDict[item.key] = item.value;
+                            }
+                            fishInventory = fishBagDict;
+                            Logger.Log($"[NetServerManager] 鱼篓数据已更新: {fishInventory.Count} 种鱼");
+                        }
+
+                        // ✅ 4. 更新解锁装备缓存
+                        if (itemId > 0 && !unlockedEquipment.Contains(itemId))
+                        {
+                            unlockedEquipment.Add(itemId);
+                        }
+
+                        // ✅ 5. 如果是人物装备，同步人物数据
+                        if (slotType == (int)EquipmentSlotType.Character)
+                        {
+                            Logger.Log($"[NetServerManager] 检测到人物装备，立即同步人物数据...");
+                            StartCoroutine(SyncCharacterDataAfterEquip(itemId));
+                        }
+
+                        // ✅ 6. 触发装备变更事件（背包数据已经更新完成，UI可以正确读取）
+                        CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, (slotType, itemId));
+
+                        // ✅ 7. 不再重复触发 Equipment_Refresh（PlayerDataManager.UpdateInventoryFromServer 已经触发了）
+                        // 但为了保险，在最后再触发一次（不会造成问题）
+                        CommunicateEvent.Modify("Equipment_Refresh");
+
+                        onComplete?.Invoke(true, response.message ?? "装备成功");
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"[NetServerManager] 装备失败: {response?.message ?? "未知错误"}");
+                        onComplete?.Invoke(false, response?.message ?? "装备失败");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析装备响应失败: {ex.Message}");
+                    onComplete?.Invoke(false, "解析响应失败");
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 装备请求失败: {request.error}");
+                onComplete?.Invoke(false, request.error);
+            }
+        }
+    }
+
+    // ========== 装备操作（旧版，保留兼容） ==========
 
     private void OnEquipItem((EquipmentSlotType slotType, int itemId) data)
     {
@@ -98,8 +231,6 @@ public partial class NetServerManager
 
         var (slotType, itemId) = data;
         Logger.Log($"[NetServerManager] 处理装备请求: slotType={slotType}, itemId={itemId}");
-
-        UpdateLocalEquippedItem(slotType, itemId);
 
         int slotTypeInt = (int)slotType;
         StartCoroutine(SendEquipRequest(slotTypeInt, itemId));
@@ -111,8 +242,6 @@ public partial class NetServerManager
             return;
 
         Logger.Log($"[NetServerManager] 处理装备鱼饵请求: itemId={itemId}");
-
-        UpdateLocalEquippedItem(EquipmentSlotType.Bait, itemId);
 
         StartCoroutine(SendEquipRequest((int)EquipmentSlotType.Bait, itemId));
 
@@ -174,6 +303,9 @@ public partial class NetServerManager
                     {
                         Logger.Log($"[NetServerManager] 装备成功: slotType={slotType}, itemId={itemId}");
 
+                        // ✅ 更新本地装备数据
+                        UpdateLocalEquippedItem((EquipmentSlotType)slotType, itemId);
+
                         if (PlayerDataManager.Instance != null)
                         {
                             PlayerDataManager.Instance.SyncInventoryFromServer();
@@ -186,6 +318,7 @@ public partial class NetServerManager
                         }
 
                         CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, (slotType, itemId));
+                        CommunicateEvent.Modify("Equipment_Refresh");
                     }
                     else
                     {
@@ -396,10 +529,34 @@ public partial class NetServerManager
 
     // ========== 辅助数据类 ==========
 
+    [System.Serializable]
     private class EquipResponse
     {
         public bool success;
         public string message;
+        public EquipmentData equipment;
+        public List<ItemData> inventory;
+        public List<ItemData> fishBag;
+    }
+
+    [System.Serializable]
+    private class ItemData
+    {
+        public int key;
+        public int value;
+    }
+
+    [System.Serializable]
+    private class EquipmentData
+    {
+        public int rodId;
+        public int lineId;
+        public int hookId;
+        public int skill1Id;
+        public int skill2Id;
+        public int characterId;
+        public int baitId;
+        public int characterLevel;
     }
 
     [System.Serializable]

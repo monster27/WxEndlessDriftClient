@@ -15,14 +15,45 @@ public class EquipmentView : MonoBehaviour
     public InfoFishEquipView infoFishEquipView;
 
     private Dictionary<int, Sprite> iconCache = new Dictionary<int, Sprite>();
-
     private MonoBehaviour currentSubView;
-
+    private bool _isRefreshing = false;
 
     void Start()
     {
         if (maskBtn != null) maskBtn.onClick.AddListener(OnMaskClick);
         if (closeBtn != null) closeBtn.onClick.AddListener(OnCloseClick);
+    }
+
+    void OnEnable()
+    {
+        // 注册装备刷新事件
+        CommunicateEvent.Register("Equipment_Refresh", OnEquipmentRefresh);
+        CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipChanged);
+    }
+
+    void OnDisable()
+    {
+        // 取消注册
+        CommunicateEvent.Unregister("Equipment_Refresh", OnEquipmentRefresh);
+        CommunicateEvent.Unregister<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipChanged);
+    }
+
+    void OnDestroy()
+    {
+        CommunicateEvent.Unregister("Equipment_Refresh", OnEquipmentRefresh);
+        CommunicateEvent.Unregister<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipChanged);
+    }
+
+    private void OnEquipmentRefresh()
+    {
+        Debug.Log("[EquipmentView] OnEquipmentRefresh - 刷新所有视图");
+        RefreshAllViews();
+    }
+
+    private void OnEquipChanged((int, int) data)
+    {
+        Debug.Log($"[EquipmentView] OnEquipChanged - slotType={data.Item1}, itemId={data.Item2}");
+        RefreshAllViews();
     }
 
     public void Init()
@@ -55,6 +86,7 @@ public class EquipmentView : MonoBehaviour
 
         if (infoFishEquipView != null)
         {
+            infoFishEquipView.Init();
             infoFishEquipView.SetCallback(OnInfoFishEquipCallback);
         }
     }
@@ -112,6 +144,9 @@ public class EquipmentView : MonoBehaviour
             mainEquipmentView.Show();
         }
         gameObject.SetActive(true);
+
+        // 显示时刷新所有数据
+        RefreshAllViews();
     }
 
     public void Hide()
@@ -128,6 +163,54 @@ public class EquipmentView : MonoBehaviour
         if (equipPlayerView != null) equipPlayerView.Hide();
         if (infoSkillView != null) infoSkillView.Hide();
         if (infoFishEquipView != null) infoFishEquipView.Hide();
+    }
+
+    /// <summary>
+    /// 统一刷新所有视图
+    /// </summary>
+    // EquipmentView.cs - 修改 RefreshAllViews
+
+    /// <summary>
+    /// 统一刷新所有视图
+    /// </summary>
+    public void RefreshAllViews()
+    {
+        if (_isRefreshing) return;
+        _isRefreshing = true;
+
+        Debug.Log("[EquipmentView] RefreshAllViews - 刷新所有视图");
+
+        try
+        {
+            if (mainEquipmentView != null)
+            {
+                mainEquipmentView.UpdateDisplay();
+            }
+
+            if (fishingEquipView != null)
+            {
+                fishingEquipView.UpdateDisplay();
+            }
+
+            if (equipPlayerView != null)
+            {
+                equipPlayerView.UpdateDisplay();
+            }
+
+            if (infoFishEquipView != null)
+            {
+                infoFishEquipView.UpdateDisplay();
+            }
+
+            if (infoSkillView != null)
+            {
+                infoSkillView.UpdateSkillList();
+            }
+        }
+        finally
+        {
+            _isRefreshing = false;
+        }
     }
 
     private void OnMaskClick()
@@ -290,10 +373,13 @@ public class EquipmentView : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 装备操作（装备或卸下）- 使用带回调的版本，与广告逻辑一致
+    /// </summary>
     private void OnEquipAction(FishingEquipType type, int equipId)
     {
         Debug.Log($"[EquipmentView] OnEquipAction - type={type}, equipId={equipId}");
-        
+
         EquipmentSlotType slotType = EquipmentSlotType.FishingRod;
         switch (type)
         {
@@ -306,15 +392,36 @@ public class EquipmentView : MonoBehaviour
             case FishingEquipType.Hook:
                 slotType = EquipmentSlotType.FishingHook;
                 break;
+            default:
+                return;
         }
 
-        CommunicateEvent.Modify<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_ITEM, (slotType, equipId));
-        Debug.Log($"[EquipmentView] OnEquipAction - 已发送装备请求 {slotType} 为 {equipId}");
+        string componentName = LoadDataManager.Instance.GetComponentName(equipId);
+        Debug.Log($"[EquipmentView] 尝试装备: {componentName} (ID:{equipId})");
 
-        mainEquipmentView.UpdateDisplay();
-        if (fishingEquipView != null && fishingEquipView.gameObject.activeSelf)
+        if (NetServerManager.Instance != null)
         {
-            fishingEquipView.UpdateDisplay();
+            GameUIManager.Instance?.ShowTip($"正在装备 {componentName}...");
+
+            NetServerManager.Instance.EquipItemWithCallback(slotType, equipId, (success, message) =>
+            {
+                if (success)
+                {
+                    Debug.Log($"[EquipmentView] 装备成功: {slotType} -> {equipId}");
+
+                    // ✅ 装备成功后，NetServerManager 内部已经拉取了最新数据
+                    // 只需要刷新 UI 即可
+                    RefreshAllViews();
+
+                    string successInfo = componentName != "未知组件" ? $"已装备 {componentName}！" : "已装备装备！";
+                    CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+                }
+                else
+                {
+                    Debug.LogWarning($"[EquipmentView] 装备失败: {message}");
+                    GameUIManager.Instance?.ShowTip($"装备失败: {message}");
+                }
+            });
         }
     }
 
@@ -339,19 +446,20 @@ public class EquipmentView : MonoBehaviour
             if (adSuccess)
             {
                 int playerId = NetServerManager.Instance?.GetCurrentPlayerId() ?? 1;
-                
+
                 // 判断是技能还是装备
                 if (targetId >= 3301 && targetId < 3400)
                 {
                     // 技能
                     Debug.Log($"[EquipmentView] 广告成功，开始解锁技能: playerId={playerId}, skillId={targetId}");
-                    
+
                     NetServerManager.Instance.UnlockSkill(targetId, (success) =>
                     {
                         if (success)
                         {
                             Debug.Log($"[EquipmentView] 服务器技能解锁成功，通知UI");
                             onConfirmWithResult?.Invoke(true);
+                            RefreshAllViews();
                         }
                         else
                         {
@@ -365,15 +473,16 @@ public class EquipmentView : MonoBehaviour
                 {
                     // 装备
                     string equipmentType = GetEquipmentTypeFromId(targetId);
-                    
+
                     Debug.Log($"[EquipmentView] 广告成功，开始解锁装备: playerId={playerId}, equipmentId={targetId}, type={equipmentType}");
-                    
+
                     NetServerManager.Instance.UnlockEquipment(playerId, targetId, equipmentType, (success, message) =>
                     {
                         if (success)
                         {
                             Debug.Log($"[EquipmentView] 服务器解锁成功，通知UI");
                             onConfirmWithResult?.Invoke(true);
+                            RefreshAllViews();
                         }
                         else
                         {
@@ -420,18 +529,5 @@ public class EquipmentView : MonoBehaviour
             return "Skill";
         else
             return "Unknown";
-    }
-
-    private void RefreshAllViews()
-    {
-        Debug.Log("[EquipmentView] RefreshAllViews");
-        if (mainEquipmentView != null)
-        {
-            mainEquipmentView.UpdateDisplay();
-        }
-        if (equipPlayerView != null && equipPlayerView.gameObject.activeSelf)
-        {
-            equipPlayerView.UpdateDisplay();
-        }
     }
 }

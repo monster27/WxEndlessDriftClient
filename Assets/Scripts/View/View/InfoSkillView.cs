@@ -160,7 +160,7 @@ public class InfoSkillView : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    private void UpdateSkillList()
+    public void UpdateSkillList()
     {
         for (int i = 0; i < skillItems.Count && i < skillIds.Count; i++)
         {

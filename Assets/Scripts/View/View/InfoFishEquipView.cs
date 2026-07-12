@@ -48,7 +48,7 @@ public class InfoFishEquipView : MonoBehaviour
         if (adUpgradeBtn != null) adUpgradeBtn.onClick.AddListener(OnAdUpgradeClick);
         if (unlockBtn != null) unlockBtn.onClick.AddListener(OnUnlockClick);
         if (watchAdBtn != null) watchAdBtn.onClick.AddListener(OnWatchAdClick);
-        if (watchAd2Btn != null) watchAdBtn.onClick.AddListener(OnWatchAdClick);
+        if (watchAd2Btn != null) watchAd2Btn?.onClick.AddListener(OnWatchAdClick);
         if (equipBtn != null) equipBtn.onClick.AddListener(OnEquipClick);
     }
 
@@ -92,9 +92,19 @@ public class InfoFishEquipView : MonoBehaviour
         int slotType = data.Item1;
         int itemId = data.Item2;
         EquipmentSlotType currentSlotType = GetSlotType();
+
+        Debug.Log($"[InfoFishEquipView] OnEquipChanged - slotType={slotType}, itemId={itemId}, currentSlotType={currentSlotType}");
+
+        // ✅ 如果当前显示的装备类型被更改，刷新整个界面
         if ((int)currentSlotType == slotType)
         {
-            UpdateStateDisplay();
+            UpdateDisplay();
+        }
+
+        // ✅ 如果当前显示的装备被装备或卸下，也刷新
+        if (itemId == currentEquipId || slotType == (int)currentSlotType)
+        {
+            UpdateDisplay();
         }
     }
 
@@ -130,7 +140,7 @@ public class InfoFishEquipView : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    private void UpdateDisplay()
+    public void UpdateDisplay()
     {
         UpdateTitleDisplay();
         UpdateIconDisplay();
@@ -281,8 +291,6 @@ public class InfoFishEquipView : MonoBehaviour
             upgradeCostValueText.text = cost.ToString();
             upgradeCostValueText.color = canAfford ? Color.black : Color.red;
         }
-
-        
     }
 
     private EquipState GetEquipState()
@@ -349,7 +357,7 @@ public class InfoFishEquipView : MonoBehaviour
     private void OnUpgradeClick()
     {
         Debug.Log($"[InfoFishEquipView] OnUpgradeClick - currentEquipId={currentEquipId}");
-        
+
         int level = GetEquipLevel();
         int cost = CalculateUpgradeCost(level);
 
@@ -426,7 +434,7 @@ public class InfoFishEquipView : MonoBehaviour
         callback?.Invoke("OpenAdWithResult", new object[] { info, currentEquipId, "看广告解锁", (System.Action<bool>)((bool success) =>
         {
             Debug.Log($"[InfoFishEquipView] 广告解锁回调 - success={success}, currentEquipId={currentEquipId}");
-            
+
             if (success)
             {
                 CommunicateEvent.Modify("Equip_Unlock", currentEquipId);
@@ -488,13 +496,33 @@ public class InfoFishEquipView : MonoBehaviour
         Debug.Log($"[InfoFishEquipView] OnEquipClick - currentType={currentType}, currentEquipId={currentEquipId}");
 
         EquipmentSlotType slotType = GetSlotType();
-        CommunicateEvent.Modify<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_ITEM, (slotType, currentEquipId));
-        Debug.Log($"[InfoFishEquipView] OnEquipClick - 已发送装备请求 {slotType} 为 {currentEquipId}");
-
-        UpdateDisplay();
-
         string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
-        string successInfo = componentName != "未知组件" ? $"已装备 {componentName}！" : "已装备装备！";
-        CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+
+        if (NetServerManager.Instance != null)
+        {
+            GameUIManager.Instance?.ShowTip($"正在装备 {componentName}...");
+
+            NetServerManager.Instance.EquipItemWithCallback(slotType, currentEquipId, (success, message) =>
+            {
+                if (success)
+                {
+                    Debug.Log($"[InfoFishEquipView] 装备成功: {slotType} -> {currentEquipId}");
+
+                    // ✅ 刷新显示
+                    UpdateDisplay();
+
+                    // ✅ 触发全局刷新
+                    CommunicateEvent.Modify("Equipment_Refresh");
+
+                    string successInfo = componentName != "未知组件" ? $"已装备 {componentName}！" : "已装备装备！";
+                    CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+                }
+                else
+                {
+                    Debug.LogWarning($"[InfoFishEquipView] 装备失败: {message}");
+                    GameUIManager.Instance?.ShowTip($"装备失败: {message}");
+                }
+            });
+        }
     }
 }

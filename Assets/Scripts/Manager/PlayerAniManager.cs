@@ -401,17 +401,19 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         return LoadDataManager.Instance.GetCharacterConfig(characterId);
     }
 
+    // ✅ 修复：使用正确的事件名获取装备人物ID
     private int GetEquippedCharacterId()
     {
         if (NetServerManager.Instance != null)
         {
             try
             {
-                int characterId = CommunicateEvent.Request<int, int>("VIEW_EVENT_GET_EQUIPPED_CHARACTER", 0);
-                if (characterId > 0)
-                {
-                    return characterId;
-                }
+                int characterId = CommunicateEvent.Request<EquipmentSlotType, int>(
+                    CommunicateEvent.EVENT_GET_EQUIPPED_ITEM,
+                    EquipmentSlotType.Character);
+
+                Debug.Log($"[PlayerAniManager] GetEquippedCharacterId 返回: {characterId}");
+                return characterId;
             }
             catch (Exception ex)
             {
@@ -838,6 +840,9 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
     {
         int defaultId = defaultCharacterId;
         int equippedId = GetEquippedCharacterId();
+
+        Debug.Log($"[PlayerAniManager] EnsureDefaultCharacterLoaded - equippedId={equippedId}, defaultId={defaultId}");
+
         if (equippedId > 0)
         {
             defaultId = equippedId;

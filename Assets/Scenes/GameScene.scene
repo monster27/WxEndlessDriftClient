@@ -39319,7 +39319,7 @@ MonoBehaviour:
   maxX: 5.5
   moveScale: 0.5
   smoothSpeed: 10
-  isMirrored: 1
+  isMirrored: 0
   checkUI: 1
 --- !u!1 &1604839328
 GameObject:

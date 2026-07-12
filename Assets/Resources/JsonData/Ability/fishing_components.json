@@ -213,7 +213,18 @@
                 }
             ],
             "obtainStatus": 0,
-            "equipStatus": 0
+            "equipStatus": 0,
+            "rarityId": 0,
+            "slotTypeId": 0,
+            "trashProbability": 0.0,
+            "maxTrashStreak": 0,
+            "fishWeightMultiplier": 0.0,
+            "shinyRateBonus": 0.0,
+            "minFishingInterval": 0,
+            "maxFishingInterval": 0,
+            "continuousPauseDuration": 0,
+            "normalPauseDuration": 0,
+            "fishBagCapacity": 0
         },
         {
             "id": 3002,
@@ -428,7 +439,18 @@
                 }
             ],
             "obtainStatus": 0,
-            "equipStatus": 0
+            "equipStatus": 0,
+            "rarityId": 0,
+            "slotTypeId": 0,
+            "trashProbability": 0.0,
+            "maxTrashStreak": 0,
+            "fishWeightMultiplier": 0.0,
+            "shinyRateBonus": 0.0,
+            "minFishingInterval": 0,
+            "maxFishingInterval": 0,
+            "continuousPauseDuration": 0,
+            "normalPauseDuration": 0,
+            "fishBagCapacity": 0
         },
         {
             "id": 3101,
@@ -643,7 +665,18 @@
                 }
             ],
             "obtainStatus": 0,
-            "equipStatus": 0
+            "equipStatus": 0,
+            "rarityId": 0,
+            "slotTypeId": 0,
+            "trashProbability": 0.0,
+            "maxTrashStreak": 0,
+            "fishWeightMultiplier": 0.0,
+            "shinyRateBonus": 0.0,
+            "minFishingInterval": 0,
+            "maxFishingInterval": 0,
+            "continuousPauseDuration": 0,
+            "normalPauseDuration": 0,
+            "fishBagCapacity": 0
         },
         {
             "id": 3102,
@@ -858,7 +891,18 @@
                 }
             ],
             "obtainStatus": 0,
-            "equipStatus": 0
+            "equipStatus": 0,
+            "rarityId": 0,
+            "slotTypeId": 0,
+            "trashProbability": 0.0,
+            "maxTrashStreak": 0,
+            "fishWeightMultiplier": 0.0,
+            "shinyRateBonus": 0.0,
+            "minFishingInterval": 0,
+            "maxFishingInterval": 0,
+            "continuousPauseDuration": 0,
+            "normalPauseDuration": 0,
+            "fishBagCapacity": 0
         },
         {
             "id": 3201,
@@ -1073,7 +1117,18 @@
                 }
             ],
             "obtainStatus": 0,
-            "equipStatus": 0
+            "equipStatus": 0,
+            "rarityId": 0,
+            "slotTypeId": 0,
+            "trashProbability": 0.0,
+            "maxTrashStreak": 0,
+            "fishWeightMultiplier": 0.0,
+            "shinyRateBonus": 0.0,
+            "minFishingInterval": 0,
+            "maxFishingInterval": 0,
+            "continuousPauseDuration": 0,
+            "normalPauseDuration": 0,
+            "fishBagCapacity": 0
         },
         {
             "id": 3202,
@@ -1288,7 +1343,18 @@
                 }
             ],
             "obtainStatus": 0,
-            "equipStatus": 0
+            "equipStatus": 0,
+            "rarityId": 0,
+            "slotTypeId": 0,
+            "trashProbability": 0.0,
+            "maxTrashStreak": 0,
+            "fishWeightMultiplier": 0.0,
+            "shinyRateBonus": 0.0,
+            "minFishingInterval": 0,
+            "maxFishingInterval": 0,
+            "continuousPauseDuration": 0,
+            "normalPauseDuration": 0,
+            "fishBagCapacity": 0
         },
         {
             "id": 3301,
@@ -1503,7 +1569,18 @@
                 }
             ],
             "obtainStatus": 0,
-            "equipStatus": 0
+            "equipStatus": 0,
+            "rarityId": 0,
+            "slotTypeId": 0,
+            "trashProbability": 0.0,
+            "maxTrashStreak": 0,
+            "fishWeightMultiplier": 0.0,
+            "shinyRateBonus": 0.0,
+            "minFishingInterval": 0,
+            "maxFishingInterval": 0,
+            "continuousPauseDuration": 0,
+            "normalPauseDuration": 0,
+            "fishBagCapacity": 0
         },
         {
             "id": 3302,
@@ -1718,7 +1795,18 @@
                 }
             ],
             "obtainStatus": 0,
-            "equipStatus": 0
+            "equipStatus": 0,
+            "rarityId": 0,
+            "slotTypeId": 0,
+            "trashProbability": 0.0,
+            "maxTrashStreak": 0,
+            "fishWeightMultiplier": 0.0,
+            "shinyRateBonus": 0.0,
+            "minFishingInterval": 0,
+            "maxFishingInterval": 0,
+            "continuousPauseDuration": 0,
+            "normalPauseDuration": 0,
+            "fishBagCapacity": 0
         },
         {
             "id": 3303,
@@ -1933,7 +2021,18 @@
                 }
             ],
             "obtainStatus": 0,
-            "equipStatus": 0
+            "equipStatus": 0,
+            "rarityId": 0,
+            "slotTypeId": 0,
+            "trashProbability": 0.0,
+            "maxTrashStreak": 0,
+            "fishWeightMultiplier": 0.0,
+            "shinyRateBonus": 0.0,
+            "minFishingInterval": 0,
+            "maxFishingInterval": 0,
+            "continuousPauseDuration": 0,
+            "normalPauseDuration": 0,
+            "fishBagCapacity": 0
         },
         {
             "id": 3304,
@@ -2148,7 +2247,18 @@
                 }
             ],
             "obtainStatus": 0,
-            "equipStatus": 0
+            "equipStatus": 0,
+            "rarityId": 0,
+            "slotTypeId": 0,
+            "trashProbability": 0.0,
+            "maxTrashStreak": 0,
+            "fishWeightMultiplier": 0.0,
+            "shinyRateBonus": 0.0,
+            "minFishingInterval": 0,
+            "maxFishingInterval": 0,
+            "continuousPauseDuration": 0,
+            "normalPauseDuration": 0,
+            "fishBagCapacity": 0
         }
     ]
 }

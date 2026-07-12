@@ -7,7 +7,7 @@ using System;
 using SharedModels;
 using Logger = Utils.Logger;
 
-public partial class NetServerManager 
+public partial class NetServerManager
 {
     // 钓鱼状态
     private bool isAutoFishing = false;
@@ -106,20 +106,49 @@ public partial class NetServerManager
     public void StartAutoFishing(int baitId = 0)
     {
         if (!CheckNetworkConnection()) return;
-        if (isFishBagFull) { NotifyPlayLazyAnimation(); return; }
+
+        // ✅ 启动前检查鱼篓状态
+        if (isFishBagFull)
+        {
+            Logger.Log("[NetServerManager] StartAutoFishing - 鱼篓已满，无法启动自动钓鱼");
+            NotifyPlayLazyAnimation();
+            GameUIManager.ShowMessage("鱼篓已满，无法继续钓鱼");
+            return;
+        }
 
         int actualBaitId = baitId == 0 && equippedBaitId != 0 ? equippedBaitId : baitId;
         int sceneId = GetCurrentSceneId();
 
         var requestData = new Dictionary<string, object>
-        {
-            { "playerId", _currentPlayerId }, { "sceneId", sceneId }, { "baitId", actualBaitId }
-        };
-        StartCoroutine(SendRequest<AutoFishingResponse>(ServerUrls.Fishing.AutoStart, requestData, resp =>
-        {
-            if (resp != null && resp.success) { isAutoFishing = true; Logger.Log("[NetServerManager] 自动钓鱼已启动"); }
-            else Logger.LogWarning("[NetServerManager] 启动自动钓鱼失败: " + (resp?.message ?? "未知错误"));
-        }));
+    {
+        { "playerId", _currentPlayerId },
+        { "sceneId", sceneId },
+        { "baitId", actualBaitId }
+    };
+
+        Logger.Log($"[NetServerManager] StartAutoFishing - 发送启动请求, sceneId={sceneId}, baitId={actualBaitId}");
+
+        StartCoroutine(SendRequest<AutoFishingResponse>(ServerUrls.Fishing.AutoStart, requestData,
+            (resp) =>
+            {
+                if (resp != null && resp.success)
+                {
+                    isAutoFishing = true;
+                    isPaused = false;
+                    Logger.Log("[NetServerManager] 自动钓鱼已启动");
+                }
+                else
+                {
+                    Logger.LogWarning($"[NetServerManager] 启动自动钓鱼失败: {resp?.message ?? "未知错误"}");
+                    GameUIManager.ShowMessage(resp?.message ?? "启动自动钓鱼失败");
+                }
+            },
+            (error) =>
+            {
+                Logger.LogError($"[NetServerManager] 启动自动钓鱼请求失败: {error}");
+                GameUIManager.ShowMessage("网络错误，启动自动钓鱼失败");
+            }
+        ));
     }
 
     public void StopAutoFishing()
@@ -134,8 +163,22 @@ public partial class NetServerManager
 
     private void AutoStartFishing()
     {
-        if (isAutoFishing) return;
+        if (isAutoFishing)
+        {
+            Logger.Log("[NetServerManager] AutoStartFishing - 已经在自动钓鱼中");
+            return;
+        }
+
+        // ✅ 再次检查鱼篓状态，防止在启动时鱼篓已满
+        if (isFishBagFull)
+        {
+            Logger.Log("[NetServerManager] AutoStartFishing - 鱼篓已满，无法启动自动钓鱼");
+            NotifyPlayLazyAnimation();
+            return;
+        }
+
         int baitId = equippedBaitId > 0 ? equippedBaitId : 0;
+        Logger.Log($"[NetServerManager] AutoStartFishing - 开始自动钓鱼, baitId={baitId}");
         StartAutoFishing(baitId);
     }
 
@@ -251,7 +294,7 @@ public partial class NetServerManager
     /// <summary>
     /// 根据鱼类ID获取稀有度颜色，并设置到鱼饵提示动画
     /// </summary>
-    private void SetFishTipColorByFishId(int fishId,float struggleTime)
+    private void SetFishTipColorByFishId(int fishId, float struggleTime)
     {
         try
         {
@@ -345,7 +388,7 @@ public partial class NetServerManager
     private void ProcessWeatherAndTimeSync(FishingStatusResponse response)
     {
         Debug.Log($"[NetServerManager] ProcessWeatherAndTimeSync - currentWeatherId={response.currentWeatherId}, timeSlotId={response.timeSlotId}, timeStatus={response.timeStatus}");
-        
+
         if (response.currentWeatherId > 0)
         {
             currentWeatherId = response.currentWeatherId;
@@ -360,7 +403,7 @@ public partial class NetServerManager
         {
             Debug.LogWarning($"[NetServerManager] 天气ID无效: {response.currentWeatherId}");
         }
-        
+
         if (response.timeSlotId > 0)
         {
             currentTimeSlotId = response.timeSlotId;
@@ -440,7 +483,7 @@ public partial class NetServerManager
     private Sprite GetItemIcon(int itemId)
     {
         if (LoadDataManager.Instance?.items == null) return null;
-        foreach (ItemData item in LoadDataManager.Instance.items)
+        foreach (var item in LoadDataManager.Instance.items)
             if (item.id == itemId && !string.IsNullOrEmpty(item.iconPath))
                 return Resources.Load<Sprite>(item.iconPath);
         return null;

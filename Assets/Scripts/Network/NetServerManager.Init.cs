@@ -185,24 +185,16 @@ public partial class NetServerManager
         NotifyPlayerDataSyncedInternal();
         SyncMallItemsFromServer();
 
-        // 安全切换角色动画
-        //if (equippedCharacterId > 0)
-        //{
-        //    if (PlayerAniManager.Instance != null)
-        //    {
-        //        PlayerAniManager.Instance.SwitchCharacter(equippedCharacterId);
-        //    }
-        //    else
-        //    {
-        //        Logger.LogWarning("[NetServerManager] PlayerAniManager 尚未初始化，跳过角色切换");
-        //    }
-        //}
+        // ✅ 修复：在所有数据加载完成后，重新计算鱼篓状态
+        int totalFishCount = GetTotalFishCount();
+        isFishBagFull = totalFishCount >= fishBagCapacity;
+        Logger.Log($"[NetServerManager] 初始化完成，鱼篓状态: {totalFishCount}/{fishBagCapacity}, isFull={isFishBagFull}");
 
         // ⭐ 启动钓鱼状态轮询
         Logger.Log("[NetServerManager] 启动钓鱼状态轮询...");
         StartCoroutine(PollFishingStatus());
 
-        // ⭐ 启动自动钓鱼
+        // ⭐ 根据鱼篓状态启动自动钓鱼或播放Lazy动画
         if (isFishBagFull)
         {
             NotifyPlayLazyAnimation();
@@ -266,10 +258,11 @@ public partial class NetServerManager
         _initSteps.Add(new InitStep("加载金币数据", FetchPlayerGoldCoroutine, 1.0f));
         _initSteps.Add(new InitStep("加载人物列表", FetchUnlockedCharactersCoroutine, 1.0f));
         _initSteps.Add(new InitStep("加载鱼篓容量", FetchFishBagCapacityCoroutine, 1.0f));
-        _initSteps.Add(new InitStep("加载场景数据", FetchPlayerSceneDataCoroutine, 1.0f)); 
+        _initSteps.Add(new InitStep("加载场景数据", FetchPlayerSceneDataCoroutine, 1.0f));
         _initSteps.Add(new InitStep("加载连续模式状态", FetchContinuousModeStatusCoroutine, 0.5f));
         _initSteps.Add(new InitStep("加载窝料数量", FetchBaitCountCoroutine, 0.5f));
-        _initSteps.Add(new InitStep("确保基础人物", EnsureBasicCharacterCoroutine, 1.0f));
+        // ❌ 删除 EnsureBasicCharacterCoroutine - 服务器已保证数据一致性
+        // _initSteps.Add(new InitStep("确保基础人物", EnsureBasicCharacterCoroutine, 1.0f));
     }
 
     // ========== 各个步骤的 Coroutine ==========
@@ -365,23 +358,6 @@ public partial class NetServerManager
         }, "窝料数量");
     }
 
-    private IEnumerator EnsureBasicCharacterCoroutine()
-    {
-        if (!playerInventory.ContainsKey(3401) || playerInventory[3401] <= 0)
-        {
-            Logger.LogWarning("[NetServerManager] 初始化 - 玩家未拥有基础人物3401，正在添加...");
-            yield return StartCoroutine(AddCharacterToInventory(3401));
-        }
-
-        yield return StartCoroutine(AddCharacterToPlayerCharacter(3401));
-
-        if (equippedCharacterId < 3401 || equippedCharacterId > 3500)
-        {
-            Logger.LogWarning($"[NetServerManager] 初始化 - 当前装备的人物ID({equippedCharacterId})无效，装备基础人物3401");
-            yield return StartCoroutine(SendEquipRequest((int)EquipmentSlotType.Character, 3401));
-            equippedCharacterId = 3401;
-        }
-
-        Logger.Log("[NetServerManager] 初始化 - 基础人物检查完成");
-    }
+    // ❌ 已删除 EnsureBasicCharacterCoroutine
+    // 服务器已在 AuthController 中保证数据一致性
 }

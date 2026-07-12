@@ -152,20 +152,38 @@ public partial class NetServerManager
             || equippedCharacterId == itemId || equippedBaitId == itemId;
     }
 
+    // 在 NetServerManager.PlayerData.cs 中找到 IsEquipmentUnlocked 方法
     public bool IsEquipmentUnlocked(int equipmentId)
     {
         if (equipmentId == 3401) return true;
         if (unlockedEquipment.Contains(equipmentId)) return true;
-        return playerInventory != null && playerInventory.TryGetValue(equipmentId, out int count) && count > 0;
+
+        // ✅ 检查背包
+        if (playerInventory != null && playerInventory.TryGetValue(equipmentId, out int count) && count > 0)
+        {
+            if (!unlockedEquipment.Contains(equipmentId))
+            {
+                unlockedEquipment.Add(equipmentId);
+            }
+            return true;
+        }
+
+        return false;
     }
 
 
     private int GetTotalFishCount()
     {
         int total = 0;
-        foreach (var list in fishDetailData.Values)
+        if (fishDetailData != null)
         {
-            total += list.Count;
+            foreach (var list in fishDetailData.Values)
+            {
+                if (list != null)
+                {
+                    total += list.Count;
+                }
+            }
         }
         return total;
     }
@@ -244,6 +262,8 @@ public partial class NetServerManager
         yield return FetchGetJson<EquipmentResponse>(ServerUrls.Player.EquipmentById(_currentPlayerId), data =>
         {
             if (data == null) return;
+
+            // ✅ 更新所有装备数据
             equippedRodId = data.rodId > 0 ? data.rodId : 3001;
             equippedLineId = data.lineId > 0 ? data.lineId : 3101;
             equippedHookId = data.hookId > 0 ? data.hookId : 3201;
@@ -253,8 +273,7 @@ public partial class NetServerManager
             equippedBaitId = data.baitId;
             characterLevel = data.characterLevel > 0 ? data.characterLevel : 1;
 
-            Logger.Log($"[NetServerManager] 装备数据加载完成: Rod={equippedRodId}, Char={equippedCharacterId}, Bait={equippedBaitId}");
-            CommunicateEvent.Modify<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, (EquipmentSlotType.Bait, equippedBaitId));
+            Logger.Log($"[NetServerManager] 装备数据从服务器同步完成: Rod={equippedRodId}, Line={equippedLineId}, Hook={equippedHookId}, Char={equippedCharacterId}, Bait={equippedBaitId}");
         }, "装备数据");
     }
 
@@ -271,10 +290,9 @@ public partial class NetServerManager
             foreach (var item in data.items)
             {
                 // item.key = fishId, item.value = 1 (因为每条鱼是独立的)
-                // 但这里我们不使用 fishInventory 作为显示数据源
                 if (!fishInventory.ContainsKey(item.key))
                     fishInventory[item.key] = 0;
-                fishInventory[item.key] += item.value; // 这行保留用于统计总数，但主要显示靠 detailData
+                fishInventory[item.key] += item.value;
 
                 // 存储每条鱼的详细信息
                 if (!fishDetailData.ContainsKey(item.key))
@@ -292,10 +310,14 @@ public partial class NetServerManager
                 });
             }
 
+            // ✅ 重新计算鱼篓状态
             int total = GetTotalFishCount();
             isFishBagFull = total >= fishBagCapacity;
+
+            // 更新 PlayerDataManager
             PlayerDataManager.Instance?.UpdateFishDetailData(fishDetailData);
-            Logger.Log("[NetServerManager] 鱼篓数据加载完成: " + fishInventory.Count + " 种鱼，总数量: " + total + "，详细数据: " + fishDetailData.Count + " 条");
+
+            Logger.Log($"[NetServerManager] 鱼篓数据加载完成: {fishInventory.Count} 种鱼，总数量: {total}，容量: {fishBagCapacity}，已满: {isFishBagFull}");
         }, "鱼篓数据");
     }
 

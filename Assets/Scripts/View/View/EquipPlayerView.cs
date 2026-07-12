@@ -13,19 +13,16 @@ public class EquipPlayerView : MonoBehaviour
     public Text characterLevelText;
     public Text characterExpText;
 
-    public Button watchAdUnlockBtn; // 看视频获取按钮
-    public Button equipBtn;         // 装备按钮
-    
-    // 人物三状态Obj
-    public GameObject characterOwnerUseObj;    // 已装备状态
-    public GameObject characterOwnerUnUseObj;  // 拥有未装备状态
-    public GameObject characterLockedObj;      // 未解锁状态
+    public Button watchAdUnlockBtn;
+    public Button equipBtn;
 
-    // Skill 1 Group
+    public GameObject characterOwnerUseObj;
+    public GameObject characterOwnerUnUseObj;
+    public GameObject characterLockedObj;
+
     public Image skill1Icon;
     public Text skill1NameText;
 
-    // 缓存的人物数据
     private int cachedLevel;
     private int cachedCurrentExp;
     private int cachedRequiredExp;
@@ -35,7 +32,6 @@ public class EquipPlayerView : MonoBehaviour
     public GameObject skill1LockedObj;
     public Button skill1UnlockBtn;
 
-    // Skill 2 Group
     public Image skill2Icon;
     public Text skill2NameText;
     public GameObject skill2OwnerUseObj;
@@ -53,6 +49,9 @@ public class EquipPlayerView : MonoBehaviour
     private int currentCharacterId = 0;
     private System.Action<string, object[]> callback;
 
+    // ✅ 添加刷新锁
+    private bool _isRefreshing = false;
+
     void Start()
     {
         if (maskBtn != null) maskBtn.onClick.AddListener(OnMaskClick);
@@ -62,38 +61,26 @@ public class EquipPlayerView : MonoBehaviour
 
         if (skill1UnlockBtn != null) skill1UnlockBtn.onClick.AddListener(OnSkill1UnlockClick);
         if (skill2UnlockBtn != null) skill2UnlockBtn.onClick.AddListener(OnSkill2UnlockClick);
-        
+
         if (watchAdUnlockBtn != null) watchAdUnlockBtn.onClick.AddListener(OnWatchAdUnlockClick);
         if (equipBtn != null) equipBtn.onClick.AddListener(OnEquipClick);
     }
 
     void OnEnable()
     {
-        RegisterCharacterEvents();
         RegisterDataEvents();
-        
-        // 主动请求一次人物数据，确保显示最新状态
+
         RefreshCharacterData();
     }
 
     void OnDisable()
     {
-        UnregisterCharacterEvents();
         UnregisterDataEvents();
     }
 
     void OnDestroy()
     {
-        UnregisterCharacterEvents();
         UnregisterDataEvents();
-    }
-
-    private void RegisterCharacterEvents()
-    {
-    }
-
-    private void UnregisterCharacterEvents()
-    {
     }
 
     private void RegisterDataEvents()
@@ -101,6 +88,9 @@ public class EquipPlayerView : MonoBehaviour
         CommunicateEvent.Register<(int, int, int)>(CommunicateEvent.EVENT_CHARACTER_DATA_CHANGED, OnCharacterDataChanged);
         CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipChanged);
         CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_ITEM_QUANTITY_CHANGED, OnItemQuantityChanged);
+
+        // ✅ 关键修复：监听背包刷新事件
+        CommunicateEvent.Register("Bag_RefreshItems", OnBagRefresh);
     }
 
     private void UnregisterDataEvents()
@@ -108,16 +98,14 @@ public class EquipPlayerView : MonoBehaviour
         CommunicateEvent.Unregister<(int, int, int)>(CommunicateEvent.EVENT_CHARACTER_DATA_CHANGED, OnCharacterDataChanged);
         CommunicateEvent.Unregister<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipChanged);
         CommunicateEvent.Unregister<(int, int)>(CommunicateEvent.EVENT_ITEM_QUANTITY_CHANGED, OnItemQuantityChanged);
+        CommunicateEvent.Unregister("Bag_RefreshItems", OnBagRefresh);
     }
 
-    private void OnCharacterExpChanged(int currentExp, int requiredExp)
+    // ✅ 背包刷新时直接更新显示
+    private void OnBagRefresh()
     {
-        UpdateCharacterExpDisplay(currentExp, requiredExp);
-    }
-
-    private void OnCharacterLevelChanged()
-    {
-        UpdateCharacterLevelDisplay();
+        Debug.Log("[EquipPlayerView] OnBagRefresh - 背包数据已更新，刷新装备视图");
+        UpdateDisplay();
     }
 
     private void OnCharacterDataChanged((int, int, int) data)
@@ -137,13 +125,14 @@ public class EquipPlayerView : MonoBehaviour
 
     private void OnEquipChanged((int, int) data)
     {
-        UpdateCharacterDisplay();
-        UpdateSkillDisplay();
+        Debug.Log($"[EquipPlayerView] OnEquipChanged - slotType={data.Item1}, itemId={data.Item2}");
+        UpdateDisplay();
     }
 
     private void OnItemQuantityChanged((int, int) data)
     {
-        UpdateCharacterDisplay();
+        Debug.Log($"[EquipPlayerView] OnItemQuantityChanged - itemId={data.Item1}, quantity={data.Item2}");
+        UpdateDisplay();
     }
 
     private void UpdateCharacterExpDisplay(int currentExp, int requiredExp)
@@ -154,12 +143,6 @@ public class EquipPlayerView : MonoBehaviour
         }
     }
 
-    private void UpdateCharacterLevelDisplay()
-    {
-        int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_CHARACTER_LEVEL, 0);
-        UpdateCharacterLevelDisplay(level);
-    }
-
     private void UpdateCharacterLevelDisplay(int level)
     {
         if (characterLevelText != null)
@@ -168,23 +151,17 @@ public class EquipPlayerView : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 主动刷新人物数据
-    /// </summary>
     private void RefreshCharacterData()
     {
-        // 请求人物等级
         int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_CHARACTER_LEVEL, 0);
         UpdateCharacterLevelDisplay(level);
-        
-        // 请求人物经验数据
+
         var charData = CommunicateEvent.Request<int, PlayerCharacterData>("CharacterServerManager_GetPlayerData", 0);
         if (charData != null)
         {
             int requiredExp = CommunicateEvent.Request<int, int>("CharacterServerManager_GetExpToNextLevel", 0);
             UpdateCharacterExpDisplay(charData.currentExp, requiredExp);
-            
-            // 更新缓存
+
             cachedLevel = level;
             cachedCurrentExp = charData.currentExp;
             cachedRequiredExp = requiredExp;
@@ -238,11 +215,6 @@ public class EquipPlayerView : MonoBehaviour
         if (sprite != null)
         {
             iconCache[characterId] = sprite;
-            Debug.Log($"[EquipPlayerView] LoadCharacterIcon 成功 - id={characterId}, path={path}");
-        }
-        else
-        {
-            Debug.LogWarning($"[EquipPlayerView] LoadCharacterIcon 失败 - id={characterId}, path={path}");
         }
     }
 
@@ -253,22 +225,7 @@ public class EquipPlayerView : MonoBehaviour
         if (sprite != null)
         {
             iconCache[skillId] = sprite;
-            Debug.Log($"[EquipPlayerView] LoadSkillIcon 成功 - id={skillId}, path={path}");
         }
-        else
-        {
-            Debug.LogWarning($"[EquipPlayerView] LoadSkillIcon 失败 - id={skillId}, path={path}");
-        }
-    }
-
-    private int ExtractIdFromPath(string path)
-    {
-        string[] parts = path.Split('/');
-        if (parts.Length > 0 && int.TryParse(parts[parts.Length - 1], out int id))
-        {
-            return id;
-        }
-        return 0;
     }
 
     private Sprite GetIcon(int id)
@@ -277,17 +234,6 @@ public class EquipPlayerView : MonoBehaviour
         {
             return sprite;
         }
-        
-        // 如果缓存中没有，立即尝试加载
-        Debug.LogWarning($"[EquipPlayerView] GetIcon - 缓存中未找到 id={id}，尝试立即加载");
-        LoadCharacterIcon(id);
-        
-        // 再次尝试从缓存获取
-        if (iconCache.TryGetValue(id, out sprite))
-        {
-            return sprite;
-        }
-        
         return null;
     }
 
@@ -309,7 +255,6 @@ public class EquipPlayerView : MonoBehaviour
     {
         Debug.Log("[EquipPlayerView] Show() called");
 
-        // 从服务器同步最新人物数据
         NetServerManager.Instance?.SyncCharacterDataFromServer();
 
         int equippedCharacterId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Character);
@@ -321,10 +266,9 @@ public class EquipPlayerView : MonoBehaviour
             currentIndex = characterIds.IndexOf(equippedCharacterId);
             if (currentIndex < 0) currentIndex = 0;
         }
-        
+
         UpdateDisplay();
         gameObject.SetActive(true);
-        Debug.Log($"[EquipPlayerView] Set gameObject active = true, currentIndex={currentIndex}");
     }
 
     public void Hide()
@@ -334,126 +278,115 @@ public class EquipPlayerView : MonoBehaviour
 
     public void UpdateDisplay()
     {
-        Debug.Log($"[EquipPlayerView] UpdateDisplay() called, characterIds.Count={characterIds.Count}");
-        
-        if (characterIds.Count == 0)
+        if (_isRefreshing) return;
+        _isRefreshing = true;
+
+        try
         {
-            Debug.LogError("[EquipPlayerView] characterIds is EMPTY! LoadCharacterIds() was not called or failed!");
-            return;
+            Debug.Log($"[EquipPlayerView] UpdateDisplay() called, characterIds.Count={characterIds.Count}");
+
+            if (characterIds.Count == 0)
+            {
+                Debug.LogError("[EquipPlayerView] characterIds is EMPTY!");
+                return;
+            }
+
+            currentIndex = Mathf.Clamp(currentIndex, 0, Mathf.Max(0, characterIds.Count - 1));
+            currentCharacterId = characterIds[currentIndex];
+
+            Debug.Log($"[EquipPlayerView] currentIndex={currentIndex}, currentCharacterId={currentCharacterId}");
+
+            // ✅ 直接从 PlayerDataManager 获取背包数据
+            var playerData = PlayerDataManager.Instance;
+            Dictionary<int, int> inventory;
+
+            if (playerData != null && playerData.IsReady)
+            {
+                inventory = playerData.GetInventory();
+                Debug.Log($"[EquipPlayerView] 从 PlayerDataManager 获取背包数据，物品数: {inventory.Count}");
+            }
+            else
+            {
+                // 降级方案
+                inventory = CommunicateEvent.Request<int, Dictionary<int, int>>(CommunicateEvent.EVENT_GET_INVENTORY, 0);
+                Debug.Log($"[EquipPlayerView] 从事件请求获取背包数据，物品数: {inventory.Count}");
+            }
+
+            // 获取当前装备的人物
+            int equippedChar = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Character);
+            Debug.Log($"[EquipPlayerView] 当前装备的人物: {equippedChar}");
+
+            // ✅ 直接判断拥有状态
+            bool hasCharacter = inventory.ContainsKey(currentCharacterId);
+            bool isEquipped = equippedChar == currentCharacterId;
+
+            Debug.Log($"[EquipPlayerView] 人物 {currentCharacterId} - 拥有: {hasCharacter}, 已装备: {isEquipped}");
+
+            // 更新UI
+            UpdateCharacterUI(hasCharacter, isEquipped);
+            UpdateCharacterDisplayInfo();
+            UpdatePageText();
         }
-
-        currentIndex = Mathf.Clamp(currentIndex, 0, Mathf.Max(0, characterIds.Count - 1));
-        currentCharacterId = characterIds[currentIndex];
-
-        Debug.Log($"[EquipPlayerView] currentIndex={currentIndex}, currentCharacterId={currentCharacterId}");
-
-        // 打印当前背包状态
-        var inventory = CommunicateEvent.Request<int, Dictionary<int, int>>(CommunicateEvent.EVENT_GET_INVENTORY, 0);
-        Debug.Log($"[EquipPlayerView] 背包状态 - 3401: {(inventory.ContainsKey(3401) ? "有" : "无")}, 3402: {(inventory.ContainsKey(3402) ? "有" : "无")}");
-        int equippedChar = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Character);
-        Debug.Log($"[EquipPlayerView] 当前装备的人物: {equippedChar}");
-
-        UpdateCharacterDisplay();
-        UpdatePageText();
+        finally
+        {
+            _isRefreshing = false;
+        }
     }
 
-    private void UpdateCharacterDisplay()
+    // ✅ 新增：分离UI状态更新
+    private void UpdateCharacterUI(bool hasCharacter, bool isEquipped)
     {
-        Debug.Log($"[EquipPlayerView] UpdateCharacterDisplay - currentCharacterId={currentCharacterId}");
-        
-        if (currentCharacterId <= 0)
+        EquipState state;
+        if (isEquipped)
         {
-            Debug.LogWarning("[EquipPlayerView] UpdateCharacterDisplay - currentCharacterId <= 0，跳过");
-            return;
+            state = EquipState.OwnerUse;
         }
+        else if (hasCharacter)
+        {
+            state = EquipState.OwnerUnUse;
+        }
+        else
+        {
+            state = EquipState.Locked;
+        }
+
+        Debug.Log($"[EquipPlayerView] UpdateCharacterUI - state={state}");
+
+        if (characterOwnerUseObj != null)
+        {
+            characterOwnerUseObj.SetActive(state == EquipState.OwnerUse);
+        }
+        if (characterOwnerUnUseObj != null)
+        {
+            characterOwnerUnUseObj.SetActive(state == EquipState.OwnerUnUse);
+        }
+        if (characterLockedObj != null)
+        {
+            characterLockedObj.SetActive(state == EquipState.Locked);
+        }
+    }
+
+    private void UpdateCharacterDisplayInfo()
+    {
+        if (currentCharacterId <= 0) return;
 
         if (characterIcon != null)
         {
             Sprite icon = GetIcon(currentCharacterId);
-            Debug.Log($"[EquipPlayerView] UpdateCharacterDisplay - GetIcon({currentCharacterId}) = {(icon != null ? "成功" : "失败")}");
-            
             if (icon != null)
             {
                 characterIcon.sprite = icon;
                 characterIcon.color = Color.white;
-                Debug.Log($"[EquipPlayerView] UpdateCharacterDisplay - 图标设置成功");
             }
-            else
-            {
-                Debug.LogWarning($"[EquipPlayerView] UpdateCharacterDisplay - 图标为空，无法设置");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("[EquipPlayerView] UpdateCharacterDisplay - characterIcon 为空");
         }
 
         if (characterNameText != null)
         {
-            string characterName = LoadDataManager.Instance.GetComponentName(currentCharacterId);
-            characterNameText.text = characterName;
-            Debug.Log($"[EquipPlayerView] UpdateCharacterDisplay - 人物名称: {characterName}");
-        }
-        else
-        {
-            Debug.LogWarning("[EquipPlayerView] UpdateCharacterDisplay - characterNameText 为空");
+            characterNameText.text = LoadDataManager.Instance.GetComponentName(currentCharacterId);
         }
 
         UpdateCharacterLevelAndExp();
         UpdateSkillDisplay();
-        UpdateCharacterButtons();
-    }
-
-    private void UpdateCharacterButtons()
-    {
-        EquipState state = GetCharacterState();
-        Debug.Log($"[EquipPlayerView] UpdateCharacterButtons - state={state}");
-
-        // 人物三状态Obj切换
-        if (characterOwnerUseObj != null)
-        {
-            bool showOwnerUse = state == EquipState.OwnerUse;
-            characterOwnerUseObj.SetActive(showOwnerUse);
-            Debug.Log($"[EquipPlayerView] characterOwnerUseObj.SetActive({showOwnerUse})");
-        }
-        
-        if (characterOwnerUnUseObj != null)
-        {
-            bool showOwnerUnUse = state == EquipState.OwnerUnUse;
-            characterOwnerUnUseObj.SetActive(showOwnerUnUse);
-            Debug.Log($"[EquipPlayerView] characterOwnerUnUseObj.SetActive({showOwnerUnUse})");
-        }
-        
-        if (characterLockedObj != null)
-        {
-            bool showLocked = state == EquipState.Locked;
-            characterLockedObj.SetActive(showLocked);
-            Debug.Log($"[EquipPlayerView] characterLockedObj.SetActive({showLocked})");
-        }
-
-    }
-
-    private EquipState GetCharacterState()
-    {
-        Debug.Log($"[EquipPlayerView] GetCharacterState called, currentCharacterId={currentCharacterId}");
-
-        bool isObtained = CommunicateEvent.Request<int, bool>(CommunicateEvent.EVENT_IS_CHARACTER_OBTAINED, currentCharacterId);
-        Debug.Log($"[EquipPlayerView] IsCharacterObtained check - currentCharacterId={currentCharacterId}, isObtained={isObtained}");
-
-        if (!isObtained)
-        {
-            return EquipState.Locked;
-        }
-
-        int equippedCharacter = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Character);
-        Debug.Log($"[EquipPlayerView] equippedCharacter={equippedCharacter}, currentCharacterId={currentCharacterId}");
-
-        if (equippedCharacter == currentCharacterId)
-        {
-            return EquipState.OwnerUse;
-        }
-
-        return EquipState.OwnerUnUse;
     }
 
     private void UpdateCharacterLevelAndExp()
@@ -478,19 +411,6 @@ public class EquipPlayerView : MonoBehaviour
     private void UpdateSkillDisplay()
     {
         Debug.Log($"[EquipPlayerView] UpdateSkillDisplay - currentCharacterId={currentCharacterId}");
-        
-        var config = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
-        if (config == null)
-        {
-            Debug.LogWarning("[EquipPlayerView] UpdateSkillDisplay - config is null");
-            return;
-        }
-
-        var component = config.GetComponentById(currentCharacterId);
-        if (component == null)
-        {
-            Debug.LogWarning($"[EquipPlayerView] UpdateSkillDisplay - component for {currentCharacterId} is null");
-        }
 
         int skill1Id = 0;
         int skill2Id = 0;
@@ -501,18 +421,21 @@ public class EquipPlayerView : MonoBehaviour
             (skill1Id, skill2Id) = characterConfig.GetCharacterSkillIds(currentCharacterId);
         }
 
-        Debug.Log($"[EquipPlayerView] UpdateSkillDisplay - skill1Id={skill1Id}, skill2Id={skill2Id}");
-
         UpdateSkill1Display(skill1Id);
         UpdateSkill2Display(skill2Id);
     }
 
     private void UpdateSkill1Display(int skillId)
     {
-        if (skillId <= 0) return;
+        if (skillId <= 0)
+        {
+            if (skill1OwnerUseObj != null) skill1OwnerUseObj.SetActive(false);
+            if (skill1OwnerUnUseObj != null) skill1OwnerUnUseObj.SetActive(false);
+            if (skill1LockedObj != null) skill1LockedObj.SetActive(false);
+            if (skill1UnlockBtn != null) skill1UnlockBtn.gameObject.SetActive(false);
+            return;
+        }
 
-        Debug.Log($"[EquipPlayerView] UpdateSkill1Display - skillId={skillId}");
-        
         if (skill1Icon != null)
         {
             Sprite icon = GetIcon(skillId);
@@ -529,32 +452,23 @@ public class EquipPlayerView : MonoBehaviour
         }
 
         EquipState state = GetSkillState(skillId);
-        Debug.Log($"[EquipPlayerView] UpdateSkill1Display - skillId={skillId}, state={state}");
 
-        if (skill1OwnerUseObj != null)
-        {
-            skill1OwnerUseObj.SetActive(state == EquipState.OwnerUse);
-        }
-        if (skill1OwnerUnUseObj != null)
-        {
-            skill1OwnerUnUseObj.SetActive(state == EquipState.OwnerUnUse);
-        }
-        if (skill1LockedObj != null)
-        {
-            skill1LockedObj.SetActive(state == EquipState.Locked);
-        }
-
-        if (skill1UnlockBtn != null)
-        {
-            skill1UnlockBtn.gameObject.SetActive(state == EquipState.Locked);
-        }
+        if (skill1OwnerUseObj != null) skill1OwnerUseObj.SetActive(state == EquipState.OwnerUse);
+        if (skill1OwnerUnUseObj != null) skill1OwnerUnUseObj.SetActive(state == EquipState.OwnerUnUse);
+        if (skill1LockedObj != null) skill1LockedObj.SetActive(state == EquipState.Locked);
+        if (skill1UnlockBtn != null) skill1UnlockBtn.gameObject.SetActive(state == EquipState.Locked);
     }
 
     private void UpdateSkill2Display(int skillId)
     {
-        if (skillId <= 0) return;
-        
-        Debug.Log($"[EquipPlayerView] UpdateSkill2Display - skillId={skillId}");
+        if (skillId <= 0)
+        {
+            if (skill2OwnerUseObj != null) skill2OwnerUseObj.SetActive(false);
+            if (skill2OwnerUnUseObj != null) skill2OwnerUnUseObj.SetActive(false);
+            if (skill2LockedObj != null) skill2LockedObj.SetActive(false);
+            if (skill2UnlockBtn != null) skill2UnlockBtn.gameObject.SetActive(false);
+            return;
+        }
 
         if (skill2Icon != null)
         {
@@ -572,25 +486,11 @@ public class EquipPlayerView : MonoBehaviour
         }
 
         EquipState state = GetSkillState(skillId);
-        Debug.Log($"[EquipPlayerView] UpdateSkill2Display - skillId={skillId}, state={state}");
 
-        if (skill2OwnerUseObj != null)
-        {
-            skill2OwnerUseObj.SetActive(state == EquipState.OwnerUse);
-        }
-        if (skill2OwnerUnUseObj != null)
-        {
-            skill2OwnerUnUseObj.SetActive(state == EquipState.OwnerUnUse);
-        }
-        if (skill2LockedObj != null)
-        {
-            skill2LockedObj.SetActive(state == EquipState.Locked);
-        }
-
-        if (skill2UnlockBtn != null)
-        {
-            skill2UnlockBtn.gameObject.SetActive(state == EquipState.Locked);
-        }
+        if (skill2OwnerUseObj != null) skill2OwnerUseObj.SetActive(state == EquipState.OwnerUse);
+        if (skill2OwnerUnUseObj != null) skill2OwnerUnUseObj.SetActive(state == EquipState.OwnerUnUse);
+        if (skill2LockedObj != null) skill2LockedObj.SetActive(state == EquipState.Locked);
+        if (skill2UnlockBtn != null) skill2UnlockBtn.gameObject.SetActive(state == EquipState.Locked);
     }
 
     private EquipState GetSkillState(int skillId)
@@ -633,33 +533,22 @@ public class EquipPlayerView : MonoBehaviour
 
     private void OnLeftClick()
     {
-        Debug.Log("[EquipPlayerView] OnLeftClick - 点击左箭头切换人物");
         if (characterIds.Count <= 1) return;
-
         currentIndex--;
-        if (currentIndex < 0)
-        {
-            currentIndex = characterIds.Count - 1;
-        }
+        if (currentIndex < 0) currentIndex = characterIds.Count - 1;
         UpdateDisplay();
     }
 
     private void OnRightClick()
     {
-        Debug.Log("[EquipPlayerView] OnRightClick - 点击右箭头切换人物");
         if (characterIds.Count <= 1) return;
-
         currentIndex++;
-        if (currentIndex >= characterIds.Count)
-        {
-            currentIndex = 0;
-        }
+        if (currentIndex >= characterIds.Count) currentIndex = 0;
         UpdateDisplay();
     }
 
     private void OnSkill1UnlockClick()
     {
-        Debug.Log("[EquipPlayerView] OnSkill1UnlockClick - 点击解锁技能1");
         var characterConfig = CharacterConfigListExtensions.LoadFromResources();
         if (characterConfig != null)
         {
@@ -667,21 +556,13 @@ public class EquipPlayerView : MonoBehaviour
             int skillId50 = skillIds.skillId50;
             if (skillId50 > 0)
             {
-                var fishingConfig = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
-                string skillName = "技能";
-                if (fishingConfig != null)
-                {
-                    var skillConfig = fishingConfig.GetComponentById(skillId50);
-                    if (skillConfig != null) skillName = skillConfig.name;
-                }
-                OpenAdForSkillUnlock(skillId50, $"解锁{skillName}");
+                OpenAdForSkillUnlock(skillId50, "解锁技能");
             }
         }
     }
 
     private void OnSkill2UnlockClick()
     {
-        Debug.Log("[EquipPlayerView] OnSkill2UnlockClick - 点击解锁技能2");
         var characterConfig = CharacterConfigListExtensions.LoadFromResources();
         if (characterConfig != null)
         {
@@ -689,21 +570,14 @@ public class EquipPlayerView : MonoBehaviour
             int skillId100 = skillIds.skillId100;
             if (skillId100 > 0)
             {
-                var fishingConfig = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
-                string skillName = "技能";
-                if (fishingConfig != null)
-                {
-                    var skillConfig = fishingConfig.GetComponentById(skillId100);
-                    if (skillConfig != null) skillName = skillConfig.name;
-                }
-                OpenAdForSkillUnlock(skillId100, $"解锁{skillName}");
+                OpenAdForSkillUnlock(skillId100, "解锁技能");
             }
         }
     }
 
     private void OpenAdForSkillUnlock(int skillId, string info)
     {
-        callback?.Invoke("OpenAd", new object[] { info, skillId, "看广告解锁", (System.Action)(() => 
+        callback?.Invoke("OpenAd", new object[] { info, skillId, "看广告解锁", (System.Action)(() =>
         {
             CommunicateEvent.Modify("Skill_Unlock", skillId);
             UpdateDisplay();
@@ -712,17 +586,12 @@ public class EquipPlayerView : MonoBehaviour
 
     private void OnWatchAdUnlockClick()
     {
-        Debug.Log($"[EquipPlayerView] OnWatchAdUnlockClick - currentCharacterId={currentCharacterId}");
-
         string componentName = LoadDataManager.Instance.GetComponentName(currentCharacterId);
         string info = componentName != "未知组件" ? $"看广告解锁人物: {componentName}" : "看广告解锁人物";
         callback?.Invoke("OpenAd", new object[] { info, currentCharacterId, "看广告解锁", (System.Action)(() =>
         {
-            Debug.Log($"[EquipPlayerView] OnWatchAdUnlockClick callback - 准备触发 Equip_Unlock 事件, characterId={currentCharacterId}");
             CommunicateEvent.Modify("Equip_Unlock", currentCharacterId);
             UpdateDisplay();
-
-            // 显示解锁成功提示
             string successInfo = componentName != "未知组件" ? $"恭喜解锁 {componentName}！" : "恭喜解锁人物！";
             CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
         })});
@@ -734,9 +603,8 @@ public class EquipPlayerView : MonoBehaviour
 
         CommunicateEvent.Modify<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_ITEM, (EquipmentSlotType.Character, currentCharacterId));
 
-        // 主动刷新动画管理器的人物数据
         RefreshPlayerAnimation(currentCharacterId);
-        
+
         UpdateDisplay();
 
         string componentName = LoadDataManager.Instance.GetComponentName(currentCharacterId);
@@ -744,20 +612,11 @@ public class EquipPlayerView : MonoBehaviour
         CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
     }
 
-    /// <summary>
-    /// 主动刷新玩家动画
-    /// </summary>
     private void RefreshPlayerAnimation(int characterId)
     {
         if (PlayerAniManager.Instance != null)
         {
-            // 确保动画数据已加载
             PlayerAniManager.Instance.SwitchCharacter(characterId);
-            Debug.Log($"[EquipPlayerView] RefreshPlayerAnimation - 已调用 SwitchCharacter({characterId})");
-        }
-        else
-        {
-            Debug.LogWarning("[EquipPlayerView] RefreshPlayerAnimation - PlayerAniManager.Instance 为 null");
         }
     }
 }

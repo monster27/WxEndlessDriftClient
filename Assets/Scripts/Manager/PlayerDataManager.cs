@@ -305,6 +305,11 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
     /// <summary>
     /// 用服务器返回的背包数据直接覆盖本地数据（事件驱动更新，避免额外网络请求）
     /// </summary>
+    // PlayerDataManager.cs - 修改 UpdateInventoryFromServer 方法
+
+    /// <summary>
+    /// 用服务器返回的背包数据直接覆盖本地数据（事件驱动更新，避免额外网络请求）
+    /// </summary>
     public void UpdateInventoryFromServer(Dictionary<int, int> newInventory)
     {
         if (newInventory == null)
@@ -313,14 +318,20 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             return;
         }
 
+        // ✅ 先更新数据
         playerInventory = new Dictionary<int, int>(newInventory);
         Debug.Log($"[PlayerDataManager] 从服务器响应更新背包数据，物品数: {playerInventory.Count}");
 
         CheckAndUpdateAnimationState();
 
+        // ✅ 先触发背包刷新事件（EquipPlayerView 监听了这个事件）
         CommunicateEvent.Modify("Bag_RefreshItems");
         CommunicateEvent.Modify("BaitCountChanged");
 
+        // ✅ 再触发装备刷新事件（确保所有装备UI都能刷新）
+        CommunicateEvent.Modify("Equipment_Refresh");
+
+        // 更新背包UI
         if (GameUIManager.Instance?.bagView != null && GameUIManager.Instance.bagView.gameObject.activeSelf)
         {
             var itemDataMap = LoadDataManager.Instance?.GetItemDataMap();
