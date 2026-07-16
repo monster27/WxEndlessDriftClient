@@ -117,6 +117,7 @@ public static class ServerUrls
     public static class Equipment
     {
         public const string Unlock = "/api/equipment/unlock";
+        public const string Upgrade = "/api/player/equipment/upgrade";
     }
 
     public static class Heartbeat

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
 using System;
+using System.Collections.Generic;
 using SharedModels;
 using Logger = Utils.Logger;
 
@@ -91,10 +92,30 @@ public partial class NetServerManager
 
                 try
                 {
-                    var response = JsonUtility.FromJson<AddItemResponse>(responseText);
+                    var response = JsonUtility.FromJson<SkillUpgradeResponse>(responseText);
                     if (response != null && response.success)
                     {
                         Logger.Log($"[NetServerManager] 成功升级技能 {skillId} 到等级 {newLevel}");
+
+                        if (response.gold > 0)
+                        {
+                            playerGold = response.gold;
+                            Logger.Log($"[NetServerManager] 升级技能后金币: {playerGold}");
+
+                            CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, new Dictionary<string, object>
+                            {
+                                { "gold", playerGold },
+                                { "add", 0 },
+                                { "reduce", 0 }
+                            });
+                            CommunicateEvent.Modify<int>(CommunicateEvent.EVENT_GOLD_CHANGED, playerGold);
+                        }
+                        else
+                        {
+                            Logger.Log("[NetServerManager] 服务器响应未包含金币，触发同步");
+                            CommunicateEvent.Modify(CommunicateEvent.EVENT_SYNC_GOLD);
+                        }
+
                         callback?.Invoke(true);
                     }
                     else
@@ -115,5 +136,13 @@ public partial class NetServerManager
                 callback?.Invoke(false);
             }
         }
+    }
+
+    [System.Serializable]
+    private class SkillUpgradeResponse
+    {
+        public bool success;
+        public string message;
+        public int gold;
     }
 }

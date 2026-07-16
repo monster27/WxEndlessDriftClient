@@ -98,6 +98,7 @@ public class SkillInfoView : MonoBehaviour
     {
         currentSkillId = skillId;
         currentSkillSlot = skillSlot;
+        SyncGoldFromServer();
         UpdateDisplay();
         gameObject.SetActive(true);
     }
@@ -105,6 +106,20 @@ public class SkillInfoView : MonoBehaviour
     public void Hide()
     {
         gameObject.SetActive(false);
+    }
+
+    private void SyncGoldFromServer()
+    {
+        try
+        {
+            int gold = CommunicateEvent.Request<int, int>("VIEW_EVENT_GET_GOLD", 0);
+            currentGold = gold;
+            Debug.Log($"[SkillInfoView] 同步金币: {currentGold}");
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[SkillInfoView] 同步金币失败: {ex.Message}");
+        }
     }
 
     private void UpdateDisplay()
@@ -294,10 +309,28 @@ public class SkillInfoView : MonoBehaviour
         if (currentGold >= cost)
         {
             Debug.Log($"[SkillInfoView] OnUpgradeClick - 执行金币升级");
-            CommunicateEvent.Modify("Skill_UpgradeByGold", currentSkillId);
-            UpdateDisplay();
-            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "升级成功！");
-            callback?.Invoke("RefreshAllViews", null);
+            
+            if (NetServerManager.Instance != null)
+            {
+                NetServerManager.Instance.UpgradeSkill(currentSkillId, level + 1, (success) =>
+                {
+                    if (success)
+                    {
+                        Debug.Log($"[SkillInfoView] 技能升级成功");
+                        UpdateDisplay();
+                        CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "升级成功！");
+                        callback?.Invoke("RefreshAllViews", null);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[SkillInfoView] 技能升级失败");
+                    }
+                });
+            }
+            else
+            {
+                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "网络连接失败");
+            }
         }
         else
         {
@@ -314,10 +347,25 @@ public class SkillInfoView : MonoBehaviour
         callback?.Invoke("OpenAd", new object[] { info, currentSkillId, "看广告升级", (System.Action)(() =>
         {
             Debug.Log($"[SkillInfoView] OnAdUpgradeClick 广告回调执行 - skillId={currentSkillId}");
-            CommunicateEvent.Modify("Skill_UpgradeByAd", currentSkillId);
-            UpdateDisplay();
-            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "升级成功！");
-            callback?.Invoke("RefreshAllViews", null);
+            
+            if (NetServerManager.Instance != null)
+            {
+                int level = GetSkillLevel();
+                NetServerManager.Instance.UpgradeSkill(currentSkillId, level + 1, (success) =>
+                {
+                    if (success)
+                    {
+                        Debug.Log($"[SkillInfoView] 技能升级成功（广告）");
+                        UpdateDisplay();
+                        CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "升级成功！");
+                        callback?.Invoke("RefreshAllViews", null);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[SkillInfoView] 技能升级失败（广告）");
+                    }
+                });
+            }
         })});
     }
 

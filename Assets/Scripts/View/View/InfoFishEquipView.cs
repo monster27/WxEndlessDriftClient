@@ -18,6 +18,7 @@ public class InfoFishEquipView : MonoBehaviour
     public Text equipNameText;
     public Text currentLevelText;
     public Text nextLevelDescText;
+    public Image levelIcon;
 
     public Text upgradeCostValueText;
     public Button upgradeBtn;
@@ -39,6 +40,7 @@ public class InfoFishEquipView : MonoBehaviour
     private int currentEquipId = 0;
     private System.Action<string, object[]> callback;
     private int currentGold = 0;
+    private Dictionary<int, Sprite> levelIconCache = new Dictionary<int, Sprite>();
 
     void Start()
     {
@@ -125,14 +127,53 @@ public class InfoFishEquipView : MonoBehaviour
 
     public void Init()
     {
+        LoadLevelIcons();
+    }
+
+    private void LoadLevelIcons()
+    {
+        levelIconCache.Clear();
+        for (int i = 1; i <= 10; i++)
+        {
+            string path = $"UI/Icon/Equipment/Level/{i}";
+            Sprite sprite = Resources.Load<Sprite>(path);
+            if (sprite != null)
+            {
+                levelIconCache[i] = sprite;
+            }
+        }
+    }
+
+    private Sprite GetLevelIcon(int level)
+    {
+        if (levelIconCache.TryGetValue(level, out Sprite sprite))
+        {
+            return sprite;
+        }
+        return null;
     }
 
     public void Show(FishingEquipType type, int equipId)
     {
         currentType = type;
         currentEquipId = equipId;
+        SyncGoldFromServer();
         UpdateDisplay();
         gameObject.SetActive(true);
+    }
+
+    private void SyncGoldFromServer()
+    {
+        try
+        {
+            int gold = CommunicateEvent.Request<int, int>("VIEW_EVENT_GET_GOLD", 0);
+            currentGold = gold;
+            Debug.Log($"[InfoFishEquipView] 同步金币: {currentGold}");
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[InfoFishEquipView] 同步金币失败: {ex.Message}");
+        }
     }
 
     public void Hide()
@@ -219,6 +260,21 @@ public class InfoFishEquipView : MonoBehaviour
         if (currentLevelText != null)
         {
             currentLevelText.text = $"当前等级: {level}";
+        }
+
+        if (levelIcon != null)
+        {
+            Sprite icon = GetLevelIcon(level);
+            if (icon != null)
+            {
+                levelIcon.sprite = icon;
+                levelIcon.color = Color.white;
+                levelIcon.gameObject.SetActive(true);
+            }
+            else
+            {
+                levelIcon.gameObject.SetActive(false);
+            }
         }
 
         if (nextLevelDescText != null)
@@ -376,16 +432,29 @@ public class InfoFishEquipView : MonoBehaviour
             return;
         }
 
-        // 执行升级
-        CommunicateEvent.Modify("Equip_UpgradeByGold", currentEquipId);
-
-        // 更新UI
-        UpdateDisplay();
-
-        // 显示升级成功提示
         string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
-        string successInfo = componentName != "未知组件" ? $"{componentName} 升级成功！" : "装备升级成功！";
-        CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+
+        if (NetServerManager.Instance != null)
+        {
+            NetServerManager.Instance.UpgradeEquipment(currentEquipId, (success, message) =>
+            {
+                if (success)
+                {
+                    Debug.Log($"[InfoFishEquipView] 装备升级成功: {message}");
+                    UpdateDisplay();
+                    string successInfo = componentName != "未知组件" ? $"{componentName} 升级成功！" : "装备升级成功！";
+                    CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+                }
+                else
+                {
+                    Debug.LogWarning($"[InfoFishEquipView] 装备升级失败: {message}");
+                }
+            });
+        }
+        else
+        {
+            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "网络连接失败");
+        }
     }
 
     private void OnAdUpgradeClick()

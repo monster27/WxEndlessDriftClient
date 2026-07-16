@@ -194,11 +194,15 @@ public class FishingEquipView : MonoBehaviour
                 // ⭐ 每次重新获取状态
                 EquipState state = GetEquipState(currentType, equipId);
 
-                item.SetData(currentType, equipId, icon, name, state, OnEquipItemClick, OnEquipAction, OnWatchAd);
+                // ✅ 获取装备等级
+                int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, equipId);
+                Debug.Log($"[FishingEquipView] 获取装备等级 - equipId={equipId}, level={level}");
+
+                item.SetData(currentType, equipId, icon, name, state, OnEquipItemClick, OnEquipAction, OnWatchAd, level);
                 item.gameObject.SetActive(true);
 
                 // ✅ 添加日志调试
-                Debug.Log($"[FishingEquipView] 更新装备项: ID={equipId}, Name={name}, State={state}");
+                Debug.Log($"[FishingEquipView] 更新装备项: ID={equipId}, Name={name}, State={state}, Level={level}");
             }
             else
             {

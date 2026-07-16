@@ -8,22 +8,37 @@ public class MainEquipmentView : MonoBehaviour
     public Button fishingRodBtn;
     public Image fishingRodIcon;
     public Text fishingRodName;
+    public Image fishingRodLevelIcon;
+    public GameObject fishingRodEquippedObj;
+    public GameObject fishingRodUnequippedObj;
 
     public Button fishingLineBtn;
     public Image fishingLineIcon;
     public Text fishingLineName;
+    public Image fishingLineLevelIcon;
+    public GameObject fishingLineEquippedObj;
+    public GameObject fishingLineUnequippedObj;
 
     public Button fishingHookBtn;
     public Image fishingHookIcon;
     public Text fishingHookName;
+    public Image fishingHookLevelIcon;
+    public GameObject fishingHookEquippedObj;
+    public GameObject fishingHookUnequippedObj;
 
     public Button skill1Btn;
     public Image skill1Icon;
     public Text skill1Name;
+    public Image skill1LevelIcon;
+    public GameObject skill1EquippedObj;
+    public GameObject skill1UnequippedObj;
 
     public Button skill2Btn;
     public Image skill2Icon;
     public Text skill2Name;
+    public Image skill2LevelIcon;
+    public GameObject skill2EquippedObj;
+    public GameObject skill2UnequippedObj;
 
     public Button characterBtn;
     public Image characterIcon;
@@ -31,8 +46,11 @@ public class MainEquipmentView : MonoBehaviour
     public Text characterLevelText;
     public Text characterExpText;
     public Slider characterSlider;
+    public GameObject characterEquippedObj;
+    public GameObject characterUnequippedObj;
 
     private Dictionary<int, Sprite> iconCache = new Dictionary<int, Sprite>();
+    private Dictionary<int, Sprite> levelIconCache = new Dictionary<int, Sprite>();
     private System.Action<string, object[]> callback;
 
     // 缓存的人物数据
@@ -169,6 +187,7 @@ public class MainEquipmentView : MonoBehaviour
     private void LoadAllIcons()
     {
         iconCache.Clear();
+        levelIconCache.Clear();
 
         var fishingConfig = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
         if (fishingConfig != null)
@@ -199,6 +218,25 @@ public class MainEquipmentView : MonoBehaviour
                 }
             }
         }
+
+        for (int i = 1; i <= 10; i++)
+        {
+            string path = $"UI/Icon/Equipment/Level/{i}";
+            Sprite sprite = Resources.Load<Sprite>(path);
+            if (sprite != null)
+            {
+                levelIconCache[i] = sprite;
+            }
+        }
+    }
+
+    private Sprite GetLevelIcon(int level)
+    {
+        if (levelIconCache.TryGetValue(level, out Sprite sprite))
+        {
+            return sprite;
+        }
+        return null;
     }
 
     private Sprite GetIcon(int id)
@@ -240,6 +278,17 @@ public class MainEquipmentView : MonoBehaviour
 
     private void UpdateFishingRodDisplay(int rodId)
     {
+        bool isEquipped = rodId > 0;
+
+        if (fishingRodEquippedObj != null)
+        {
+            fishingRodEquippedObj.SetActive(isEquipped);
+        }
+        if (fishingRodUnequippedObj != null)
+        {
+            fishingRodUnequippedObj.SetActive(!isEquipped);
+        }
+
         if (rodId <= 0) return;
 
         if (fishingRodIcon != null)
@@ -254,12 +303,41 @@ public class MainEquipmentView : MonoBehaviour
 
         if (fishingRodName != null)
         {
-            fishingRodName.text = LoadDataManager.Instance.GetComponentName(rodId);
+            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, rodId);
+            string name = LoadDataManager.Instance.GetComponentName(rodId);
+            fishingRodName.text = $"{name} Lv.{level}";
+        }
+
+        if (fishingRodLevelIcon != null)
+        {
+            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, rodId);
+            Sprite levelIcon = GetLevelIcon(level);
+            if (levelIcon != null)
+            {
+                fishingRodLevelIcon.sprite = levelIcon;
+                fishingRodLevelIcon.color = Color.white;
+                fishingRodLevelIcon.gameObject.SetActive(true);
+            }
+            else
+            {
+                fishingRodLevelIcon.gameObject.SetActive(false);
+            }
         }
     }
 
     private void UpdateFishingLineDisplay(int lineId)
     {
+        bool isEquipped = lineId > 0;
+
+        if (fishingLineEquippedObj != null)
+        {
+            fishingLineEquippedObj.SetActive(isEquipped);
+        }
+        if (fishingLineUnequippedObj != null)
+        {
+            fishingLineUnequippedObj.SetActive(!isEquipped);
+        }
+
         if (lineId <= 0) return;
 
         if (fishingLineIcon != null)
@@ -274,12 +352,41 @@ public class MainEquipmentView : MonoBehaviour
 
         if (fishingLineName != null)
         {
-            fishingLineName.text = LoadDataManager.Instance.GetComponentName(lineId);
+            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, lineId);
+            string name = LoadDataManager.Instance.GetComponentName(lineId);
+            fishingLineName.text = $"{name} Lv.{level}";
+        }
+
+        if (fishingLineLevelIcon != null)
+        {
+            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, lineId);
+            Sprite levelIcon = GetLevelIcon(level);
+            if (levelIcon != null)
+            {
+                fishingLineLevelIcon.sprite = levelIcon;
+                fishingLineLevelIcon.color = Color.white;
+                fishingLineLevelIcon.gameObject.SetActive(true);
+            }
+            else
+            {
+                fishingLineLevelIcon.gameObject.SetActive(false);
+            }
         }
     }
 
     private void UpdateFishingHookDisplay(int hookId)
     {
+        bool isEquipped = hookId > 0;
+
+        if (fishingHookEquippedObj != null)
+        {
+            fishingHookEquippedObj.SetActive(isEquipped);
+        }
+        if (fishingHookUnequippedObj != null)
+        {
+            fishingHookUnequippedObj.SetActive(!isEquipped);
+        }
+
         if (hookId <= 0) return;
 
         if (fishingHookIcon != null)
@@ -294,12 +401,41 @@ public class MainEquipmentView : MonoBehaviour
 
         if (fishingHookName != null)
         {
-            fishingHookName.text = LoadDataManager.Instance.GetComponentName(hookId);
+            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, hookId);
+            string name = LoadDataManager.Instance.GetComponentName(hookId);
+            fishingHookName.text = $"{name} Lv.{level}";
+        }
+
+        if (fishingHookLevelIcon != null)
+        {
+            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, hookId);
+            Sprite levelIcon = GetLevelIcon(level);
+            if (levelIcon != null)
+            {
+                fishingHookLevelIcon.sprite = levelIcon;
+                fishingHookLevelIcon.color = Color.white;
+                fishingHookLevelIcon.gameObject.SetActive(true);
+            }
+            else
+            {
+                fishingHookLevelIcon.gameObject.SetActive(false);
+            }
         }
     }
 
     private void UpdateSkill1Display(int skillId)
     {
+        bool isEquipped = skillId > 0;
+
+        if (skill1EquippedObj != null)
+        {
+            skill1EquippedObj.SetActive(isEquipped);
+        }
+        if (skill1UnequippedObj != null)
+        {
+            skill1UnequippedObj.SetActive(!isEquipped);
+        }
+
         if (skillId <= 0)
         {
             if (skill1Name != null)
@@ -321,12 +457,41 @@ public class MainEquipmentView : MonoBehaviour
 
         if (skill1Name != null)
         {
-            skill1Name.text = LoadDataManager.Instance.GetComponentName(skillId);
+            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, skillId);
+            string name = LoadDataManager.Instance.GetComponentName(skillId);
+            skill1Name.text = $"{name} Lv.{level}";
+        }
+
+        if (skill1LevelIcon != null)
+        {
+            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, skillId);
+            Sprite levelIcon = GetLevelIcon(level);
+            if (levelIcon != null)
+            {
+                skill1LevelIcon.sprite = levelIcon;
+                skill1LevelIcon.color = Color.white;
+                skill1LevelIcon.gameObject.SetActive(true);
+            }
+            else
+            {
+                skill1LevelIcon.gameObject.SetActive(false);
+            }
         }
     }
 
     private void UpdateSkill2Display(int skillId)
     {
+        bool isEquipped = skillId > 0;
+
+        if (skill2EquippedObj != null)
+        {
+            skill2EquippedObj.SetActive(isEquipped);
+        }
+        if (skill2UnequippedObj != null)
+        {
+            skill2UnequippedObj.SetActive(!isEquipped);
+        }
+
         if (skillId <= 0)
         {
             if (skill2Name != null)
@@ -348,12 +513,41 @@ public class MainEquipmentView : MonoBehaviour
 
         if (skill2Name != null)
         {
-            skill2Name.text = LoadDataManager.Instance.GetComponentName(skillId);
+            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, skillId);
+            string name = LoadDataManager.Instance.GetComponentName(skillId);
+            skill2Name.text = $"{name} Lv.{level}";
+        }
+
+        if (skill2LevelIcon != null)
+        {
+            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, skillId);
+            Sprite levelIcon = GetLevelIcon(level);
+            if (levelIcon != null)
+            {
+                skill2LevelIcon.sprite = levelIcon;
+                skill2LevelIcon.color = Color.white;
+                skill2LevelIcon.gameObject.SetActive(true);
+            }
+            else
+            {
+                skill2LevelIcon.gameObject.SetActive(false);
+            }
         }
     }
 
     private void UpdateCharacterDisplay(int characterId)
     {
+        bool isEquipped = characterId > 0;
+
+        if (characterEquippedObj != null)
+        {
+            characterEquippedObj.SetActive(isEquipped);
+        }
+        if (characterUnequippedObj != null)
+        {
+            characterUnequippedObj.SetActive(!isEquipped);
+        }
+
         if (characterId <= 0) return;
 
         if (characterIcon != null)

@@ -252,6 +252,8 @@ public class LoadingManager : MonoBehaviour
         _netServerComplete = true;
         Logger.Log("[LoadingManager] NetServerManager 初始化完成");
 
+        NetServerManager.Instance?.InitializeEquipmentData();
+
         float progress = WEIGHT_LOAD_DATA + WEIGHT_NET_SERVER;
         UpdateProgress(progress);
         UpdateDetail("网络连接成功，数据已加载");

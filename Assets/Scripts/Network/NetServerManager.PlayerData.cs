@@ -273,7 +273,14 @@ public partial class NetServerManager
             equippedBaitId = data.baitId;
             characterLevel = data.characterLevel > 0 ? data.characterLevel : 1;
 
-            Logger.Log($"[NetServerManager] 装备数据从服务器同步完成: Rod={equippedRodId}, Line={equippedLineId}, Hook={equippedHookId}, Char={equippedCharacterId}, Bait={equippedBaitId}");
+            // ✅ 更新装备等级数据
+            equippedRodLevel = data.rodLevel > 0 ? data.rodLevel : 1;
+            equippedLineLevel = data.lineLevel > 0 ? data.lineLevel : 1;
+            equippedHookLevel = data.hookLevel > 0 ? data.hookLevel : 1;
+            equippedSkill1Level = data.skill1Level > 0 ? data.skill1Level : 1;
+            equippedSkill2Level = data.skill2Level > 0 ? data.skill2Level : 1;
+
+            Logger.Log($"[NetServerManager] 装备数据从服务器同步完成: Rod={equippedRodId}(Lv.{equippedRodLevel}), Line={equippedLineId}(Lv.{equippedLineLevel}), Hook={equippedHookId}(Lv.{equippedHookLevel}), Char={equippedCharacterId}(Lv.{characterLevel}), Bait={equippedBaitId}");
         }, "装备数据");
     }
 
@@ -364,6 +371,14 @@ public partial class NetServerManager
         {
             if (data != null) playerGold = data.gold;
             Logger.Log("[NetServerManager] 更新玩家金币: " + playerGold);
+            
+            CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, new Dictionary<string, object>
+            {
+                { "gold", playerGold },
+                { "add", 0 },
+                { "reduce", 0 }
+            });
+            CommunicateEvent.Modify<int>(CommunicateEvent.EVENT_GOLD_CHANGED, playerGold);
         }, "金币数据");
     }
 
@@ -469,7 +484,15 @@ public partial class NetServerManager
             equippedCharacterId = data.characterId > 0 ? data.characterId : 3401;
             equippedBaitId = data.baitId;
             characterLevel = data.characterLevel > 0 ? data.characterLevel : 1;
-            Logger.Log($"[NetServerManager] 登录后更新装备: Char={equippedCharacterId}, Bait={equippedBaitId}, Level={characterLevel}");
+
+            // ✅ 更新装备等级数据
+            equippedRodLevel = data.rodLevel > 0 ? data.rodLevel : 1;
+            equippedLineLevel = data.lineLevel > 0 ? data.lineLevel : 1;
+            equippedHookLevel = data.hookLevel > 0 ? data.hookLevel : 1;
+            equippedSkill1Level = data.skill1Level > 0 ? data.skill1Level : 1;
+            equippedSkill2Level = data.skill2Level > 0 ? data.skill2Level : 1;
+
+            Logger.Log($"[NetServerManager] 登录后更新装备: Char={equippedCharacterId}(Lv.{characterLevel}), Bait={equippedBaitId}, Rod={equippedRodId}(Lv.{equippedRodLevel})");
             CommunicateEvent.Modify("Bag_RefreshItems");
         }, "装备数据");
     }

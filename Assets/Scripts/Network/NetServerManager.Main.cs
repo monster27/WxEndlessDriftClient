@@ -307,6 +307,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             try
             {
                 string jsonResponse = request.downloadHandler.text;
+                Logger.Log($"[NetServerManager] 原始响应: {jsonResponse}");
                 T? response = NetUtils.ParseJson<T>(jsonResponse);
                 onSuccess?.Invoke(response);
             }

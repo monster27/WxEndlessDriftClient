@@ -31,6 +31,7 @@ public partial class NetServerManager
         // ========== 装备 ==========
         CommunicateEvent.RegisterRequest<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, slotType => GetEquippedItem(slotType));
         CommunicateEvent.RegisterRequest<int, int>(CommunicateEvent.EVENT_GET_CHARACTER_LEVEL, _ => GetCharacterLevel());
+        CommunicateEvent.RegisterRequest<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, itemId => GetComponentLevel(itemId));
         CommunicateEvent.RegisterRequest<int, PlayerNetworkData>(CommunicateEvent.EVENT_GET_PLAYER_DATA, _ => GetPlayerData());
         CommunicateEvent.Register<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_ITEM, OnEquipItem);
         CommunicateEvent.Register<int>(CommunicateEvent.EVENT_EQUIP_BAIT, OnEquipBait);
@@ -92,5 +93,6 @@ public partial class NetServerManager
         };
 
         CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, goldData);
+        CommunicateEvent.Modify<int>(CommunicateEvent.EVENT_GOLD_CHANGED, currentGold);
     }
 }

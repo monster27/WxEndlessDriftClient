@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using Utils;
 
 /// <summary>
 /// 网络工具类
@@ -231,15 +232,44 @@ public static class NetUtils
             var obj = System.Activator.CreateInstance<T>();
             foreach (var prop in typeof(T).GetFields())
             {
-                if (dict.TryGetValue(prop.Name, out object? value))
+                object? value = null;
+                bool found = dict.TryGetValue(prop.Name, out value);
+                
+                if (!found)
+                {
+                    var key = dict.Keys.FirstOrDefault(k => string.Equals(k, prop.Name, StringComparison.OrdinalIgnoreCase));
+                    if (key != null)
+                    {
+                        value = dict[key];
+                        found = true;
+                        Utils.Logger.Log($"[NetUtils] 大小写匹配: {key} -> {prop.Name}");
+                    }
+                }
+                
+                if (found && value != null)
                 {
                     try
                     {
-                        var convertedValue = System.Convert.ChangeType(value, prop.FieldType);
+                        object convertedValue;
+                        
+                        if (value is Dictionary<string, object> nestedDict && prop.FieldType.IsClass && prop.FieldType != typeof(string))
+                        {
+                            Utils.Logger.Log($"[NetUtils] 解析嵌套对象: prop={prop.Name}, type={prop.FieldType.Name}, nestedDict keys={string.Join(",", nestedDict.Keys)}");
+                            var nestedJson = SerializeToJson(nestedDict);
+                            Utils.Logger.Log($"[NetUtils] 嵌套JSON: {nestedJson}");
+                            convertedValue = ParseJsonInternal(prop.FieldType, nestedJson);
+                            Utils.Logger.Log($"[NetUtils] 嵌套解析结果: {convertedValue}");
+                        }
+                        else
+                        {
+                            convertedValue = System.Convert.ChangeType(value, prop.FieldType);
+                        }
+                        
                         prop.SetValue(obj, convertedValue);
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Utils.Logger.LogError($"[NetUtils] 解析字段 {prop.Name} 失败: {ex.Message}");
                     }
                 }
             }
@@ -250,6 +280,18 @@ public static class NetUtils
         {
             return default;
         }
+    }
+
+    private static object ParseJsonInternal(System.Type type, string json)
+    {
+        var methods = typeof(NetUtils).GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        var genericMethod = methods.FirstOrDefault(m => m.Name == "ParseJson" && m.ContainsGenericParameters);
+        if (genericMethod != null)
+        {
+            var constructedMethod = genericMethod.MakeGenericMethod(type);
+            return constructedMethod.Invoke(null, new object[] { json });
+        }
+        return null;
     }
     
     public static Dictionary<string, object> ParseJson(string json)

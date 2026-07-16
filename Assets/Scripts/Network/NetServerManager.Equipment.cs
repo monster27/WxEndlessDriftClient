@@ -19,6 +19,90 @@ public partial class NetServerManager
     private int characterLevel = 1;
     private int currentCharacterExp = 0;
 
+    // 装备等级数据
+    private int equippedRodLevel = 1;
+    private int equippedLineLevel = 1;
+    private int equippedHookLevel = 1;
+    private int equippedSkill1Level = 1;
+    private int equippedSkill2Level = 1;
+
+    // 所有装备的等级字典（包括已装备和未装备的）
+    private Dictionary<int, int> equipmentLevelMap = new Dictionary<int, int>()
+    {
+        { 3001, 1 },
+        { 3101, 1 },
+        { 3201, 1 },
+        { 3401, 1 }
+    };
+
+    public void InitializeEquipmentData()
+    {
+        StartCoroutine(FetchEquipmentData());
+    }
+
+    private IEnumerator FetchEquipmentData()
+    {
+        if (!isConnected || _currentPlayerId <= 0) yield break;
+
+        string url = ServerUrls.Player.EquipmentById(_currentPlayerId);
+        Logger.Log($"[NetServerManager] 获取装备数据: {url}");
+
+        using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + url))
+        {
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    Logger.Log($"[NetServerManager] 装备数据响应: {json}");
+
+                    var equipment = NetUtils.ParseJson<EquipmentResponse>(json);
+                    if (equipment != null)
+                    {
+                        equippedRodId = equipment.rodId > 0 ? equipment.rodId : 3001;
+                        equippedLineId = equipment.lineId > 0 ? equipment.lineId : 3101;
+                        equippedHookId = equipment.hookId > 0 ? equipment.hookId : 3201;
+                        equippedSkill1Id = equipment.skill1Id;
+                        equippedSkill2Id = equipment.skill2Id;
+                        equippedCharacterId = equipment.characterId > 0 ? equipment.characterId : 3401;
+                        equippedBaitId = equipment.baitId;
+                        characterLevel = equipment.characterLevel > 0 ? equipment.characterLevel : 1;
+
+                        equippedRodLevel = equipment.rodLevel > 0 ? equipment.rodLevel : 1;
+                        equippedLineLevel = equipment.lineLevel > 0 ? equipment.lineLevel : 1;
+                        equippedHookLevel = equipment.hookLevel > 0 ? equipment.hookLevel : 1;
+                        equippedSkill1Level = equipment.skill1Level > 0 ? equipment.skill1Level : 1;
+                        equippedSkill2Level = equipment.skill2Level > 0 ? equipment.skill2Level : 1;
+
+                        equipmentLevelMap[equippedRodId] = equippedRodLevel;
+                        equipmentLevelMap[equippedLineId] = equippedLineLevel;
+                        equipmentLevelMap[equippedHookId] = equippedHookLevel;
+                        equipmentLevelMap[equippedSkill1Id] = equippedSkill1Level;
+                        equipmentLevelMap[equippedSkill2Id] = equippedSkill2Level;
+                        equipmentLevelMap[equippedCharacterId] = characterLevel;
+
+                        Logger.Log($"[NetServerManager] 装备数据初始化完成: Rod={equippedRodId}(Lv.{equippedRodLevel}), Line={equippedLineId}(Lv.{equippedLineLevel}), Hook={equippedHookId}(Lv.{equippedHookLevel})");
+
+                        CommunicateEvent.Modify("Equipment_Refresh");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析装备数据失败: {ex.Message}");
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 获取装备数据失败: {request.error}");
+            }
+        }
+    }
+
     private int GetEquippedItem(EquipmentSlotType slotType)
     {
         EquipmentSlotType slot = slotType;
@@ -46,6 +130,29 @@ public partial class NetServerManager
     private int GetCharacterLevel()
     {
         return characterLevel;
+    }
+
+    private int GetUpgradeCost(int equipId, int currentLevel)
+    {
+        return currentLevel * 50;
+    }
+
+    public int GetComponentLevel(int itemId)
+    {
+        if (equipmentLevelMap.TryGetValue(itemId, out int level))
+        {
+            Logger.Log($"[NetServerManager] GetComponentLevel - 从字典获取: itemId={itemId}, level={level}");
+            return level;
+        }
+
+        Logger.Log($"[NetServerManager] GetComponentLevel - itemId={itemId}, 字典中未找到，尝试直接匹配");
+        if (itemId == equippedRodId) return equippedRodLevel;
+        if (itemId == equippedLineId) return equippedLineLevel;
+        if (itemId == equippedHookId) return equippedHookLevel;
+        if (itemId == equippedSkill1Id) return equippedSkill1Level;
+        if (itemId == equippedSkill2Id) return equippedSkill2Level;
+        if (itemId == equippedCharacterId) return characterLevel;
+        return 1;
     }
 
     private PlayerNetworkData GetPlayerData()
@@ -150,7 +257,14 @@ public partial class NetServerManager
                             equippedBaitId = response.equipment.baitId;
                             characterLevel = response.equipment.characterLevel > 0 ? response.equipment.characterLevel : 1;
 
-                            Logger.Log($"[NetServerManager] 装备数据已更新: Rod={equippedRodId}, Char={equippedCharacterId}, Bait={equippedBaitId}");
+                            // ✅ 更新装备等级数据
+                            equippedRodLevel = response.equipment.rodLevel > 0 ? response.equipment.rodLevel : 1;
+                            equippedLineLevel = response.equipment.lineLevel > 0 ? response.equipment.lineLevel : 1;
+                            equippedHookLevel = response.equipment.hookLevel > 0 ? response.equipment.hookLevel : 1;
+                            equippedSkill1Level = response.equipment.skill1Level > 0 ? response.equipment.skill1Level : 1;
+                            equippedSkill2Level = response.equipment.skill2Level > 0 ? response.equipment.skill2Level : 1;
+
+                            Logger.Log($"[NetServerManager] 装备数据已更新: Rod={equippedRodId}(Lv.{equippedRodLevel}), Char={equippedCharacterId}(Lv.{characterLevel}), Bait={equippedBaitId}");
                         }
 
                         if (response.inventory != null)
@@ -441,9 +555,9 @@ public partial class NetServerManager
 
         var requestData = new Dictionary<string, object>
         {
-            { "playerId", _currentPlayerId },
-            { "equipmentId", equipId },
-            { "equipmentType", equipmentType }
+            { "PlayerId", _currentPlayerId },
+            { "EquipmentId", equipId },
+            { "EquipmentType", equipmentType }
         };
 
         StartCoroutine(SendRequest<object>(ServerUrls.Equipment.Unlock, requestData,
@@ -468,6 +582,16 @@ public partial class NetServerManager
         else if (equipId >= 3401 && equipId <= 3499) return "Character";
         else if (equipId >= 3301 && equipId <= 3399) return "Skill";
         else return null;
+    }
+
+    private EquipmentSlotType GetEquipmentSlotType(int equipId)
+    {
+        if (equipId >= 3001 && equipId <= 3099) return EquipmentSlotType.FishingRod;
+        else if (equipId >= 3101 && equipId <= 3199) return EquipmentSlotType.FishingLine;
+        else if (equipId >= 3201 && equipId <= 3299) return EquipmentSlotType.FishingHook;
+        else if (equipId >= 3301 && equipId <= 3399) return EquipmentSlotType.Skill1;
+        else if (equipId >= 3401 && equipId <= 3499) return EquipmentSlotType.Character;
+        else return EquipmentSlotType.FishingRod;
     }
 
     private System.Collections.IEnumerator FetchPlayerDataAfterUnlock()
@@ -527,6 +651,160 @@ public partial class NetServerManager
         ));
     }
 
+    public void UpgradeEquipment(int equipId, System.Action<bool, string> onComplete)
+    {
+        Logger.LogColor($"[NetServerManager] UpgradeEquipment: PlayerId={_currentPlayerId}, EquipId={equipId}", "cyan");
+
+        if (!CheckNetworkConnection())
+        {
+            onComplete?.Invoke(false, "网络未连接");
+            return;
+        }
+
+        string equipmentType = GetEquipmentType(equipId);
+        if (string.IsNullOrEmpty(equipmentType))
+        {
+            Logger.LogWarning($"[NetServerManager] 无法确定装备类型: equipId={equipId}");
+            onComplete?.Invoke(false, "装备类型错误");
+            return;
+        }
+
+        // ✅ 字段名首字母大写，与服务器端 C# 类属性名匹配
+        int currentLevel = GetComponentLevel(equipId);
+        int upgradeCost = GetUpgradeCost(equipId, currentLevel);
+        
+        if (playerGold < upgradeCost)
+        {
+            Logger.LogWarning($"[NetServerManager] 金币不足，无法升级: equipId={equipId}, currentLevel={currentLevel}, cost={upgradeCost}, gold={playerGold}");
+            onComplete?.Invoke(false, "金币不足");
+            return;
+        }
+        
+        var requestData = new Dictionary<string, object>
+    {
+        { "PlayerId", _currentPlayerId },
+        { "EquipmentId", equipId },
+        { "EquipmentType", equipmentType },
+        { "CurrentLevel", currentLevel }
+    };
+        Logger.Log($"[NetServerManager] 升级请求: equipId={equipId}, currentLevel={currentLevel}, cost={upgradeCost}");
+
+        StartCoroutine(SendRequest<EquipmentUpgradeResponse>(
+            ServerUrls.Equipment.Upgrade,
+            requestData,
+            (response) =>
+            {
+                if (response.success)
+                {
+                    Logger.LogColor($"[NetServerManager] 装备升级成功: {response.message}", "green");
+                    Logger.Log($"[NetServerManager] 升级响应 - newLevel={response.newLevel}, gold={response.gold}");
+
+                    // 优先使用 newLevel 更新当前升级装备的等级
+                    if (response.newLevel > 0)
+                    {
+                        equipmentLevelMap[equipId] = response.newLevel;
+                        Logger.Log($"[NetServerManager] 使用newLevel更新等级: equipId={equipId}, newLevel={response.newLevel}");
+                        
+                        EquipmentSlotType updateSlotType = GetEquipmentSlotType(equipId);
+                        switch (updateSlotType)
+                        {
+                            case EquipmentSlotType.FishingRod:
+                                equippedRodLevel = response.newLevel;
+                                break;
+                            case EquipmentSlotType.FishingLine:
+                                equippedLineLevel = response.newLevel;
+                                break;
+                            case EquipmentSlotType.FishingHook:
+                                equippedHookLevel = response.newLevel;
+                                break;
+                            case EquipmentSlotType.Skill1:
+                                equippedSkill1Level = response.newLevel;
+                                break;
+                            case EquipmentSlotType.Skill2:
+                                equippedSkill2Level = response.newLevel;
+                                break;
+                            case EquipmentSlotType.Character:
+                                characterLevel = response.newLevel;
+                                break;
+                        }
+                    }
+
+                    // 更新本地装备数据（从嵌套对象）
+                    if (response.equipment != null)
+                    {
+                        Logger.Log($"[NetServerManager] 装备数据解析成功 - rodId={response.equipment.rodId}, rodLevel={response.equipment.rodLevel}, lineId={response.equipment.lineId}, lineLevel={response.equipment.lineLevel}");
+
+                        equippedRodId = response.equipment.rodId > 0 ? response.equipment.rodId : 3001;
+                        equippedLineId = response.equipment.lineId > 0 ? response.equipment.lineId : 3101;
+                        equippedHookId = response.equipment.hookId > 0 ? response.equipment.hookId : 3201;
+                        equippedSkill1Id = response.equipment.skill1Id;
+                        equippedSkill2Id = response.equipment.skill2Id;
+                        equippedCharacterId = response.equipment.characterId > 0 ? response.equipment.characterId : 3401;
+                        equippedBaitId = response.equipment.baitId;
+                        characterLevel = response.equipment.characterLevel > 0 ? response.equipment.characterLevel : 1;
+
+                        equippedRodLevel = response.equipment.rodLevel > 0 ? response.equipment.rodLevel : 1;
+                        equippedLineLevel = response.equipment.lineLevel > 0 ? response.equipment.lineLevel : 1;
+                        equippedHookLevel = response.equipment.hookLevel > 0 ? response.equipment.hookLevel : 1;
+                        equippedSkill1Level = response.equipment.skill1Level > 0 ? response.equipment.skill1Level : 1;
+                        equippedSkill2Level = response.equipment.skill2Level > 0 ? response.equipment.skill2Level : 1;
+
+                        Logger.Log($"[NetServerManager] 升级后装备: Rod={equippedRodId}(Lv.{equippedRodLevel}), Char={equippedCharacterId}(Lv.{characterLevel})");
+
+                        // 更新所有装备等级字典
+                        equipmentLevelMap[equippedRodId] = equippedRodLevel;
+                        equipmentLevelMap[equippedLineId] = equippedLineLevel;
+                        equipmentLevelMap[equippedHookId] = equippedHookLevel;
+                        equipmentLevelMap[equippedSkill1Id] = equippedSkill1Level;
+                        equipmentLevelMap[equippedSkill2Id] = equippedSkill2Level;
+                        equipmentLevelMap[equippedCharacterId] = characterLevel;
+                    }
+
+                    // 更新金币
+                    if (response.gold > 0)
+                    {
+                        playerGold = response.gold;
+                        Logger.Log($"[NetServerManager] 升级后金币: {playerGold}");
+
+                        CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, new Dictionary<string, object>
+                        {
+                        { "gold", playerGold },
+                        { "add", 0 },
+                        { "reduce", 0 }
+                        });
+                        CommunicateEvent.Modify<int>(CommunicateEvent.EVENT_GOLD_CHANGED, playerGold);
+                    }
+                    else
+                    {
+                        Logger.Log("[NetServerManager] 服务器响应未包含金币，触发同步");
+                        CommunicateEvent.Modify(CommunicateEvent.EVENT_SYNC_GOLD);
+                    }
+
+                    // 根据升级的装备类型触发对应的UI刷新事件
+                    EquipmentSlotType slotType = GetEquipmentSlotType(equipId);
+                    CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, ((int)slotType, equipId));
+                    CommunicateEvent.Modify("Equipment_Refresh");
+
+                    StartCoroutine(FetchEquipmentData());
+
+                    onComplete?.Invoke(true, response.message);
+                }
+                else
+                {
+                    Logger.Log($"[NetServerManager] 装备升级失败: {response.message}");
+                    CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, response.message);
+                    onComplete?.Invoke(false, response.message);
+                }
+            },
+            (error) =>
+            {
+                Logger.LogError($"[NetServerManager] 装备升级请求失败: {error}");
+                onComplete?.Invoke(false, error);
+            },
+            forcePost: true
+        ));
+    }
+
     // ========== 辅助数据类 ==========
 
     [System.Serializable]
@@ -557,6 +835,11 @@ public partial class NetServerManager
         public int characterId;
         public int baitId;
         public int characterLevel;
+        public int rodLevel;
+        public int lineLevel;
+        public int hookLevel;
+        public int skill1Level;
+        public int skill2Level;
     }
 
     [System.Serializable]
@@ -571,6 +854,11 @@ public partial class NetServerManager
         public int baitId;
         public int baitLevel;
         public int characterLevel;
+        public int rodLevel;
+        public int lineLevel;
+        public int hookLevel;
+        public int skill1Level;
+        public int skill2Level;
     }
 
     [System.Serializable]
@@ -585,5 +873,15 @@ public partial class NetServerManager
     {
         public bool success { get; set; }
         public string message { get; set; }
+    }
+
+    [System.Serializable]
+    private class EquipmentUpgradeResponse
+    {
+        public bool success;
+        public string message;
+        public EquipmentData equipment;
+        public int gold;
+        public int newLevel;
     }
 }

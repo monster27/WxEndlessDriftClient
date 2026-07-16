@@ -150,6 +150,7 @@ public class InfoSkillView : MonoBehaviour
     public void Show(int skillSlot = 1)
     {
         currentSkillSlot = skillSlot;
+        SyncGoldFromServer();
         UpdateSkillList();
         skillInfoView.Hide();
         gameObject.SetActive(true);
@@ -158,6 +159,20 @@ public class InfoSkillView : MonoBehaviour
     public void Hide()
     {
         gameObject.SetActive(false);
+    }
+
+    private void SyncGoldFromServer()
+    {
+        try
+        {
+            int gold = CommunicateEvent.Request<int, int>("VIEW_EVENT_GET_GOLD", 0);
+            currentGold = gold;
+            Debug.Log($"[InfoSkillView] 同步金币: {currentGold}");
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[InfoSkillView] 同步金币失败: {ex.Message}");
+        }
     }
 
     public void UpdateSkillList()
@@ -265,12 +280,29 @@ public class InfoSkillView : MonoBehaviour
 
         if (currentGold >= cost)
         {
-            CommunicateEvent.Modify("Skill_UpgradeByGold", skillId);
-            UpdateSkillList();
-            callback?.Invoke("RefreshAllViews", null);
-
             string componentName = LoadDataManager.Instance.GetComponentName(skillId);
-            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"{componentName} 升级成功！");
+
+            if (NetServerManager.Instance != null)
+            {
+                NetServerManager.Instance.UpgradeSkill(skillId, level + 1, (success) =>
+                {
+                    if (success)
+                    {
+                        Debug.Log($"[InfoSkillView] 技能升级成功: skillId={skillId}");
+                        UpdateSkillList();
+                        callback?.Invoke("RefreshAllViews", null);
+                        CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"{componentName} 升级成功！");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[InfoSkillView] 技能升级失败: skillId={skillId}");
+                    }
+                });
+            }
+            else
+            {
+                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "网络连接失败");
+            }
         }
         else
         {

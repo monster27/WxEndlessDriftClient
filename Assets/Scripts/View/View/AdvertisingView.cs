@@ -155,9 +155,25 @@ public class AdvertisingView : MonoBehaviour
 
     private void OnUpgradeSkillByAd(int skillId)
     {
-        Debug.Log($"[AdvertisingView] OnUpgradeSkillByAd - skillId={skillId}, 准备触发事件 Skill_UpgradeByAd");
-        CommunicateEvent.Modify("Skill_UpgradeByAd", skillId);
-        Debug.Log($"[AdvertisingView] OnUpgradeSkillByAd - 事件 Skill_UpgradeByAd 已触发");
+        Debug.Log($"[AdvertisingView] OnUpgradeSkillByAd - skillId={skillId}");
+        
+        if (NetServerManager.Instance != null)
+        {
+            int currentLevel = NetServerManager.Instance.GetComponentLevel(skillId);
+            NetServerManager.Instance.UpgradeSkill(skillId, currentLevel + 1, (success) =>
+            {
+                if (success)
+                {
+                    Debug.Log($"[AdvertisingView] 技能升级成功（广告）: skillId={skillId}");
+                    CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "升级成功！");
+                    CommunicateEvent.Modify("Equipment_Refresh");
+                }
+                else
+                {
+                    Debug.LogWarning($"[AdvertisingView] 技能升级失败（广告）: skillId={skillId}");
+                }
+            });
+        }
     }
 
     private void Close()

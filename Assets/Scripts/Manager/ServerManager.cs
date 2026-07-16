@@ -119,6 +119,7 @@ public class ServerManager : SingletonMono<ServerManager>
             };
             
             CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, goldData);
+            CommunicateEvent.Modify<int>(CommunicateEvent.EVENT_GOLD_CHANGED, currentGold);
         }
     }
 
