@@ -1,8 +1,11 @@
 {
   "dependencies": {
-    "com.qq.weixin.minigame": "https://gitee.com/wechat-minigame/minigame-tuanjie-transform-sdk.git#v0.1.29",
+    "cn.unity.uos.cdn": "https://cnb.cool/unity/uos/UosCdnSDK.git",
+    "cn.unity.uos.launcher": "https://cnb.cool/unity/uos/UOSLauncher.git",
+    "com.qq.weixin.minigame": "https://gitee.com/wechat-minigame/minigame-tuanjie-transform-sdk.git",
     "com.unity.collab-proxy": "2.5.1",
     "com.unity.feature.development": "1.0.1",
+    "com.unity.instantgame": "1.1.2",
     "com.unity.nuget.newtonsoft-json": "3.2.2",
     "com.unity.textmeshpro": "3.0.9",
     "com.unity.timeline": "1.7.7",

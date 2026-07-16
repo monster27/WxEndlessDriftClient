@@ -9,12 +9,15 @@
             "skillIdAtLevel50": 3301,
             "skillIdAtLevel100": 3302,
             "tenLevelGoldReward": 500,
-            "idleColumns": 15,
+            "idleColumns": 3,
             "idleSpeed": 15.0,
-            "reelColumns": 12,
+            "reelColumns": 10,
             "reelSpeed": 20.0,
-            "lazyColumns": 15,
-            "lazySpeed": 18.0
+            "lazyColumns": 7,
+            "lazySpeed": 18.0,
+            "idleTexturePath": "",
+            "reelTexturePath": "",
+            "lazyTexturePath": ""
         },
         {
             "id": 3402,
@@ -30,7 +33,10 @@
             "reelColumns": 12,
             "reelSpeed": 20.0,
             "lazyColumns": 11,
-            "lazySpeed": 18.0
+            "lazySpeed": 18.0,
+            "idleTexturePath": "",
+            "reelTexturePath": "",
+            "lazyTexturePath": ""
         }
     ]
 }

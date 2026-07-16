@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!28 &2800000
+Texture2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 402.png-2800000
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 5
+  m_Width: 18
+  m_Height: 32
+  m_CompleteImageSize: 288
+  m_MipsStripped: 0
+  m_WebStreaming: 0
+  m_PriorityLevel: 0
+  m_UploadedMode: 0
+  m_DataStreamData:
+    size: 0
+    path: 
+  m_TextureFormat: 50
+  m_TextureManagerMultiFormatSetting: 
+  m_MipCount: 1
+  m_IsReadable: 0
+  m_IsPreProcessed: 0
+  m_IgnoreMipmapLimit: 0
+  m_MipmapLimitGroupName: 
+  m_StreamingMipmaps: 0
+  m_StreamingMipmapsPriority: 0
+  m_VTOnly: 0
+  m_AlphaIsTransparency: 1
+  m_ImageCount: 1
+  m_TextureDimension: 2
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 0
+    m_Aniso: 0
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 0
+  m_LightmapFormat: 6
+  m_ColorSpace: 1
+  m_PlatformBlob: 
+  image data: 288
+  _typelessdata: fcfdffffffffffffc5c5b9b98a8afffffcfdffffffffffffc5c5b9b98a8afffffcfdffffffffffffc5c5b9b98a8afffffcfdffffffffffffc5c5b9b98a8afffffcfdffffffffffffc5c5b9b98a8afffffcfdffffffffffffc5c5b9b98a8affff6fc08a7315e78506a92d25a5a49494926fc08a7315f10100292925a5a49494926fc08a7315f13500292925a5a49494921f024d5d1951b3ea00a05431d6dada3fee034d5f1951b3ea0000229a5555f5ffee034b611957b3f0800026921999f9776f20d516a0c50180d6b2b7a5a49494926f20d506ee490180ff32a7a5a49494926f20d516a0c501a0f6bb35a5a49494926f20a984d388a4a494949252524a92926f20b988d388a4a494949252524a92d26f20b988d388a4a494949252524ada92
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
+  m_OriginalWidth: 0
+  m_OriginalHeight: 0
+  m_OriginalAssetGuid: 00000000000000000000000000000000

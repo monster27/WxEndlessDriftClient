@@ -24,7 +24,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BlinkTex:
-        m_Texture: {fileID: 2800000, guid: e5a883943529f924f82e6c9570265869, type: 3}
+        m_Texture: {fileID: 2800000, guid: 8aef17dc497950545b8bd5662503b026, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
@@ -48,7 +48,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: b3dd15e9258021f47b9ea650525f8404, type: 3}
+        m_Texture: {fileID: 2800000, guid: fabc0f1b050f3834dbdaff1c9d0d5998, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -111,7 +111,7 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _BlinkColor: {r: 0, g: 1, b: 0, a: 1}
+    - _BlinkColor: {r: 0, g: 0, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []

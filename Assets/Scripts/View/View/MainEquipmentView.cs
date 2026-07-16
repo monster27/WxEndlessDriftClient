@@ -30,6 +30,7 @@ public class MainEquipmentView : MonoBehaviour
     public Text characterName;
     public Text characterLevelText;
     public Text characterExpText;
+    public Slider characterSlider;
 
     private Dictionary<int, Sprite> iconCache = new Dictionary<int, Sprite>();
     private System.Action<string, object[]> callback;
@@ -109,6 +110,11 @@ public class MainEquipmentView : MonoBehaviour
         if (characterExpText != null)
         {
             characterExpText.text = $"{currentExp}/{requiredExp}";
+        }
+
+        if (characterSlider != null)
+        {
+            characterSlider.value =  (float)currentExp/ (float)requiredExp;
         }
     }
 

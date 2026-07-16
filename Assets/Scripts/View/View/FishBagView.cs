@@ -9,6 +9,7 @@ public class FishBagView : BagViewBase
 {
     public View.Detail.FishDetail fishDetail;
     public Text fishCountText;
+    public Text selectCountText;
     public Button selectAllButton;
     public Button sellButton;
     public Text totalSellPriceText;
@@ -278,7 +279,7 @@ public class FishBagView : BagViewBase
             }
 
             int maxCapacity = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_FISH_BAG_CAPACITY, 0);
-            fishCountText.text = $"鱼篓: {totalCount}/{maxCapacity}";
+            fishCountText.text = $"{totalCount}/{maxCapacity}";
         }
     }
 
@@ -384,17 +385,23 @@ public class FishBagView : BagViewBase
 
             if (fishDetail != null)
             {
+                int selectCount = 0;
                 List<UI_FishBagPrefab> allFishPrefabs = fishDetail.GetAllFishPrefabs();
                 foreach (var fishPrefab in allFishPrefabs)
                 {
                     if (fishPrefab != null && fishPrefab.IsSelected)
                     {
                         totalPrice += fishPrefab.GetTotalSellPrice();
+                        selectCount++;
                     }
+                }
+                if (selectCountText != null)
+                {
+                    selectCountText.text = $"{selectCount}";
                 }
             }
 
-            totalSellPriceText.text = $"总价: {totalPrice} 金币";
+            totalSellPriceText.text = $"{totalPrice}";
         }
     }
 

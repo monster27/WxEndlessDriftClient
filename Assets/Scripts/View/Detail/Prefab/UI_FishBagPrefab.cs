@@ -146,6 +146,7 @@ namespace View.Detail
 
             // ========== ✅ 新增：更新稀有度背景颜色 ==========
             UpdateRarityBackground();
+            //UpdateRarityBackgroundColor();
 
             // ========== 显示星级（使用图片） ==========
             UpdateStarRatingDisplay();
@@ -160,9 +161,97 @@ namespace View.Detail
         }
 
         /// <summary>
-        /// ✅ 新增：更新稀有度背景颜色
+        /// 更新稀有度背景图片（根据稀有度ID加载对应的图片）
         /// </summary>
         private void UpdateRarityBackground()
+        {
+            if (rarityBackgroundImage == null)
+            {
+                return;
+            }
+
+            // 获取稀有度ID
+            int rarityId = FishRarityId;
+
+            // 如果没有稀有度ID或无效，尝试使用默认ID=0
+            if (rarityId <= 0)
+            {
+                rarityId = 0;
+            }
+
+            // 尝试加载对应稀有度ID的图片
+            Sprite raritySprite = LoadRarityBackgroundSprite(rarityId);
+
+            if (raritySprite != null)
+            {
+                // 找到对应的图片，设置并显示
+                rarityBackgroundImage.sprite = raritySprite;
+                rarityBackgroundImage.gameObject.SetActive(true);
+                rarityBackgroundImage.color = Color.white; // 保持原始颜色，使用图片本身
+                Debug.Log($"[UI_FishBagPrefab] 稀有度背景图片加载成功: itemId={itemId}, rarityId={rarityId}");
+            }
+            else
+            {
+                // 没找到对应ID的图片，尝试加载默认ID=0
+                if (rarityId != 0)
+                {
+                    Sprite defaultSprite = LoadRarityBackgroundSprite(0);
+                    if (defaultSprite != null)
+                    {
+                        rarityBackgroundImage.sprite = defaultSprite;
+                        rarityBackgroundImage.gameObject.SetActive(true);
+                        rarityBackgroundImage.color = Color.white;
+                        Debug.Log($"[UI_FishBagPrefab] 使用默认稀有度背景图片: itemId={itemId}, rarityId=0");
+                        return;
+                    }
+                }
+
+                // 如果连默认图片都没有，隐藏背景
+                rarityBackgroundImage.gameObject.SetActive(false);
+                Debug.Log($"[UI_FishBagPrefab] 稀有度背景图片不存在，隐藏背景: itemId={itemId}, rarityId={rarityId}");
+            }
+        }
+
+        /// <summary>
+        /// 加载稀有度背景图片
+        /// </summary>
+        private Sprite LoadRarityBackgroundSprite(int rarityId)
+        {
+            // 根据稀有度ID生成对应的图片路径
+            string path = $"UI/Icon/RarityBackground/{rarityId}";
+            Sprite icon = Resources.Load<Sprite>(path);
+
+            if (icon != null)
+            {
+                Debug.Log($"[UI_FishBagPrefab] 稀有度背景图片加载成功: ID={rarityId}, 路径={path}");
+                return icon;
+            }
+
+            // 尝试备选路径
+            string[] fallbackPaths = new string[]
+            {
+        $"RarityBackground/{rarityId}",
+        $"Images/RarityBackground/{rarityId}",
+        $"UI/Rarity/{rarityId}"
+            };
+
+            foreach (string fallbackPath in fallbackPaths)
+            {
+                icon = Resources.Load<Sprite>(fallbackPath);
+                if (icon != null)
+                {
+                    Debug.Log($"[UI_FishBagPrefab] 稀有度背景图片加载成功(备选路径): ID={rarityId}, 路径={fallbackPath}");
+                    return icon;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// ✅ 新增：更新稀有度背景颜色
+        /// </summary>
+        private void UpdateRarityBackgroundColor()
         {
             if (rarityBackgroundImage == null)
             {

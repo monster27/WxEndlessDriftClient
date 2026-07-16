@@ -38,7 +38,7 @@ TextureImporter:
   textureSettings:
     serializedVersion: 2
     filterMode: 0
-    aniso: 1
+    aniso: 0
     mipBias: 0
     wrapU: 1
     wrapV: 1
@@ -128,15 +128,15 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
     buildTarget: WeixinMiniGame
-    maxTextureSize: 2048
+    maxTextureSize: 1024
     maxPlaceholderSize: 32
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 50
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
-    overridden: 0
+    overridden: 1
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
@@ -186,6 +186,6 @@ TextureImporter:
   pSDRemoveMatte: 0
   doOverrideTextureManagerOperations: 0
   platformOperationGroupSettings: 
-  userData: 
+  userData: AutoSet
   assetBundleName: 
   assetBundleVariant: 

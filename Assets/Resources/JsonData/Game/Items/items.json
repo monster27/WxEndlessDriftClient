@@ -2,9 +2,9 @@
     "items": [
         {
             "id": 1001,
-            "name": "鲤鱼",
-            "description": "常见的淡水鱼，寓意吉祥，适合新手钓手",
-            "sellPrice": 5,
+            "name": "黄唐王鱼",
+            "description": "请添加描述",
+            "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
             "categoryId": 1,
@@ -12,9 +12,9 @@
         },
         {
             "id": 1002,
-            "name": "青鱼",
-            "description": "大型淡水鱼，力道十足，考验钓技",
-            "sellPrice": 20,
+            "name": "蓝绿雀鲷",
+            "description": "请添加描述",
+            "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
             "categoryId": 1,
@@ -22,9 +22,9 @@
         },
         {
             "id": 1003,
-            "name": "黄鳍金枪鱼",
-            "description": "海洋中的高速猎手，肉质鲜美",
-            "sellPrice": 15,
+            "name": "红岩滨蟹",
+            "description": "请添加描述",
+            "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
             "categoryId": 1,
@@ -32,13 +32,163 @@
         },
         {
             "id": 1004,
-            "name": "石斑鱼",
-            "description": "礁石中的隐士，肉质极品",
+            "name": "鹦嘴鱼",
+            "description": "请添加描述",
             "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
             "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1004"
+        },
+        {
+            "id": 1005,
+            "name": "珍珠贝",
+            "description": "请添加描述",
+            "sellPrice": 10,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1005"
+        },
+        {
+            "id": 1006,
+            "name": "鲯鳅",
+            "description": "请添加描述",
+            "sellPrice": 20,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1006"
+        },
+        {
+            "id": 1007,
+            "name": "火焰神仙鱼",
+            "description": "请添加描述",
+            "sellPrice": 20,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1007"
+        },
+        {
+            "id": 1008,
+            "name": "红虾",
+            "description": "请添加描述",
+            "sellPrice": 20,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1008"
+        },
+        {
+            "id": 1009,
+            "name": "石斑鱼",
+            "description": "请添加描述",
+            "sellPrice": 20,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1009"
+        },
+        {
+            "id": 1010,
+            "name": "龙占鱼",
+            "description": "请添加描述",
+            "sellPrice": 40,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1010"
+        },
+        {
+            "id": 1011,
+            "name": "黄鳍金枪鱼",
+            "description": "请添加描述",
+            "sellPrice": 40,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1011"
+        },
+        {
+            "id": 1012,
+            "name": "锤头双髻鲨",
+            "description": "请添加描述",
+            "sellPrice": 40,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1012"
+        },
+        {
+            "id": 1013,
+            "name": "沧海剑吻鲟",
+            "description": "请添加描述",
+            "sellPrice": 80,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1013"
+        },
+        {
+            "id": 1014,
+            "name": "荧光金枪鱼",
+            "description": "请添加描述",
+            "sellPrice": 80,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1014"
+        },
+        {
+            "id": 1015,
+            "name": "摩艾深渊鲸龙",
+            "description": "请添加描述",
+            "sellPrice": 100,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1015"
+        },
+        {
+            "id": 1021,
+            "name": "鲤鱼",
+            "description": "常见的淡水鱼，寓意吉祥，适合新手钓手",
+            "sellPrice": 5,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1021"
+        },
+        {
+            "id": 1022,
+            "name": "青鱼",
+            "description": "大型淡水鱼，力道十足，考验钓技",
+            "sellPrice": 10,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1022"
+        },
+        {
+            "id": 1023,
+            "name": "黄鳍金枪鱼",
+            "description": "海洋中的高速猎手，肉质鲜美",
+            "sellPrice": 15,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1023"
+        },
+        {
+            "id": 1024,
+            "name": "石斑鱼",
+            "description": "礁石中的隐士，肉质极品",
+            "sellPrice": 20,
+            "buyPrice": -1,
+            "itemType": 1,
+            "categoryId": 1,
+            "iconPath": "UI/Icon/FishIcons/1024"
         },
         {
             "id": 2001,
@@ -109,16 +259,6 @@
             "itemType": 2,
             "categoryId": 21,
             "iconPath": "UI/Icon/BaitIcons/2007"
-        },
-        {
-            "id": 2501,
-            "name": "普通窝料",
-            "description": "基础窝料，用于连续钓鱼模式",
-            "sellPrice": -1,
-            "buyPrice": -1,
-            "itemType": 2,
-            "categoryId": 22,
-            "iconPath": "UI/Icon/BaitIcons/2501"
         },
         {
             "id": 9001,

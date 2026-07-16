@@ -4,22 +4,2422 @@
 AutoStreamingSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  mSearchMode: 15
+  mSearchMode: 7
   mCustomSearchFile: 
   mTextureSearchString: 
   mMeshSearchString: 
-  mTextures: []
+  mTextures:
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Player/Ani/3402/Reel.png
+    assetName: Reel
+    localFileId: 2800000
+    rtMem: 22528
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 768
+    height: 64
+    abSize: 13916
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/303.png
+    assetName: 303
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1574
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/TrashIcons/9001.png
+    assetName: 9001
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1473
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/310.png
+    assetName: 310
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1515
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Hook/3201.png
+    assetName: 3201
+    localFileId: 2800000
+    rtMem: 179908
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 161
+    height: 210
+    abSize: 39971
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Hook/3203.png
+    assetName: 3203
+    localFileId: 2800000
+    rtMem: 15232
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 168
+    height: 204
+    abSize: 14018
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/BaitIcons/2503.png
+    assetName: 2503
+    localFileId: 2800000
+    rtMem: 52688
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 117
+    height: 85
+    abSize: 23987
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1001.png
+    assetName: 1001
+    localFileId: 2800000
+    rtMem: 1036564
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 588
+    height: 331
+    abSize: 186941
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/StarRating/star_502.png
+    assetName: star_502
+    localFileId: 2800000
+    rtMem: 13260
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 50
+    height: 50
+    abSize: 3841
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/BaitIcons/2004.png
+    assetName: 2004
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1256
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Static/404.png
+    assetName: 404
+    localFileId: 2800000
+    rtMem: 262656
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 576
+    height: 1024
+    abSize: 26753
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Static/401.png
+    assetName: 401
+    localFileId: 2800000
+    rtMem: 262656
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 576
+    height: 1024
+    abSize: 27498
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1007.png
+    assetName: 1007
+    localFileId: 2800000
+    rtMem: 546376
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 516
+    height: 199
+    abSize: 102998
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1006.png
+    assetName: 1006
+    localFileId: 2800000
+    rtMem: 1212124
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 610
+    height: 373
+    abSize: 317220
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Player/Ani/3401/Reel.png
+    assetName: Reel
+    localFileId: 2800000
+    rtMem: 615676
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 1024
+    height: 113
+    abSize: 104007
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/308.png
+    assetName: 308
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1939
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Player/Ani/3401/Idle.png
+    assetName: Idle
+    localFileId: 2800000
+    rtMem: 1324924
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 1024
+    height: 243
+    abSize: 206776
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Scene/101/EnvElement.png
+    assetName: EnvElement
+    localFileId: 2800000
+    rtMem: 154192
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 232
+    height: 125
+    abSize: 40795
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1014.png
+    assetName: 1014
+    localFileId: 2800000
+    rtMem: 1106012
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 614
+    height: 338
+    abSize: 219758
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1002.png
+    assetName: 1002
+    localFileId: 2800000
+    rtMem: 982596
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 673
+    height: 274
+    abSize: 187548
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Line/3101.png
+    assetName: 3101
+    localFileId: 2800000
+    rtMem: 178928
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 164
+    height: 205
+    abSize: 60387
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Scene/101/EnvBg.png
+    assetName: EnvBg
+    localFileId: 2800000
+    rtMem: 4968604
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 1024
+    height: 910
+    abSize: 1331953
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1010.png
+    assetName: 1010
+    localFileId: 2800000
+    rtMem: 928700
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 605
+    height: 288
+    abSize: 162861
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Line/3102.png
+    assetName: 3102
+    localFileId: 2800000
+    rtMem: 167816
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 156
+    height: 202
+    abSize: 53613
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/311.png
+    assetName: 311
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1341
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/302.png
+    assetName: 302
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1529
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/314.png
+    assetName: 314
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1799
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/312.png
+    assetName: 312
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1508
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Scene/102/EnvBg.png
+    assetName: EnvBg
+    localFileId: 2800000
+    rtMem: 112896
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 500
+    height: 500
+    abSize: 4256
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Rod/3003.png
+    assetName: 3003
+    localFileId: 2800000
+    rtMem: 27456
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 152
+    height: 392
+    abSize: 20451
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Player/Ani/3402/Idle.png
+    assetName: Idle
+    localFileId: 2800000
+    rtMem: 18832
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 640
+    height: 64
+    abSize: 13427
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/BaitIcons/2501.png
+    assetName: 2501
+    localFileId: 2800000
+    rtMem: 49348
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 115
+    height: 81
+    abSize: 24663
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/TimeIcon/401.png
+    assetName: 401
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1520
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Scene/101/EnvTreasureBox.png
+    assetName: EnvTreasureBox
+    localFileId: 2800000
+    rtMem: 96548
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 153
+    height: 119
+    abSize: 38169
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Static/402.png
+    assetName: 402
+    localFileId: 2800000
+    rtMem: 262656
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 576
+    height: 1024
+    abSize: 25000
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/TrashIcons/9002.png
+    assetName: 9002
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1567
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1005.png
+    assetName: 1005
+    localFileId: 2800000
+    rtMem: 30720
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 284
+    height: 236
+    abSize: 18943
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/301.png
+    assetName: 301
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1448
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/BaitIcons/2001.png
+    assetName: 2001
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1190
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Player/Ani/3401/Lazy.png
+    assetName: Lazy
+    localFileId: 2800000
+    rtMem: 774332
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 1024
+    height: 142
+    abSize: 262503
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Player/Ani/3401/Lazy_Stand.png
+    assetName: Lazy_Stand
+    localFileId: 2800000
+    rtMem: 28160
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 960
+    height: 64
+    abSize: 19356
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Skill/3302.png
+    assetName: 3302
+    localFileId: 2800000
+    rtMem: 85068
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 124
+    height: 129
+    abSize: 73669
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1023.png
+    assetName: 1023
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1403
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/306.png
+    assetName: 306
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1663
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/313.png
+    assetName: 313
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1577
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/315.png
+    assetName: 315
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1970
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Player/Ani/3402/Lazy.png
+    assetName: Lazy
+    localFileId: 2800000
+    rtMem: 20768
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 704
+    height: 64
+    abSize: 13758
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1004.png
+    assetName: 1004
+    localFileId: 2800000
+    rtMem: 1240056
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 629
+    height: 370
+    abSize: 244809
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1003.png
+    assetName: 1003
+    localFileId: 2800000
+    rtMem: 474228
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 356
+    height: 250
+    abSize: 107036
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/TimeIcon/402.png
+    assetName: 402
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1331
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Scene/102/EnvTreasureBox.png
+    assetName: EnvTreasureBox
+    localFileId: 2800000
+    rtMem: 96548
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 153
+    height: 119
+    abSize: 38169
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Scene/102/EnvElement.png
+    assetName: EnvElement
+    localFileId: 2800000
+    rtMem: 154192
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 232
+    height: 125
+    abSize: 40795
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/BaitIcons/2502.png
+    assetName: 2502
+    localFileId: 2800000
+    rtMem: 4480
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 116
+    height: 84
+    abSize: 3929
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1009.png
+    assetName: 1009
+    localFileId: 2800000
+    rtMem: 1070068
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 566
+    height: 355
+    abSize: 314261
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1013.png
+    assetName: 1013
+    localFileId: 2800000
+    rtMem: 1244140
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 737
+    height: 317
+    abSize: 190970
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1011.png
+    assetName: 1011
+    localFileId: 2800000
+    rtMem: 120336
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 652
+    height: 412
+    abSize: 69845
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/TimeIcon/404.png
+    assetName: 404
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1636
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/BaitIcons/2006.png
+    assetName: 2006
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1195
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/StarRating/star_503.png
+    assetName: star_503
+    localFileId: 2800000
+    rtMem: 19884
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 56
+    height: 67
+    abSize: 5905
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Rod/3002.png
+    assetName: 3002
+    localFileId: 2800000
+    rtMem: 296396
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 142
+    height: 392
+    abSize: 49629
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/316.png
+    assetName: 316
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1317
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Character/3402.png
+    assetName: 3402
+    localFileId: 2800000
+    rtMem: 18364
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 54
+    height: 64
+    abSize: 5054
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Static/403.png
+    assetName: 403
+    localFileId: 2800000
+    rtMem: 262656
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 576
+    height: 1024
+    abSize: 25352
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Skill/3303.png
+    assetName: 3303
+    localFileId: 2800000
+    rtMem: 91004
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 131
+    height: 131
+    abSize: 61817
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Player/Ani/3401/Idle_Stand.png
+    assetName: Idle_Stand
+    localFileId: 2800000
+    rtMem: 28160
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 960
+    height: 64
+    abSize: 16903
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1015.png
+    assetName: 1015
+    localFileId: 2800000
+    rtMem: 1140276
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 693
+    height: 309
+    abSize: 222074
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/307.png
+    assetName: 307
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1424
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Skill/3301.png
+    assetName: 3301
+    localFileId: 2800000
+    rtMem: 93368
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 132
+    height: 133
+    abSize: 40285
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Player/Ani/3401/Reel_Stand.png
+    assetName: Reel_Stand
+    localFileId: 2800000
+    rtMem: 309756
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 1024
+    height: 57
+    abSize: 70053
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1008.png
+    assetName: 1008
+    localFileId: 2800000
+    rtMem: 846328
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 450
+    height: 353
+    abSize: 135596
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/305.png
+    assetName: 305
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1708
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/BaitIcons/2005.png
+    assetName: 2005
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 974
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/BaitIcons/2007.png
+    assetName: 2007
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1741
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/StarRating/star_501.png
+    assetName: star_501
+    localFileId: 2800000
+    rtMem: 7868
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 35
+    height: 43
+    abSize: 2669
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/TimeIcon/403.png
+    assetName: 403
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1614
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/309.png
+    assetName: 309
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1524
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/WeatherIcon/304.png
+    assetName: 304
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1586
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Scene/101/NPC.png
+    assetName: NPC
+    localFileId: 2800000
+    rtMem: 138880
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 145
+    height: 180
+    abSize: 45800
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Character/3401.png
+    assetName: 3401
+    localFileId: 2800000
+    rtMem: 18620
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 55
+    height: 64
+    abSize: 4349
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/StarRating/star_504.png
+    assetName: star_504
+    localFileId: 2800000
+    rtMem: 22220
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 61
+    height: 69
+    abSize: 7915
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Skill/3304.png
+    assetName: 3304
+    localFileId: 2800000
+    rtMem: 84904
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 123
+    height: 130
+    abSize: 56154
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/GameScene/Scene/102/NPC.png
+    assetName: NPC
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 743
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Rod/3001.png
+    assetName: 3001
+    localFileId: 2800000
+    rtMem: 299944
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 142
+    height: 397
+    abSize: 48979
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/TrashIcons/9003.png
+    assetName: 9003
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1486
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1024.png
+    assetName: 1024
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1362
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/Equipment/Hook/3202.png
+    assetName: 3202
+    localFileId: 2800000
+    rtMem: 172072
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 161
+    height: 201
+    abSize: 37049
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/BaitIcons/2002.png
+    assetName: 2002
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1201
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1021.png
+    assetName: 1021
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1123
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/BaitIcons/2003.png
+    assetName: 2003
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1258
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1022.png
+    assetName: 1022
+    localFileId: 2800000
+    rtMem: 4624
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 100
+    height: 100
+    abSize: 1184
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Resources/UI/Icon/FishIcons/1012.png
+    assetName: 1012
+    localFileId: 2800000
+    rtMem: 1007824
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 714
+    height: 265
+    abSize: 103935
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/0605/backpack/\u9975\u6599\u9875\u9762\u793A\u610F.png"
+    assetName: "\u9975\u6599\u9875\u9762\u793A\u610F"
+    localFileId: 2800000
+    rtMem: 268128
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 584
+    height: 1024
+    abSize: 168476
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/UI/MainPlayScene/Demo/MainGameBgSample.png
+    assetName: MainGameBgSample
+    localFileId: 2800000
+    rtMem: 262656
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 576
+    height: 1024
+    abSize: 164389
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u6A59\u8272.png"
+    assetName: "\u6A59\u8272"
+    localFileId: 2800000
+    rtMem: 403928
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 271
+    height: 280
+    abSize: 37434
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Right icon/Close Expansion.png
+    assetName: Close Expansion
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 8019
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5546\u57CE\u754C\u9762/\u51CF\u5C11\u6309\u94AE.png"
+    assetName: "\u51CF\u5C11\u6309\u94AE"
+    localFileId: 2800000
+    rtMem: 14588
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 53
+    height: 52
+    abSize: 6904
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/fish basket/Sequential icon.png
+    assetName: Sequential icon
+    localFileId: 2800000
+    rtMem: 2112
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 72
+    height: 64
+    abSize: 1603
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u80CC\u5305\u754C\u9762/\u9C7C\u9975.png"
+    assetName: "\u9C7C\u9975"
+    localFileId: 2800000
+    rtMem: 131872
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 360
+    height: 69
+    abSize: 22895
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/backpack/Equipment icon.png
+    assetName: Equipment icon
+    localFileId: 2800000
+    rtMem: 48108
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 103
+    height: 88
+    abSize: 20696
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/backpack/background layer.png
+    assetName: background layer
+    localFileId: 2800000
+    rtMem: 309168
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 676
+    height: 1024
+    abSize: 62189
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Fish Coin.png
+    assetName: Fish Coin
+    localFileId: 2800000
+    rtMem: 111044
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 258
+    height: 81
+    abSize: 26884
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5173\u95ED.png"
+    assetName: "\u5173\u95ED"
+    localFileId: 2800000
+    rtMem: 85396
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 131
+    height: 123
+    abSize: 33365
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Left icon/black market.png
+    assetName: black market
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 8371
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u7D2B\u8272.png"
+    assetName: "\u7D2B\u8272"
+    localFileId: 2800000
+    rtMem: 406588
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 283
+    height: 270
+    abSize: 36811
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Right icon/setting.png
+    assetName: setting
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 6225
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5546\u57CE\u754C\u9762/\u5E95\u56FE.png"
+    assetName: "\u5E95\u56FE"
+    localFileId: 2800000
+    rtMem: 262656
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 576
+    height: 1024
+    abSize: 68934
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/fish basket/Weight icon.png
+    assetName: Weight icon
+    localFileId: 2800000
+    rtMem: 30192
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 74
+    height: 77
+    abSize: 10314
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/EquipmentSample/\u9C7C\u7AFF\u88C5\u5907\u754C\u9762.png"
+    assetName: "\u9C7C\u7AFF\u88C5\u5907\u754C\u9762"
+    localFileId: 2800000
+    rtMem: 3137580
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 575
+    height: 1024
+    abSize: 815454
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Right icon/email.png
+    assetName: email
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 7396
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/backpack/Select icon.png
+    assetName: Select icon
+    localFileId: 2800000
+    rtMem: 89644
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 142
+    height: 119
+    abSize: 14134
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/bottom icon/Illustrated Handbook.png
+    assetName: Illustrated Handbook
+    localFileId: 2800000
+    rtMem: 130868
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 157
+    height: 157
+    abSize: 39421
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/bottom icon/pet.png
+    assetName: pet
+    localFileId: 2800000
+    rtMem: 130868
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 157
+    height: 157
+    abSize: 37049
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Right icon/hide.png
+    assetName: hide
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 6695
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Right icon/mall.png
+    assetName: mall
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 8285
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/backpack/special icon.png
+    assetName: special icon
+    localFileId: 2800000
+    rtMem: 3360
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 84
+    height: 88
+    abSize: 3140
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/Common/Player.png
+    assetName: Player
+    localFileId: 2800000
+    rtMem: 1258980
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 576
+    height: 410
+    abSize: 161402
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/backpack/Fish bait icon.png
+    assetName: Fish bait icon
+    localFileId: 2800000
+    rtMem: 53408
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 114
+    height: 88
+    abSize: 18223
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/UI/MainPlayScene/Demo/MainGameBg.png
+    assetName: MainGameBg
+    localFileId: 2800000
+    rtMem: 262656
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 576
+    height: 1024
+    abSize: 151986
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/fish basket/Rarity icon.png
+    assetName: Rarity icon
+    localFileId: 2800000
+    rtMem: 27988
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 84
+    height: 63
+    abSize: 11614
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/UI/MainPlayScene/Demo/UILeftBg.png
+    assetName: UILeftBg
+    localFileId: 2800000
+    rtMem: 513772
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 175
+    height: 552
+    abSize: 94815
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u4E0A\u9C7C\u9876\u90E8\u5C0F\u5F39\u7A97/GetItemTileBg.png"
+    assetName: GetItemTileBg
+    localFileId: 2800000
+    rtMem: 616904
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 506
+    height: 229
+    abSize: 56853
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/EquipmentSample/\u6280\u80FD\u754C\u9762.png"
+    assetName: "\u6280\u80FD\u754C\u9762"
+    localFileId: 2800000
+    rtMem: 3155948
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 578
+    height: 1024
+    abSize: 1028116
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/0605/store/\u4E8C\u7EA7\u8D2D\u4E70\u9875\u9762\u793A\u610F.png"
+    assetName: "\u4E8C\u7EA7\u8D2D\u4E70\u9875\u9762\u793A\u610F"
+    localFileId: 2800000
+    rtMem: 268128
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 584
+    height: 1024
+    abSize: 188309
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/bottom icon/character.png
+    assetName: character
+    localFileId: 2800000
+    rtMem: 130868
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 157
+    height: 157
+    abSize: 34021
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Right icon/share.png
+    assetName: share
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 7262
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u4E0A\u9C7C\u9876\u90E8\u5C0F\u5F39\u7A97/TileMark.png"
+    assetName: TileMark
+    localFileId: 2800000
+    rtMem: 28960
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 47
+    height: 117
+    abSize: 11135
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/bottom icon/backpack.png
+    assetName: backpack
+    localFileId: 2800000
+    rtMem: 130868
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 157
+    height: 157
+    abSize: 40762
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9752\u8272.png"
+    assetName: "\u9752\u8272"
+    localFileId: 2800000
+    rtMem: 421676
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 286
+    height: 277
+    abSize: 36278
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/bottom icon/go home.png
+    assetName: go home
+    localFileId: 2800000
+    rtMem: 130868
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 157
+    height: 157
+    abSize: 43306
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5546\u57CE\u754C\u9762/\u589E\u52A0\u6309\u94AE.png"
+    assetName: "\u589E\u52A0\u6309\u94AE"
+    localFileId: 2800000
+    rtMem: 14588
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 53
+    height: 52
+    abSize: 7737
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/EquipmentSample/\u6280\u80FD\u88C5\u5907\u754C\u9762.png"
+    assetName: "\u6280\u80FD\u88C5\u5907\u754C\u9762"
+    localFileId: 2800000
+    rtMem: 3137580
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 575
+    height: 1024
+    abSize: 804330
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/time.png
+    assetName: time
+    localFileId: 2800000
+    rtMem: 318328
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 248
+    height: 241
+    abSize: 37899
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/0605/fish basket/\u9C7C\u7BD3\u9875\u9762\u793A\u610F\u56FE.png"
+    assetName: "\u9C7C\u7BD3\u9875\u9762\u793A\u610F\u56FE"
+    localFileId: 2800000
+    rtMem: 3203564
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 587
+    height: 1024
+    abSize: 1001745
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/EquipmentSample/\u4EBA\u7269\u754C\u9762.png"
+    assetName: "\u4EBA\u7269\u754C\u9762"
+    localFileId: 2800000
+    rtMem: 3137580
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 575
+    height: 1024
+    abSize: 730288
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/bottom icon/incubate eggs.png
+    assetName: incubate eggs
+    localFileId: 2800000
+    rtMem: 130868
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 157
+    height: 157
+    abSize: 33943
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Right icon/activity.png
+    assetName: activity
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 7799
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5546\u57CE\u754C\u9762/\u53D6\u6D88.png"
+    assetName: "\u53D6\u6D88"
+    localFileId: 2800000
+    rtMem: 122652
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 256
+    height: 90
+    abSize: 24992
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/EquipmentSample/\u9C7C\u7AFF\uFF08\u9C7C\u7EBF\u3001\u9C7C\u94A9\uFF09\u4FE1\u606F\u754C\u9762.png"
+    assetName: "\u9C7C\u7AFF\uFF08\u9C7C\u7EBF\u3001\u9C7C\u94A9\uFF09\u4FE1\u606F\u754C\u9762"
+    localFileId: 2800000
+    rtMem: 3137580
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 575
+    height: 1024
+    abSize: 639620
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Right icon/Announcement.png
+    assetName: Announcement
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 7412
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/UI/Common/Tri.png
+    assetName: Tri
+    localFileId: 2800000
+    rtMem: 4990876
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 1024
+    height: 914
+    abSize: 598182
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Right icon/Expand Open.png
+    assetName: Expand Open
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 7955
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Right icon/check-in.png
+    assetName: check-in
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 7278
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5546\u57CE\u754C\u9762/\u786E\u8BA4.png"
+    assetName: "\u786E\u8BA4"
+    localFileId: 2800000
+    rtMem: 130432
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 264
+    height: 93
+    abSize: 26086
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Left icon/Daily Reward.png
+    assetName: Daily Reward
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 8565
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u5E01.png"
+    assetName: "\u9C7C\u5E01"
+    localFileId: 2800000
+    rtMem: 2288
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 76
+    height: 64
+    abSize: 2009
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u80CC\u5305\u754C\u9762/\u88C5\u5907.png"
+    assetName: "\u88C5\u5907"
+    localFileId: 2800000
+    rtMem: 48108
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 103
+    height: 88
+    abSize: 20690
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u754C\u9762\u793A\u610F.png"
+    assetName: "\u754C\u9762\u793A\u610F"
+    localFileId: 2800000
+    rtMem: 3203564
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 587
+    height: 1024
+    abSize: 1392739
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Left icon/ranking.png
+    assetName: ranking
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 9347
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/fish basket/Gold Coin Icon.png
+    assetName: Gold Coin Icon
+    localFileId: 2800000
+    rtMem: 2288
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 76
+    height: 64
+    abSize: 2018
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Right icon/help.png
+    assetName: help
+    localFileId: 2800000
+    rtMem: 11664
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 160
+    height: 160
+    abSize: 7465
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u80CC\u5305\u754C\u9762/\u7A9D\u6599.png"
+    assetName: "\u7A9D\u6599"
+    localFileId: 2800000
+    rtMem: 131872
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 360
+    height: 69
+    abSize: 23905
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7BD3\u754C\u9762/\u5E95\u56FE.png"
+    assetName: "\u5E95\u56FE"
+    localFileId: 2800000
+    rtMem: 262656
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 576
+    height: 1024
+    abSize: 36335
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/bottom icon/fish basket.png
+    assetName: fish basket
+    localFileId: 2800000
+    rtMem: 130868
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 157
+    height: 157
+    abSize: 48704
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/0605/Homepage/\u4E3B\u9875\u9762\u793A\u610F\u56FE.png"
+    assetName: "\u4E3B\u9875\u9762\u793A\u610F\u56FE"
+    localFileId: 2800000
+    rtMem: 3199468
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 586
+    height: 1024
+    abSize: 1366793
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5546\u57CE\u754C\u9762/\u4E8C\u7EA7\u8D2D\u4E70\u9875\u9762\u5E95\u56FE.png"
+    assetName: "\u4E8C\u7EA7\u8D2D\u4E70\u9875\u9762\u5E95\u56FE"
+    localFileId: 2800000
+    rtMem: 5224476
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 1024
+    height: 957
+    abSize: 390157
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0712/fish finder/Light.png
+    assetName: Light
+    localFileId: 2800000
+    rtMem: 115656
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 149
+    height: 146
+    abSize: 13036
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0712/fish finder/fish finder.png
+    assetName: fish finder
+    localFileId: 2800000
+    rtMem: 115656
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 149
+    height: 146
+    abSize: 28994
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/polar bear.png
+    assetName: polar bear
+    localFileId: 2800000
+    rtMem: 111856
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 142
+    height: 148
+    abSize: 34257
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Ani/NestAniaterial.png
+    assetName: NestAniaterial
+    localFileId: 2800000
+    rtMem: 721392
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 910
+    height: 149
+    abSize: 98074
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/toilet.png
+    assetName: toilet
+    localFileId: 2800000
+    rtMem: 161716
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 189
+    height: 161
+    abSize: 47550
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/backpack/Select layer.png
+    assetName: Select layer
+    localFileId: 2800000
+    rtMem: 272116
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 248
+    height: 206
+    abSize: 19920
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/Nesting action.png
+    assetName: Nesting action
+    localFileId: 2800000
+    rtMem: 55244
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 106
+    height: 98
+    abSize: 18772
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9009\u4E2D.png"
+    assetName: "\u9009\u4E2D"
+    localFileId: 2800000
+    rtMem: 2240
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 80
+    height: 60
+    abSize: 2270
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u65B0.png"
+    assetName: "\u65B0"
+    localFileId: 2800000
+    rtMem: 40392
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 103
+    height: 74
+    abSize: 9932
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u767D\u8272.png"
+    assetName: "\u767D\u8272"
+    localFileId: 2800000
+    rtMem: 330188
+    warningFlag: 0
+    refs:
+    - 2
+    - res
+    maxPlaceholderSize: 196640
+    width: 246
+    height: 252
+    abSize: 9697
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Textures/0605/Homepage/tent.png
+    assetName: tent
+    localFileId: 2800000
+    rtMem: 403916
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 196640
+    width: 319
+    height: 238
+    abSize: 73417
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/SlicedBackground.psd
+    assetName: SlicedBackground
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 309
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/SlicedBackground3.psd
+    assetName: SlicedBackground3
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 585
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/IconResizeVertialOnly.psd
+    assetName: IconResizeVertialOnly
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 413
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/IconError.psd
+    assetName: IconError
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 567
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/IconWarning.psd
+    assetName: IconWarning
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 492
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/IconInfo.psd
+    assetName: IconInfo
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 550
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/IconResizeAllDirections.psd
+    assetName: IconResizeAllDirections
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 494
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/SearchIcon.psd
+    assetName: SearchIcon
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 410
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/IconCollapse.psd
+    assetName: IconCollapse
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 654
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/IconHide.psd
+    assetName: IconHide
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 551
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/IconSnapToBottomBg.psd
+    assetName: IconSnapToBottomBg
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 624
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/IconClear.psd
+    assetName: IconClear
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 555
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/IconSnapToBottom.psd
+    assetName: IconSnapToBottom
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 263
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/SlicedBackground2.psd
+    assetName: SlicedBackground2
+    localFileId: 2800000
+    rtMem: 576
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 32
+    height: 32
+    abSize: 106
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Plugins/IngameDebugConsole/Sprites/Unused/IconInfoHighRes.psd
+    assetName: IconInfoHighRes
+    localFileId: 2800000
+    rtMem: 1936
+    warningFlag: 0
+    refs:
+    - 0
+    maxPlaceholderSize: 196640
+    width: 64
+    height: 64
+    abSize: 1602
   mAudios: []
   mMeshes: []
   mAnimations: []
   mSharedSceneAssets: []
-  mScenes: []
+  mScenes:
+  - onDemandDownload: 0
+    assetPath: Assets/Scenes/StartScene.scene
+    assetName: 
+    localFileId: -1
+    rtMem: 0
+    warningFlag: 0
+    refs: []
+  - onDemandDownload: 1
+    assetPath: Assets/Scenes/LoadingScene.scene
+    assetName: 
+    localFileId: -1
+    rtMem: 75517
+    warningFlag: 0
+    refs: []
+  - onDemandDownload: 1
+    assetPath: Assets/Scenes/GameScene.scene
+    assetName: 
+    localFileId: -1
+    rtMem: 353863
+    warningFlag: 0
+    refs: []
+  - onDemandDownload: 0
+    assetPath: Assets/Test/Scene/TeseScene2.scene
+    assetName: 
+    localFileId: -1
+    rtMem: 0
+    warningFlag: 0
+    refs: []
   mConfigCCD:
     useCCD: 0
-    uosSecret: 
-    uosAppid: 
-    bucketUuid: 
-    bucketName: 
-    badgeName: 
+    uosSecret: 90d1fd34248d4f09bc3e91ee24977194
+    uosAppid: e48320ff-4620-4ad7-972f-a4e49500e50b
+    bucketUuid: ecd936fa-2414-4570-bcf4-1ae5caa7e824
+    bucketName: Bucket1
+    badgeName: EndlessDrift
     ttAppid: 
     targetPlatfrom: 

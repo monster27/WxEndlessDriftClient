@@ -13,7 +13,7 @@ public class ZpfTool : Editor
     private const string SERVER_PATH_KEY = "ZpfTool_ServerPath";
 
     // ============================================
-    // 🆕 快速启动工具 - 使用文件存储场景路径
+    // 🆕 场景相关工具 - 使用文件存储场景路径
     // ============================================
 
     // 存储场景路径的文件名
@@ -101,9 +101,9 @@ public class ZpfTool : Editor
     }
 
     /// <summary>
-    /// 快速启动场景（Build Index 0）- 运行结束后切换到GameScene
+    /// 场景相关场景（Build Index 0）- 运行结束后切换到GameScene
     /// </summary>
-    [MenuItem("Tools/快速启动/运行场景0 &~")]
+    [MenuItem("Tools/场景相关/切换到第一个场景", priority = 1)]
     public static void RunScene0()
     {
         Debug.Log("🔵 [RunScene0] 开始执行...");
@@ -117,82 +117,7 @@ public class ZpfTool : Editor
             return;
         }
 
-        RunSceneWithReturn(0);
-    }
-
-    /// <summary>
-    /// 运行场景并在结束后切换到GameScene
-    /// </summary>
-    private static void RunSceneWithReturn(int targetIndex)
-    {
-        EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
-
-        if (targetIndex < 0 || targetIndex >= scenes.Length)
-        {
-            EditorUtility.DisplayDialog("错误", $"场景索引 {targetIndex} 超出范围！", "确定");
-            return;
-        }
-
-        string targetScenePath = scenes[targetIndex].path;
-
-        if (string.IsNullOrEmpty(targetScenePath) || !File.Exists(targetScenePath))
-        {
-            EditorUtility.DisplayDialog("错误", $"场景文件不存在！\n{targetScenePath}", "确定");
-            return;
-        }
-
-        // 🆕 改为保存GameScene路径（而不是当前场景）
-        string gameScenePath = GetGameScenePath();
-
-        if (!string.IsNullOrEmpty(gameScenePath) && File.Exists(gameScenePath))
-        {
-            SaveScenePathToCache(gameScenePath);
-            Debug.Log($"📌 运行结束后将切换到: {Path.GetFileNameWithoutExtension(gameScenePath)}");
-        }
-        else
-        {
-            // 如果找不到GameScene，清除缓存
-            ClearScenePathCache();
-            Debug.Log("⚠️ 未找到GameScene，运行结束后将停留在目标场景。");
-            EditorUtility.DisplayDialog("警告",
-                "未找到GameScene！\n\n" +
-                "请确保Build Settings中包含名为 'GameScene' 的场景。\n" +
-                "运行结束后将停留在当前目标场景。",
-                "确定");
-        }
-
-        // 保存当前场景（如果有修改）
-        if (!EditorApplication.isPlaying && UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().isDirty)
-        {
-            bool save = EditorUtility.DisplayDialog(
-                "保存场景",
-                "当前场景有未保存的修改，是否保存？",
-                "保存并运行",
-                "不保存并运行"
-            );
-
-            if (save)
-            {
-                UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
-            }
-        }
-
-        string targetName = Path.GetFileNameWithoutExtension(targetScenePath);
-        Debug.Log($"🎮 正在启动场景: {targetName} (Build Index: {targetIndex})");
-
-        // 如果是运行状态，先停止
-        if (EditorApplication.isPlaying)
-        {
-            EditorApplication.isPlaying = false;
-            EditorApplication.delayCall += () =>
-            {
-                DoRunSceneWithReturn(targetScenePath);
-            };
-        }
-        else
-        {
-            DoRunSceneWithReturn(targetScenePath);
-        }
+        UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scenes[0].path);
     }
 
     /// <summary>
@@ -225,23 +150,6 @@ public class ZpfTool : Editor
         return "";
     }
 
-    /// <summary>
-    /// 执行运行场景并注册返回回调
-    /// </summary>
-    private static void DoRunSceneWithReturn(string targetScenePath)
-    {
-        // 打开目标场景
-        UnityEditor.SceneManagement.EditorSceneManager.OpenScene(targetScenePath);
-
-        // 注册编辑器更新回调，检测Play模式结束
-        EditorApplication.update -= CheckPlayModeEnd;
-        EditorApplication.update += CheckPlayModeEnd;
-
-        // 进入Play模式
-        EditorApplication.isPlaying = true;
-
-        Debug.Log("✅ 场景已启动！按 Stop 按钮停止运行后将自动切换到GameScene。");
-    }
 
     /// <summary>
     /// 检测Play模式是否结束，结束后切换到GameScene
@@ -278,7 +186,7 @@ public class ZpfTool : Editor
     /// <summary>
     /// 🆕 手动切换到GameScene按钮
     /// </summary>
-    [MenuItem("Tools/快速启动/切换到GameScene")]
+    [MenuItem("Tools/场景相关/切换到GameScene")]
     public static void SwitchToGameScene()
     {
         string gameScenePath = GetGameScenePath();
@@ -288,7 +196,7 @@ public class ZpfTool : Editor
             Debug.Log($"📌 手动切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}");
             UnityEditor.SceneManagement.EditorSceneManager.OpenScene(gameScenePath);
             Debug.Log($"✅ 已切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}");
-            EditorUtility.DisplayDialog("切换成功", $"已切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}", "确定");
+            //EditorUtility.DisplayDialog("切换成功", $"已切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}", "确定");
         }
         else
         {
@@ -298,17 +206,6 @@ public class ZpfTool : Editor
                 "请确保场景文件名为 'GameScene' 或已添加到Build Settings中。",
                 "确定");
         }
-    }
-
-    /// <summary>
-    /// 清除场景缓存（手动清理）
-    /// </summary>
-    [MenuItem("Tools/快速启动/清除场景缓存")]
-    public static void ClearSceneCache()
-    {
-        ClearScenePathCache();
-        Debug.Log("✅ 场景缓存已清除");
-        EditorUtility.DisplayDialog("清除完成", "场景缓存已清除！", "确定");
     }
 
     // ============================================

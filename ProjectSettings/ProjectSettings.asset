@@ -50,7 +50,7 @@ PlayerSettings:
   defaultScreenWidthWeb: 960
   defaultScreenHeightWeb: 600
   m_StereoRenderingPath: 0
-  m_ActiveColorSpace: 1
+  m_ActiveColorSpace: 0
   unsupportedMSAAFallback: 0
   m_SpriteBatchVertexThreshold: 300
   m_MTRendering: 1
@@ -99,13 +99,13 @@ PlayerSettings:
   hideHomeButton: 0
   submitAnalytics: 1
   usePlayerLog: 1
-  autoStreaming: 0
-  useFontStreaming: 0
+  autoStreaming: 1
+  useFontStreaming: 1
   cacheASTextureAB: 0
   maxCacheSize: 0
   maxConcurrentLoad: 0
-  autoStreamingId: 
-  instantGameAppId: 
+  autoStreamingId: /v1/buckets/ecd936fa-2414-4570-bcf4-1ae5caa7e824/release_by_badge/EndlessDrift/content
+  instantGameAppId: e48320ff-4620-4ad7-972f-a4e49500e50b
   dedicatedServerOptimizations: 0
   bakeCollisionMeshes: 0
   forceSingleInstance: 0
@@ -801,11 +801,20 @@ PlayerSettings:
   webGLMemoryGeometricGrowthStep: 0.2
   webGLMemoryGeometricGrowthCap: 96
   webGLPowerPreference: 2
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Android: UNITY_UOS_SECURITY
+    HMIAndroid: UNITY_UOS_SECURITY
+    OpenHarmony: UNITY_UOS_SECURITY
+    Server: UNITY_UOS_SECURITY
+    Standalone: UNITY_UOS_SECURITY
+    WebGL: UNITY_UOS_SECURITY
+    WeixinMiniGame: UNITY_UOS_SECURITY
+    iPhone: UNITY_UOS_SECURITY
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
     Android: 1
+    WeixinMiniGame: 1
   il2cppCompilerConfiguration:
     Android: 0
   il2cppCodeGeneration:
@@ -942,7 +951,7 @@ PlayerSettings:
   OpenHarmonyUseCustomKeystore: 0
   OpenHarmonyUseCustomModuleJsonFive: 0
   OpenHarmonyUseCustomTuanjiePlayerAbility: 0
-  apiCompatibilityLevel: 6
+  apiCompatibilityLevel: 3
   weixinMiniGameMemorySize: 32
   weixinMiniGameExceptionSupport: 1
   weixinMiniGameExceptionOnlyEnableForUserCodes: 0
@@ -954,7 +963,7 @@ PlayerSettings:
     -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s TOTAL_MEMORY=256MB -s EXPORTED_RUNTIME_METHODS=''["ccall","cwrap","stackTrace","addRunDependency","removeRunDependency","FS_createPath","FS_createDataFile","stackTrace","writeStackCookie","checkStackCookie","lengthBytesUTF8","stringToUTF8"]''
     --profiling-funcs '
   weixinMiniGameModulesDirectory: 
-  weixinMiniGameTemplate: APPLICATION:Default
+  weixinMiniGameTemplate: PATH:E:\TuanjieProject\WxEndlessDriftClient\Library\PackageCache\com.qq.weixin.minigame@ed4ad28f43\WebGLTemplates\WXTemplate2022TJ
   weixinMiniGameAnalyzeBuildSize: 0
   weixinMiniGameUseEmbeddedResources: 0
   weixinMiniGameCompressionFormat: 2
@@ -975,7 +984,7 @@ PlayerSettings:
   weixinMiniGameInjectStrippedMethodLogger: 0
   weixinMiniGameEnableDotNetWasmExceptionHandling: 1
   weixinMiniGamePreserveEventDelegate: 0
-  activeSubplatform: 0
+  activeSubplatform: 1
   serializedFileTypeTreeMemoryOptimization: 0
   activeHtmlChannel: -1
   stripBuiltinResources: 0

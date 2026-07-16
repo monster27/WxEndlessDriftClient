@@ -13,17 +13,17 @@ MonoBehaviour:
   m_Name: MiniGameConfig
   m_EditorClassIdentifier: 
   ProjectConf:
-    projectName: 
-    Appid: 
-    CDN: 
+    projectName: "\u65E0\u5C3D\u6F02\u6D41"
+    Appid: wxcb84fd0603979214
+    CDN: https://a.unity.cn/client_api/v1/buckets/ecd936fa-2414-4570-bcf4-1ae5caa7e824/release_by_badge/EndlessDrift/content
     assetLoadType: 0
     compressDataPackage: 0
     VideoUrl: 
-    relativeDST: 
-    DST: 
+    relativeDST: Build\wx\Test
+    DST: E:/TuanjieProject/WxEndlessDriftClient/Build/wx/Test
     StreamCDN: 
     bundleHashLength: 32
-    bundlePathIdentifier: StreamingAssets;
+    bundlePathIdentifier: StreamingAssets;AS;CUS/CustomAB;
     bundleExcludeExtensions: json;
     AssetsUrl: 
     MemorySize: 256
@@ -31,7 +31,7 @@ MonoBehaviour:
     preloadFiles: 
     Orientation: 0
     bgImageSrc: Assets/WX-WASM-SDK-V2/Runtime/wechat-default/images/background.jpg
-    dataFileSubPrefix: 
+    dataFileSubPrefix: CUS
     maxStorage: 200
     defaultReleaseSize: 31457280
     texturesHashLength: 8
@@ -53,13 +53,13 @@ MonoBehaviour:
     ScriptOnly: 0
     Il2CppOptimizeSize: 1
     profilingFuncs: 1
-    Webgl2: 0
+    Webgl2: 1
     fbslim: 0
     DeleteStreamingAssets: 1
     ProfilingMemory: 0
     CleanBuild: 0
     CustomNodePath: 
-    autoAdaptScreen: 0
+    autoAdaptScreen: 1
     showMonitorSuggestModal: 1
     enableProfileStats: 0
     enableRenderAnalysis: 0
@@ -70,6 +70,7 @@ MonoBehaviour:
     enableEmscriptenGLX: 0
     brotliMT: 1
     enableWasm2023: 0
+    enableRenderThread: 0
   CompressTexture:
     halfSize: 0
     useDXT5: 0
@@ -100,3 +101,14 @@ MonoBehaviour:
     Geometric_Shapes: 1
     Mathematical_Operators: 1
     CustomUnicode: 
+  MultiPackageMerge:
+    outputPath: 
+    devPluginId: 
+    packageConditions:
+    - condition: config.features?.preferThreads === true && canUseThread
+      packageSuffix: mt
+      packagePath: 
+    defaultPackagePath: 
+    commonDirectories: 
+    commonFiles: 
+    framework: unity

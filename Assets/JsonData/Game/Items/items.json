@@ -1,0 +1,64 @@
+{
+    "itemDataList": [
+        {
+            "id": 1001,
+            "name": "鲫鱼",
+            "itemType": 1,
+            "description": "常见的淡水鱼",
+            "sellPrice": 10,
+            "buyPrice": 15,
+            "categoryId": 1,
+            "iconPath": "fish/carp"
+        },
+        {
+            "id": 1002,
+            "name": "草鱼",
+            "itemType": 1,
+            "description": "大型淡水鱼",
+            "sellPrice": 20,
+            "buyPrice": 30,
+            "categoryId": 1,
+            "iconPath": "fish/grass_carp"
+        },
+        {
+            "id": 2001,
+            "name": "红虫",
+            "itemType": 2,
+            "description": "常用饵料",
+            "sellPrice": 5,
+            "buyPrice": 8,
+            "categoryId": 2,
+            "iconPath": "bait/red_worm"
+        },
+        {
+            "id": 2002,
+            "name": "蚯蚓",
+            "itemType": 2,
+            "description": "万能饵料",
+            "sellPrice": 3,
+            "buyPrice": 5,
+            "categoryId": 2,
+            "iconPath": "bait/earthworm"
+        },
+        {
+            "id": 3001,
+            "name": "小米窝料",
+            "itemType": 3,
+            "description": "打窝用",
+            "sellPrice": 15,
+            "buyPrice": 20,
+            "categoryId": 3,
+            "iconPath": "nest/millet"
+        },
+        {
+            "id": 4001,
+            "name": "鱼竿",
+            "itemType": 4,
+            "description": "基础钓鱼装备",
+            "sellPrice": 100,
+            "buyPrice": 150,
+            "categoryId": 4,
+            "iconPath": "equipment/rod"
+        }
+    ]
+}

@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!28 &2800000
+Texture2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Gold Coin Icon.png-2800000
+  m_ImageContentsHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_ForcedFallbackFormat: 4
+  m_DownscaleFallback: 0
+  m_IsAlphaChannelOptional: 0
+  serializedVersion: 5
+  m_Width: 32
+  m_Height: 27
+  m_CompleteImageSize: 480
+  m_MipsStripped: 0
+  m_WebStreaming: 0
+  m_PriorityLevel: 0
+  m_UploadedMode: 0
+  m_DataStreamData:
+    size: 0
+    path: 
+  m_TextureFormat: 50
+  m_TextureManagerMultiFormatSetting: 
+  m_MipCount: 1
+  m_IsReadable: 0
+  m_IsPreProcessed: 0
+  m_IgnoreMipmapLimit: 0
+  m_MipmapLimitGroupName: 
+  m_StreamingMipmaps: 0
+  m_StreamingMipmapsPriority: 0
+  m_VTOnly: 0
+  m_AlphaIsTransparency: 1
+  m_ImageCount: 1
+  m_TextureDimension: 2
+  m_TextureSettings:
+    serializedVersion: 2
+    m_FilterMode: 0
+    m_Aniso: 0
+    m_MipBias: 0
+    m_WrapU: 1
+    m_WrapV: 1
+    m_WrapW: 0
+  m_LightmapFormat: 6
+  m_ColorSpace: 1
+  m_PlatformBlob: 
+  image data: 480
+  _typelessdata: f144434104c9e7f62689004e00e600096e484a1309808ef889bd3fedf97282002dca0701c026d1906aa7f636da9a41a03e443d03e0cdfff2fd3ebe8c27c602086244f30100c130f70073003000000000fcfdffffffffffff0000000000000000f1b00eeb6b58a2340970a8e3f3fe7c5ee2e8023554adb9cb6203aef6fcf868b07d8898c13b59ce7b19100000a8702800f1044ff282973ff633f612f614f600f65145d38e411276bf7f73ffba7f39de7f52291f3195b000001da59252030002001345ffd7208cdfdfff9d05f07cff760ac2046bf20286ac22c2aca2cc2cc2fea5042998abae6dd2b6d9e528f6fbffefe518014b4ea7e527eb8b37de003740ef00423145cc35cefbba751474dcfb1ddfc151b14443859c00e8194410720608607f08091ef10500180090002e900b67f021e230066b05279b9f09ca01fd42a776885ec833d553d67d190e008429e17f40005d48a665fd5a70fd54e21f58ff0055dff1907e058092324c6268a0006059b0ec048101000000000000dc000000000080fcfdffffffffffff00000000000000003e44d100c00d0000000000003000f0010291310d03bb3c1a958d0174a275f2273e443d03c00d40001000040001c64e686f800000009200000000000000000080fcfdffffffffffff0000000000000000
+  m_StreamData:
+    serializedVersion: 2
+    offset: 0
+    size: 0
+    path: 
+  m_OriginalWidth: 0
+  m_OriginalHeight: 0
+  m_OriginalAssetGuid: 00000000000000000000000000000000

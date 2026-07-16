@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5f1c0254cc6f415396fab55e2b1a880, type: 3}
+  m_Name: UOSEnvironments
+  m_EditorClassIdentifier: 
+  environments:
+  - environmentName: WxEndlessDriftDemo
+    appID: e48320ff-4620-4ad7-972f-a4e49500e50b
+    appSecret: 40a159b95aca4033a06d184695c03951
+    appServiceSecret: 90d1fd34248d4f09bc3e91ee24977194
+    roomProfileUUID: 
+    matchmakingConfigID: 
+    configPairs: []
+  selectedAppID: e48320ff-4620-4ad7-972f-a4e49500e50b

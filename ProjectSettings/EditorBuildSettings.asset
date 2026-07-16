@@ -18,7 +18,7 @@ EditorBuildSettings:
     path: Assets/Test/Scene/TeseScene2.scene
     guid: 568f9e22e42996442aae5bc32d15a11f
   m_BuildProfiles:
-  - enabled: 0
+  - enabled: 1
     path: Assets/Settings/Build Profiles/New WeChat Profile.asset
     guid: 1038cd18bc7cfb845bcd6680fcc86baf
   m_configObjects: {}

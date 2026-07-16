@@ -8,6 +8,7 @@ using System.Linq;
 
 public class ItemDataEditor : EditorWindow
 {
+    private Dictionary<string, int> groupPageIndex = new Dictionary<string, int>(); // 新增：存储每个组的当前页码
     private string inputPath = "JsonData/Game/Items/items";
     private List<ItemData> items = new List<ItemData>();
     private int selectedIndex = -1;
@@ -92,57 +93,108 @@ public class ItemDataEditor : EditorWindow
         GUI.backgroundColor = Color.white;
         EditorGUILayout.EndHorizontal();
 
-        if (isExpanded)
+        if (isExpanded && groupItems.Count > 0)
         {
             EditorGUI.indentLevel++;
 
-            if (groupItems.Count > 0)
+            // 固定表头
+            EditorGUILayout.BeginHorizontal("box");
+            DrawResizableColumn("ID", ref col1);
+            DrawResizableColumn("名称", ref col2);
+            DrawResizableColumn("类型", ref col3);
+            DrawResizableColumn("描述", ref col4);
+            DrawResizableColumn("出售价", ref col5);
+            DrawResizableColumn("购买价", ref col6);
+            DrawResizableColumn("所属ID", ref col7);
+            EditorGUILayout.LabelField("操作", GUILayout.Width(50));
+            EditorGUILayout.EndHorizontal();
+
+            // 创建滚动视图 - 每次显示5条
+            int itemsPerPage = 5;
+            int totalPages = Mathf.CeilToInt((float)groupItems.Count / itemsPerPage);
+
+            // 使用静态变量或成员变量来存储当前页码（需要在类中添加）
+            // 这里使用一个字典来存储每个组的当前页码
+            if (!groupPageIndex.ContainsKey(title))
             {
-                EditorGUILayout.BeginHorizontal("box");
-                DrawResizableColumn("ID", ref col1);
-                DrawResizableColumn("名称", ref col2);
-                DrawResizableColumn("类型", ref col3);
-                DrawResizableColumn("描述", ref col4);
-                DrawResizableColumn("出售价", ref col5);
-                DrawResizableColumn("购买价", ref col6);
-                DrawResizableColumn("所属ID", ref col7);
-                EditorGUILayout.LabelField("操作", GUILayout.Width(50));
-                EditorGUILayout.EndHorizontal();
-
-                for (int i = 0; i < groupItems.Count; i++)
-                {
-                    ItemData item = groupItems[i];
-                    int originalIndex = items.IndexOf(item);
-
-                    if (selectedIndex == originalIndex)
-                        GUI.backgroundColor = Color.cyan;
-                    else if (i % 2 == 0)
-                        GUI.backgroundColor = new Color(0.95f, 0.95f, 0.95f, 1f);
-                    else
-                        GUI.backgroundColor = new Color(0.85f, 0.85f, 0.85f, 1f);
-
-                    EditorGUILayout.BeginHorizontal("box");
-
-                    EditorGUILayout.LabelField(item.id.ToString(), GUILayout.Width(col1));
-                    EditorGUILayout.LabelField(item.name, GUILayout.Width(col2));
-                    EditorGUILayout.LabelField(GetItemTypeName(item.itemType), GUILayout.Width(col3));
-                    EditorGUILayout.LabelField(item.description.Length > 25 ? item.description.Substring(0, 25) + "..." : item.description, GUILayout.Width(col4));
-                    EditorGUILayout.LabelField(item.sellPrice.ToString(), GUILayout.Width(col5));
-                    EditorGUILayout.LabelField(item.buyPrice.ToString(), GUILayout.Width(col6));
-                    EditorGUILayout.LabelField(item.categoryId.ToString(), GUILayout.Width(col7));
-
-                    GUI.backgroundColor = Color.white;
-                    if (GUILayout.Button("编辑", GUILayout.Width(50))) selectedIndex = originalIndex;
-
-                    EditorGUILayout.EndHorizontal();
-                }
+                groupPageIndex[title] = 0;
             }
-            else
+
+            int currentPage = groupPageIndex[title];
+
+            // 计算当前页显示的项
+            int startIndex = currentPage * itemsPerPage;
+            int endIndex = Mathf.Min(startIndex + itemsPerPage, groupItems.Count);
+
+            // 滚动区域
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Height(180)); // 固定高度
+
+            for (int i = startIndex; i < endIndex; i++)
             {
-                EditorGUILayout.LabelField("无数据", EditorStyles.centeredGreyMiniLabel);
+                ItemData item = groupItems[i];
+                int originalIndex = items.IndexOf(item);
+
+                if (selectedIndex == originalIndex)
+                    GUI.backgroundColor = Color.cyan;
+                else if (i % 2 == 0)
+                    GUI.backgroundColor = new Color(0.95f, 0.95f, 0.95f, 1f);
+                else
+                    GUI.backgroundColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+
+                EditorGUILayout.BeginHorizontal("box");
+
+                EditorGUILayout.LabelField(item.id.ToString(), GUILayout.Width(col1));
+                EditorGUILayout.LabelField(item.name, GUILayout.Width(col2));
+                EditorGUILayout.LabelField(GetItemTypeName(item.itemType), GUILayout.Width(col3));
+                EditorGUILayout.LabelField(item.description.Length > 25 ? item.description.Substring(0, 25) + "..." : item.description, GUILayout.Width(col4));
+                EditorGUILayout.LabelField(item.sellPrice.ToString(), GUILayout.Width(col5));
+                EditorGUILayout.LabelField(item.buyPrice.ToString(), GUILayout.Width(col6));
+                EditorGUILayout.LabelField(item.categoryId.ToString(), GUILayout.Width(col7));
+
+                GUI.backgroundColor = Color.white;
+                if (GUILayout.Button("编辑", GUILayout.Width(50))) selectedIndex = originalIndex;
+
+                EditorGUILayout.EndHorizontal();
+            }
+
+            EditorGUILayout.EndScrollView();
+
+            // 分页控制
+            if (totalPages > 1)
+            {
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+
+                // 上一页按钮
+                GUI.enabled = currentPage > 0;
+                if (GUILayout.Button("◀ 上一页", GUILayout.Width(80)))
+                {
+                    groupPageIndex[title]--;
+                    scrollPosition = Vector2.zero; // 重置滚动位置
+                }
+                GUI.enabled = true;
+
+                // 页码显示
+                EditorGUILayout.LabelField($"第 {currentPage + 1} / {totalPages} 页", GUILayout.Width(80));
+
+                // 下一页按钮
+                GUI.enabled = currentPage < totalPages - 1;
+                if (GUILayout.Button("下一页 ▶", GUILayout.Width(80)))
+                {
+                    groupPageIndex[title]++;
+                    scrollPosition = Vector2.zero; // 重置滚动位置
+                }
+                GUI.enabled = true;
+
+                GUILayout.FlexibleSpace();
+                EditorGUILayout.EndHorizontal();
             }
 
             EditorGUI.indentLevel--;
+        }
+        else if (isExpanded && groupItems.Count == 0)
+        {
+            EditorGUILayout.LabelField("无数据", EditorStyles.centeredGreyMiniLabel);
         }
 
         EditorGUILayout.EndVertical();
