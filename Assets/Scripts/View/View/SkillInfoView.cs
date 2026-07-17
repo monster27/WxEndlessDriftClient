@@ -402,10 +402,29 @@ public class SkillInfoView : MonoBehaviour
             Debug.Log($"[SkillInfoView] OnUnlockClick 广告回调执行 - skillId={currentSkillId}, success={success}");
             if (success)
             {
-                CommunicateEvent.Modify("Skill_UnlockByAd", currentSkillId);
-                UpdateDisplay();
-                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"成功获取 {componentName}！");
-                callback?.Invoke("RefreshAllViews", null);
+                if (NetServerManager.Instance != null)
+                {
+                    NetServerManager.Instance.UnlockSkill(currentSkillId, (unlockSuccess) =>
+                    {
+                        if (unlockSuccess)
+                        {
+                            Debug.Log($"[SkillInfoView] 技能解锁成功（广告）: skillId={currentSkillId}");
+                            CommunicateEvent.Modify("Skill_UnlockByAd", currentSkillId);
+                            UpdateDisplay();
+                            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"成功获取 {componentName}！");
+                            callback?.Invoke("RefreshAllViews", null);
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[SkillInfoView] 技能解锁失败（广告）: skillId={currentSkillId}");
+                            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "解锁失败，请重试");
+                        }
+                    });
+                }
+                else
+                {
+                    CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "网络连接失败");
+                }
             }
             else
             {

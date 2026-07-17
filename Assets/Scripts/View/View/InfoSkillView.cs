@@ -318,10 +318,29 @@ public class InfoSkillView : MonoBehaviour
         {
             if (success)
             {
-                CommunicateEvent.Modify("Skill_UnlockByAd", skillId);
-                UpdateSkillList();
-                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"成功获取 {componentName}！");
-                callback?.Invoke("RefreshAllViews", null);
+                if (NetServerManager.Instance != null)
+                {
+                    NetServerManager.Instance.UnlockSkill(skillId, (unlockSuccess) =>
+                    {
+                        if (unlockSuccess)
+                        {
+                            Debug.Log($"[InfoSkillView] 技能解锁成功（广告）: skillId={skillId}");
+                            CommunicateEvent.Modify("Skill_UnlockByAd", skillId);
+                            UpdateSkillList();
+                            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"成功获取 {componentName}！");
+                            callback?.Invoke("RefreshAllViews", null);
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[InfoSkillView] 技能解锁失败（广告）: skillId={skillId}");
+                            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "解锁失败，请重试");
+                        }
+                    });
+                }
+                else
+                {
+                    CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "网络连接失败");
+                }
             }
             else
             {

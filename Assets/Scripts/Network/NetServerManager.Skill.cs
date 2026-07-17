@@ -39,10 +39,14 @@ public partial class NetServerManager
                 {
                     var response = JsonUtility.FromJson<AddItemResponse>(responseText);
                     if (response != null && response.success)
-                    {
-                        Logger.Log($"[NetServerManager] 成功解锁技能 {skillId}");
-                        callback?.Invoke(true);
-                    }
+                {
+                    Logger.Log($"[NetServerManager] 成功解锁技能 {skillId}");
+
+                    equipmentLevelMap[skillId] = 1;
+                    Logger.Log($"[NetServerManager] 设置技能等级缓存: skillId={skillId}, level=1");
+
+                    callback?.Invoke(true);
+                }
                     else
                     {
                         Logger.LogWarning($"[NetServerManager] 解锁技能失败: {response?.message ?? "未知错误"}");
@@ -94,30 +98,35 @@ public partial class NetServerManager
                 {
                     var response = JsonUtility.FromJson<SkillUpgradeResponse>(responseText);
                     if (response != null && response.success)
+                {
+                    Logger.Log($"[NetServerManager] 成功升级技能 {skillId} 到等级 {response.level}");
+
+                    equipmentLevelMap[skillId] = response.level;
+                    Logger.Log($"[NetServerManager] 更新技能等级缓存: skillId={skillId}, level={response.level}");
+
+                    if (response.gold > 0)
                     {
-                        Logger.Log($"[NetServerManager] 成功升级技能 {skillId} 到等级 {newLevel}");
+                        playerGold = response.gold;
+                        Logger.Log($"[NetServerManager] 升级技能后金币: {playerGold}");
 
-                        if (response.gold > 0)
+                        CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, new Dictionary<string, object>
                         {
-                            playerGold = response.gold;
-                            Logger.Log($"[NetServerManager] 升级技能后金币: {playerGold}");
-
-                            CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, new Dictionary<string, object>
-                            {
-                                { "gold", playerGold },
-                                { "add", 0 },
-                                { "reduce", 0 }
-                            });
-                            CommunicateEvent.Modify<int>(CommunicateEvent.EVENT_GOLD_CHANGED, playerGold);
-                        }
-                        else
-                        {
-                            Logger.Log("[NetServerManager] 服务器响应未包含金币，触发同步");
-                            CommunicateEvent.Modify(CommunicateEvent.EVENT_SYNC_GOLD);
-                        }
-
-                        callback?.Invoke(true);
+                            { "gold", playerGold },
+                            { "add", 0 },
+                            { "reduce", 0 }
+                        });
+                        CommunicateEvent.Modify<int>(CommunicateEvent.EVENT_GOLD_CHANGED, playerGold);
                     }
+                    else
+                    {
+                        Logger.Log("[NetServerManager] 服务器响应未包含金币，触发同步");
+                        CommunicateEvent.Modify(CommunicateEvent.EVENT_SYNC_GOLD);
+                    }
+
+                    CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, ((int)EquipmentSlotType.Skill1, skillId));
+
+                    callback?.Invoke(true);
+                }
                     else
                     {
                         Logger.LogWarning($"[NetServerManager] 升级技能失败: {response?.message ?? "未知错误"}");
@@ -143,6 +152,7 @@ public partial class NetServerManager
     {
         public bool success;
         public string message;
+        public int level;
         public int gold;
     }
 }

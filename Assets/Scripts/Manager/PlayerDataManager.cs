@@ -491,25 +491,39 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
     public int FishBagCapacity => fishBagCapacity;
 
-    public int GetTotalFishCount()
+    // ✅ 正确：与服务器保持一致
+    private int GetTotalFishCount()
     {
         int total = 0;
-        if (fishDetailData != null && fishDetailData.Count > 0)
+        if (fishInventory != null)
         {
-            foreach (var kvp in fishDetailData)
-            {
-                total += kvp.Value.Count;
-            }
-        }
-        else if (fishInventory != null)
-        {
+            // fishInventory 已经按鱼ID聚合了数量
             foreach (var kvp in fishInventory)
             {
-                total += kvp.Value;
+                total += kvp.Value;  // ✅ 累加 Quantity
             }
         }
         return total;
     }
+    //public int GetTotalFishCount()
+    //{
+    //    int total = 0;
+    //    if (fishDetailData != null && fishDetailData.Count > 0)
+    //    {
+    //        foreach (var kvp in fishDetailData)
+    //        {
+    //            total += kvp.Value.Count;
+    //        }
+    //    }
+    //    else if (fishInventory != null)
+    //    {
+    //        foreach (var kvp in fishInventory)
+    //        {
+    //            total += kvp.Value;
+    //        }
+    //    }
+    //    return total;
+    //}
 
     public bool IsFishBagFull()
     {

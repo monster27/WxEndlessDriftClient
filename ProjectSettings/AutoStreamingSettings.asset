@@ -83,7 +83,7 @@ AutoStreamingSettings:
     warningFlag: 0
     refs:
     - res
-    maxPlaceholderSize: 196640
+    maxPlaceholderSize: 589856
     width: 168
     height: 204
     abSize: 14018

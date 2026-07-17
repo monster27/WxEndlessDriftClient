@@ -20,7 +20,7 @@ MonoBehaviour:
     compressDataPackage: 0
     VideoUrl: 
     relativeDST: Build\wx\Test
-    DST: E:/TuanjieProject/WxEndlessDriftClient/Build/wx/Test
+    DST: E:\TuanjieProject\WxEndlessDriftClient\Build\wx\Test
     StreamCDN: 
     bundleHashLength: 32
     bundlePathIdentifier: StreamingAssets;AS;CUS/CustomAB;

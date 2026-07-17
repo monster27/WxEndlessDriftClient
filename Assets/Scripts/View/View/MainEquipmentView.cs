@@ -67,6 +67,32 @@ public class MainEquipmentView : MonoBehaviour
         if (skill1Btn != null) skill1Btn.onClick.AddListener(OnSkillClick);
         if (skill2Btn != null) skill2Btn.onClick.AddListener(OnSkillClick);
         if (characterBtn != null) characterBtn.onClick.AddListener(OnCharacterClick);
+
+        BindUnequippedObjClickEvents();
+    }
+
+    private void BindUnequippedObjClickEvents()
+    {
+        AddButtonToObj(fishingRodUnequippedObj, OnFishingRodClick);
+        AddButtonToObj(fishingLineUnequippedObj, OnFishingLineClick);
+        AddButtonToObj(fishingHookUnequippedObj, OnFishingHookClick);
+        AddButtonToObj(skill1UnequippedObj, OnSkillClick);
+        AddButtonToObj(skill2UnequippedObj, OnSkillClick);
+        AddButtonToObj(characterUnequippedObj, OnCharacterClick);
+    }
+
+    private void AddButtonToObj(GameObject obj, UnityEngine.Events.UnityAction onClick)
+    {
+        if (obj == null) return;
+
+        Button btn = obj.GetComponent<Button>();
+        if (btn == null)
+        {
+            btn = obj.AddComponent<Button>();
+        }
+
+        btn.onClick.RemoveAllListeners();
+        btn.onClick.AddListener(onClick);
     }
 
     void OnEnable()
@@ -146,7 +172,7 @@ public class MainEquipmentView : MonoBehaviour
     {
         if (characterLevelText != null)
         {
-            characterLevelText.text = $"等级: {level}";
+            characterLevelText.text = $"{level}";
         }
     }
 
