@@ -289,6 +289,16 @@
             "itemType": 3,
             "categoryId": 91,
             "iconPath": "UI/Icon/TrashIcons/9003"
+        },
+        {
+            "id": 2501,
+            "name": "普通窝料",
+            "description": "基础窝料，增加连续钓鱼模式时间",
+            "sellPrice": -1,
+            "buyPrice": -1,
+            "itemType": 2,
+            "categoryId": 22,
+            "iconPath": "UI/Icon/BaitIcons/2501"
         }
     ]
 }

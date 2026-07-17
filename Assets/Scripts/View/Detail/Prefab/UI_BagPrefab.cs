@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Text;
+using SharedModels;
 
 namespace View.Detail
 {
@@ -127,20 +128,30 @@ namespace View.Detail
                 else if (itemData.categoryId == 22)
                 {
                     // 窝料：使用一个窝料，增加连续模式时间
-                    UseNestBait();
+                    //UseNestBait();
                 }
             }
         }
 
         /// <summary>
-        /// 将饵料装备到鱼饵槽位
+        /// 将饵料装备到鱼饵槽位（如果已装备则卸下）
         /// </summary>
         private void EquipBaitToSlot()
         {
-            CommunicateEvent.Modify<int>(CommunicateEvent.EVENT_EQUIP_BAIT, itemId);
-            Debug.Log($"[UI_BagPrefab] 已发送装备鱼饵请求: {itemData?.name}");
-            isEquipped = true;
-            UpdateDisplay();
+            if (isEquipped)
+            {
+                CommunicateEvent.Modify<EquipmentSlotType>(CommunicateEvent.EVENT_UNEQUIP_BAIT, EquipmentSlotType.Bait);
+                Debug.Log($"[UI_BagPrefab] 已发送卸下鱼饵请求: {itemData?.name}");
+                isEquipped = false;
+                UpdateDisplay();
+            }
+            else
+            {
+                CommunicateEvent.Modify<int>(CommunicateEvent.EVENT_EQUIP_BAIT, itemId);
+                Debug.Log($"[UI_BagPrefab] 已发送装备鱼饵请求: {itemData?.name}");
+                isEquipped = true;
+                UpdateDisplay();
+            }
         }
 
         /// <summary>

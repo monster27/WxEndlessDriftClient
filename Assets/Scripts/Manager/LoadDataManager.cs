@@ -1086,25 +1086,6 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
             itemDataMap[itemData.id] = itemData;
         }
 
-        foreach (BaitData bait in baits)
-        {
-            if (!itemDataMap.ContainsKey(bait.id))
-            {
-                ItemData itemData = new ItemData
-                {
-                    id = bait.id,
-                    name = bait.name,
-                    description = bait.description,
-                    sellPrice = 0,
-                    buyPrice = 0,
-                    itemType = 4,
-                    categoryId = 2,
-                    iconPath = ""
-                };
-                itemDataMap[bait.id] = itemData;
-            }
-        }
-
         return itemDataMap;
     }
 

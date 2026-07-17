@@ -35,6 +35,7 @@ public partial class NetServerManager
         CommunicateEvent.RegisterRequest<int, PlayerNetworkData>(CommunicateEvent.EVENT_GET_PLAYER_DATA, _ => GetPlayerData());
         CommunicateEvent.Register<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_ITEM, OnEquipItem);
         CommunicateEvent.Register<int>(CommunicateEvent.EVENT_EQUIP_BAIT, OnEquipBait);
+        CommunicateEvent.Register<EquipmentSlotType>(CommunicateEvent.EVENT_UNEQUIP_BAIT, OnUnequipBait);
 
         // ========== 人物 ==========
         CommunicateEvent.RegisterRequest<int, bool>(CommunicateEvent.EVENT_IS_CHARACTER_OBTAINED, characterId => IsCharacterObtained(characterId));

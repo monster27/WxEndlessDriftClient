@@ -215,6 +215,20 @@ public partial class NetServerManager
         StartCoroutine(SendEquipRequestWithCallback(slotTypeInt, itemId, onComplete));
     }
 
+    public void UnequipItemWithCallback(EquipmentSlotType slotType, System.Action<bool, string> onComplete)
+    {
+        if (!CheckNetworkConnection())
+        {
+            onComplete?.Invoke(false, "网络未连接");
+            return;
+        }
+
+        Logger.Log($"[NetServerManager] 处理卸下装备请求: slotType={slotType}");
+
+        int slotTypeInt = (int)slotType;
+        StartCoroutine(SendUnequipRequestWithCallback(slotTypeInt, onComplete));
+    }
+
     /// <summary>
     /// 发送装备请求（带回调版本）- 使用服务器返回的完整数据
     /// </summary>
@@ -308,7 +322,7 @@ public partial class NetServerManager
                         }
 
                         // ✅ 6. 触发装备变更事件（背包数据已经更新完成，UI可以正确读取）
-                        CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, (slotType, itemId));
+                        CommunicateEvent.Modify<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, ((EquipmentSlotType)slotType, itemId));
 
                         // ✅ 7. 不再重复触发 Equipment_Refresh（PlayerDataManager.UpdateInventoryFromServer 已经触发了）
                         // 但为了保险，在最后再触发一次（不会造成问题）
@@ -336,6 +350,92 @@ public partial class NetServerManager
         }
     }
 
+    private IEnumerator SendUnequipRequestWithCallback(int slotType, System.Action<bool, string> onComplete)
+    {
+        string url = ServerUrls.Player.UnequipItem(_currentPlayerId, slotType);
+        Logger.Log($"[NetServerManager] 发送卸下装备请求: {url}");
+
+        using (UnityWebRequest request = UnityWebRequest.PostWwwForm(serverUrl + url, ""))
+        {
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    Logger.Log($"[NetServerManager] 卸下装备响应: {json}");
+
+                    var response = JsonUtility.FromJson<EquipResponse>(json);
+
+                    if (response != null && response.success)
+                    {
+                        Logger.Log($"[NetServerManager] 卸下装备成功: slotType={slotType}");
+
+                        if (response.equipment != null)
+                        {
+                            equippedRodId = response.equipment.rodId > 0 ? response.equipment.rodId : 3001;
+                            equippedLineId = response.equipment.lineId > 0 ? response.equipment.lineId : 3101;
+                            equippedHookId = response.equipment.hookId > 0 ? response.equipment.hookId : 3201;
+                            equippedSkill1Id = response.equipment.skill1Id;
+                            equippedSkill2Id = response.equipment.skill2Id;
+                            equippedCharacterId = response.equipment.characterId > 0 ? response.equipment.characterId : 3401;
+                            equippedBaitId = response.equipment.baitId;
+                            characterLevel = response.equipment.characterLevel > 0 ? response.equipment.characterLevel : 1;
+
+                            equippedRodLevel = response.equipment.rodLevel > 0 ? response.equipment.rodLevel : 1;
+                            equippedLineLevel = response.equipment.lineLevel > 0 ? response.equipment.lineLevel : 1;
+                            equippedHookLevel = response.equipment.hookLevel > 0 ? response.equipment.hookLevel : 1;
+                            equippedSkill1Level = response.equipment.skill1Level > 0 ? response.equipment.skill1Level : 1;
+                            equippedSkill2Level = response.equipment.skill2Level > 0 ? response.equipment.skill2Level : 1;
+
+                            Logger.Log($"[NetServerManager] 装备数据已更新: Bait={equippedBaitId}");
+                        }
+
+                        if (response.inventory != null)
+                        {
+                            var inventoryDict = new Dictionary<int, int>();
+                            foreach (var item in response.inventory)
+                            {
+                                inventoryDict[item.key] = item.value;
+                            }
+                            playerInventory = inventoryDict;
+                            Logger.Log($"[NetServerManager] 背包数据已更新: {playerInventory.Count} 个物品");
+
+                            if (PlayerDataManager.Instance != null)
+                            {
+                                PlayerDataManager.Instance.UpdateInventoryFromServer(playerInventory);
+                            }
+                        }
+
+                        CommunicateEvent.Modify<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, ((EquipmentSlotType)slotType, 0));
+                        CommunicateEvent.Modify("Equipment_Refresh");
+
+                        onComplete?.Invoke(true, response.message ?? "卸下成功");
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"[NetServerManager] 卸下装备失败: {response?.message ?? "未知错误"}");
+                        onComplete?.Invoke(false, response?.message ?? "卸下失败");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析卸下装备响应失败: {ex.Message}");
+                    onComplete?.Invoke(false, "解析响应失败");
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 卸下装备请求失败: {request.error}");
+                onComplete?.Invoke(false, request.error);
+            }
+        }
+    }
+
     // ========== 装备操作（旧版，保留兼容） ==========
 
     private void OnEquipItem((EquipmentSlotType slotType, int itemId) data)
@@ -357,13 +457,37 @@ public partial class NetServerManager
 
         Logger.Log($"[NetServerManager] 处理装备鱼饵请求: itemId={itemId}");
 
-        StartCoroutine(SendEquipRequest((int)EquipmentSlotType.Bait, itemId));
+        EquipItemWithCallback(EquipmentSlotType.Bait, itemId, (success, message) =>
+        {
+            if (success)
+            {
+                Logger.Log($"[NetServerManager] 装备鱼饵成功: itemId={itemId}, message={message}");
+            }
+            else
+            {
+                Logger.LogWarning($"[NetServerManager] 装备鱼饵失败: itemId={itemId}, message={message}");
+            }
+        });
+    }
 
-        PlayerDataManager.Instance?.SyncInventoryFromServer();
+    private void OnUnequipBait(EquipmentSlotType slotType)
+    {
+        if (!CheckNetworkConnection())
+            return;
 
-        CommunicateEvent.Modify("Bag_RefreshItems");
+        Logger.Log($"[NetServerManager] 处理卸下鱼饵请求: slotType={slotType}");
 
-        CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, ((int)EquipmentSlotType.Bait, itemId));
+        UnequipItemWithCallback(slotType, (success, message) =>
+        {
+            if (success)
+            {
+                Logger.Log($"[NetServerManager] 卸下鱼饵成功: slotType={slotType}, message={message}");
+            }
+            else
+            {
+                Logger.LogWarning($"[NetServerManager] 卸下鱼饵失败: slotType={slotType}, message={message}");
+            }
+        });
     }
 
     private void UpdateLocalEquippedItem(EquipmentSlotType slotType, int itemId)

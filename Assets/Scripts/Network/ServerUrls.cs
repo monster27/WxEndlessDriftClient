@@ -50,6 +50,7 @@ public static class ServerUrls
         public const string Equipment = "/api/player/equipment";
         public static string EquipmentById(int playerId) => $"{Equipment}/{playerId}";
         public static string EquipItem(int playerId, int slotType, int itemId) => $"{Equipment}/{playerId}/{slotType}/equip/{itemId}";
+        public static string UnequipItem(int playerId, int slotType) => $"{Equipment}/{playerId}/{slotType}/unequip";
 
         public const string Character = "/api/player/character";
         public static string CharacterById(int playerId) => $"{Character}/{playerId}";

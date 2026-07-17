@@ -8,6 +8,9 @@ public static partial class CommunicateEvent
     /// <summary>【客户端向服务器发送请求】装备鱼饵请求</summary>
     public const string EVENT_EQUIP_BAIT = "C2S_EVENT_EQUIP_BAIT";
 
+    /// <summary>【客户端向服务器发送请求】卸下鱼饵请求</summary>
+    public const string EVENT_UNEQUIP_BAIT = "C2S_EVENT_UNEQUIP_BAIT";
+
     /// <summary>【客户端向服务器发送请求】购买商城物品请求</summary>
     public const string EVENT_PURCHASE_MALL_ITEM = "C2S_EVENT_PURCHASE_MALL_ITEM";
 

@@ -70,7 +70,8 @@ namespace View.Detail
         /// </summary>
         private void UpdateBaitEquippedState(int newBaitId)
         {
-            // 遍历所有物品，更新装备状态
+            Debug.Log($"[BagDetail] UpdateBaitEquippedState - newBaitId={newBaitId}");
+            
             foreach (var kvp in itemPrefabs)
             {
                 int itemId = kvp.Key;
@@ -78,9 +79,10 @@ namespace View.Detail
                 
                 foreach (var prefab in kvp.Value)
                 {
-                    if (prefab != null && prefab.gameObject.activeSelf)
+                    if (prefab != null)
                     {
                         prefab.SetEquipped(shouldBeEquipped);
+                        Debug.Log($"[BagDetail] 更新物品装备状态: itemId={itemId}, shouldBeEquipped={shouldBeEquipped}, activeSelf={prefab.gameObject.activeSelf}");
                     }
                 }
             }
@@ -259,15 +261,18 @@ namespace View.Detail
 
         private void HandleItemStacking(int itemId, int totalQuantity, ItemData itemData)
         {
-            // 检查物品是否已装备
             bool isEquipped = IsItemEquipped(itemId);
             
-            // categoryId=1的鱼类不能堆叠，其他可以堆叠（99个）
             int maxStack = itemData.categoryId == 1 ? 1 : 99;
             List<UI_BagPrefab> prefabs = GetOrCreatePrefabList(itemId);
 
             int currentPrefabCount = prefabs.Count;
             int neededPrefabCount = CalculateNeededPrefabs(totalQuantity, maxStack);
+            
+            if (isEquipped && totalQuantity == 0)
+            {
+                neededPrefabCount = 1;
+            }
 
             if (neededPrefabCount > currentPrefabCount)
             {
@@ -289,9 +294,14 @@ namespace View.Detail
                     prefabs[i].gameObject.SetActive(true);
                     remainingQuantity -= stackQuantity;
                 }
+                else if (isEquipped && i == 0)
+                {
+                    prefabs[i].Init(itemId, 0, itemData, isEquipped);
+                    prefabs[i].gameObject.SetActive(true);
+                }
                 else
                 {
-                    prefabs[i].Init(itemId, 0, itemData, false);
+                    prefabs[i].Init(itemId, 0, itemData, isEquipped);
                     prefabs[i].gameObject.SetActive(false);
                     objectPool.Add(prefabs[i]);
                 }
