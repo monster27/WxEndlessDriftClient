@@ -12,7 +12,8 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     public TipView tipView;
     public EquipmentView equipmentView;
     public AdvertisingView advertisingView;
-    public MapView mapView;  // ✅ 新增
+    public MapView mapView;
+    public DialogView dialogView;  // ✅ 新增
 
     public void Init()
     {
@@ -207,6 +208,38 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         if (tipView != null)
         {
             tipView.ShowTip(message);
+        }
+    }
+
+    public void ShowDialog(string message, DialogType type = DialogType.Warning, System.Action onConfirm = null)
+    {
+        if (dialogView != null)
+        {
+            dialogView.Show(message, type, onConfirm);
+        }
+    }
+
+    public void HideDialog()
+    {
+        if (dialogView != null)
+        {
+            dialogView.Hide();
+        }
+    }
+
+    public static void ShowWarningMessage(string message)
+    {
+        if (Instance != null)
+        {
+            Instance.ShowDialog(message, DialogType.Warning);
+        }
+    }
+
+    public static void ShowInfoMessage(string message, System.Action onConfirm = null)
+    {
+        if (Instance != null)
+        {
+            Instance.ShowDialog(message, DialogType.Info, onConfirm);
         }
     }
 

@@ -300,7 +300,7 @@ public class SkillInfoView : MonoBehaviour
         int level = GetSkillLevel();
         if (level >= 10)
         {
-            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "技能已满级！");
+            GameUIManager.ShowWarningMessage("技能已满级！");
             return;
         }
 
@@ -324,6 +324,7 @@ public class SkillInfoView : MonoBehaviour
                     else
                     {
                         Debug.LogWarning($"[SkillInfoView] 技能升级失败");
+                        GameUIManager.ShowWarningMessage("技能升级失败！");
                     }
                 });
             }

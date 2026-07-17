@@ -358,6 +358,22 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             return;
         }
 
+        // ✅ 关键修复：收杆动画播放期间，由 NetServerManager 统一控制动画状态
+        // 避免与 NetServerManager.NotifyPlayReelAnimation() 的回调产生竞争
+        if (NetServerManager.Instance.IsPlayingReelAnimation)
+        {
+            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 正在播放收杆动画，保持当前动画");
+            return;
+        }
+
+        // ✅ 如果当前状态是 Reel 但 IsPlayingReelAnimation 为 false，说明收杆动画已结束
+        // 此时可以安全地切换到 Idle 或 Lazy 动画
+        if (PlayerAniManager.Instance.CurrentPlayerState == PlayerAniManager.PlayerAnimState.Reel)
+        {
+            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 收杆动画已结束，准备切换到目标动画");
+            // 继续执行，让后续逻辑决定播放 Idle 还是 Lazy
+        }
+
         bool isFull = IsFishBagFull();
 
         if (isFull)
@@ -367,12 +383,6 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         }
         else
         {
-            if (NetServerManager.Instance.IsPlayingReelAnimation)
-            {
-                Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 正在播放拉杆动画，保持当前动画");
-                return;
-            }
-
             Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 鱼篓未满，切换到空闲动画");
             NetServerManager.Instance.NotifyPlayIdleAnimation();
         }

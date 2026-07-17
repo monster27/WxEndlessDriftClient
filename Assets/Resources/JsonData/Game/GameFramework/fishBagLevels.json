@@ -1,0 +1,74 @@
+{
+  "fishBagLevels": [
+    {
+      "level": 1,
+      "capacity": 10,
+      "autoSellInterval": 0,
+      "upgradeDescription": "升级到下一等级需100金币",
+      "upgradeCost": 100
+    },
+    {
+      "level": 2,
+      "capacity": 15,
+      "autoSellInterval": 0,
+      "upgradeDescription": "升级到下一等级需200金币",
+      "upgradeCost": 200
+    },
+    {
+      "level": 3,
+      "capacity": 20,
+      "autoSellInterval": 0,
+      "upgradeDescription": "升级到下一等级需350金币",
+      "upgradeCost": 350
+    },
+    {
+      "level": 4,
+      "capacity": 25,
+      "autoSellInterval": 0,
+      "upgradeDescription": "升级到下一等级需500金币",
+      "upgradeCost": 500
+    },
+    {
+      "level": 5,
+      "capacity": 30,
+      "autoSellInterval": 0,
+      "upgradeDescription": "升级到下一等级需750金币",
+      "upgradeCost": 750
+    },
+    {
+      "level": 6,
+      "capacity": 40,
+      "autoSellInterval": 0,
+      "upgradeDescription": "升级到下一等级需1000金币",
+      "upgradeCost": 1000
+    },
+    {
+      "level": 7,
+      "capacity": 50,
+      "autoSellInterval": 0,
+      "upgradeDescription": "升级到下一等级需1500金币",
+      "upgradeCost": 1500
+    },
+    {
+      "level": 8,
+      "capacity": 65,
+      "autoSellInterval": 120,
+      "upgradeDescription": "升级到下一等级需2000金币",
+      "upgradeCost": 2000
+    },
+    {
+      "level": 9,
+      "capacity": 80,
+      "autoSellInterval": 90,
+      "upgradeDescription": "升级到下一等级需3000金币",
+      "upgradeCost": 3000
+    },
+    {
+      "level": 10,
+      "capacity": 100,
+      "autoSellInterval": 60,
+      "upgradeDescription": "已满级",
+      "upgradeCost": 0
+    }
+  ]
+}

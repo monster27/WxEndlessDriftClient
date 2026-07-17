@@ -419,7 +419,8 @@ public class EquipmentView : MonoBehaviour
                 else
                 {
                     Debug.LogWarning($"[EquipmentView] 装备失败: {message}");
-                    GameUIManager.Instance?.ShowTip($"装备失败: {message}");
+                    string failMessage = string.IsNullOrEmpty(message) ? "装备失败！" : message;
+                    GameUIManager.ShowWarningMessage(failMessage);
                 }
             });
         }

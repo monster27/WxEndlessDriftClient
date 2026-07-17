@@ -420,7 +420,7 @@ public class InfoFishEquipView : MonoBehaviour
         // 先检查金币是否足够
         if (currentGold < cost)
         {
-            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "金币不足！");
+            GameUIManager.ShowWarningMessage("金币不足！");
             Debug.LogWarning($"[InfoFishEquipView] 金币不足, 当前: {currentGold}, 需要: {cost}");
             return;
         }
@@ -428,7 +428,7 @@ public class InfoFishEquipView : MonoBehaviour
         // 检查是否已经满级
         if (level >= 10)
         {
-            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "装备已满级！");
+            GameUIManager.ShowWarningMessage("装备已满级！");
             return;
         }
 
@@ -448,6 +448,8 @@ public class InfoFishEquipView : MonoBehaviour
                 else
                 {
                     Debug.LogWarning($"[InfoFishEquipView] 装备升级失败: {message}");
+                    string failMessage = string.IsNullOrEmpty(message) ? "装备升级失败！" : message;
+                    GameUIManager.ShowWarningMessage(failMessage);
                 }
             });
         }
@@ -589,7 +591,8 @@ public class InfoFishEquipView : MonoBehaviour
                 else
                 {
                     Debug.LogWarning($"[InfoFishEquipView] 装备失败: {message}");
-                    GameUIManager.Instance?.ShowTip($"装备失败: {message}");
+                    string failMessage = string.IsNullOrEmpty(message) ? "装备失败！" : message;
+                    GameUIManager.ShowWarningMessage(failMessage);
                 }
             });
         }

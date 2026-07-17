@@ -82,6 +82,8 @@ public partial class NetServerManager
                 {
                     trashStreak = response.trashStreak;
                     StartCoroutine(FetchFishInventoryFromServer());
+                    isFishBagFull = GetTotalFishCount() >= fishBagCapacity;
+                    if (isFishBagFull) NotifyPlayLazyAnimation();
                 }
                 else
                 {
@@ -92,9 +94,6 @@ public partial class NetServerManager
                         StartCoroutine(FetchFishInventoryFromServer());
                     });
                 }
-
-                isFishBagFull = GetTotalFishCount() >= fishBagCapacity;
-                if (isFishBagFull && !isPlayingReelAnimation) NotifyPlayLazyAnimation();
             }
             catch (Exception ex)
             {
@@ -374,7 +373,8 @@ public partial class NetServerManager
             if (pendingCatchInfo != null) { ShowCatchResultFromServer(pendingCatchInfo); pendingCatchInfo = null; }
             StartCoroutine(FetchFishInventoryFromServer());
             NotifySyncInventoryFromServer();
-            if (isFishBagFull || isPaused) NotifyPlayLazyAnimation(); else NotifyPlayIdleAnimation();
+            // ✅ 修复：数据同步完成后由 PlayerDataManager.CheckAndUpdateAnimationState() 决定最终动画
+            // 避免使用旧的 isFishBagFull 值导致动画状态错误
         });
     }
 
@@ -465,7 +465,8 @@ public partial class NetServerManager
             NotifySyncInventoryFromServer();
             if (GameUIManager.Instance?.fishBagView != null && GameUIManager.Instance.fishBagView.gameObject.activeSelf)
                 GameUIManager.Instance.fishBagView.RefreshItems();
-            if (isFishBagFull || isPaused) NotifyPlayLazyAnimation(); else NotifyPlayIdleAnimation();
+            // ✅ 修复：数据同步完成后由 PlayerDataManager.CheckAndUpdateAnimationState() 决定最终动画
+            // 避免使用旧的 isFishBagFull 值导致动画状态错误
         });
     }
 
