@@ -64,6 +64,9 @@ public static class ServerUrls
         public const string FishBag = "/api/player/fish-bag";
         public static string FishBagById(int playerId) => $"{FishBag}/{playerId}";
         public static string SellFish(int playerId) => $"{FishBag}/{playerId}/sell";
+        public static string FishBagLevel(int playerId) => $"{FishBag}/{playerId}/level";
+        public static string FishBagUpgrade(int playerId) => $"{FishBag}/{playerId}/upgrade";
+        public static string FishBagAutoSellTimer(int playerId) => $"{FishBag}/{playerId}/auto-sell-timer";
 
         public const string InventoryAdd = "/api/player/inventory/add";
         public const string CharacterAdd = "/api/player/character/add";

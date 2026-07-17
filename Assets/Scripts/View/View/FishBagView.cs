@@ -19,9 +19,15 @@ public class FishBagView : BagViewBase
     public Button sortByRarityButton;
     public Button sortByPriceButton;
     public Button sortByWeightButton;
+    public Button upgradeButton;
+    public Text autoSellTimerText;
 
     private bool isAllSelected = false;
     private const string EVENT_FISHBAG_SELL = "FishBag_Sell";
+    
+    private int _remainingSeconds = 0;
+    private bool _isAutoSellEnabled = false;
+    private Coroutine _timerCoroutine;
 
     public enum SortType
     {
@@ -88,6 +94,11 @@ public class FishBagView : BagViewBase
         {
             sortByWeightButton.onClick.AddListener(() => OnSortButtonClick(SortType.Weight));
         }
+
+        if (upgradeButton != null)
+        {
+            upgradeButton.onClick.AddListener(OnUpgradeButtonClick);
+        }
     }
 
     private void RegisterEvents()
@@ -129,6 +140,8 @@ public class FishBagView : BagViewBase
         UpdateTotalSellPrice();
 
         CommunicateEvent.Modify(CommunicateEvent.EVENT_SYNC_GOLD);
+        
+        StartAutoSellTimer();
     }
 
     public void OpenFishBag()
@@ -141,6 +154,7 @@ public class FishBagView : BagViewBase
     {
         gameObject.SetActive(false);
         ClearAllSelections();
+        StopAutoSellTimer();
     }
 
     public void InitFishBag()
@@ -447,5 +461,166 @@ public class FishBagView : BagViewBase
         {
             fishDetail.SortFishItems(sortType);
         }
+    }
+
+    private void OnUpgradeButtonClick()
+    {
+        Debug.Log("[FishBagView] 点击升级按钮");
+        
+        var netManager = NetServerManager.Instance;
+        if (netManager == null)
+        {
+            Debug.LogError("[FishBagView] NetServerManager.Instance 为空");
+            return;
+        }
+
+        netManager.FetchFishBagLevel(data =>
+        {
+            if (data == null)
+            {
+                Debug.LogError("[FishBagView] 获取鱼篓等级数据失败");
+                ShowTip("获取鱼篓等级失败");
+                return;
+            }
+
+            if (!data.canUpgrade)
+            {
+                ShowTip("鱼篓已达到最高等级");
+                return;
+            }
+
+            ShowUpgradeDialog(data.upgradeDescription);
+        });
+    }
+
+    private void ShowUpgradeDialog(string description)
+    {
+        GameUIManager.ShowInfoMessage(description, OnConfirmUpgrade);
+    }
+
+    private void OnConfirmUpgrade()
+    {
+        Debug.Log("[FishBagView] 确认升级鱼篓");
+        
+        var netManager = NetServerManager.Instance;
+        if (netManager == null)
+        {
+            Debug.LogError("[FishBagView] NetServerManager.Instance 为空");
+            return;
+        }
+
+        netManager.UpgradeFishBag((success, message) =>
+        {
+            if (success)
+            {
+                ShowTip(message);
+                RefreshItems();
+                
+                bool isFishBagFull = CommunicateEvent.Request<int, bool>("IsFishBagFull", 0);
+                if (!isFishBagFull)
+                {
+                    ShowTip("鱼篓有空位了，可以继续钓鱼！");
+                    CommunicateEvent.Modify("FishBagUpgradeSuccess");
+                }
+            }
+            else
+            {
+                ShowTip("升级失败: " + message);
+            }
+        });
+    }
+
+    private void ShowTip(string message)
+    {
+        CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, message);
+    }
+
+    private void StartAutoSellTimer()
+    {
+        StopAutoSellTimer();
+        
+        var netManager = NetServerManager.Instance;
+        if (netManager == null)
+        {
+            Debug.LogError("[FishBagView] NetServerManager.Instance 为空");
+            return;
+        }
+
+        netManager.FetchAutoSellTimer(data =>
+        {
+            if (data != null)
+            {
+                _remainingSeconds = data.remainingSeconds;
+                _isAutoSellEnabled = data.isEnabled;
+                UpdateTimerDisplay();
+                
+                if (_isAutoSellEnabled && _remainingSeconds > 0)
+                {
+                    _timerCoroutine = StartCoroutine(AutoSellTimerCoroutine());
+                }
+                else if (_isAutoSellEnabled)
+                {
+                    UpdateTimerDisplay();
+                }
+            }
+        });
+    }
+
+    private void StopAutoSellTimer()
+    {
+        if (_timerCoroutine != null)
+        {
+            StopCoroutine(_timerCoroutine);
+            _timerCoroutine = null;
+        }
+        _remainingSeconds = 0;
+        _isAutoSellEnabled = false;
+        UpdateTimerDisplay();
+    }
+
+    private IEnumerator AutoSellTimerCoroutine()
+    {
+        while (_isAutoSellEnabled && _remainingSeconds > 0)
+        {
+            yield return new WaitForSeconds(1f);
+            _remainingSeconds--;
+            UpdateTimerDisplay();
+            
+            if (_remainingSeconds <= 0)
+            {
+                break;
+            }
+        }
+        
+        if (_remainingSeconds <= 0 && _isAutoSellEnabled)
+        {
+            RefreshItems();
+            StartAutoSellTimer();
+        }
+    }
+
+    private void UpdateTimerDisplay()
+    {
+        if (autoSellTimerText != null)
+        {
+            if (_isAutoSellEnabled)
+            {
+                autoSellTimerText.text = FormatTime(_remainingSeconds);
+                autoSellTimerText.gameObject.SetActive(true);
+            }
+            else
+            {
+                autoSellTimerText.text = "00:00:00";
+                autoSellTimerText.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private string FormatTime(int seconds)
+    {
+        int hours = seconds / 3600;
+        int minutes = (seconds % 3600) / 60;
+        int secs = seconds % 60;
+        return $"{hours:00}:{minutes:00}:{secs:00}";
     }
 }

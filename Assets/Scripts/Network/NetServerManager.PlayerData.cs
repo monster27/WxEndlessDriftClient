@@ -773,8 +773,114 @@ public partial class NetServerManager
     }
     [Serializable] private class GoldResponse { public int gold; }
     [Serializable] private class CapacityResponse { public int capacity; }
+    [Serializable] public class FishBagLevelResponse 
+    { 
+        public int level; 
+        public int capacity; 
+        public int autoSellInterval; 
+        public string upgradeDescription; 
+        public int upgradeCost; 
+        public bool canUpgrade; 
+    }
+    [Serializable] public class FishBagUpgradeResponse 
+    { 
+        public bool success; 
+        public int level; 
+        public int capacity; 
+        public string message; 
+    }
+    [Serializable] public class AutoSellTimerResponse 
+    { 
+        public int remainingSeconds; 
+        public bool isEnabled; 
+    }
 
     private Dictionary<int, List<FishDetailData>> fishDetailData = new Dictionary<int, List<FishDetailData>>();
 
     public Dictionary<int, List<FishDetailData>> GetFishDetailData() => fishDetailData;
+
+    public void FetchFishBagLevel(Action<FishBagLevelResponse> onSuccess = null)
+    {
+        StartCoroutine(FetchFishBagLevelCoroutine(onSuccess));
+    }
+
+    private IEnumerator FetchFishBagLevelCoroutine(Action<FishBagLevelResponse> onSuccess = null)
+    {
+        yield return FetchGetJson<FishBagLevelResponse>(ServerUrls.Player.FishBagLevel(_currentPlayerId), data =>
+        {
+            if (data != null)
+            {
+                Logger.Log($"[NetServerManager] 获取鱼篓等级: Level={data.level}, Capacity={data.capacity}, UpgradeCost={data.upgradeCost}");
+                onSuccess?.Invoke(data);
+            }
+        }, "鱼篓等级");
+    }
+
+    public void UpgradeFishBag(Action<bool, string> onComplete = null)
+    {
+        StartCoroutine(UpgradeFishBagCoroutine(onComplete));
+    }
+
+    private IEnumerator UpgradeFishBagCoroutine(Action<bool, string> onComplete = null)
+    {
+        bool upgradeSuccess = false;
+        string upgradeMessage = "";
+        int newCapacity = fishBagCapacity;
+        
+        yield return FetchPostJson(ServerUrls.Player.FishBagUpgrade(_currentPlayerId), "{}", responseText =>
+        {
+            try
+            {
+                var resp = JsonUtility.FromJson<FishBagUpgradeResponse>(responseText);
+                if (resp != null)
+                {
+                    Logger.Log($"[NetServerManager] 鱼篓升级结果: success={resp.success}, message={resp.message}");
+                    upgradeSuccess = resp.success;
+                    upgradeMessage = resp.message;
+                    if (resp.success && resp.capacity > 0)
+                    {
+                        newCapacity = resp.capacity;
+                    }
+                }
+                else
+                {
+                    upgradeSuccess = false;
+                    upgradeMessage = "解析升级结果失败";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[NetServerManager] 解析鱼篓升级结果失败: {ex.Message}");
+                upgradeSuccess = false;
+                upgradeMessage = "解析升级结果失败";
+            }
+        }, "鱼篓升级");
+        
+        if (upgradeSuccess)
+        {
+            fishBagCapacity = newCapacity;
+            yield return FetchPlayerFishBag();
+            yield return FetchPlayerGold();
+            isFishBagFull = GetTotalFishCount() >= fishBagCapacity;
+        }
+        
+        onComplete?.Invoke(upgradeSuccess, upgradeMessage);
+    }
+
+    public void FetchAutoSellTimer(Action<AutoSellTimerResponse> onSuccess = null)
+    {
+        StartCoroutine(FetchAutoSellTimerCoroutine(onSuccess));
+    }
+
+    private IEnumerator FetchAutoSellTimerCoroutine(Action<AutoSellTimerResponse> onSuccess = null)
+    {
+        yield return FetchGetJson<AutoSellTimerResponse>(ServerUrls.Player.FishBagAutoSellTimer(_currentPlayerId), data =>
+        {
+            if (data != null)
+            {
+                Logger.Log($"[NetServerManager] 获取自动出售倒计时: remainingSeconds={data.remainingSeconds}, isEnabled={data.isEnabled}");
+                onSuccess?.Invoke(data);
+            }
+        }, "自动出售倒计时");
+    }
 }
