@@ -15,7 +15,7 @@ Texture2D:
   m_IsAlphaChannelOptional: 0
   serializedVersion: 5
   m_Width: 32
-  m_Height: 2
+  m_Height: 4
   m_CompleteImageSize: 96
   m_MipsStripped: 0
   m_WebStreaming: 0
@@ -49,7 +49,7 @@ Texture2D:
   m_ColorSpace: 1
   m_PlatformBlob: 
   image data: 96
-  _typelessdata: 4381c76d5296624388259e2bdc1aff2e022903b87a528a1d3ad31c945a31333351455d212e6596c5b86f35e84356b5e37281a553a6883640f3d03c340f8d5bfb13851b27a1d821ca47eec06fff662ff6610902d4a6e56555079355617ddff781
+  _typelessdata: f2e81a2820604d139f4c40422281210e62691a817109c8e0b3f00a5b509f0d00d284c050833c45013fc0a02f66b03c3443e90c8839141020eaf61c6aa73ffa5f52e916d3cc503e0a0c141005e8eba884084169840801540000000000c0000400
   m_StreamData:
     serializedVersion: 2
     offset: 0

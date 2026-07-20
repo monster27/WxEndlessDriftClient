@@ -10,7 +10,7 @@
             "skillIdAtLevel100": 3302,
             "tenLevelGoldReward": 500,
             "idleColumns": 3,
-            "idleSpeed": 15.0,
+            "idleSpeed": 8.0,
             "reelColumns": 10,
             "reelSpeed": 20.0,
             "lazyColumns": 7,
