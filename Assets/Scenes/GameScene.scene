@@ -41270,6 +41270,7 @@ MonoBehaviour:
   shortIcon: {fileID: 1503608561}
   equipNameText: {fileID: 133613688}
   currentLevelText: {fileID: 1533872904}
+  levelDescText: {fileID: 271216731}
   nextLevelDescText: {fileID: 1098109111}
   levelIcon: {fileID: 218889718}
   upgradeCostValueText: {fileID: 2050784083}

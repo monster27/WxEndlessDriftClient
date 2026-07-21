@@ -216,13 +216,13 @@ public class FishingEquipView : MonoBehaviour
         switch (type)
         {
             case FishingEquipType.Rod:
-                return "钓竿";
+                return LoadDataManager.Instance.GetSubCategoryNameById(31);
             case FishingEquipType.Line:
-                return "钓线";
+                return LoadDataManager.Instance.GetSubCategoryNameById(32);
             case FishingEquipType.Hook:
-                return "鱼钩";
+                return LoadDataManager.Instance.GetSubCategoryNameById(33);
             default:
-                return "装备";
+                return LoadDataManager.Instance.GetCategoryNameByFolderName("C");
         }
     }
 

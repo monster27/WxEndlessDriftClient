@@ -17,6 +17,7 @@ public class InfoFishEquipView : MonoBehaviour
 
     public Text equipNameText;
     public Text currentLevelText;
+    public Text levelDescText;
     public Text nextLevelDescText;
     public Image levelIcon;
 
@@ -259,7 +260,32 @@ public class InfoFishEquipView : MonoBehaviour
 
         if (currentLevelText != null)
         {
-            currentLevelText.text = $"当前等级: {level}";
+            currentLevelText.text = $"{LoadDataManager.Instance.GetEquipmentUIText("currentLevel")}: {level}";
+        }
+
+        if (levelDescText != null)
+        {
+            FishingComponentConfig config = LoadDataManager.Instance.GetComponentById(currentEquipId);
+            if (config != null && config.levelDataList != null)
+            {
+                var currentLevelConfig = config.levelDataList.Find(l => l.level == level);
+                if (currentLevelConfig != null && !string.IsNullOrEmpty(currentLevelConfig.levelDescription))
+                {
+                    levelDescText.text = currentLevelConfig.levelDescription;
+                }
+                else
+                {
+                    levelDescText.text = config.description;
+                }
+            }
+            else if (config != null)
+            {
+                levelDescText.text = config.description;
+            }
+            else
+            {
+                levelDescText.text = string.Empty;
+            }
         }
 
         if (levelIcon != null)
@@ -279,13 +305,22 @@ public class InfoFishEquipView : MonoBehaviour
 
         if (nextLevelDescText != null)
         {
-            if (level >= 10)
+            FishingComponentConfig config = LoadDataManager.Instance.GetComponentById(currentEquipId);
+            if (config != null && config.levelDataList != null && level < config.maxLevel)
             {
-                nextLevelDescText.text = "已满级";
+                var nextLevelConfig = config.levelDataList.Find(l => l.level == level + 1);
+                if (nextLevelConfig != null && !string.IsNullOrEmpty(nextLevelConfig.upgradeDescription))
+                {
+                    nextLevelDescText.text = nextLevelConfig.upgradeDescription;
+                }
+                else
+                {
+                    nextLevelDescText.text = LoadDataManager.Instance.GetEquipmentUIText("nextLevelEffect");
+                }
             }
             else
             {
-                nextLevelDescText.text = "升级后效果提升";
+                nextLevelDescText.text = LoadDataManager.Instance.GetEquipmentUIText("maxLevel");
             }
         }
     }
@@ -390,6 +425,15 @@ public class InfoFishEquipView : MonoBehaviour
 
     private int CalculateUpgradeCost(int currentLevel)
     {
+        FishingComponentConfig config = LoadDataManager.Instance.GetComponentById(currentEquipId);
+        if (config != null && config.levelDataList != null)
+        {
+            var levelConfig = config.levelDataList.Find(l => l.level == currentLevel);
+            if (levelConfig != null)
+            {
+                return levelConfig.upgradeCost;
+            }
+        }
         return currentLevel * 50;
     }
 
@@ -420,15 +464,17 @@ public class InfoFishEquipView : MonoBehaviour
         // 先检查金币是否足够
         if (currentGold < cost)
         {
-            GameUIManager.ShowWarningMessage("金币不足！");
+            GameUIManager.ShowWarningMessage(LoadDataManager.Instance.GetEquipmentUIText("notEnoughGold"));
             Debug.LogWarning($"[InfoFishEquipView] 金币不足, 当前: {currentGold}, 需要: {cost}");
             return;
         }
 
         // 检查是否已经满级
-        if (level >= 10)
+        FishingComponentConfig config = LoadDataManager.Instance.GetComponentById(currentEquipId);
+        int maxLevel = config != null ? config.maxLevel : 10;
+        if (level >= maxLevel)
         {
-            GameUIManager.ShowWarningMessage("装备已满级！");
+            GameUIManager.ShowWarningMessage(LoadDataManager.Instance.GetEquipmentUIText("maxLevel"));
             return;
         }
 

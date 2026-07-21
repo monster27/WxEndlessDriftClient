@@ -466,7 +466,7 @@ public class MainEquipmentView : MonoBehaviour
         {
             if (skill1Name != null)
             {
-                skill1Name.text = "未放置";
+                skill1Name.text = LoadDataManager.Instance.GetEquipmentUIText("notEquipped");
             }
             return;
         }
@@ -522,7 +522,7 @@ public class MainEquipmentView : MonoBehaviour
         {
             if (skill2Name != null)
             {
-                skill2Name.text = "未放置";
+                skill2Name.text = LoadDataManager.Instance.GetEquipmentUIText("notEquipped");
             }
             return;
         }

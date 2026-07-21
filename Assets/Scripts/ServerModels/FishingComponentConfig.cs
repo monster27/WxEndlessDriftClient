@@ -1,8 +1,3 @@
-// ========================================================
-// ServerModels.FishingComponentConfig 已弃用
-// 请使用 SharedModels.FishingComponentConfig
-// ========================================================
-/*
 using System.Collections.Generic;
 
 namespace ServerModels
@@ -16,6 +11,15 @@ namespace ServerModels
         Skill = 4,
         Character = 5,
         Bait = 6
+    }
+
+    [System.Serializable]
+    public class FishingComponentLevel
+    {
+        public int level;
+        public int upgradeCost;
+        public string upgradeDescription;
+        public string levelDescription;
     }
 
     [System.Serializable]
@@ -38,12 +42,20 @@ namespace ServerModels
         public int continuousPauseDuration;
         public int normalPauseDuration;
         public int fishBagCapacity;
+        public int maxLevel;
+        public List<FishingComponentLevel> levels;
     }
 
     [System.Serializable]
     public class FishingComponentListWrapper
     {
         public List<FishingComponentConfig> fishingComponents = new List<FishingComponentConfig>();
+    }
+
+    [System.Serializable]
+    public class FishingComponentConfigArray
+    {
+        public FishingComponentConfig[] items;
     }
 
     public enum FishingComponentObtainStatus
@@ -58,9 +70,6 @@ namespace ServerModels
         Equipped = 1
     }
 
-    /// <summary>
-    /// 玩家装备信息
-    /// </summary>
     [System.Serializable]
     public class PlayerEquipmentInfo
     {
@@ -80,4 +89,3 @@ namespace ServerModels
         public int baitLevel;
     }
 }
-*/

@@ -413,13 +413,14 @@ public class EquipmentView : MonoBehaviour
                     // 只需要刷新 UI 即可
                     RefreshAllViews();
 
-                    string successInfo = componentName != "未知组件" ? $"已装备 {componentName}！" : "已装备装备！";
+                    string equippedText = LoadDataManager.Instance.GetEquipmentUIText("equipped");
+                    string successInfo = componentName != "未知组件" ? $"{equippedText} {componentName}！" : $"{equippedText}！";
                     CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
                 }
                 else
                 {
                     Debug.LogWarning($"[EquipmentView] 装备失败: {message}");
-                    string failMessage = string.IsNullOrEmpty(message) ? "装备失败！" : message;
+                    string failMessage = string.IsNullOrEmpty(message) ? LoadDataManager.Instance.GetEquipmentUIText("equipFailed") : message;
                     GameUIManager.ShowWarningMessage(failMessage);
                 }
             });

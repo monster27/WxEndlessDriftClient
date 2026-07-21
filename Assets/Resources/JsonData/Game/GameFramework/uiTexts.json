@@ -1,0 +1,14 @@
+{
+    "equipment": {
+        "notEquipped": "未放置",
+        "equipped": "已装备",
+        "equipSuccess": "装备成功！",
+        "equipFailed": "装备失败！",
+        "maxLevel": "已满级",
+        "upgradeSuccess": "升级成功！",
+        "upgradeFailed": "升级失败！",
+        "notEnoughGold": "金币不足！",
+        "currentLevel": "当前等级",
+        "nextLevelEffect": "升级后效果提升"
+    }
+}

@@ -20,6 +20,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     private string abilitiesJsonPath = "JsonData/Ability/abilities";
     private string fishingComponentsJsonPath = "JsonData/Ability/fishing_components";
     private string charactersJsonPath = "JsonData/BaseFramework/characters";
+    private string uiTextsJsonPath = "JsonData/Game/GameFramework/uiTexts";
 
     // ==================== 场景数据路径 ====================
     [Header("场景数据路径")]
@@ -40,6 +41,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     public List<AbilityData> abilities = new List<AbilityData>();
     public List<FishingComponentConfig> fishingComponents = new List<FishingComponentConfig>();
     public List<CharacterConfig> characters = new List<CharacterConfig>();
+    public UITextsConfig uiTextsConfig;
 
     // ==================== 场景数据存储 ====================
     public SceneDataWrapper sceneDataWrapper = new SceneDataWrapper();
@@ -98,6 +100,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         LoadFishingComponentsData();
         LoadCharactersData();
         LoadSceneData();  // ✅ 加载场景数据
+        LoadUITextsData();  // ✅ 加载UI文本配置
 
         dataLog.AppendLine("===================================");
         isDataLoaded = true;
@@ -718,6 +721,18 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         return item != null ? item.categoryName : "未知分类";
     }
 
+    public string GetSubCategoryNameById(int subCategoryId)
+    {
+        foreach (var category in bagCategories)
+        {
+            if (category.id == subCategoryId)
+            {
+                return category.categoryName;
+            }
+        }
+        return "未知分类";
+    }
+
     // ==================== 物品查询方法区域 ====================
 
     private void LoadTrashData()
@@ -840,6 +855,48 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         else
         {
             dataLog.AppendLine($"✗ 人物数据: 加载失败，文件不存在");
+        }
+    }
+
+    private void LoadUITextsData()
+    {
+        TextAsset textAsset = Resources.Load<TextAsset>(uiTextsJsonPath);
+        if (textAsset != null)
+        {
+            uiTextsConfig = JsonUtility.FromJson<UITextsConfig>(textAsset.text);
+            if (uiTextsConfig != null)
+            {
+                dataLog.AppendLine($"✓ UI文本配置: 成功加载");
+            }
+            else
+            {
+                dataLog.AppendLine($"✗ UI文本配置: 解析失败");
+            }
+        }
+        else
+        {
+            dataLog.AppendLine($"✗ UI文本配置: 加载失败，文件不存在");
+        }
+    }
+
+    public string GetEquipmentUIText(string key)
+    {
+        if (uiTextsConfig == null || uiTextsConfig.equipment == null)
+            return key;
+
+        switch (key)
+        {
+            case "notEquipped": return uiTextsConfig.equipment.notEquipped;
+            case "equipped": return uiTextsConfig.equipment.equipped;
+            case "equipSuccess": return uiTextsConfig.equipment.equipSuccess;
+            case "equipFailed": return uiTextsConfig.equipment.equipFailed;
+            case "maxLevel": return uiTextsConfig.equipment.maxLevel;
+            case "upgradeSuccess": return uiTextsConfig.equipment.upgradeSuccess;
+            case "upgradeFailed": return uiTextsConfig.equipment.upgradeFailed;
+            case "notEnoughGold": return uiTextsConfig.equipment.notEnoughGold;
+            case "currentLevel": return uiTextsConfig.equipment.currentLevel;
+            case "nextLevelEffect": return uiTextsConfig.equipment.nextLevelEffect;
+            default: return key;
         }
     }
 
