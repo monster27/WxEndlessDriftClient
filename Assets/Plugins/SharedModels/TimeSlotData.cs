@@ -10,7 +10,6 @@ namespace SharedModels
         public string name = string.Empty;
         public string description = string.Empty;
         public int durationMinutes;
-        public int weight;
     }
 
     [Serializable]

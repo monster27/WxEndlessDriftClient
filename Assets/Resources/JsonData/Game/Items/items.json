@@ -292,13 +292,33 @@
         },
         {
             "id": 2501,
-            "name": "普通窝料",
-            "description": "基础窝料，增加连续钓鱼模式时间",
+            "name": "场景一窝料",
+            "description": "适用于场景一的窝料，增加连续钓鱼模式时间",
             "sellPrice": -1,
             "buyPrice": -1,
             "itemType": 2,
             "categoryId": 22,
             "iconPath": "UI/Icon/BaitIcons/2501"
+        },
+        {
+            "id": 2502,
+            "name": "场景二窝料",
+            "description": "适用于场景二的窝料，增加连续钓鱼模式时间",
+            "sellPrice": -1,
+            "buyPrice": -1,
+            "itemType": 2,
+            "categoryId": 22,
+            "iconPath": "UI/Icon/BaitIcons/2502"
+        },
+        {
+            "id": 2503,
+            "name": "场景三窝料",
+            "description": "适用于场景三的窝料，增加连续钓鱼模式时间",
+            "sellPrice": -1,
+            "buyPrice": -1,
+            "itemType": 2,
+            "categoryId": 22,
+            "iconPath": "UI/Icon/BaitIcons/2503"
         }
     ]
 }

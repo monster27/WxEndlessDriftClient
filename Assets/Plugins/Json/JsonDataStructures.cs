@@ -40,7 +40,7 @@ public class ItemListWrapper
 [System.Serializable] public class RarityListWrapper { public List<RarityData> rarities; }
 
 // 时段
-[System.Serializable] public class TimeSlotData { public int id; public string name; public string description; public int durationMinutes; public int weight; }
+[System.Serializable] public class TimeSlotData { public int id; public string name; public string description; public int durationMinutes; }
 [System.Serializable] public class TimeSlotListWrapper { public List<TimeSlotData> timeSlots; }
 
 // 天气
@@ -210,6 +210,11 @@ public class SkillListWrapper { public List<SkillData> skills; }
 // 鱼饵
 [System.Serializable] public class BaitData { public int id; public string name; public string description; public int baseWeight; public int unlockScene; }
 [System.Serializable] public class BaitListWrapper { public BaitData[] baits; }
+
+// 窝料
+[System.Serializable] public class NestBaitData { public int id; public string name; public string description; public int applicableScene; }
+[System.Serializable] public class NestBaitConstants { public int defaultBaitItemId; public float continuousModeAddTime; public float continuousModeMaxTime; }
+[System.Serializable] public class NestBaitListWrapper { public NestBaitConstants constants; public NestBaitData[] nestBaits; }
 
 // 鱼类参数
 [System.Serializable]

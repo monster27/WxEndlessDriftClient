@@ -137,4 +137,29 @@ public partial class NetServerManager
         EnsureWeatherDataLoaded();
         return _timeSlotCache != null ? new List<TimeSlotData>(_timeSlotCache.Values) : new List<TimeSlotData>();
     }
+
+    /// <summary>从服务器获取当前天气状态</summary>
+    public void FetchCurrentWeather()
+    {
+        StartCoroutine(FetchGetJson<WeatherResponse>("/api/scene/weather", (response) =>
+        {
+            if (response != null && response.weatherId > 0)
+            {
+                currentWeatherId = response.weatherId;
+                currentWeatherName = GetWeatherNameById(response.weatherId);
+                Debug.Log($"[NetServerManager] 获取当前天气: ID={currentWeatherId}, 名称={currentWeatherName}");
+                
+                CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_CLIENT_WEATHER_CHANGED, new Dictionary<string, object>
+                {
+                    { "weatherId", currentWeatherId },
+                    { "weatherName", currentWeatherName }
+                });
+            }
+        }));
+    }
+
+    private class WeatherResponse
+    {
+        public int weatherId;
+    }
 }

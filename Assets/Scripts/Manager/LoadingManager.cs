@@ -253,6 +253,7 @@ public class LoadingManager : MonoBehaviour
         Logger.Log("[LoadingManager] NetServerManager 初始化完成");
 
         NetServerManager.Instance?.InitializeEquipmentData();
+        NetServerManager.Instance?.FetchCurrentWeather();
 
         float progress = WEIGHT_LOAD_DATA + WEIGHT_NET_SERVER;
         UpdateProgress(progress);

@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Text;
 using SharedModels;
 using System.Collections;
+using System.Linq;
 
 public class PlayerDataManager : SingletonMono<PlayerDataManager>
 {
@@ -621,9 +622,13 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
         // 更新窝料数量
         int baitCount = 0;
-        if (playerInventory != null && playerInventory.TryGetValue(2501, out int count))
+        if (playerInventory != null)
         {
-            baitCount = count;
+            int currentScene = EnvManager.Instance?.currentSceneId ?? 1;
+            var nestBaits = LoadDataManager.Instance.nestBaitDict.Values;
+            var applicableBait = nestBaits.FirstOrDefault(n => n.applicableScene == currentScene);
+            int baitId = applicableBait?.id ?? 2501;
+            playerInventory.TryGetValue(baitId, out baitCount);
         }
         GameUIManager.Instance.UpdateBaitCountDisplay(baitCount);
 

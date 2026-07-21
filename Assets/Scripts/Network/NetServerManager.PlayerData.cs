@@ -392,7 +392,17 @@ public partial class NetServerManager
             Logger.Log("[NetServerManager] 更新玩家背包: " + playerInventory.Count + " 件物品");
 
             if (playerInventory.ContainsKey(2001)) CommunicateEvent.Modify("BaitDataUpdated");
-            if (playerInventory.ContainsKey(2501)) CommunicateEvent.Modify("BaitCountChanged");
+            
+            int currentScene = EnvManager.Instance?.currentSceneId ?? 1;
+            var nestBaits = LoadDataManager.Instance.nestBaitDict.Values;
+            foreach (var nestBait in nestBaits)
+            {
+                if (playerInventory.ContainsKey(nestBait.id))
+                {
+                    CommunicateEvent.Modify("BaitCountChanged");
+                    break;
+                }
+            }
         }, "背包数据");
     }
 

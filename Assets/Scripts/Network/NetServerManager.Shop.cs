@@ -144,7 +144,8 @@ public partial class NetServerManager
                         CommunicateEvent.Modify("Bag_RefreshItems");
                         CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_ITEM_QUANTITY_CHANGED, (itemId, playerInventory[itemId]));
 
-                        if (itemId == 2501)
+                        bool isNestBait = LoadDataManager.Instance.nestBaitDict.ContainsKey(itemId);
+                        if (isNestBait)
                         {
                             CommunicateEvent.Modify("BaitCountChanged");
                             Logger.Log("[NetServerManager] 发送窝料数量更新事件");

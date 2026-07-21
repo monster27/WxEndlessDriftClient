@@ -32,8 +32,9 @@
                 { "id": 31, "name": "钓竿", "description": "各类钓竿", "startId": 3001, "endId": 3099 },
                 { "id": 32, "name": "钓线", "description": "各类钓线", "startId": 3101, "endId": 3199 },
                 { "id": 33, "name": "钓钩", "description": "各类钓钩", "startId": 3201, "endId": 3299 },
-                { "id": 34, "name": "技能", "description": "技能组合/套装", "startId": 3301, "endId": 3399 },
-                { "id": 35, "name": "人物", "description": "人物角色", "startId": 3401, "endId": 3499 }
+                { "id": 34, "name": "技能一", "description": "技能一", "startId": 3301, "endId": 3399 },
+                { "id": 35, "name": "技能二", "description": "技能二", "startId": 3401, "endId": 3499 },
+                { "id": 36, "name": "人物", "description": "人物角色", "startId": 3501, "endId": 3599 }
             ]
         },
         {
@@ -44,34 +45,9 @@
             "startId": 4001,
             "endId": 4999,
             "subCategories": [
-                { "id": 41, "name": "钓鱼场景装饰", "description": "钓鱼场景内的装饰物", "startId": 4001, "endId": 4299 },
-                { "id": 43, "name": "帐篷内装饰", "description": "二场景帐篷内的装饰", "startId": 4301, "endId": 4499 },
-                { "id": 45, "name": "鱼缸装饰", "description": "鱼缸内的装饰物", "startId": 4501, "endId": 4599 },
-                { "id": 46, "name": "宠物屋装饰", "description": "宠物屋内的装饰", "startId": 4601, "endId": 4699 }
-            ]
-        },
-        {
-            "id": 5,
-            "name": "宠物",
-            "code": "E",
-            "description": "E.宠物",
-            "startId": 5001,
-            "endId": 5999,
-            "subCategories": [
-                { "id": 50, "name": "蛋类", "description": "未孵化的宠物蛋", "startId": 5001, "endId": 5499 },
-                { "id": 55, "name": "已孵化", "description": "可携带的宠物", "startId": 5501, "endId": 5899 }
-            ]
-        },
-        {
-            "id": 6,
-            "name": "特殊",
-            "code": "F",
-            "description": "F.特殊",
-            "startId": 6001,
-            "endId": 6999,
-            "subCategories": [
-                { "id": 61, "name": "进阶材料", "description": "钓具进阶材料", "startId": 6001, "endId": 6299 },
-                { "id": 63, "name": "其他物品", "description": "其他特殊物品", "startId": 6300, "endId": 6999 }
+                { "id": 41, "name": "鱼篓装饰", "description": "鱼篓内的装饰物", "startId": 4001, "endId": 4099 },
+                { "id": 42, "name": "帐篷装饰", "description": "帐篷内的装饰", "startId": 4101, "endId": 4199 },
+                { "id": 43, "name": "提示器装饰", "description": "提示器的装饰", "startId": 4201, "endId": 4299 }
             ]
         },
         {
@@ -87,7 +63,6 @@
         }
     ],
     "notes": [
-        "注意：单个技能（701-799）属于能力/效果，不在装备范围内",
         "预留区域用于后续扩展使用"
     ]
 }

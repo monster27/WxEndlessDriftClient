@@ -42,13 +42,9 @@ public class MainGameView : BagViewBase
     // 菜单当前状态
     private bool isMenuOpen = false;
 
-    public enum DisplayMode
-    {
-        Text,
-        Icon
-    }
-
-    private DisplayMode currentDisplayMode = DisplayMode.Text;
+    // 天气时段渐隐字段
+    private Coroutine fadeCoroutine;
+    private bool isFading = false;  // 是否正在渐隐中
 
     private int currentWeatherId = 301;
     private int currentTimeSlotId = 401;
@@ -114,7 +110,7 @@ public class MainGameView : BagViewBase
 
         SetMenuPanelState(isMenuOpen);
         UpdateBaitCountDisplay();
-        currentDisplayMode = DisplayMode.Text;
+        //currentDisplayMode = DisplayMode.Text;
         UpdateDisplayMode();
 
         CommunicateEvent.Modify("UI_RequestUpdateAllData");
@@ -155,35 +151,39 @@ public class MainGameView : BagViewBase
 
     private void OnWeatherAndTimeBtnClick()
     {
-        SwitchDisplayMode();
+        TimeTextFadeOutText();
     }
 
-    private void SwitchDisplayMode()
+    private void TimeTextFadeOutText()
     {
-        if (currentDisplayMode == DisplayMode.Text)
+        if (fadeCoroutine != null)
         {
-            currentDisplayMode = DisplayMode.Icon;
+            StopCoroutine(fadeCoroutine);
+            gameTimeTxt.color = new Color(gameTimeTxt.color.r, gameTimeTxt.color.g, gameTimeTxt.color.b, 1f);
         }
-        else
-        {
-            currentDisplayMode = DisplayMode.Text;
-        }
-        UpdateDisplayMode();
+        fadeCoroutine = StartCoroutine(FadeOutText());
     }
+
+    private IEnumerator FadeOutText()
+    {
+        Color c = gameTimeTxt.color;
+        for (float t = 0; t < 1; t += Time.deltaTime / 1.5f)
+        {
+            c.a = 1 - t;
+            gameTimeTxt.color = c;
+            yield return null;
+        }
+        c.a = 0;
+        gameTimeTxt.color = c;
+        fadeCoroutine = null;
+    }
+
 
     private void UpdateDisplayMode()
     {
-        if (weatherTxt != null) weatherTxt.gameObject.SetActive(currentDisplayMode == DisplayMode.Text);
-        if (gameTimeTxt != null) gameTimeTxt.gameObject.SetActive(currentDisplayMode == DisplayMode.Text);
-        if (weatherIcon != null) weatherIcon.gameObject.SetActive(currentDisplayMode == DisplayMode.Icon);
-        if (timeIcon != null) timeIcon.gameObject.SetActive(currentDisplayMode == DisplayMode.Icon);
-
-        if (currentDisplayMode == DisplayMode.Icon)
-        {
-            UpdateWeatherIcon(currentWeatherId);
-            UpdateTimeIcon(currentTimeSlotId);
-        }
-        Debug.Log($"[MainGameView] 切换显示模式: {currentDisplayMode}");
+        UpdateWeatherIcon(currentWeatherId);
+        UpdateTimeIcon(currentTimeSlotId);
+        Debug.Log($"[MainGameView] 更新显示");
     }
 
     private void UpdateWeatherIcon(int weatherId)
@@ -208,7 +208,14 @@ public class MainGameView : BagViewBase
         Sprite sprite = Resources.Load<Sprite>(path);
         if (sprite != null)
         {
-            timeIcon.sprite = sprite;
+            if (timeIcon.sprite != sprite)
+            {
+                TimeTextFadeOutText();
+            }
+            else
+            {
+                timeIcon.sprite = sprite;
+            }
         }
         else
         {

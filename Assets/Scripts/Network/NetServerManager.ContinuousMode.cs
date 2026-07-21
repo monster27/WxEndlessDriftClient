@@ -3,6 +3,7 @@ using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 using SharedModels;
 using Logger = Utils.Logger;
 
@@ -14,7 +15,14 @@ public partial class NetServerManager
     private long baitEndTime = 0;
     private bool baitEndTimeIsSeconds = false;
 
-    private int GetCurrentSceneBaitCount() => playerInventory.TryGetValue(2501, out int count) ? count : 0;
+    private int GetCurrentSceneBaitCount()
+    {
+        int currentScene = EnvManager.Instance?.currentSceneId ?? 1;
+        var nestBaits = LoadDataManager.Instance.nestBaitDict.Values;
+        var applicableBait = nestBaits.FirstOrDefault(n => n.applicableScene == currentScene);
+        int baitId = applicableBait?.id ?? 2501;
+        return playerInventory.TryGetValue(baitId, out int count) ? count : 0;
+    }
 
     private IEnumerator FetchGameState()
     {
@@ -42,9 +50,10 @@ public partial class NetServerManager
 
     private IEnumerator AddBaitTimeCoroutine()
     {
+        float addSeconds = LoadDataManager.Instance.nestBaitConstants.continuousModeAddTime;
         string json = NetUtils.SerializeToJson(new Dictionary<string, object>
         {
-            { "playerId", _currentPlayerId }, { "addSeconds", 30 }
+            { "playerId", _currentPlayerId }, { "addSeconds", addSeconds }
         });
 
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);

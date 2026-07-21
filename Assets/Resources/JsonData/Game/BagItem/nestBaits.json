@@ -1,0 +1,27 @@
+{
+  "constants": {
+    "defaultBaitItemId": 2501,
+    "continuousModeAddTime": 30.0,
+    "continuousModeMaxTime": 59940.0
+  },
+  "nestBaits": [
+    {
+      "id": 2501,
+      "name": "场景一窝料",
+      "description": "适用于场景一的窝料",
+      "applicableScene": 101
+    },
+    {
+      "id": 2502,
+      "name": "场景二窝料",
+      "description": "适用于场景二的窝料",
+      "applicableScene": 102
+    },
+    {
+      "id": 2503,
+      "name": "场景三窝料",
+      "description": "适用于场景三的窝料",
+      "applicableScene": 103
+    }
+  ]
+}

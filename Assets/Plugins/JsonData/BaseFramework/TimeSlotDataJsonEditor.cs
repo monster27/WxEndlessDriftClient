@@ -13,7 +13,6 @@ public class TimeSlotDataEditor : BaseDataEditor<TimeSlotData>
     private string editName = "";
     private string editDescription = "";
     private int editDurationMinutes = 7;
-    private int editWeight = 200;
 
     private const string RELATIVE_PATH = "Resources/JsonData/BaseFramework/timeSlots.json";
 
@@ -21,7 +20,6 @@ public class TimeSlotDataEditor : BaseDataEditor<TimeSlotData>
     private float col1 = 60;   // ID
     private float col2 = 100;  // 名称
     private float col3 = 120;  // 时长
-    private float col4 = 80;   // 权重
 
     public TimeSlotDataEditor() : base(RELATIVE_PATH) { }
 
@@ -29,7 +27,7 @@ public class TimeSlotDataEditor : BaseDataEditor<TimeSlotData>
     public static void ShowWindow()
     {
         TimeSlotDataEditor window = GetWindow<TimeSlotDataEditor>("时段数据编辑器");
-        window.minSize = new Vector2(500, 600);
+        window.minSize = new Vector2(450, 600);
         window.Show();
     }
 
@@ -59,18 +57,15 @@ public class TimeSlotDataEditor : BaseDataEditor<TimeSlotData>
     {
         EditorGUILayout.LabelField("时段列表", EditorStyles.boldLabel);
 
-        // ==================== 表头 ====================
         EditorGUILayout.BeginHorizontal("box");
 
         DrawResizableColumn("ID", ref col1, "col1");
         DrawResizableColumn("名称", ref col2, "col2");
         DrawResizableColumn("时长(分钟)", ref col3, "col3");
-        DrawResizableColumn("权重", ref col4, "col4");
 
         EditorGUILayout.LabelField("操作", GUILayout.Width(100));
         EditorGUILayout.EndHorizontal();
 
-        // ==================== 数据行 ====================
         EditorGUILayout.BeginVertical("box");
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Height(250));
 
@@ -91,7 +86,6 @@ public class TimeSlotDataEditor : BaseDataEditor<TimeSlotData>
         EditorGUILayout.LabelField($"[{item.id}]", GUILayout.Width(col1));
         EditorGUILayout.LabelField(item.name, GUILayout.Width(col2));
         EditorGUILayout.LabelField(item.durationMinutes.ToString(), GUILayout.Width(col3));
-        EditorGUILayout.LabelField(item.weight.ToString(), GUILayout.Width(col4));
         GUI.backgroundColor = Color.white;
         GUILayout.FlexibleSpace();
 
@@ -144,11 +138,6 @@ public class TimeSlotDataEditor : BaseDataEditor<TimeSlotData>
             item.durationMinutes = EditorGUILayout.IntField(item.durationMinutes);
             EditorGUILayout.EndHorizontal();
 
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("权重:", GUILayout.Width(40));
-            item.weight = EditorGUILayout.IntField(item.weight);
-            EditorGUILayout.EndHorizontal();
-
             GUILayout.Space(10);
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
@@ -183,8 +172,6 @@ public class TimeSlotDataEditor : BaseDataEditor<TimeSlotData>
         editName = EditorGUILayout.TextField(editName, GUILayout.Width(100));
         EditorGUILayout.LabelField("时长:", GUILayout.Width(30));
         editDurationMinutes = EditorGUILayout.IntField(editDurationMinutes, GUILayout.Width(60));
-        EditorGUILayout.LabelField("权重:", GUILayout.Width(30));
-        editWeight = EditorGUILayout.IntField(editWeight, GUILayout.Width(60));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
@@ -242,7 +229,7 @@ public class TimeSlotDataEditor : BaseDataEditor<TimeSlotData>
             foreach (var item in dataList) if (item.id > maxId) maxId = item.id;
             newId = maxId + 1;
         }
-        dataList.Add(new TimeSlotData { id = newId, name = "新时段", description = "描述", durationMinutes = 7, weight = 200 });
+        dataList.Add(new TimeSlotData { id = newId, name = "新时段", description = "描述", durationMinutes = 7 });
         selectedIndex = dataList.Count - 1;
         SaveData();
         LoadData();
@@ -260,7 +247,7 @@ public class TimeSlotDataEditor : BaseDataEditor<TimeSlotData>
             EditorUtility.DisplayDialog("错误", $"ID {editId} 已存在", "确定");
             return;
         }
-        dataList.Add(new TimeSlotData { id = editId, name = editName, description = editDescription, durationMinutes = editDurationMinutes, weight = editWeight });
+        dataList.Add(new TimeSlotData { id = editId, name = editName, description = editDescription, durationMinutes = editDurationMinutes });
         dataList = dataList.OrderBy(item => item.id).ToList();
         SaveData();
         LoadData();
@@ -275,7 +262,6 @@ public class TimeSlotDataEditor : BaseDataEditor<TimeSlotData>
         editName = "";
         editDescription = "";
         editDurationMinutes = 7;
-        editWeight = 200;
         EditorUtility.DisplayDialog("成功", "新增成功", "确定");
     }
 
@@ -287,7 +273,6 @@ public class TimeSlotDataEditor : BaseDataEditor<TimeSlotData>
         }
         return false;
     }
-
 
 }
 #endif

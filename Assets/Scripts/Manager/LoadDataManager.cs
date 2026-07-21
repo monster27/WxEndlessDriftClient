@@ -9,6 +9,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     private string islandsJsonPath = "JsonData/BaseFramework/islands";
     private string raritiesJsonPath = "JsonData/BaseFramework/rarities";
     private string baitsJsonPath = "JsonData/Game/BagItem/baits";
+    private string nestBaitsJsonPath = "JsonData/Game/BagItem/nestBaits";
     private string timeSlotsJsonPath = "JsonData/BaseFramework/timeSlots";
     private string weathersJsonPath = "JsonData/BaseFramework/weathers";
     private string starRatingsJsonPath = "JsonData/BaseFramework/starRatings";
@@ -30,6 +31,8 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     public List<IslandData> islands = new List<IslandData>();
     public List<RarityData> rarities = new List<RarityData>();
     public List<BaitData> baits = new List<BaitData>();
+    public Dictionary<int, NestBaitData> nestBaitDict = new Dictionary<int, NestBaitData>();
+    public NestBaitConstants nestBaitConstants = new NestBaitConstants();
     public List<TimeSlotData> timeSlots = new List<TimeSlotData>();
     public List<WeatherData> weathers = new List<WeatherData>();
     public List<StarRatingData> starRatings = new List<StarRatingData>();
@@ -88,6 +91,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         LoadIslandData();
         LoadRarityData();
         LoadBaitData();
+        LoadNestBaitData();
         LoadTimeSlotData();
         LoadWeatherData();
         LoadStarRatingData();
@@ -262,6 +266,42 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         }
     }
 
+    private void LoadNestBaitData()
+    {
+        string json = RWJsonData.LoadJsonFromResources(nestBaitsJsonPath);
+        var wrapper = RWJsonData.ParseJson<NestBaitListWrapper>(json);
+        
+        nestBaitDict.Clear();
+        nestBaitConstants = new NestBaitConstants();
+        
+        if (wrapper != null)
+        {
+            if (wrapper.constants != null)
+            {
+                nestBaitConstants = wrapper.constants;
+                dataLog.AppendLine($"✓ 窝料常量: defaultBaitItemId={nestBaitConstants.defaultBaitItemId}, continuousModeAddTime={nestBaitConstants.continuousModeAddTime}, continuousModeMaxTime={nestBaitConstants.continuousModeMaxTime}");
+            }
+            
+            if (wrapper.nestBaits != null)
+            {
+                foreach (var item in wrapper.nestBaits)
+                {
+                    nestBaitDict[item.id] = item;
+                }
+
+                dataLog.AppendLine($"✓ 窝料数据: 成功加载 {nestBaitDict.Count} 个窝料");
+                foreach (var item in nestBaitDict.Values)
+                {
+                    dataLog.AppendLine($"    - ID: {item.id}, 名称: {item.name}, 适用场景: {item.applicableScene}");
+                }
+            }
+        }
+        else
+        {
+            dataLog.AppendLine($"✗ 窝料数据: 加载失败");
+        }
+    }
+
     private void LoadTimeSlotData()
     {
         string json = RWJsonData.LoadJsonFromResources(timeSlotsJsonPath);
@@ -273,7 +313,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
             dataLog.AppendLine($"✓ 时段数据: 成功加载 {timeSlots.Count} 个时段");
             foreach (var item in timeSlots)
             {
-                dataLog.AppendLine($"    - ID: {item.id}, 名称: {item.name}, 时长: {item.durationMinutes}分钟, 权重: {item.weight}");
+                dataLog.AppendLine($"    - ID: {item.id}, 名称: {item.name}, 时长: {item.durationMinutes}分钟");
             }
         }
         else
