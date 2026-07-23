@@ -22,11 +22,7 @@ namespace View.Detail
                 contentTransform = transform.Find("Content");
             }
             
-            // 注册装备状态更新事件
             CommunicateEvent.Register<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipmentChanged);
-            
-            // 【修复】初始化时主动获取当前装备的鱼饵状态
-            InitializeEquippedBaitState();
         }
         
         void OnDestroy()
@@ -53,19 +49,6 @@ namespace View.Detail
         }
         
         /// <summary>
-        /// 初始化时主动获取当前装备的鱼饵状态
-        /// </summary>
-        private void InitializeEquippedBaitState()
-        {
-            // 从服务器获取当前装备的鱼饵ID
-            int equippedBaitId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Bait);
-            Debug.Log($"[BagDetail] 初始化装备状态 - 当前装备的鱼饵ID: {equippedBaitId}");
-            
-            // 更新鱼饵的装备状态显示
-            UpdateBaitEquippedState(equippedBaitId);
-        }
-        
-        /// <summary>
         /// 更新鱼饵的装备状态显示
         /// </summary>
         private void UpdateBaitEquippedState(int newBaitId)
@@ -75,7 +58,16 @@ namespace View.Detail
             foreach (var kvp in itemPrefabs)
             {
                 int itemId = kvp.Key;
-                bool shouldBeEquipped = (itemId == newBaitId);
+                bool shouldBeEquipped = false;
+                
+                if (itemId == 0)
+                {
+                    shouldBeEquipped = (newBaitId == 0);
+                }
+                else
+                {
+                    shouldBeEquipped = (itemId == newBaitId);
+                }
                 
                 foreach (var prefab in kvp.Value)
                 {
@@ -183,7 +175,12 @@ namespace View.Detail
         {
             Debug.Log($"[BagDetail] UpdateItemsBySingleCategory - 分类ID: {categoryId}, 物品数: {inventory?.Count ?? 0}");
 
-            // 检查这个分类下有哪些物品
+            if (categoryId == 21)
+            {
+                UpdateBaitItemsWithNoBaitOption(itemDataMap, inventory);
+                return;
+            }
+
             int count = 0;
             foreach (var item in inventory)
             {
@@ -199,6 +196,50 @@ namespace View.Detail
             Debug.Log($"[BagDetail] 分类 {categoryId} 共有 {count} 种物品");
 
             UpdateItemsBySubCategory(itemDataMap, inventory, new List<int> { categoryId });
+        }
+
+        /// <summary>
+        /// 更新鱼饵物品，添加"无鱼饵"选项
+        /// </summary>
+        private void UpdateBaitItemsWithNoBaitOption(Dictionary<int, ItemData> itemDataMap, Dictionary<int, int> inventory)
+        {
+            currentItemIds.Clear();
+
+            int equippedBaitId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Bait);
+            bool noBaitEquipped = equippedBaitId == 0;
+
+            ItemData noBaitData = new ItemData
+            {
+                id = 0,
+                name = "无鱼饵",
+                iconPath = "UI/Icon/BaitIcons/0",
+                itemType = 2,
+                categoryId = 21
+            };
+
+            currentItemIds.Add(0);
+            HandleItemStacking(0, 1, noBaitData, noBaitEquipped);
+
+            if (inventory != null)
+            {
+                foreach (var item in inventory)
+                {
+                    int itemId = item.Key;
+                    int quantity = item.Value;
+
+                    if (itemDataMap.TryGetValue(itemId, out ItemData itemData) && itemData != null)
+                    {
+                        if (itemData.categoryId == 21)
+                        {
+                            currentItemIds.Add(itemId);
+                            bool isEquipped = (itemId == equippedBaitId);
+                            HandleItemStacking(itemId, quantity, itemData, isEquipped);
+                        }
+                    }
+                }
+            }
+
+            ReturnUnusedToPool();
         }
 
         /// <summary>
@@ -261,8 +302,11 @@ namespace View.Detail
 
         private void HandleItemStacking(int itemId, int totalQuantity, ItemData itemData)
         {
-            bool isEquipped = IsItemEquipped(itemId);
-            
+            HandleItemStacking(itemId, totalQuantity, itemData, IsItemEquipped(itemId));
+        }
+
+        private void HandleItemStacking(int itemId, int totalQuantity, ItemData itemData, bool isEquipped)
+        {
             int maxStack = itemData.categoryId == 1 ? 1 : 99;
             List<UI_BagPrefab> prefabs = GetOrCreatePrefabList(itemId);
 

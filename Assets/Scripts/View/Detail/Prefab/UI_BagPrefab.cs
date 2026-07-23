@@ -64,15 +64,16 @@ namespace View.Detail
 
             if (quantityText != null)
             {
-                // categoryId=1的鱼类不显示数量文本，其他显示
-                if (itemData.categoryId != 1)
+                // 无鱼饵（itemId=0）、鱼类（categoryId=1）不显示数量文本
+                if (itemId == 0 || itemData.categoryId == 1)
                 {
-                    quantityText.text = quantity.ToString();
-                    quantityText.gameObject.SetActive(true);
+                    quantityText.text = "";
+                    quantityText.gameObject.SetActive(false);
                 }
                 else
                 {
-                    quantityText.gameObject.SetActive(false);
+                    quantityText.text = quantity.ToString();
+                    quantityText.gameObject.SetActive(true);
                 }
             }
 
@@ -119,15 +120,12 @@ namespace View.Detail
 
             if (itemData != null && itemData.itemType == 2)
             {
-                // 区分鱼饵（categoryId=21）和窝料（categoryId=22）
                 if (itemData.categoryId == 21)
                 {
-                    // 鱼饵：装备到槽位
                     EquipBaitToSlot();
                 }
                 else if (itemData.categoryId == 22)
                 {
-                    // 窝料：使用一个窝料，增加连续模式时间
                     //UseNestBait();
                 }
             }
@@ -138,7 +136,14 @@ namespace View.Detail
         /// </summary>
         private void EquipBaitToSlot()
         {
-            if (isEquipped)
+            if (itemId == 0)
+            {
+                CommunicateEvent.Modify<EquipmentSlotType>(CommunicateEvent.EVENT_UNEQUIP_BAIT, EquipmentSlotType.Bait);
+                Debug.Log($"[UI_BagPrefab] 已发送卸下鱼饵请求（选择无鱼饵）");
+                isEquipped = true;
+                UpdateDisplay();
+            }
+            else if (isEquipped)
             {
                 CommunicateEvent.Modify<EquipmentSlotType>(CommunicateEvent.EVENT_UNEQUIP_BAIT, EquipmentSlotType.Bait);
                 Debug.Log($"[UI_BagPrefab] 已发送卸下鱼饵请求: {itemData?.name}");
