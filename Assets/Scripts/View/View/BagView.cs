@@ -27,17 +27,17 @@ public class CategoryConfig
     public List<SubCategoryConfig> subCategoryConfigs = new List<SubCategoryConfig>();  // 小分类配置列表
 }
 
-public class BagView : BagViewBase
+public class BagView : BaseView
 {
     public ToggleGroup toggleGroup;
     public List<CategoryConfig> categoryConfigs = new List<CategoryConfig>();
 
     private Dictionary<int, CategoryConfig> categoryIdToConfig = new Dictionary<int, CategoryConfig>();
 
-    public override void Init()
+    public override void BaseViewInit()
     {
         if (isInitialized) return;
-        base.Init();
+        base.BaseViewInit();
         InitCategoryMappings();
         InitToggleListeners();
         isInitialized = true;

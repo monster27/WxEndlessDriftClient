@@ -19,17 +19,17 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     {
         if (mainGameView != null)
         {
-            mainGameView.Init();
+            mainGameView.BaseViewInit();
         }
 
         if (bagView != null)
         {
-            bagView.Init();
+            bagView.BaseViewInit();
         }
 
         if (fishBagView != null)
         {
-            fishBagView.Init();
+            fishBagView.BaseViewInit();
         }
 
         if (equipmentView != null)
@@ -39,7 +39,7 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
 
         if (mapView != null)  // ✅ 新增
         {
-            mapView.Init();
+            mapView.BaseViewInit();
         }
 
         RegisterEvents();
@@ -101,7 +101,7 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     {
         if (bagView != null)
         {
-            bagView.CloseBag();
+            bagView.HideView();
         }
     }
 
@@ -167,7 +167,7 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     {
         if (mapView != null)
         {
-            mapView.CloseBag();
+            mapView.HideView();
         }
     }
 

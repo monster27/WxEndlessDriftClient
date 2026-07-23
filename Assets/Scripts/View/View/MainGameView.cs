@@ -4,9 +4,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using SharedModels;
 
-public class MainGameView : BagViewBase
+public class MainGameView : BaseView
 {
     public TimeStatus timeStatus;
+
+    public Button hidePanelBtn;     // 右侧隐藏按钮（关闭菜单）
+    public Button showPanelBtn;
     public Button bagBtn;
     public Button fishBagBtn;
     public Button mallBtn;
@@ -18,8 +21,8 @@ public class MainGameView : BagViewBase
     // 菜单控制按钮
     public Button menuOpenBtn;      // 打开菜单按钮
     public Button menuCloseBtn;     // 关闭菜单按钮（面板上的关闭按钮）
-    public Button hideRightBtn;     // 右侧隐藏按钮（关闭菜单）
 
+    public GameObject btnPanel;
     public Text weatherTxt;
     public Text gameTimeTxt;
     public Image weatherIcon;
@@ -49,10 +52,10 @@ public class MainGameView : BagViewBase
     private int currentWeatherId = 301;
     private int currentTimeSlotId = 401;
 
-    public override void Init()
+    public override void BaseViewInit()
     {
         if (isInitialized) return;
-        base.Init();
+        base.BaseViewInit();
 
         CommunicateEvent.Register<Vector3>(CommunicateEvent.EVENT_SHOW_BAIT_COUNTDOWN_AT_POSITION, OnShowBaitCountdownAtPosition);
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
@@ -88,9 +91,13 @@ public class MainGameView : BagViewBase
         {
             menuCloseBtn.onClick.AddListener(OnMenuCloseBtnClick);
         }
-        if (hideRightBtn != null)
+        if (hidePanelBtn != null)
         {
-            hideRightBtn.onClick.AddListener(OnHideRightBtnClick);
+            hidePanelBtn.onClick.AddListener(OnHideBtnClick);
+        }
+        if (showPanelBtn != null)
+        {
+            showPanelBtn.onClick.AddListener(OnShowBtnClick);
         }
         if (centerCameraBtn != null)
         {
@@ -112,6 +119,7 @@ public class MainGameView : BagViewBase
         UpdateBaitCountDisplay();
         //currentDisplayMode = DisplayMode.Text;
         UpdateDisplayMode();
+        SetBtnPanelInitialState();
 
         CommunicateEvent.Modify("UI_RequestUpdateAllData");
 
@@ -204,17 +212,24 @@ public class MainGameView : BagViewBase
     private void UpdateTimeIcon(int timeSlotId)
     {
         if (timeIcon == null) return;
+
         string path = $"UI/Icon/TimeIcon/{timeSlotId}";
         Sprite sprite = Resources.Load<Sprite>(path);
+
         if (sprite != null)
         {
+            // ✅ 只有当图标真正发生变化时，才触发渐隐效果
             if (timeIcon.sprite != sprite)
             {
+                // 先更新图标，再触发渐隐
+                timeIcon.sprite = sprite;
                 TimeTextFadeOutText();
+                Debug.Log($"[MainGameView] 时段图标已更新: {timeSlotId}");
             }
             else
             {
-                timeIcon.sprite = sprite;
+                // 图标没变，不做任何操作
+                Debug.Log($"[MainGameView] 时段图标未变化: {timeSlotId}");
             }
         }
         else
@@ -246,11 +261,19 @@ public class MainGameView : BagViewBase
     /// <summary>
     /// 右侧隐藏按钮点击
     /// </summary>
-    private void OnHideRightBtnClick()
+    private void OnHideBtnClick()
     {
-        Debug.Log("[MainGameView] OnHideRightBtnClick - 点击隐藏右侧");
-        isMenuOpen = false;
-        SetMenuPanelState(isMenuOpen);
+        Debug.Log("[MainGameView] OnHideBtnClick - 点击隐藏右侧");
+        btnPanel.SetActive(false);
+        hidePanelBtn.gameObject.SetActive(false);
+        showPanelBtn.gameObject.SetActive(true);
+    }
+    private void OnShowBtnClick()
+    {
+        Debug.Log("[MainGameView] OnShowBtnClick - 点击显示按钮");
+        btnPanel.SetActive(true);
+        hidePanelBtn.gameObject.SetActive(true);
+        showPanelBtn.gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -288,9 +311,9 @@ public class MainGameView : BagViewBase
         {
             menuCloseBtn.gameObject.SetActive(open);
         }
-        if (hideRightBtn != null)
+        if (hidePanelBtn != null)
         {
-            hideRightBtn.gameObject.SetActive(open);
+            hidePanelBtn.gameObject.SetActive(open);
         }
     }
 
@@ -351,7 +374,10 @@ public class MainGameView : BagViewBase
             baitCountdownObj.SetActive(true);
         }
     }
-
+    private void SetBtnPanelInitialState()
+    {
+        OnShowBtnClick();
+    }
     /// <summary>
     /// 更新窝料数量显示
     /// </summary>

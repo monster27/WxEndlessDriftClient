@@ -1,12 +1,12 @@
 fileFormatVersion: 2
-guid: CSxM5iyuWnIy8iunkJyGrc2q8BTO0PsqfdOQXTzRsLa0rALL8GZyDXY=
+guid: DSsZ4H6vVXrOPDPqPO8Fmhqmrbu4c/2H+G4HiomEefUZxjamFRzjBKQ=
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
   serializedVersion: 14
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 1
+    enableMipMap: 0
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -55,7 +55,7 @@ TextureImporter:
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
-  alphaIsTransparency: 0
+  alphaIsTransparency: 1
   spriteTessellationDetail: -1
   textureType: 8
   textureShape: 1
@@ -72,11 +72,11 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 256
+    maxTextureSize: 2048
     maxPlaceholderSize: 32
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -165,20 +165,6 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: Default
-    maxTextureSize: -1
-    maxPlaceholderSize: 32
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 100
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 1
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0

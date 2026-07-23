@@ -9,29 +9,29 @@
         },
         {
             "id": 2002,
-            "name": "面团",
+            "name": "海虫",
             "description": "常见鱼饵，杂食性鱼类都喜欢",
             "baseWeight": 110,
             "unlockScene": 101
         },
         {
             "id": 2003,
-            "name": "幼虫",
-            "description": "活饵，对肉食性鱼类效果显著",
+            "name": "秘制虾饵",
+            "description": "蜜汁虾饵",
             "baseWeight": 120,
             "unlockScene": 102
         },
         {
             "id": 2004,
-            "name": "奶酪",
-            "description": "特殊鱼饵，对特定鱼类有奇效",
+            "name": "小虾米",
+            "description": "小虾米",
             "baseWeight": 130,
             "unlockScene": 103
         },
         {
             "id": 2005,
-            "name": "蚕",
-            "description": "高级鱼饵，吸引大型鱼类",
+            "name": "小鱿鱼",
+            "description": "小鱿鱼",
             "baseWeight": 140,
             "unlockScene": 104
         },

@@ -220,7 +220,27 @@ public partial class NetServerManager
                     Logger.Log($"[NetServerManager] 轮询状态: auto={response.isAutoFishing}, paused={response.isPaused}, nextTime={response.nextFishingTime}, hasCatch={response.lastCatch != null}");
 
                     bool wasPaused = isPaused, wasFull = isFishBagFull;
-                    isAutoFishing = response.isAutoFishing;
+                    
+                    if (!response.isAutoFishing && isAutoFishing)
+                    {
+                        Logger.Log($"[NetServerManager] 警告: 服务器返回 isAutoFishing=false, 但本地状态为 true, 可能是服务器缓存丢失");
+                        Logger.Log($"[NetServerManager] 当前鱼篓状态: {GetTotalFishCount()}/{fishBagCapacity}, 是否已满: {isFishBagFull}");
+                        
+                        if (!isFishBagFull)
+                        {
+                            Logger.Log($"[NetServerManager] 鱼篓未满，保持本地自动钓鱼状态");
+                        }
+                        else
+                        {
+                            Logger.Log($"[NetServerManager] 鱼篓已满，同步服务器状态为 false");
+                            isAutoFishing = false;
+                        }
+                    }
+                    else
+                    {
+                        isAutoFishing = response.isAutoFishing;
+                    }
+                    
                     isPaused = response.isPaused;
                     trashStreak = response.trashStreak;
 
@@ -229,6 +249,7 @@ public partial class NetServerManager
                     ProcessReelAnimationRecovery(response);
                     UpdateAnimationState(wasPaused, wasFull);
                     ProcessWeatherAndTimeSync(response);
+                    ProcessAutoSellFishBagUpdate();
 
                     string display = GetNextFishingDisplay(response);
                     Logger.Log($"[NetServerManager] 钓鱼状态: auto={isAutoFishing}, paused={isPaused}, full={isFishBagFull}, trash={trashStreak}, fish={GetTotalFishCount()}, next={display}");
@@ -420,6 +441,27 @@ public partial class NetServerManager
         {
             Debug.LogWarning($"[NetServerManager] 时段ID无效: {response.timeSlotId}");
         }
+    }
+
+    private void ProcessAutoSellFishBagUpdate()
+    {
+        var fishBagView = GameUIManager.Instance?.fishBagView;
+        if (fishBagView != null && fishBagView.gameObject.activeSelf)
+        {
+            StartCoroutine(FetchAutoSellTimerAndUpdateFishBag());
+        }
+    }
+
+    private IEnumerator FetchAutoSellTimerAndUpdateFishBag()
+    {
+        yield return StartCoroutine(FetchFishInventoryFromServer());
+        yield return null;
+        var fishBagView = GameUIManager.Instance?.fishBagView;
+        if (fishBagView != null && fishBagView.gameObject.activeSelf)
+        {
+            fishBagView.RefreshItems();
+        }
+        GameUIManager.Instance?.UpdateGoldDisplay(playerGold);
     }
 
     private string GetNextFishingDisplay(FishingStatusResponse response)

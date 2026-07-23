@@ -6,15 +6,15 @@ using UnityEngine.UI;
 /// <summary>
 /// 地图视图 - 用于切换场景
 /// </summary>
-public class MapView : BagViewBase
+public class MapView : BaseView
 {
     public Button scene101Btn;  // 切换到场景101按钮
     public Button scene102Btn;  // 切换到场景102按钮
 
-    public override void Init()
+    public override void BaseViewInit()
     {
         if (isInitialized) return;
-        base.Init();
+        base.BaseViewInit();
 
         RegisterEvents();
         BindButtons();
@@ -71,7 +71,7 @@ public class MapView : BagViewBase
         {
             Debug.Log($"[MapView] 场景切换成功: {sceneId}");
             // 可以在这里添加成功提示或关闭地图界面
-            CloseBag(); // 继承自BagViewBase的关闭方法
+            HideView(); // 继承自BagViewBase的关闭方法
         }
         else
         {

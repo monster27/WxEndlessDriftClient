@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using View.Detail;
 using SharedModels;
 
-public class FishBagView : BagViewBase
+public class FishBagView : BaseView
 {
     public View.Detail.FishDetail fishDetail;
     public Text fishCountText;
@@ -39,10 +39,10 @@ public class FishBagView : BagViewBase
 
     private SortType currentSortType = SortType.Rarity;
 
-    public override void Init()
+    public override void BaseViewInit()
     {
         if (isInitialized) return;
-        base.Init();
+        base.BaseViewInit();
         InitializeFishDetail();
         ShowFishDetail();
         RegisterEvents();
@@ -127,6 +127,7 @@ public class FishBagView : BagViewBase
 
     public void OpenBag()
     {
+        Debug.Log("[FishBagView] 打开鱼篓界面");
         RefreshItems();
 
         // 打开时应用当前排序
@@ -537,6 +538,7 @@ public class FishBagView : BagViewBase
 
     private void StartAutoSellTimer()
     {
+        Debug.Log("[FishBagView] 开始自动出售定时器");
         StopAutoSellTimer();
         
         var netManager = NetServerManager.Instance;
@@ -552,16 +554,28 @@ public class FishBagView : BagViewBase
             {
                 _remainingSeconds = data.remainingSeconds;
                 _isAutoSellEnabled = data.isEnabled;
+                Debug.Log($"[FishBagView] 获取自动出售定时器状态: isEnabled={_isAutoSellEnabled}, remainingSeconds={_remainingSeconds}");
                 UpdateTimerDisplay();
                 
                 if (_isAutoSellEnabled && _remainingSeconds > 0)
                 {
+                    Debug.Log($"[FishBagView] 启动自动出售倒计时，剩余时间: {_remainingSeconds}秒");
                     _timerCoroutine = StartCoroutine(AutoSellTimerCoroutine());
                 }
                 else if (_isAutoSellEnabled)
                 {
+                    Debug.Log("[FishBagView] 自动出售已启用，但剩余时间为0，立即刷新数据");
                     UpdateTimerDisplay();
+                    netManager.NotifySyncInventoryFromServer();
                 }
+                else
+                {
+                    Debug.Log("[FishBagView] 自动出售功能未启用");
+                }
+            }
+            else
+            {
+                Debug.LogError("[FishBagView] 获取自动出售定时器状态失败");
             }
         });
     }
@@ -594,6 +608,12 @@ public class FishBagView : BagViewBase
         
         if (_remainingSeconds <= 0 && _isAutoSellEnabled)
         {
+            var netManager = NetServerManager.Instance;
+            if (netManager != null)
+            {
+                netManager.NotifySyncInventoryFromServer();
+            }
+            yield return new WaitForSeconds(0.5f);
             RefreshItems();
             StartAutoSellTimer();
         }
