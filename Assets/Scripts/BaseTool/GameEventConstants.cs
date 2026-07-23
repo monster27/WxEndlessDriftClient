@@ -120,6 +120,9 @@ public static partial class CommunicateEvent
     /// <summary>【服务器向客户端发送通知】购买失败</summary>
     public const string EVENT_PURCHASE_FAILED = "S2C_EVENT_PURCHASE_FAILED";
 
+    /// <summary>【服务器向客户端发送通知】自动出售状态变更</summary>
+    public const string EVENT_AUTO_SELL_STATUS_CHANGED = "S2C_EVENT_AUTO_SELL_STATUS_CHANGED";
+
     #endregion
 
     #region UI - UI层请求事件（View层发送到UIManager）

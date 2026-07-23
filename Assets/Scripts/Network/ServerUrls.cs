@@ -68,6 +68,10 @@ public static class ServerUrls
         public static string FishBagLevel(int playerId) => $"{FishBag}/{playerId}/level";
         public static string FishBagUpgrade(int playerId) => $"{FishBag}/{playerId}/upgrade";
         public static string FishBagAutoSellTimer(int playerId) => $"{FishBag}/{playerId}/auto-sell-timer";
+        public static string FishBagAutoSellStatus(int playerId) => $"{FishBag}/{playerId}/auto-sell-status";
+        public static string SetFishLocked(int playerId) => $"{FishBag}/{playerId}/fish/lock";
+        public static string ToggleAutoSell(int playerId) => $"{FishBag}/{playerId}/toggle-auto-sell";
+        public static string FishBagFilterConfig(int playerId) => $"{FishBag}/{playerId}/filter-config";
 
         public const string InventoryAdd = "/api/player/inventory/add";
         public const string CharacterAdd = "/api/player/character/add";

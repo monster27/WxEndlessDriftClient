@@ -20,13 +20,19 @@ public class FishBagView : BaseView
     public Button sortByPriceButton;
     public Button sortByWeightButton;
     public Button upgradeButton;
+    public Button setSelectBtn;
+    public Button lockBtn;
     public Text autoSellTimerText;
+    public Text nextSellTitleText;
+    public GameObject autoSellPanel;
+    public FishBagSelectPanel fishBagSelectPanel;
 
     private bool isAllSelected = false;
     private const string EVENT_FISHBAG_SELL = "FishBag_Sell";
-    
+
     private int _remainingSeconds = 0;
     private bool _isAutoSellEnabled = false;
+    private bool _hasAutoSellFeature = false;
     private Coroutine _timerCoroutine;
 
     public enum SortType
@@ -99,16 +105,49 @@ public class FishBagView : BaseView
         {
             upgradeButton.onClick.AddListener(OnUpgradeButtonClick);
         }
+
+        if (setSelectBtn != null)
+        {
+            setSelectBtn.onClick.AddListener(OnSetSelectButtonClick);
+        }
+
+        if (lockBtn != null)
+        {
+            lockBtn.onClick.AddListener(OnLockButtonClick);
+        }
     }
 
     private void RegisterEvents()
     {
         CommunicateEvent.Register<Dictionary<string, object>>(EVENT_FISHBAG_SELL, OnFishBagSell);
+        CommunicateEvent.Register<NetServerManager.AutoSellTimerResponse>(CommunicateEvent.EVENT_AUTO_SELL_STATUS_CHANGED, OnAutoSellStatusChanged);
     }
 
     private void OnDestroy()
     {
         CommunicateEvent.Unregister<Dictionary<string, object>>(EVENT_FISHBAG_SELL, OnFishBagSell);
+        CommunicateEvent.Unregister<NetServerManager.AutoSellTimerResponse>(CommunicateEvent.EVENT_AUTO_SELL_STATUS_CHANGED, OnAutoSellStatusChanged);
+    }
+
+    private void OnAutoSellStatusChanged(NetServerManager.AutoSellTimerResponse data)
+    {
+        Debug.Log($"[FishBagView] 收到自动出售状态变更事件: hasFeature={data.hasAutoSellFeature}, isEnabled={data.isEnabled}, remainingSeconds={data.remainingSeconds}");
+
+        _remainingSeconds = data.remainingSeconds;
+        _isAutoSellEnabled = data.isEnabled;
+        _hasAutoSellFeature = data.hasAutoSellFeature;
+
+        UpdateAutoSellPanelVisibility();
+        UpdateTimerDisplay();
+
+        if (_hasAutoSellFeature && _isAutoSellEnabled)
+        {
+            StartAutoSellTimer();
+        }
+        else
+        {
+            StopAutoSellTimer();
+        }
     }
 
     private void OnFishSelectionChanged(UI_FishBagPrefab fishPrefab)
@@ -128,6 +167,12 @@ public class FishBagView : BaseView
     public void OpenBag()
     {
         Debug.Log("[FishBagView] 打开鱼篓界面");
+
+        if (fishBagSelectPanel != null)
+        {
+            fishBagSelectPanel.ClosePanel();
+        }
+
         RefreshItems();
 
         // 打开时应用当前排序
@@ -141,7 +186,7 @@ public class FishBagView : BaseView
         UpdateTotalSellPrice();
 
         CommunicateEvent.Modify(CommunicateEvent.EVENT_SYNC_GOLD);
-        
+
         StartAutoSellTimer();
     }
 
@@ -168,12 +213,6 @@ public class FishBagView : BaseView
         CommunicateEvent.Modify("FishBag_Open");
     }
 
-    /// <summary>
-    /// 更新鱼篓物品显示（带详情数据）
-    /// </summary>
-    /// <summary>
-    /// 更新鱼篓物品显示（带详情数据）
-    /// </summary>
     public void UpdateFishItems(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap, Dictionary<int, List<FishDetailData>> fishDetailData = null)
     {
         if (fishInventory == null)
@@ -182,7 +221,6 @@ public class FishBagView : BaseView
             return;
         }
 
-        // 如果传入的详情数据为空，尝试从 PlayerDataManager 获取
         if (fishDetailData == null || fishDetailData.Count == 0)
         {
             if (PlayerDataManager.Instance != null)
@@ -192,16 +230,10 @@ public class FishBagView : BaseView
             }
         }
 
-        // 更新鱼篓详情显示
         UpdateFishDetail(fishInventory, itemDataMap, fishDetailData);
-
-        // 更新鱼篓标题显示（使用现有的 UpdateFishCountDisplay 方法）
         UpdateFishCountDisplay(fishInventory);
     }
 
-    /// <summary>
-    /// 原有的两参数方法，保持兼容性
-    /// </summary>
     public void UpdateFishItems(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap)
     {
         UpdateFishItems(fishInventory, itemDataMap, null);
@@ -209,7 +241,6 @@ public class FishBagView : BaseView
 
     public void UpdateFishDetail(Dictionary<int, int> fishInventory, Dictionary<int, ItemData> itemDataMap, Dictionary<int, List<FishDetailData>> detailData)
     {
-        // 如果 detailData 为 null，尝试从 PlayerDataManager 获取
         if (detailData == null && PlayerDataManager.Instance != null)
         {
             detailData = PlayerDataManager.Instance.GetFishDetailData();
@@ -303,17 +334,148 @@ public class FishBagView : BaseView
         Debug.Log("[FishBagView] OnSelectAllButtonClick - 点击全选按钮");
         if (fishDetail != null)
         {
+            FishBagFilter filter = GetCurrentFilter();
             List<UI_FishBagPrefab> allFishPrefabs = fishDetail.GetAllFishPrefabs();
             foreach (var fishPrefab in allFishPrefabs)
             {
                 if (fishPrefab != null)
                 {
-                    fishPrefab.SetSelection(true);
+                    bool shouldSelect = true;
+
+                    if (filter.skipSelected)
+                    {
+                        shouldSelect = !ShouldSkipFish(fishPrefab, filter);
+                    }
+
+                    fishPrefab.SetSelection(shouldSelect);
                 }
             }
         }
 
         UpdateTotalSellPrice();
+    }
+
+    private FishBagFilter GetCurrentFilter()
+    {
+        if (fishBagSelectPanel != null)
+        {
+            return fishBagSelectPanel.GetCurrentFilter();
+        }
+        return new FishBagFilter
+        {
+            selectedRarities = new List<int>(),
+            selectedStars = new List<int>(),
+            showShiny = false,
+            showNotShiny = false,
+            skipSelected = false
+        };
+    }
+
+    private bool ShouldSkipFish(UI_FishBagPrefab fishPrefab, FishBagFilter filter)
+    {
+        // 稀有度筛选：选中的保留，未选中的跳过
+        if (filter.selectedRarities != null && filter.selectedRarities.Count > 0)
+        {
+            int rarityId = fishPrefab.FishRarityId;
+            if (!filter.selectedRarities.Contains(rarityId))
+            {
+                return true;
+            }
+        }
+
+        // 星级筛选：选中的保留，未选中的跳过
+        if (filter.selectedStars != null && filter.selectedStars.Count > 0)
+        {
+            if (fishPrefab.FishDetail != null && !filter.selectedStars.Contains(fishPrefab.FishDetail.starRatingId))
+            {
+                return true;
+            }
+        }
+
+        // 闪光筛选：两个独立开关
+        bool shinySelected = filter.showShiny;
+        bool notShinySelected = filter.showNotShiny;
+
+        if (shinySelected && !notShinySelected)
+        {
+            // 只选闪光 → 跳过非闪光
+            if (!fishPrefab.IsShiny) return true;
+        }
+        else if (!shinySelected && notShinySelected)
+        {
+            // 只选非闪光 → 跳过闪光
+            if (fishPrefab.IsShiny) return true;
+        }
+        // 两个都选 或 两个都不选 → 不过滤闪光
+
+        return false;
+    }
+
+    private void OnSetSelectButtonClick()
+    {
+        Debug.Log("[FishBagView] OnSetSelectButtonClick - 点击设置按钮");
+        if (fishBagSelectPanel != null)
+        {
+            fishBagSelectPanel.TogglePanel();
+        }
+    }
+
+    private void OnLockButtonClick()
+    {
+        Debug.Log("[FishBagView] OnLockButtonClick - 点击锁定按钮");
+        if (fishDetail != null)
+        {
+            List<UI_FishBagPrefab> selectedPrefabs = fishDetail.GetSelectedFishPrefabs();
+            if (selectedPrefabs.Count == 0)
+            {
+                return;
+            }
+
+            bool allLocked = true;
+            foreach (var prefab in selectedPrefabs)
+            {
+                if (!prefab.IsLocked)
+                {
+                    allLocked = false;
+                    break;
+                }
+            }
+
+            bool newLockedState = !allLocked;
+
+            StartCoroutine(SetFishLockedBatch(selectedPrefabs, newLockedState));
+        }
+    }
+
+    private IEnumerator SetFishLockedBatch(List<UI_FishBagPrefab> fishPrefabs, bool locked)
+    {
+        var netManager = NetServerManager.Instance;
+        if (netManager == null) yield break;
+
+        foreach (var prefab in fishPrefabs)
+        {
+            if (prefab != null && prefab.FishDetail != null)
+            {
+                bool requestCompleted = false;
+
+                netManager.SetFishLocked(prefab.FishDetail.id, locked, (success) =>
+                {
+                    if (success)
+                    {
+                        prefab.SetLocked(locked);
+                        Debug.Log($"[FishBagView] 鱼类锁定状态更新: fishId={prefab.FishDetail.fishId}, locked={locked}");
+                    }
+                    else
+                    {
+                        Debug.LogError($"[FishBagView] 鱼类锁定状态更新失败: fishId={prefab.FishDetail.fishId}");
+                    }
+                    requestCompleted = true;
+                });
+
+                yield return new WaitUntil(() => requestCompleted);
+                yield return new WaitForSeconds(0.1f);
+            }
+        }
     }
 
     public void OnSellButtonClick()
@@ -324,15 +486,20 @@ public class FishBagView : BaseView
         {
             List<UI_FishBagPrefab> allFishPrefabs = fishDetail.GetAllFishPrefabs();
             List<int> selectedItemIds = new List<int>();
-            List<UI_FishBagPrefab> selectedPrefabs = new List<UI_FishBagPrefab>();  // 记录选中的预制体
+            List<UI_FishBagPrefab> selectedPrefabs = new List<UI_FishBagPrefab>();
             int totalPrice = 0;
 
             foreach (var fishPrefab in allFishPrefabs)
             {
                 if (fishPrefab != null && fishPrefab.IsSelected)
                 {
+                    if (fishPrefab.IsLocked)
+                    {
+                        Debug.Log($"[FishBagView] 跳过锁定的鱼: ID={fishPrefab.ItemId}");
+                        continue;
+                    }
                     selectedItemIds.Add(fishPrefab.ItemId);
-                    selectedPrefabs.Add(fishPrefab);  // 记录预制体引用
+                    selectedPrefabs.Add(fishPrefab);
                     totalPrice += fishPrefab.GetTotalSellPrice();
                     Debug.Log($"[FishBagView] 选中物品: ID={fishPrefab.ItemId}, 价格={fishPrefab.GetTotalSellPrice()}");
                 }
@@ -346,26 +513,23 @@ public class FishBagView : BaseView
 
             Debug.LogFormat("[FishBagView] 准备售卖 {0} 个物品，总价: {1}金币", selectedItemIds.Count, totalPrice);
 
-            // 先立即隐藏选中的预制体（客户端即时反馈）
             foreach (var prefab in selectedPrefabs)
             {
                 prefab.MarkAsSold();
             }
 
             Dictionary<string, object> sellData = new Dictionary<string, object>
-        {
-            { "itemIds", selectedItemIds },
-            { "totalPrice", totalPrice }
-        };
+            {
+                { "itemIds", selectedItemIds },
+                { "totalPrice", totalPrice }
+            };
             CommunicateEvent.Modify(EVENT_FISHBAG_SELL, sellData);
 
-            // 更新总价显示
             UpdateTotalSellPrice();
             UpdateFishCountDisplay(GetCurrentFishInventory());
         }
     }
 
-    // 辅助方法：获取当前鱼篓数据（需要实现）
     private Dictionary<int, int> GetCurrentFishInventory()
     {
         if (PlayerDataManager.Instance != null)
@@ -406,6 +570,10 @@ public class FishBagView : BaseView
                 {
                     if (fishPrefab != null && fishPrefab.IsSelected)
                     {
+                        if (fishPrefab.IsLocked)
+                        {
+                            continue;
+                        }
                         totalPrice += fishPrefab.GetTotalSellPrice();
                         selectCount++;
                     }
@@ -438,7 +606,6 @@ public class FishBagView : BaseView
 
     private void OnEnable()
     {
-        // 注册数据更新事件
         CommunicateEvent.Register("FishBagDataUpdated", OnDataUpdated);
     }
 
@@ -467,7 +634,7 @@ public class FishBagView : BaseView
     private void OnUpgradeButtonClick()
     {
         Debug.Log("[FishBagView] 点击升级按钮");
-        
+
         var netManager = NetServerManager.Instance;
         if (netManager == null)
         {
@@ -502,7 +669,7 @@ public class FishBagView : BaseView
     private void OnConfirmUpgrade()
     {
         Debug.Log("[FishBagView] 确认升级鱼篓");
-        
+
         var netManager = NetServerManager.Instance;
         if (netManager == null)
         {
@@ -516,7 +683,7 @@ public class FishBagView : BaseView
             {
                 ShowTip(message);
                 RefreshItems();
-                
+
                 bool isFishBagFull = CommunicateEvent.Request<int, bool>("IsFishBagFull", 0);
                 if (!isFishBagFull)
                 {
@@ -540,7 +707,7 @@ public class FishBagView : BaseView
     {
         Debug.Log("[FishBagView] 开始自动出售定时器");
         StopAutoSellTimer();
-        
+
         var netManager = NetServerManager.Instance;
         if (netManager == null)
         {
@@ -554,15 +721,18 @@ public class FishBagView : BaseView
             {
                 _remainingSeconds = data.remainingSeconds;
                 _isAutoSellEnabled = data.isEnabled;
-                Debug.Log($"[FishBagView] 获取自动出售定时器状态: isEnabled={_isAutoSellEnabled}, remainingSeconds={_remainingSeconds}");
+                _hasAutoSellFeature = data.hasAutoSellFeature;
+                Debug.Log($"[FishBagView] 获取自动出售定时器状态: hasFeature={_hasAutoSellFeature}, isEnabled={_isAutoSellEnabled}, remainingSeconds={_remainingSeconds}");
+
+                UpdateAutoSellPanelVisibility();
                 UpdateTimerDisplay();
-                
-                if (_isAutoSellEnabled && _remainingSeconds > 0)
+
+                if (_hasAutoSellFeature && _isAutoSellEnabled && _remainingSeconds > 0)
                 {
                     Debug.Log($"[FishBagView] 启动自动出售倒计时，剩余时间: {_remainingSeconds}秒");
                     _timerCoroutine = StartCoroutine(AutoSellTimerCoroutine());
                 }
-                else if (_isAutoSellEnabled)
+                else if (_hasAutoSellFeature && _isAutoSellEnabled)
                 {
                     Debug.Log("[FishBagView] 自动出售已启用，但剩余时间为0，立即刷新数据");
                     UpdateTimerDisplay();
@@ -589,6 +759,7 @@ public class FishBagView : BaseView
         }
         _remainingSeconds = 0;
         _isAutoSellEnabled = false;
+        UpdateAutoSellPanelVisibility();
         UpdateTimerDisplay();
     }
 
@@ -599,13 +770,13 @@ public class FishBagView : BaseView
             yield return new WaitForSeconds(1f);
             _remainingSeconds--;
             UpdateTimerDisplay();
-            
+
             if (_remainingSeconds <= 0)
             {
                 break;
             }
         }
-        
+
         if (_remainingSeconds <= 0 && _isAutoSellEnabled)
         {
             var netManager = NetServerManager.Instance;
@@ -621,9 +792,27 @@ public class FishBagView : BaseView
 
     private void UpdateTimerDisplay()
     {
+        if (nextSellTitleText != null)
+        {
+            if (_hasAutoSellFeature && _isAutoSellEnabled)
+            {
+                nextSellTitleText.text = "下次自动出售：";
+                nextSellTitleText.gameObject.SetActive(true);
+            }
+            else if (_hasAutoSellFeature && !_isAutoSellEnabled)
+            {
+                nextSellTitleText.text = "自动出售功能已关闭";
+                nextSellTitleText.gameObject.SetActive(true);
+            }
+            else
+            {
+                nextSellTitleText.gameObject.SetActive(false);
+            }
+        }
+
         if (autoSellTimerText != null)
         {
-            if (_isAutoSellEnabled)
+            if (_hasAutoSellFeature && _isAutoSellEnabled)
             {
                 autoSellTimerText.text = FormatTime(_remainingSeconds);
                 autoSellTimerText.gameObject.SetActive(true);
@@ -633,6 +822,14 @@ public class FishBagView : BaseView
                 autoSellTimerText.text = "00:00:00";
                 autoSellTimerText.gameObject.SetActive(false);
             }
+        }
+    }
+
+    private void UpdateAutoSellPanelVisibility()
+    {
+        if (autoSellPanel != null)
+        {
+            autoSellPanel.SetActive(_hasAutoSellFeature);
         }
     }
 

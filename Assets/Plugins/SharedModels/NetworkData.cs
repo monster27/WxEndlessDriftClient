@@ -175,12 +175,14 @@ namespace SharedModels
     [Serializable]
     public class FishDetailData
     {
+        public int id;  // 数据库记录ID（用于锁定/解锁操作）
         public int fishId;
         public float weight;
         public int starRatingId;
         public int calculatedPrice;
         public long caughtTimestamp;
         public bool isShiny;  // 是否闪光鱼
+        public bool isLocked; // 是否锁定
     }
 
     [Serializable]

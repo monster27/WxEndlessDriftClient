@@ -308,12 +308,14 @@ public partial class NetServerManager
                 }
                 fishDetailData[item.key].Add(new FishDetailData
                 {
+                    id = item.id,
                     fishId = item.key,
                     weight = item.weight,
                     starRatingId = item.starRatingId,
                     calculatedPrice = 0,
                     caughtTimestamp = item.caughtTimestamp,
-                    isShiny = item.isShiny
+                    isShiny = item.isShiny,
+                    isLocked = item.isLocked
                 });
             }
 
@@ -457,12 +459,14 @@ public partial class NetServerManager
                 }
                 fishDetailData[item.key].Add(new FishDetailData
                 {
+                    id = item.id,
                     fishId = item.key,
                     weight = item.weight,
                     starRatingId = item.starRatingId,
                     calculatedPrice = 0,
                     caughtTimestamp = item.caughtTimestamp,
-                    isShiny = item.isShiny
+                    isShiny = item.isShiny,
+                    isLocked = item.isLocked
                 });
             }
             int total = GetTotalFishCount();
@@ -772,14 +776,16 @@ public partial class NetServerManager
     [Serializable] private class AddItemResponse { public bool success; public string message; }
     [Serializable] private class InventoryResponse { public List<ItemKV> items; }
     [Serializable]
-    private class ItemKV
+    public class ItemKV
     {
+        public int id;
         public int key;
         public int value;
         public float weight;
         public int starRatingId;
         public long caughtTimestamp;
         public bool isShiny;  // 是否闪光鱼
+        public bool isLocked; // 是否锁定
     }
     [Serializable] private class GoldResponse { public int gold; }
     [Serializable] private class CapacityResponse { public int capacity; }
@@ -803,6 +809,17 @@ public partial class NetServerManager
     { 
         public int remainingSeconds; 
         public bool isEnabled; 
+        public bool hasAutoSellFeature; 
+    }
+
+    [Serializable] private class ToggleAutoSellResponse 
+    { 
+        public bool success; 
+        public string message; 
+        public int remainingSeconds;
+        public bool isAutoSellEnabled;
+        public bool hasAutoSellFeature;
+        public List<ItemKV> fishItems;
     }
 
     private Dictionary<int, List<FishDetailData>> fishDetailData = new Dictionary<int, List<FishDetailData>>();
@@ -892,5 +909,235 @@ public partial class NetServerManager
                 onSuccess?.Invoke(data);
             }
         }, "自动出售倒计时");
+    }
+
+    public void SetFishLocked(int fishItemId, bool isLocked, Action<bool> onComplete = null)
+    {
+        StartCoroutine(SetFishLockedCoroutine(fishItemId, isLocked, onComplete));
+    }
+
+    private IEnumerator SetFishLockedCoroutine(int fishItemId, bool isLocked, Action<bool> onComplete = null)
+    {
+        bool success = false;
+        
+        string jsonBody = $"{{\"fishItemId\":{fishItemId},\"isLocked\":{isLocked.ToString().ToLower()}}}";
+        
+        yield return FetchPostJson(ServerUrls.Player.SetFishLocked(_currentPlayerId), jsonBody, responseText =>
+        {
+            try
+            {
+                var resp = JsonUtility.FromJson<FishBagUpgradeResponse>(responseText);
+                if (resp != null && resp.success)
+                {
+                    success = true;
+                    Logger.Log($"[NetServerManager] 设置鱼类锁定状态成功: fishItemId={fishItemId}, isLocked={isLocked}");
+                }
+                else
+                {
+                    success = false;
+                    Logger.LogError($"[NetServerManager] 设置鱼类锁定状态失败: fishItemId={fishItemId}, message={resp?.message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                Logger.LogError($"[NetServerManager] 设置鱼类锁定状态解析失败: {ex.Message}");
+            }
+        }, "设置鱼类锁定");
+        
+        onComplete?.Invoke(success);
+    }
+
+    public void ToggleAutoSell(bool enable, Action<bool> onComplete = null)
+    {
+        StartCoroutine(ToggleAutoSellCoroutine(enable, onComplete));
+    }
+
+    private IEnumerator ToggleAutoSellCoroutine(bool enable, Action<bool> onComplete = null)
+    {
+        bool success = false;
+        ToggleAutoSellResponse response = null;
+        
+        string jsonBody = $"{{\"enable\":{enable.ToString().ToLower()}}}";
+        
+        yield return FetchPostJson(ServerUrls.Player.ToggleAutoSell(_currentPlayerId), jsonBody, responseText =>
+        {
+            try
+            {
+                response = JsonUtility.FromJson<ToggleAutoSellResponse>(responseText);
+                if (response != null && response.success)
+                {
+                    success = true;
+                    Logger.Log($"[NetServerManager] 切换自动出售状态成功: enable={enable}, remainingSeconds={response.remainingSeconds}");
+                    
+                    if (response.fishItems != null && response.fishItems.Count > 0)
+                    {
+                        fishInventory.Clear();
+                        fishDetailData.Clear();
+                        foreach (var item in response.fishItems)
+                        {
+                            if (!fishInventory.ContainsKey(item.key))
+                                fishInventory[item.key] = 0;
+                            fishInventory[item.key] += item.value;
+
+                            if (!fishDetailData.ContainsKey(item.key))
+                            {
+                                fishDetailData[item.key] = new List<FishDetailData>();
+                            }
+                            fishDetailData[item.key].Add(new FishDetailData
+                            {
+                                id = item.id,
+                                fishId = item.key,
+                                weight = item.weight,
+                                starRatingId = item.starRatingId,
+                                calculatedPrice = 0,
+                                caughtTimestamp = item.caughtTimestamp,
+                                isShiny = item.isShiny,
+                                isLocked = item.isLocked
+                            });
+                        }
+                        PlayerDataManager.Instance?.UpdateFishDetailData(fishDetailData);
+                        Logger.Log($"[NetServerManager] 自动出售状态切换后同步鱼篓数据: {fishInventory.Count} 种鱼");
+                    }
+                }
+                else
+                {
+                    success = false;
+                    Logger.LogError($"[NetServerManager] 切换自动出售状态失败: enable={enable}, message={response?.message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                Logger.LogError($"[NetServerManager] 切换自动出售状态解析失败: {ex.Message}");
+                Logger.LogWarning($"[NetServerManager] 服务器端缺少toggle-auto-sell端点，将使用本地状态管理");
+                success = true;
+            }
+        }, "切换自动出售");
+        
+        PlayerPrefs.SetInt("FishBag_AutoSellEnabled", enable ? 1 : 0);
+        PlayerPrefs.Save();
+        
+        if (success)
+        {
+            CommunicateEvent.Modify("FishBagDataUpdated");
+            CommunicateEvent.Modify<AutoSellTimerResponse>(CommunicateEvent.EVENT_AUTO_SELL_STATUS_CHANGED, new AutoSellTimerResponse
+            {
+                remainingSeconds = response?.remainingSeconds ?? 0,
+                isEnabled = response?.isAutoSellEnabled ?? enable,
+                hasAutoSellFeature = response?.hasAutoSellFeature ?? false
+            });
+        }
+        
+        onComplete?.Invoke(success);
+    }
+
+    public void FetchAutoSellStatus(Action<AutoSellTimerResponse> onSuccess = null)
+    {
+        StartCoroutine(FetchAutoSellStatusCoroutine(onSuccess));
+    }
+
+    private IEnumerator FetchAutoSellStatusCoroutine(Action<AutoSellTimerResponse> onSuccess = null)
+    {
+        yield return FetchGetJson<AutoSellTimerResponse>(ServerUrls.Player.FishBagAutoSellStatus(_currentPlayerId), data =>
+        {
+            if (data != null)
+            {
+                Logger.Log($"[NetServerManager] 获取自动出售状态: hasFeature={data.hasAutoSellFeature}, isEnabled={data.isEnabled}, remainingSeconds={data.remainingSeconds}");
+                onSuccess?.Invoke(data);
+            }
+        }, "自动出售状态");
+    }
+
+    public void FetchFilterConfig(Action<FishBagFilterConfigResponse> onSuccess = null)
+    {
+        StartCoroutine(FetchFilterConfigCoroutine(onSuccess));
+    }
+
+    private IEnumerator FetchFilterConfigCoroutine(Action<FishBagFilterConfigResponse> onSuccess = null)
+    {
+        yield return FetchGetJson<FishBagFilterConfigResponse>(ServerUrls.Player.FishBagFilterConfig(_currentPlayerId), data =>
+        {
+            if (data != null)
+            {
+                Logger.Log("[NetServerManager] 获取鱼篓筛选配置成功");
+                onSuccess?.Invoke(data);
+            }
+        }, "鱼篓筛选配置");
+    }
+
+    public void SaveFilterConfig(FishBagFilterConfigRequest request, Action<bool> onComplete = null)
+    {
+        StartCoroutine(SaveFilterConfigCoroutine(request, onComplete));
+    }
+
+    private IEnumerator SaveFilterConfigCoroutine(FishBagFilterConfigRequest request, Action<bool> onComplete = null)
+    {
+        bool success = false;
+        
+        string jsonBody = JsonUtility.ToJson(request);
+        
+        yield return FetchPostJson(ServerUrls.Player.FishBagFilterConfig(_currentPlayerId), jsonBody, responseText =>
+        {
+            try
+            {
+                var resp = JsonUtility.FromJson<FishBagUpgradeResponse>(responseText);
+                if (resp != null && resp.success)
+                {
+                    success = true;
+                    Logger.Log("[NetServerManager] 保存鱼篓筛选配置成功");
+                }
+                else
+                {
+                    success = false;
+                    Logger.LogError($"[NetServerManager] 保存鱼篓筛选配置失败: message={resp?.message}");
+                }
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                Logger.LogError($"[NetServerManager] 保存鱼篓筛选配置解析失败: {ex.Message}");
+            }
+        }, "保存鱼篓筛选配置");
+        
+        onComplete?.Invoke(success);
+    }
+
+    [Serializable]
+    public class FishBagFilterConfigResponse
+    {
+        public bool isAutoSellEnabled;
+        public bool rarity201;
+        public bool rarity202;
+        public bool rarity203;
+        public bool rarity204;
+        public bool rarity205;
+        public bool rarity206;
+        public bool starRate501;
+        public bool starRate502;
+        public bool starRate503;
+        public bool starRate504;
+        public bool notShine;
+        public bool isShine;
+        public bool skipSelected;
+    }
+
+    [Serializable]
+    public class FishBagFilterConfigRequest
+    {
+        public bool isAutoSellEnabled;
+        public bool rarity201;
+        public bool rarity202;
+        public bool rarity203;
+        public bool rarity204;
+        public bool rarity205;
+        public bool rarity206;
+        public bool starRate501;
+        public bool starRate502;
+        public bool starRate503;
+        public bool starRate504;
+        public bool notShine;
+        public bool isShine;
+        public bool skipSelected;
     }
 }

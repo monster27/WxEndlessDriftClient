@@ -21,6 +21,7 @@ namespace View.Detail
         public Image selectedImage;
         public Image newCatchImage;
         public Image shinyIconImage;           // 闪光图标
+        public Image lockIcon;                 // 锁定图标
 
         private int itemId;
         private int quantity;
@@ -41,6 +42,7 @@ namespace View.Detail
         public bool IsSold => isSold;
         public FishDetailData FishDetail => fishDetail;
         public bool IsShiny => fishDetail?.isShiny ?? false;
+        public bool IsLocked => fishDetail?.isLocked ?? false;
 
         public long CatchTimestamp => fishDetail?.caughtTimestamp ?? 0;
         public float FishWeight => fishDetail?.weight ?? GetItemWeight(itemId);
@@ -165,6 +167,9 @@ namespace View.Detail
             // ========== 显示闪光图标 ==========
             UpdateShinyIconDisplay();
 
+            // ========== 显示锁定图标 ==========
+            UpdateLockIconDisplay();
+
             if (iconImage != null && itemData != null)
             {
                 LoadIcon();
@@ -282,6 +287,31 @@ namespace View.Detail
             else
             {
                 Debug.LogWarning($"[UI_FishBagPrefab] shinyIconImage 为 null! itemId={itemId}");
+            }
+        }
+
+        /// <summary>
+        /// 更新锁定图标显示
+        /// </summary>
+        private void UpdateLockIconDisplay()
+        {
+            bool isLocked = fishDetail?.isLocked ?? false;
+
+            if (lockIcon != null)
+            {
+                lockIcon.gameObject.SetActive(isLocked);
+            }
+        }
+
+        /// <summary>
+        /// 设置锁定状态
+        /// </summary>
+        public void SetLocked(bool locked)
+        {
+            if (fishDetail != null)
+            {
+                fishDetail.isLocked = locked;
+                UpdateLockIconDisplay();
             }
         }
 

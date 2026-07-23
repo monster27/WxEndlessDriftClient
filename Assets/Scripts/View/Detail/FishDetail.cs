@@ -257,6 +257,22 @@ namespace View.Detail
             return allPrefabs;
         }
 
+        public List<UI_FishBagPrefab> GetSelectedFishPrefabs()
+        {
+            List<UI_FishBagPrefab> selectedPrefabs = new List<UI_FishBagPrefab>();
+            foreach (var prefabs in fishPrefabs.Values)
+            {
+                foreach (var prefab in prefabs)
+                {
+                    if (prefab != null && prefab.gameObject.activeSelf && prefab.IsSelected)
+                    {
+                        selectedPrefabs.Add(prefab);
+                    }
+                }
+            }
+            return selectedPrefabs;
+        }
+
         // ✅ 修改：按重量排序时使用实际重量（从 FishDetailData 获取）
         public void SortFishItems(FishBagView.SortType sortType)
         {
