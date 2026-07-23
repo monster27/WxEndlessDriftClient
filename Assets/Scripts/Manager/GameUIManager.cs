@@ -187,11 +187,11 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         CommunicateEvent.Modify<int>("Server_SceneSwitch", sceneId);
     }
 
-    public void ShowCatchResult(string itemName, float weight, Sprite icon, int starRatingId = 0)
+    public void ShowCatchResult(string itemName, float weight, Sprite icon, int starRatingId = 0, int itemId = 0, bool isFish = true)
     {
         if (mainGameView != null)
         {
-            mainGameView.ShowCatchResult(itemName, weight, icon);
+            mainGameView.ShowCatchResult(itemName, weight, icon, starRatingId, itemId, isFish);
         }
     }
 

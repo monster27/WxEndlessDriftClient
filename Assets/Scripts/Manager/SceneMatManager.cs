@@ -49,7 +49,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
     [Header("=== 渲染队列配置 ===")]
     [SerializeField] private int timeLayerQueue = 1000;
     [SerializeField] private int backgroundQueue = 2000;
-    [SerializeField] private int gameLayerQueue = 3000;
+    [SerializeField] public int gameLayerQueue = 3000;
     [SerializeField] private int effectLayerQueue = 4000;
 
     [Header("=== 数据路径 ===")]
@@ -73,29 +73,45 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
     public bool IsInitialized => isInitialized;
 
     // ========== Unity生命周期 ==========
-    private void Awake()
+    //private void Awake()
+    //{
+    //    InitializeRenderQueueMap();
+    //    Debug.Log($"[SceneMatManager] Awake - 渲染队列映射初始化完成");
+    //}
+
+    //private void Start()
+    //{
+    //    if (loadOnStart)
+    //    {
+    //        Debug.Log($"[SceneMatManager] Start - 开始初始化场景系统");
+
+    //        FindAndRegisterAllControllers();
+    //        LoadSceneData();
+    //        ApplySceneData(currentSceneId);
+    //        UpdateAllControllersRenderQueue();
+
+    //        isInitialized = true;
+    //        Debug.Log($"[SceneMatManager] Start - ✅ 场景系统初始化完成");
+    //    }
+    //}
+
+    public void Init() 
     {
         InitializeRenderQueueMap();
         Debug.Log($"[SceneMatManager] Awake - 渲染队列映射初始化完成");
+
+        Debug.Log($"[SceneMatManager] Start - 开始初始化场景系统");
+
+        FindAndRegisterAllControllers();
+        LoadSceneData();
+        ApplySceneData(currentSceneId);
+        UpdateAllControllersRenderQueue();
+
+        isInitialized = true;
+        Debug.Log($"[SceneMatManager] Start - ✅ 场景系统初始化完成");
     }
 
-    private void Start()
-    {
-        if (loadOnStart)
-        {
-            Debug.Log($"[SceneMatManager] Start - 开始初始化场景系统");
-
-            FindAndRegisterAllControllers();
-            LoadSceneData();
-            ApplySceneData(currentSceneId);
-            UpdateAllControllersRenderQueue();
-
-            isInitialized = true;
-            Debug.Log($"[SceneMatManager] Start - ✅ 场景系统初始化完成");
-        }
-    }
-
-    private void InitializeRenderQueueMap()
+    public void InitializeRenderQueueMap()
     {
         renderQueueMap = new Dictionary<RenderQueueLevel, int>
         {

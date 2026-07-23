@@ -86,6 +86,11 @@ namespace View.Detail
             if (equippedMarker != null)
             {
                 equippedMarker.gameObject.SetActive(isEquipped);
+                Debug.Log($"[UI_BagPrefab] 更新装备标记 - itemId={itemId}, name={itemData.name}, isEquipped={isEquipped}, equippedMarker.active={equippedMarker.gameObject.activeSelf}");
+            }
+            else
+            {
+                Debug.LogError($"[UI_BagPrefab] equippedMarker 为 null - itemId={itemId}, name={itemData.name}");
             }
         }
 

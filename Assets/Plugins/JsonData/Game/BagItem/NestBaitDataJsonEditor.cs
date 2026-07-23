@@ -26,7 +26,7 @@ public class NestBaitDataJsonEditor : EditorWindow
 
     private string FullPath => Path.Combine(Application.dataPath, RELATIVE_PATH);
 
-    [MenuItem("Tools/游戏内容/2.物品内部数据/2501_窝料")]
+    [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/2501_窝料")]
     public static void ShowWindow()
     {
         NestBaitDataJsonEditor window = GetWindow<NestBaitDataJsonEditor>("窝料数据编辑器");

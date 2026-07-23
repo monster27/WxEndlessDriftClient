@@ -177,6 +177,7 @@ namespace View.Detail
 
             if (categoryId == 21)
             {
+                Debug.Log("[BagDetail] 检测到鱼饵分类，调用 UpdateBaitItemsWithNoBaitOption");
                 UpdateBaitItemsWithNoBaitOption(itemDataMap, inventory);
                 return;
             }
@@ -208,6 +209,8 @@ namespace View.Detail
             int equippedBaitId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Bait);
             bool noBaitEquipped = equippedBaitId == 0;
 
+            Debug.Log($"[BagDetail] UpdateBaitItemsWithNoBaitOption - equippedBaitId={equippedBaitId}, noBaitEquipped={noBaitEquipped}");
+
             ItemData noBaitData = new ItemData
             {
                 id = 0,
@@ -218,6 +221,7 @@ namespace View.Detail
             };
 
             currentItemIds.Add(0);
+            Debug.Log($"[BagDetail] 创建无鱼饵选项 - isEquipped={noBaitEquipped}");
             HandleItemStacking(0, 1, noBaitData, noBaitEquipped);
 
             if (inventory != null)
@@ -233,6 +237,7 @@ namespace View.Detail
                         {
                             currentItemIds.Add(itemId);
                             bool isEquipped = (itemId == equippedBaitId);
+                            Debug.Log($"[BagDetail] 创建鱼饵选项 - itemId={itemId}, quantity={quantity}, isEquipped={isEquipped}");
                             HandleItemStacking(itemId, quantity, itemData, isEquipped);
                         }
                     }

@@ -352,27 +352,34 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             return;
         }
 
-        // ✅ 检查 PlayerAniManager 是否存在（只在 GameScene 中存在）
         if (PlayerAniManager.Instance == null)
         {
             Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - PlayerAniManager 不存在，跳过动画更新（当前场景可能不是 GameScene）");
             return;
         }
 
-        // ✅ 关键修复：收杆动画播放期间，由 NetServerManager 统一控制动画状态
-        // 避免与 NetServerManager.NotifyPlayReelAnimation() 的回调产生竞争
+        try
+        {
+            if (PlayerAniManager.Instance.CurrentPlayerState == PlayerAniManager.PlayerAnimState.Reel)
+            {
+                Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 收杆动画已结束，准备切换到目标动画");
+            }
+        }
+        catch
+        {
+            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - PlayerAniManager 状态访问失败，跳过动画更新");
+            return;
+        }
+
         if (NetServerManager.Instance.IsPlayingReelAnimation)
         {
             Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 正在播放收杆动画，保持当前动画");
             return;
         }
 
-        // ✅ 如果当前状态是 Reel 但 IsPlayingReelAnimation 为 false，说明收杆动画已结束
-        // 此时可以安全地切换到 Idle 或 Lazy 动画
         if (PlayerAniManager.Instance.CurrentPlayerState == PlayerAniManager.PlayerAnimState.Reel)
         {
             Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 收杆动画已结束，准备切换到目标动画");
-            // 继续执行，让后续逻辑决定播放 Idle 还是 Lazy
         }
 
         bool isFull = IsFishBagFull();

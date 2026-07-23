@@ -518,9 +518,20 @@ public partial class NetServerManager
     {
         if (catchInfo == null) return;
         Sprite icon = GetItemIcon(catchInfo.fishId);
-        // ✅ 传递星级ID
-        GameUIManager.Instance?.ShowCatchResult(catchInfo.fishName, catchInfo.weight, icon, catchInfo.starRatingId);
+        
+        bool isFish = IsFishItem(catchInfo.fishId);
+        
+        GameUIManager.Instance?.ShowCatchResult(catchInfo.fishName, catchInfo.weight, icon, catchInfo.starRatingId, catchInfo.fishId, isFish);
         SyncCharacterDataFromServer();
+    }
+
+    private bool IsFishItem(int itemId)
+    {
+        if (LoadDataManager.Instance?.items == null) return true;
+        foreach (var item in LoadDataManager.Instance.items)
+            if (item.id == itemId)
+                return item.categoryId == 1;
+        return true;
     }
 
     private Sprite GetItemIcon(int itemId)

@@ -263,7 +263,6 @@ public partial class NetServerManager
         {
             if (data == null) return;
 
-            // ✅ 更新所有装备数据
             equippedRodId = data.rodId > 0 ? data.rodId : 3001;
             equippedLineId = data.lineId > 0 ? data.lineId : 3101;
             equippedHookId = data.hookId > 0 ? data.hookId : 3201;
@@ -273,7 +272,6 @@ public partial class NetServerManager
             equippedBaitId = data.baitId;
             characterLevel = data.characterLevel > 0 ? data.characterLevel : 1;
 
-            // ✅ 更新装备等级数据
             equippedRodLevel = data.rodLevel > 0 ? data.rodLevel : 1;
             equippedLineLevel = data.lineLevel > 0 ? data.lineLevel : 1;
             equippedHookLevel = data.hookLevel > 0 ? data.hookLevel : 1;
@@ -281,6 +279,8 @@ public partial class NetServerManager
             equippedSkill2Level = data.skill2Level > 0 ? data.skill2Level : 1;
 
             Logger.Log($"[NetServerManager] 装备数据从服务器同步完成: Rod={equippedRodId}(Lv.{equippedRodLevel}), Line={equippedLineId}(Lv.{equippedLineLevel}), Hook={equippedHookId}(Lv.{equippedHookLevel}), Char={equippedCharacterId}(Lv.{characterLevel}), Bait={equippedBaitId}");
+            
+            CommunicateEvent.Modify("Bag_RefreshItems");
         }, "装备数据");
     }
 

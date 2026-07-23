@@ -26,7 +26,7 @@ public class BaitDataJsonEditor : BaseDataEditor<BaitData>
 
     public BaitDataJsonEditor() : base(RELATIVE_PATH) { }
 
-    [MenuItem("Tools/游戏内容/2.物品内部数据/2001_鱼饵")]
+    [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/2001_鱼饵")]
     public static void ShowWindow()
     {
         BaitDataJsonEditor window = GetWindow<BaitDataJsonEditor>("饵料数据编辑器");

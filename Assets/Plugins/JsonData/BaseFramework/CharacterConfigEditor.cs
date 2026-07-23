@@ -24,7 +24,7 @@ public class CharacterConfigEditor : EditorWindow
     // 存储每个人物的折叠状态
     [SerializeField] private Dictionary<int, bool> characterFoldStates = new Dictionary<int, bool>();
 
-    [MenuItem("Tools/游戏内容/2.物品内部数据/3401_人物配置")]
+    [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/3401_人物配置")]
     public static void ShowWindow()
     {
         CharacterConfigEditor window = GetWindow<CharacterConfigEditor>("人物配置编辑器");

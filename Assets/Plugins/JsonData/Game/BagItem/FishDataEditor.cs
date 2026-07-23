@@ -1,4 +1,3 @@
-// ==================== FishDataEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,6 +22,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
     private float editFlashProbability = 0.5f;
     private float editBaseWeight = 2.5f;
     private int editBaseExp = 10;
+    private float editScale = 1.0f;  // 新增 Scale
 
     private const string RELATIVE_PATH = "Resources/JsonData/Game/BagItem/fishes.json";
 
@@ -41,14 +41,15 @@ public class FishDataEditor : BaseDataEditor<FishData>
     private float col12 = 80;  // 闪光概率
     private float col13 = 80;  // 品种ID
     private float col14 = 200; // 描述
+    private float col15 = 60;  // Scale（新增）
 
     public FishDataEditor() : base(RELATIVE_PATH) { }
 
-    [MenuItem("Tools/游戏内容/2.物品内部数据/1001_水产")]
+    [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/1001_水产")]
     public static void ShowWindow()
     {
         FishDataEditor window = GetWindow<FishDataEditor>("水产数据编辑器");
-        window.minSize = new Vector2(1400, 600);
+        window.minSize = new Vector2(1460, 600);
         window.Show();
     }
 
@@ -96,6 +97,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
         DrawResizableColumn("挣扎时间", ref col11, "col11");
         DrawResizableColumn("闪光概率", ref col12, "col12");
         DrawResizableColumn("品种ID", ref col13, "col13");
+        DrawResizableColumn("Scale", ref col15, "col15");  // 新增
         DrawResizableColumn("描述", ref col14, "col14");
 
         EditorGUILayout.LabelField("操作", GUILayout.Width(100));
@@ -176,6 +178,9 @@ public class FishDataEditor : BaseDataEditor<FishData>
         // 品种ID
         EditorGUILayout.LabelField(item.fishSpeciesId.ToString(), GUILayout.Width(col13));
 
+        // Scale（新增）
+        EditorGUILayout.LabelField($"{item.scale:F2}", GUILayout.Width(col15));
+
         // 描述
         string descStr = item.description.Length > 15 ? item.description.Substring(0, 15) + "..." : item.description;
         EditorGUILayout.LabelField(descStr, GUILayout.Width(col14));
@@ -220,6 +225,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
         editFlashProbability = item.flashProbability;
         editBaseWeight = item.baseWeight;
         editBaseExp = item.baseExp;
+        editScale = item.scale;  // 新增
     }
 
     private void DrawEditPanel()
@@ -259,7 +265,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("存在岛屿ID:", GUILayout.Width(80));
             editIslandId = EditorGUILayout.IntField(editIslandId, GUILayout.Width(60));
-            EditorGUILayout.LabelField("(0=所有岛屿，-1=无)", GUILayout.Width(120));  // 修改1：更清晰的说明
+            EditorGUILayout.LabelField("(0=所有岛屿，-1=无)", GUILayout.Width(120));
 
             EditorGUILayout.LabelField("偏向岛屿ID:", GUILayout.Width(80));
             editPreferredIslandIds = EditorGUILayout.TextField(editPreferredIslandIds, GUILayout.Width(200));
@@ -327,6 +333,10 @@ public class FishDataEditor : BaseDataEditor<FishData>
 
             EditorGUILayout.LabelField("基础经验值:", GUILayout.Width(80));
             editBaseExp = EditorGUILayout.IntField(editBaseExp, GUILayout.Width(80));
+
+            // Scale 新增
+            EditorGUILayout.LabelField("Scale:", GUILayout.Width(50));
+            editScale = EditorGUILayout.FloatField(editScale, GUILayout.Width(60));
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.EndVertical();
@@ -414,6 +424,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
             item.flashProbability = editFlashProbability;
             item.baseWeight = editBaseWeight;
             item.baseExp = editBaseExp;
+            item.scale = editScale;  // 新增
         }
     }
 
@@ -464,6 +475,8 @@ public class FishDataEditor : BaseDataEditor<FishData>
         editBaseWeight = EditorGUILayout.FloatField(editBaseWeight, GUILayout.Width(80));
         EditorGUILayout.LabelField("基础经验:", GUILayout.Width(60));
         editBaseExp = EditorGUILayout.IntField(editBaseExp, GUILayout.Width(80));
+        EditorGUILayout.LabelField("Scale:", GUILayout.Width(45));
+        editScale = EditorGUILayout.FloatField(editScale, GUILayout.Width(60));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
@@ -476,12 +489,12 @@ public class FishDataEditor : BaseDataEditor<FishData>
         EditorGUILayout.EndVertical();
         GUILayout.Space(10);
 
-        // 修改2：更详细的提示信息
         EditorGUILayout.HelpBox(
             "提示：\n" +
             "• 存在岛屿ID：0=所有岛屿可钓到，-1=无（不适用于任何岛屿）\n" +
             "• 偏向岛屿列表：为空表示无偏向，多个ID请用英文逗号分隔\n" +
-            "• 其他偏向列表（时间/鱼饵/天气）：用法同上",
+            "• 其他偏向列表（时间/鱼饵/天气）：用法同上\n" +
+            "• Scale：鱼的显示大小缩放，默认1.0",
             MessageType.Info
         );
     }
@@ -540,7 +553,8 @@ public class FishDataEditor : BaseDataEditor<FishData>
             struggleTime = 5,
             flashProbability = 0.5f,
             baseWeight = 1.0f,
-            baseExp = 10
+            baseExp = 10,
+            scale = 1.0f
         };
 
         dataList.Add(newFish);
@@ -578,7 +592,8 @@ public class FishDataEditor : BaseDataEditor<FishData>
             struggleTime = editStruggleTime,
             flashProbability = editFlashProbability,
             baseWeight = editBaseWeight,
-            baseExp = editBaseExp
+            baseExp = editBaseExp,
+            scale = editScale
         };
 
         // 解析偏向岛屿
@@ -644,6 +659,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
         editFlashProbability = 0.5f;
         editBaseWeight = 1.0f;
         editBaseExp = 10;
+        editScale = 1.0f;
 
         EditorUtility.DisplayDialog("成功", "新增成功", "确定");
     }

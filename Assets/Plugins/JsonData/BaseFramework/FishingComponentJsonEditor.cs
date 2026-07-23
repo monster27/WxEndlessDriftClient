@@ -40,7 +40,7 @@ public class FishingComponentJsonEditor : EditorWindow
     private readonly int[] categoryStartIds = { 0, 3001, 3101, 3201, 3301 };
     private readonly int[] categoryEndIds = { 0, 3099, 3199, 3299, 3399 };
 
-    [MenuItem("Tools/游戏内容/2.物品内部数据/3001_钓具与技能")]
+    [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/3001_钓具与技能")]
     public static void ShowWindow()
     {
         var window = GetWindow<FishingComponentJsonEditor>("钓具与技能编辑器");

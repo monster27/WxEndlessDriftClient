@@ -509,9 +509,15 @@ public class MainGameView : BaseView
         UpdateWeatherIcon(currentWeatherId);
     }
 
-    public void ShowCatchResult(string itemName, float weight, Sprite icon)
+    public void ShowCatchResult(string itemName, float weight, Sprite icon, int starRatingId = 0, int itemId = 0, bool isFish = true)
     {
         Debug.Log("ShowCatchResult");
+        
+        if (FishFlyInManager.Instance != null && itemId > 0)
+        {
+            FishFlyInManager.Instance.Fly(itemId, weight, isFish);
+        }
+        
         if (mainTile != null)
         {
             mainTile.EnqueueCatchResult(itemName, weight, icon);

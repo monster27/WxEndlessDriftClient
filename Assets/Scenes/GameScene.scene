@@ -22666,6 +22666,62 @@ MonoBehaviour:
   bugGuideViewGo: {fileID: 1219855958}
   treasureGuideViewGo: {fileID: 354677272}
   otherGuideViewGo: {fileID: 414470255}
+--- !u!1 &702970809
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 702970810}
+  - component: {fileID: 702970811}
+  m_Layer: 0
+  m_HasEditorInfo: 1
+  m_Name: FishFlyInManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &702970810
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 702970809}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1420456886}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &702970811
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 702970809}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d86a92f3b2090149b25cc52bddd65fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _prefab: {fileID: 2004208987637947626, guid: 11814aabd02e61146a621c72a9c72223, type: 3}
+  _poolSize: 10
+  _startPoint: {fileID: 1260270889}
+  _endPoint: {fileID: 615279483}
+  _arcHeight: 5
+  _container: {fileID: 985682326}
+  _shader: {fileID: 4800000, guid: 2126a80b725e6464e95915be105e6f10, type: 3}
+  _renderQueue: 3000
+  _flyDuration: 1
+  _defaultScale: 1
+  _defaultTexture: {fileID: 0}
 --- !u!1 &703870099
 GameObject:
   m_ObjectHideFlags: 0
@@ -29452,6 +29508,38 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 983456414}
   m_CullTransparentMesh: 1
+--- !u!1 &985682325
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 985682326}
+  m_Layer: 0
+  m_HasEditorInfo: 1
+  m_Name: FishFlyInFishBagContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &985682326
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 985682325}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1698561518}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &989088490
 GameObject:
   m_ObjectHideFlags: 0
@@ -42373,6 +42461,7 @@ Transform:
   - {fileID: 1161834526}
   - {fileID: 1604812398}
   - {fileID: 367025869}
+  - {fileID: 702970810}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1420456887
@@ -52268,6 +52357,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 985682326}
   - {fileID: 517930840}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

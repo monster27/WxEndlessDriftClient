@@ -142,6 +142,19 @@ public class ManagerManager : SingletonMono<ManagerManager>
             logBuilder.AppendLine("  场景切换: 跳过 (NetServerManager 未就绪)");
         }
 
+        if (SceneMatManager.Instance != null)
+        {
+            SceneMatManager.Instance.Init();
+        }
+
+        if (FishFlyInManager.Instance != null)
+        {
+            if (SceneMatManager.Instance != null)
+            {
+                FishFlyInManager.Instance.Init(SceneMatManager.Instance.gameLayerQueue + 1);
+            }
+        }
+
         // ====================================================================
         // 完成加载
         // ====================================================================

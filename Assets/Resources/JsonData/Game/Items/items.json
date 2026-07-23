@@ -202,7 +202,7 @@
         },
         {
             "id": 2002,
-            "name": "面团",
+            "name": "海虫",
             "description": "常见鱼饵，杂食性鱼类都喜欢",
             "sellPrice": -1,
             "buyPrice": -1,
@@ -212,8 +212,8 @@
         },
         {
             "id": 2003,
-            "name": "幼虫",
-            "description": "活饵，对肉食性鱼类效果显著",
+            "name": "秘制虾饵",
+            "description": "蜜汁虾饵",
             "sellPrice": -1,
             "buyPrice": -1,
             "itemType": 2,
@@ -222,8 +222,8 @@
         },
         {
             "id": 2004,
-            "name": "奶酪",
-            "description": "特殊鱼饵，对特定鱼类有奇效",
+            "name": "小虾米",
+            "description": "小虾米",
             "sellPrice": -1,
             "buyPrice": -1,
             "itemType": 2,
@@ -232,8 +232,8 @@
         },
         {
             "id": 2005,
-            "name": "蚕",
-            "description": "高级鱼饵，吸引大型鱼类",
+            "name": "小鱿鱼",
+            "description": "小鱿鱼",
             "sellPrice": -1,
             "buyPrice": -1,
             "itemType": 2,
@@ -262,7 +262,7 @@
         },
         {
             "id": 9001,
-            "name": "塑料瓶",
+            "name": "易拉罐",
             "description": "垃圾物品，没有特殊效果",
             "sellPrice": 1,
             "buyPrice": -1,
@@ -272,7 +272,7 @@
         },
         {
             "id": 9002,
-            "name": "易拉罐",
+            "name": "塑料袋",
             "description": "垃圾物品，没有特殊效果",
             "sellPrice": 2,
             "buyPrice": -1,
@@ -282,43 +282,13 @@
         },
         {
             "id": 9003,
-            "name": "塑料袋",
+            "name": "轮胎",
             "description": "垃圾物品，没有特殊效果",
             "sellPrice": 3,
             "buyPrice": -1,
             "itemType": 3,
             "categoryId": 91,
             "iconPath": "UI/Icon/TrashIcons/9003"
-        },
-        {
-            "id": 2501,
-            "name": "场景一窝料",
-            "description": "适用于场景一的窝料，增加连续钓鱼模式时间",
-            "sellPrice": -1,
-            "buyPrice": -1,
-            "itemType": 2,
-            "categoryId": 22,
-            "iconPath": "UI/Icon/BaitIcons/2501"
-        },
-        {
-            "id": 2502,
-            "name": "场景二窝料",
-            "description": "适用于场景二的窝料，增加连续钓鱼模式时间",
-            "sellPrice": -1,
-            "buyPrice": -1,
-            "itemType": 2,
-            "categoryId": 22,
-            "iconPath": "UI/Icon/BaitIcons/2502"
-        },
-        {
-            "id": 2503,
-            "name": "场景三窝料",
-            "description": "适用于场景三的窝料，增加连续钓鱼模式时间",
-            "sellPrice": -1,
-            "buyPrice": -1,
-            "itemType": 2,
-            "categoryId": 22,
-            "iconPath": "UI/Icon/BaitIcons/2503"
         }
     ]
 }

@@ -15,7 +15,7 @@ public class TrashDataEditor : BaseDataEditor<TrashData>
     private float experienceWidth = 80;
     private float actionWidth = 80;
 
-    [MenuItem("Tools/游戏内容/2.物品内部数据/9001_垃圾")]
+    [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/9001_垃圾")]
     public static void ShowWindow()
     {
         TrashDataEditor window = GetWindow<TrashDataEditor>("垃圾数据编辑器");

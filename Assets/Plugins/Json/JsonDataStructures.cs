@@ -234,6 +234,7 @@ public class FishData
     public float flashProbability;
     public float baseWeight;
     public int baseExp;
+    public float scale = 1.0f;  // 新增 Scale 参数
 }
 
 [System.Serializable]

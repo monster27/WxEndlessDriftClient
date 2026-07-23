@@ -104,14 +104,14 @@ public class BagView : BaseView
 
     public void OpenBag()
     {
-        // 检测数据是否更新过，如果没有更新过，先更新数据
+        Debug.Log("[BagView] OpenBag - 打开背包");
+
+        gameObject.SetActive(true);
 
         RefreshItems();
 
-        gameObject.SetActive(true);
         SendEvent();
 
-        // 默认点击第一个分类
         ClickFirstValidCategory();
     }
 
