@@ -39,15 +39,37 @@
         },
         {
             "id": 4,
-            "name": "装饰",
+            "name": "室外装饰",
             "code": "D",
-            "description": "D.装饰",
+            "description": "D.室外装饰",
             "startId": 4001,
             "endId": 4999,
             "subCategories": [
                 { "id": 41, "name": "鱼篓装饰", "description": "鱼篓内的装饰物", "startId": 4001, "endId": 4099 },
                 { "id": 42, "name": "帐篷装饰", "description": "帐篷内的装饰", "startId": 4101, "endId": 4199 },
                 { "id": 43, "name": "提示器装饰", "description": "提示器的装饰", "startId": 4201, "endId": 4299 }
+            ]
+        },
+        {
+            "id": 5,
+            "name": "室内装饰",
+            "code": "E",
+            "description": "E.室内装饰",
+            "startId": 5000,
+            "endId": 5599,
+            "subCategories": [
+                { "id": 51, "name": "墙壁", "description": "墙体整体（包含左右墙壁、材质）", "startId": 5000, "endId": 5049 },
+                { "id": 52, "name": "地板", "description": "地板整体（包含颜色、材质）", "startId": 5050, "endId": 5099 },
+                { "id": 53, "name": "楼梯", "description": "楼梯整体（包含颜色、材质）", "startId": 5100, "endId": 5149 },
+                { "id": 54, "name": "灯带", "description": "左墙的灯具", "startId": 5150, "endId": 5199 },
+                { "id": 55, "name": "挂饰", "description": "右墙的挂饰", "startId": 5200, "endId": 5249 },
+                { "id": 56, "name": "望远镜", "description": "望远镜整体（包含望远镜地垫）", "startId": 5250, "endId": 5299 },
+                { "id": 57, "name": "昆虫房", "description": "昆虫房整体（包含放在昆虫房顶部的物品）", "startId": 5300, "endId": 5349 },
+                { "id": 58, "name": "宠物屋", "description": "宠物屋整体（包含放在宠物屋顶部的物品）", "startId": 5350, "endId": 5399 },
+                { "id": 59, "name": "鱼缸", "description": "鱼缸整体（包含放在鱼缸顶部的物品）", "startId": 5400, "endId": 5449 },
+                { "id": 60, "name": "熊猫", "description": "熊猫整体（包含坐的凳子）", "startId": 5450, "endId": 5499 },
+                { "id": 61, "name": "鹦鹉", "description": "鹦鹉整体（包含站立的树干）", "startId": 5500, "endId": 5549 },
+                { "id": 62, "name": "桌子", "description": "桌子整体（包含地图）", "startId": 5550, "endId": 5599 }
             ]
         },
         {

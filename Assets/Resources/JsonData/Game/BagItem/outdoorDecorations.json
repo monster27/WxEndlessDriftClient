@@ -1,0 +1,40 @@
+{
+    "decorations": [
+        {
+            "id": 4001,
+            "name": "默认鱼篓",
+            "description": "基础款鱼篓",
+            "categoryId": 41
+        },
+        {
+            "id": 4002,
+            "name": "糖果-鱼篓",
+            "description": "糖果系列鱼篓",
+            "categoryId": 41
+        },
+        {
+            "id": 4101,
+            "name": "默认帐篷",
+            "description": "基础款帐篷",
+            "categoryId": 42
+        },
+        {
+            "id": 4102,
+            "name": "糖果-帐篷",
+            "description": "糖果系列帐篷",
+            "categoryId": 42
+        },
+        {
+            "id": 4201,
+            "name": "默认提示器",
+            "description": "基础款提示器",
+            "categoryId": 43
+        },
+        {
+            "id": 4202,
+            "name": "糖果-提示器",
+            "description": "糖果系列提示器",
+            "categoryId": 43
+        }
+    ]
+}

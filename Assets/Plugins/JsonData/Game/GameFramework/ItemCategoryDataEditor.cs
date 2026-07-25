@@ -1,4 +1,3 @@
-// ==================== ItemCategoryDataEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,7 +36,7 @@ public class ItemCategoryDataEditor : EditorWindow
     private void LoadData()
     {
         string fullPath = Path.Combine(Application.dataPath, DATA_PATH);
-        
+
         if (File.Exists(fullPath))
         {
             try
@@ -102,6 +101,13 @@ public class ItemCategoryDataEditor : EditorWindow
         GUI.backgroundColor = Color.white;
         EditorGUILayout.EndHorizontal();
 
+        if (!string.IsNullOrEmpty(category.description))
+        {
+            EditorGUI.indentLevel++;
+            EditorGUILayout.LabelField($"说明: {category.description}", EditorStyles.miniLabel);
+            EditorGUI.indentLevel--;
+        }
+
         if (category.subCategories != null && category.subCategories.Count > 0)
         {
             EditorGUILayout.BeginVertical();
@@ -125,8 +131,8 @@ public class ItemCategoryDataEditor : EditorWindow
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField($"  └─ {subCat.name}（{subCat.id}）【{subCat.startId} - {subCat.endId}】", GUILayout.Height(20));
         EditorGUILayout.EndHorizontal();
-        
-        if (!string.IsNullOrEmpty(subCat.description) && !subCat.description.Contains("预留"))
+
+        if (!string.IsNullOrEmpty(subCat.description))
         {
             EditorGUI.indentLevel++;
             EditorGUILayout.LabelField($"      说明: {subCat.description}", EditorStyles.miniLabel);
@@ -141,10 +147,10 @@ public class ItemCategoryDataEditor : EditorWindow
 
         string helpText = @"（1）A.水产      【1001 - 1999】
 （2）B.饵料      鱼饵（21）【2001-2499】- 窝料（22）【2501-2799】
-（3）C.装备      钓竿（31）【3001-3099】- 钓线（32）【3101-3199】- 钓钩（33）【3201-3299】- 技能（34）【3301-3399】- 人物（35）【3401-3499】
-（4）D.装饰      钓鱼场景装饰（41）【4001-4299】- 帐篷内装饰（43）【4301-4499】- 鱼缸装饰（45）【4501-4599】- 宠物屋装饰（46）【4601-4699】
-（5）E.宠物      蛋类（50）【5001-5499】- 已孵化（55）【5501-5899】
-（6）F.特殊      垃圾（60）【6001-6299】- 进阶材料（63）【6301-6499】";
+（3）C.装备      钓竿（31）【3001-3099】- 钓线（32）【3101-3199】- 钓钩（33）【3201-3299】- 技能一（34）【3301-3399】- 技能二（35）【3401-3499】- 人物（36）【3501-3599】
+（4）D.室外装饰  鱼篓装饰（41）【4001-4099】- 帐篷装饰（42）【4101-4199】- 提示器装饰（43）【4201-4299】
+（5）E.室内装饰  墙壁（51）【5000-5049】- 地板（52）【5050-5099】- 楼梯（53）【5100-5149】- 灯带（54）【5150-5199】- 挂饰（55）【5200-5249】- 望远镜（56）【5250-5299】- 昆虫房（57）【5300-5349】- 宠物屋（58）【5350-5399】- 鱼缸（59）【5400-5449】- 熊猫（60）【5450-5499】- 鹦鹉（61）【5500-5549】- 桌子（62）【5550-5599】
+（6）I.垃圾      【9001 - 9999】";
 
         EditorGUILayout.HelpBox(helpText, MessageType.Info);
         EditorGUILayout.EndVertical();
