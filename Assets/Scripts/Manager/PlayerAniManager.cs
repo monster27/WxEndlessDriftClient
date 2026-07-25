@@ -146,7 +146,7 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         SceneMatCtrl[] ctrls = FindObjectsOfType<SceneMatCtrl>();
         foreach (var ctrl in ctrls)
         {
-            if (ctrl.ElementId == SceneMatManager.ElementType.Player)
+            if (ctrl.ElementId == SceneMatManager.RenderElementType.Player)
             {
                 aniCtrl = ctrl;
                 return;
@@ -186,7 +186,7 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
             SceneMatCtrl[] ctrls = FindObjectsOfType<SceneMatCtrl>();
             foreach (var ctrl in ctrls)
             {
-                if (ctrl.ElementId == SceneMatManager.ElementType.FishTip)
+                if (ctrl.ElementId == SceneMatManager.RenderElementType.FishTip)
                 {
                     fishTipAniCtrl = ctrl;
                     return;

@@ -8,8 +8,14 @@
         },
         {
             "id": 4002,
-            "name": "糖果-鱼篓",
+            "name": "糖果-鱼篓(马桶)",
             "description": "糖果系列鱼篓",
+            "categoryId": 41
+        },
+        {
+            "id": 4003,
+            "name": "砂锅",
+            "description": "",
             "categoryId": 41
         },
         {

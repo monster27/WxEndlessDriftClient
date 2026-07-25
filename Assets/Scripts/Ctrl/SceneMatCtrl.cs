@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections;
 
@@ -18,7 +18,7 @@ public class SceneMatCtrl : MonoBehaviour
 
     // ========== Inspector 显示参数 ==========
     [Header("=== 基础参数 ===")]
-    [SerializeField] private SceneMatManager.ElementType elementId = SceneMatManager.ElementType.EnvBg;
+    [SerializeField] private SceneMatManager.RenderElementType elementId = SceneMatManager.RenderElementType.EnvBg;
     [SerializeField] private ParameterType parameterType = ParameterType.SceneParameter;
     [SerializeField] private bool isCanFlip = true;
     [SerializeField] private bool isFlipped = false;
@@ -73,7 +73,7 @@ public class SceneMatCtrl : MonoBehaviour
     private const string LOG_TAG = "SceneMat";
 
     // ========== 公共属性 ==========
-    public SceneMatManager.ElementType ElementId => elementId;
+    public SceneMatManager.RenderElementType ElementId => elementId;
     public ParameterType ParamType => parameterType;
     public bool IsCanFlip => isCanFlip;
     public bool IsFlipped => isFlipped;

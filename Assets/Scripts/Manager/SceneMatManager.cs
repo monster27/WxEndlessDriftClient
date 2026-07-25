@@ -9,8 +9,9 @@ using System.IO;
 public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 {
     // ========== 枚举定义 ==========
-    public enum ElementType
+    public enum RenderElementType
     {
+        None,
         Timelmg,
         EnvBg,
         NestBaitsTouchArea,
@@ -23,7 +24,19 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         EnvElement,
         EnvTreasureBox,
         Player,
-        Weather
+        Weather,
+        Indoor_Wall = 30,          // 墙壁
+        Indoor_Floor,         // 地板
+        Indoor_Stair,         // 楼梯
+        Indoor_LightStrip,    // 灯带
+        Indoor_HungDecoration,    // 挂饰
+        Indoor_Telescope,     // 望远镜
+        Indoor_InsectRoom,    // 昆虫房
+        Indoor_PetHouse,      // 宠物屋
+        Indoor_FishTank,      // 鱼缸
+        Indoor_Panda,         // 熊猫
+        Indoor_Parrot,        // 鹦鹉
+        Indoor_Table          // 桌子
     }
 
     // ========== 渲染队列层级 ==========
@@ -60,7 +73,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 
     // ========== 私有变量 ==========
     private SceneDataWrapper sceneDataWrapper;
-    private Dictionary<ElementType, SceneMatCtrl> controllerDict = new Dictionary<ElementType, SceneMatCtrl>();
+    private Dictionary<RenderElementType, SceneMatCtrl> controllerDict = new Dictionary<RenderElementType, SceneMatCtrl>();
     private Dictionary<RenderQueueLevel, int> renderQueueMap;
     private bool isDataLoaded = false;
     private bool isInitialized = false;
@@ -145,7 +158,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         }
     }
 
-    public SceneMatCtrl GetController(ElementType elementType)
+    public SceneMatCtrl GetController(RenderElementType elementType)
     {
         if (controllerDict.TryGetValue(elementType, out SceneMatCtrl controller)) return controller;
         return sceneControllers.Find(c => c.ElementId == elementType);
@@ -153,7 +166,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 
     public SceneMatCtrl GetController(string elementId)
     {
-        if (Enum.TryParse<ElementType>(elementId, out ElementType type)) return GetController(type);
+        if (Enum.TryParse<RenderElementType>(elementId, out RenderElementType type)) return GetController(type);
         return null;
     }
 

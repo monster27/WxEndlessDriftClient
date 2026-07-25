@@ -117,7 +117,34 @@ public class ZpfTool : Editor
             return;
         }
 
+        // 显示切换确认对话框
+        bool confirm = EditorUtility.DisplayDialog(
+            "切换场景",
+            "即将切换到第一个场景，请确保当前场景数据已保存！\n\n" +
+            "当前场景的修改建议先保存。",
+            "确认切换",
+            "取消"
+        );
+
+        if (!confirm)
+        {
+            Debug.Log("🔵 [RunScene0] 用户取消切换");
+            return;
+        }
+
+        // 保存当前场景
+        if (UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+        {
+            Debug.Log("🔵 [RunScene0] 当前场景已保存");
+        }
+        else
+        {
+            Debug.LogWarning("🔵 [RunScene0] 用户取消了保存，继续切换");
+        }
+
         UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scenes[0].path);
+
+        Debug.Log($"✅ 已切换到场景: {Path.GetFileNameWithoutExtension(scenes[0].path)}");
     }
 
     /// <summary>
@@ -193,10 +220,34 @@ public class ZpfTool : Editor
 
         if (!string.IsNullOrEmpty(gameScenePath) && File.Exists(gameScenePath))
         {
+            // 显示切换确认对话框
+            bool confirm = EditorUtility.DisplayDialog(
+                "切换场景",
+                "即将切换到 GameScene，请确保当前场景数据已保存！\n\n" +
+                "当前场景的修改建议先保存。",
+                "确认切换",
+                "取消"
+            );
+
+            if (!confirm)
+            {
+                Debug.Log("🔵 [SwitchToGameScene] 用户取消切换");
+                return;
+            }
+
+            // 保存当前场景
+            if (UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                Debug.Log("🔵 [SwitchToGameScene] 当前场景已保存");
+            }
+            else
+            {
+                Debug.LogWarning("🔵 [SwitchToGameScene] 用户取消了保存，继续切换");
+            }
+
             Debug.Log($"📌 手动切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}");
             UnityEditor.SceneManagement.EditorSceneManager.OpenScene(gameScenePath);
             Debug.Log($"✅ 已切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}");
-            //EditorUtility.DisplayDialog("切换成功", $"已切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}", "确定");
         }
         else
         {
