@@ -4,10 +4,10 @@ using System.Collections.Generic;
 namespace SharedModels
 {
     /// <summary>
-    /// 室外装饰数据
+    /// 室外装饰皮肤数据
     /// </summary>
     [Serializable]
-    public class OutdoorDecorationData
+    public class OutdoorSkinData
     {
         public int id;
         public string name = string.Empty;
@@ -16,9 +16,9 @@ namespace SharedModels
     }
 
     [Serializable]
-    public class OutdoorDecorationListWrapper
+    public class OutdoorSkinListWrapper
     {
-        public List<OutdoorDecorationData> decorations = new List<OutdoorDecorationData>();
+        public List<OutdoorSkinData> decorations = new List<OutdoorSkinData>();
     }
 
 }

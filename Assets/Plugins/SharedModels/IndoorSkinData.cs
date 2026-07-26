@@ -4,10 +4,10 @@ using System.Collections.Generic;
 namespace SharedModels
 {
     /// <summary>
-    /// 室内装饰数据
+    /// 室内装饰皮肤数据
     /// </summary>
     [Serializable]
-    public class IndoorDecorationData
+    public class IndoorSkinData
     {
         public int id;
         public string name = string.Empty;
@@ -16,13 +16,13 @@ namespace SharedModels
     }
 
     [Serializable]
-    public class IndoorDecorationListWrapper
+    public class IndoorSkinListWrapper
     {
-        public List<IndoorDecorationData> decorations = new List<IndoorDecorationData>();
+        public List<IndoorSkinData> decorations = new List<IndoorSkinData>();
     }
 
     ///// <summary>
-    ///// 室内装饰子分类枚举
+    ///// 室内装饰皮肤子分类枚举
     ///// </summary>
     //public enum IndoorDecorationType
     //{

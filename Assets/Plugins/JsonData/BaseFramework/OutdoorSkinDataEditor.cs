@@ -8,13 +8,13 @@ using System.Linq;
 using SharedModels;
 
 /// <summary>
-/// 室外装饰编辑器（ID范围：4000-4299）
+/// 室外装饰皮肤编辑器（ID范围：4000-4299）
 /// </summary>
-public class OutdoorDecorationDataEditor : EditorWindow
+public class OutdoorSkinDataEditor : EditorWindow
 {
-    private const string RELATIVE_PATH = "Resources/JsonData/Game/BagItem/outdoorDecorations.json";
+    private const string RELATIVE_PATH = "Resources/JsonData/Game/BagItem/outdoorSkin.json";
 
-    private List<OutdoorDecorationData> decorationList = new List<OutdoorDecorationData>();
+    private List<OutdoorSkinData> decorationList = new List<OutdoorSkinData>();
     private int selectedDecorationId = -1;
     private int editingDecorationId = -1;
 
@@ -43,10 +43,10 @@ public class OutdoorDecorationDataEditor : EditorWindow
         { 43, "提示器装饰" }
     };
 
-    [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/4001_室外装饰")]
+    [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/4001_室外装饰皮肤")]
     public static void ShowWindow()
     {
-        var window = GetWindow<OutdoorDecorationDataEditor>("室外装饰编辑器");
+        var window = GetWindow<OutdoorSkinDataEditor>("室外装饰皮肤编辑器");
         window.minSize = new Vector2(950, 650);
         window.Show();
     }
@@ -87,7 +87,7 @@ public class OutdoorDecorationDataEditor : EditorWindow
     private void DrawTopToolbar()
     {
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-        EditorGUILayout.LabelField("🏕️ 室外装饰编辑器 (ID: 4000-4299)", EditorStyles.boldLabel, GUILayout.Width(220));
+        EditorGUILayout.LabelField("🏕️ 室外装饰皮肤编辑器 (ID: 4000-4299)", EditorStyles.boldLabel, GUILayout.Width(220));
         GUILayout.FlexibleSpace();
 
         if (GUILayout.Button("🔄 刷新", EditorStyles.toolbarButton, GUILayout.Width(70)))
@@ -148,7 +148,7 @@ public class OutdoorDecorationDataEditor : EditorWindow
         GUILayout.Space(5);
     }
 
-    private List<OutdoorDecorationData> GetFilteredList()
+    private List<OutdoorSkinData> GetFilteredList()
     {
         var filtered = decorationList.AsEnumerable();
 
@@ -234,7 +234,7 @@ public class OutdoorDecorationDataEditor : EditorWindow
         EditorGUILayout.Space(2);
     }
 
-    private void DrawDecorationItem(OutdoorDecorationData item)
+    private void DrawDecorationItem(OutdoorSkinData item)
     {
         bool isSelected = selectedDecorationId == item.id;
 
@@ -289,7 +289,7 @@ public class OutdoorDecorationDataEditor : EditorWindow
         }
     }
 
-    private OutdoorDecorationData GetDecorationById(int id)
+    private OutdoorSkinData GetDecorationById(int id)
     {
         return decorationList.Find(c => c.id == id);
     }
@@ -460,14 +460,14 @@ public class OutdoorDecorationDataEditor : EditorWindow
     {
         string fullPath = Path.Combine(Application.dataPath, RELATIVE_PATH);
 
-        decorationList = new List<OutdoorDecorationData>();
+        decorationList = new List<OutdoorSkinData>();
 
         if (File.Exists(fullPath))
         {
             try
             {
                 string json = File.ReadAllText(fullPath);
-                var wrapper = JsonUtility.FromJson<OutdoorDecorationListWrapper>(json);
+                var wrapper = JsonUtility.FromJson<OutdoorSkinListWrapper>(json);
                 if (wrapper != null && wrapper.decorations != null)
                 {
                     decorationList = wrapper.decorations.ToList();
@@ -494,7 +494,7 @@ public class OutdoorDecorationDataEditor : EditorWindow
         if (!Directory.Exists(directory))
             Directory.CreateDirectory(directory);
 
-        var wrapper = new OutdoorDecorationListWrapper { decorations = decorationList };
+        var wrapper = new OutdoorSkinListWrapper { decorations = decorationList };
         string json = JsonUtility.ToJson(wrapper, true);
         File.WriteAllText(fullPath, json);
 
@@ -518,7 +518,7 @@ public class OutdoorDecorationDataEditor : EditorWindow
             return;
         }
 
-        var newItem = new OutdoorDecorationData
+        var newItem = new OutdoorSkinData
         {
             id = newId,
             name = newName,

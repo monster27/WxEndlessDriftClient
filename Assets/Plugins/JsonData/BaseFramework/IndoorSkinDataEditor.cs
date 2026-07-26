@@ -8,13 +8,13 @@ using System.Linq;
 using SharedModels;
 
 /// <summary>
-/// 室内装饰编辑器（ID范围：5000-5599）
+/// 室内装饰皮肤编辑器（ID范围：5000-5599）
 /// </summary>
-public class IndoorDecorationDataEditor : EditorWindow
+public class IndoorSkinDataEditor : EditorWindow
 {
-    private const string RELATIVE_PATH = "Resources/JsonData/Game/BagItem/indoorDecorations.json";
+    private const string RELATIVE_PATH = "Resources/JsonData/Game/BagItem/indoorSkin.json";
 
-    private List<IndoorDecorationData> decorationList = new List<IndoorDecorationData>();
+    private List<IndoorSkinData> decorationList = new List<IndoorSkinData>();
     private int selectedDecorationId = -1;
     private int editingDecorationId = -1;
 
@@ -52,10 +52,10 @@ public class IndoorDecorationDataEditor : EditorWindow
         { 62, "桌子" }
     };
 
-    [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/5001_室内装饰")]
+    [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/5001_室内装饰皮肤")]
     public static void ShowWindow()
     {
-        var window = GetWindow<IndoorDecorationDataEditor>("室内装饰编辑器");
+        var window = GetWindow<IndoorSkinDataEditor>("室内装饰皮肤编辑器");
         window.minSize = new Vector2(950, 650);
         window.Show();
     }
@@ -96,7 +96,7 @@ public class IndoorDecorationDataEditor : EditorWindow
     private void DrawTopToolbar()
     {
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-        EditorGUILayout.LabelField("🏠 室内装饰编辑器 (ID: 5000-5599)", EditorStyles.boldLabel, GUILayout.Width(220));
+        EditorGUILayout.LabelField("🏠 室内装饰皮肤编辑器 (ID: 5000-5599)", EditorStyles.boldLabel, GUILayout.Width(220));
         GUILayout.FlexibleSpace();
 
         if (GUILayout.Button("🔄 刷新", EditorStyles.toolbarButton, GUILayout.Width(70)))
@@ -157,7 +157,7 @@ public class IndoorDecorationDataEditor : EditorWindow
         GUILayout.Space(5);
     }
 
-    private List<IndoorDecorationData> GetFilteredList()
+    private List<IndoorSkinData> GetFilteredList()
     {
         var filtered = decorationList.AsEnumerable();
 
@@ -243,7 +243,7 @@ public class IndoorDecorationDataEditor : EditorWindow
         EditorGUILayout.Space(2);
     }
 
-    private void DrawDecorationItem(IndoorDecorationData item)
+    private void DrawDecorationItem(IndoorSkinData item)
     {
         bool isSelected = selectedDecorationId == item.id;
 
@@ -298,7 +298,7 @@ public class IndoorDecorationDataEditor : EditorWindow
         }
     }
 
-    private IndoorDecorationData GetDecorationById(int id)
+    private IndoorSkinData GetDecorationById(int id)
     {
         return decorationList.Find(c => c.id == id);
     }
@@ -478,14 +478,14 @@ public class IndoorDecorationDataEditor : EditorWindow
     {
         string fullPath = Path.Combine(Application.dataPath, RELATIVE_PATH);
 
-        decorationList = new List<IndoorDecorationData>();
+        decorationList = new List<IndoorSkinData>();
 
         if (File.Exists(fullPath))
         {
             try
             {
                 string json = File.ReadAllText(fullPath);
-                var wrapper = JsonUtility.FromJson<IndoorDecorationListWrapper>(json);
+                var wrapper = JsonUtility.FromJson<IndoorSkinListWrapper>(json);
                 if (wrapper != null && wrapper.decorations != null)
                 {
                     decorationList = wrapper.decorations.ToList();
@@ -512,7 +512,7 @@ public class IndoorDecorationDataEditor : EditorWindow
         if (!Directory.Exists(directory))
             Directory.CreateDirectory(directory);
 
-        var wrapper = new IndoorDecorationListWrapper { decorations = decorationList };
+        var wrapper = new IndoorSkinListWrapper { decorations = decorationList };
         string json = JsonUtility.ToJson(wrapper, true);
         File.WriteAllText(fullPath, json);
 
@@ -536,7 +536,7 @@ public class IndoorDecorationDataEditor : EditorWindow
             return;
         }
 
-        var newItem = new IndoorDecorationData
+        var newItem = new IndoorSkinData
         {
             id = newId,
             name = newName,

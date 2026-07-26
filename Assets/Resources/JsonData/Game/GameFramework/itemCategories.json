@@ -39,9 +39,9 @@
         },
         {
             "id": 4,
-            "name": "室外装饰",
+            "name": "室外装饰皮肤",
             "code": "D",
-            "description": "D.室外装饰",
+            "description": "D.室外装饰皮肤",
             "startId": 4001,
             "endId": 4999,
             "subCategories": [
@@ -52,9 +52,9 @@
         },
         {
             "id": 5,
-            "name": "室内装饰",
+            "name": "室内装饰皮肤",
             "code": "E",
-            "description": "E.室内装饰",
+            "description": "E.室内装饰皮肤",
             "startId": 5000,
             "endId": 5599,
             "subCategories": [
