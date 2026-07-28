@@ -24,6 +24,7 @@ public class CategoryConfig
     public int categoryId;              // 大分类ID
     public string categoryName;         // 大分类名称（用于显示）
     public Toggle categoryToggle;       // 大分类的toggle
+    public GameObject categoryRoot;     // 大分类对应的根物体，控制显隐
     public List<SubCategoryConfig> subCategoryConfigs = new List<SubCategoryConfig>();  // 小分类配置列表
 }
 
@@ -31,6 +32,11 @@ public class BagView : BaseView
 {
     public ToggleGroup toggleGroup;
     public List<CategoryConfig> categoryConfigs = new List<CategoryConfig>();
+
+    public Toggle indoorSkinToggle;
+    public Toggle outdoorSkinToggle;
+    public GameObject indoorSkinObj;
+    public GameObject outdoorSkinObj;
 
     private Dictionary<int, CategoryConfig> categoryIdToConfig = new Dictionary<int, CategoryConfig>();
 
@@ -40,7 +46,39 @@ public class BagView : BaseView
         base.BaseViewInit();
         InitCategoryMappings();
         InitToggleListeners();
+        InitSkinToggleListeners();
+        InitDefaultSkinState();
+        RegisterEvents();
         isInitialized = true;
+    }
+
+    private void RegisterEvents()
+    {
+        CommunicateEvent.Register(CommunicateEvent.EVENT_REFRESH_BAG, OnBagRefresh);
+        Debug.Log("[BagView] 注册背包刷新事件监听");
+    }
+
+    private void OnDestroy()
+    {
+        CommunicateEvent.Unregister(CommunicateEvent.EVENT_REFRESH_BAG, OnBagRefresh);
+    }
+
+    private void OnBagRefresh()
+    {
+        Debug.Log("[BagView] 收到背包刷新事件，调用 RefreshItems");
+        RefreshItems();
+    }
+
+    private void InitDefaultSkinState()
+    {
+        if (outdoorSkinToggle != null)
+        {
+            outdoorSkinToggle.isOn = true;
+        }
+        else
+        {
+            ShowOutdoorSkin();
+        }
     }
 
     private void InitCategoryMappings()
@@ -72,13 +110,67 @@ public class BagView : BaseView
         }
     }
 
+    private void InitSkinToggleListeners()
+    {
+        if (indoorSkinToggle != null)
+        {
+            indoorSkinToggle.onValueChanged.AddListener((isOn) =>
+            {
+                if (isOn)
+                {
+                    ShowIndoorSkin();
+                }
+            });
+        }
+
+        if (outdoorSkinToggle != null)
+        {
+            outdoorSkinToggle.onValueChanged.AddListener((isOn) =>
+            {
+                if (isOn)
+                {
+                    ShowOutdoorSkin();
+                }
+            });
+        }
+    }
+
+    private void ShowIndoorSkin()
+    {
+        if (indoorSkinObj != null)
+        {
+            indoorSkinObj.SetActive(true);
+        }
+        if (outdoorSkinObj != null)
+        {
+            outdoorSkinObj.SetActive(false);
+        }
+        Debug.Log("[BagView] 切换到室内皮肤");
+    }
+
+    private void ShowOutdoorSkin()
+    {
+        if (outdoorSkinObj != null)
+        {
+            outdoorSkinObj.SetActive(true);
+        }
+        if (indoorSkinObj != null)
+        {
+            indoorSkinObj.SetActive(false);
+        }
+        Debug.Log("[BagView] 切换到室外皮肤");
+    }
+
     private void OnCategoryToggle(CategoryConfig config)
     {
-        // 隐藏所有BagDetail
         foreach (CategoryConfig cfg in categoryConfigs)
         {
             if (cfg != null)
             {
+                if (cfg.categoryRoot != null)
+                {
+                    cfg.categoryRoot.SetActive(false);
+                }
                 foreach (SubCategoryConfig subCfg in cfg.subCategoryConfigs)
                 {
                     if (subCfg != null && subCfg.bagDetail != null)
@@ -89,9 +181,12 @@ public class BagView : BaseView
             }
         }
 
-        // 显示当前选中分类的所有小分类BagDetail
         if (config != null)
         {
+            if (config.categoryRoot != null)
+            {
+                config.categoryRoot.SetActive(true);
+            }
             foreach (SubCategoryConfig subCfg in config.subCategoryConfigs)
             {
                 if (subCfg != null && subCfg.bagDetail != null)
@@ -171,9 +266,7 @@ public class BagView : BaseView
         {
             if (config != null && config.categoryToggle != null)
             {
-                // 直接调用OnCategoryToggle方法，确保和手动点击的效果完全一致
                 OnCategoryToggle(config);
-                // 设置toggle为选中状态
                 config.categoryToggle.isOn = true;
                 break;
             }
@@ -182,7 +275,6 @@ public class BagView : BaseView
 
     private void UpdateAllBagDetails(Dictionary<int, int> inventory, Dictionary<int, ItemData> itemDataMap)
     {
-        // 更新所有分类的BagDetail
         foreach (CategoryConfig config in categoryConfigs)
         {
             if (config != null)
@@ -191,7 +283,6 @@ public class BagView : BaseView
                 {
                     if (subCfg != null && subCfg.bagDetail != null)
                     {
-                        // 根据小分类ID更新对应detail的物品
                         subCfg.bagDetail.UpdateItemsBySingleCategory(itemDataMap, inventory, subCfg.subCategoryId);
                     }
                 }

@@ -289,6 +289,316 @@
             "itemType": 3,
             "categoryId": 91,
             "iconPath": "UI/Icon/TrashIcons/9003"
+        },
+        {
+            "id": 4001,
+            "name": "默认鱼篓",
+            "description": "基础款鱼篓",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 4,
+            "categoryId": 41,
+            "iconPath": "UI/Icon/OutdoorSkinIcons/4001"
+        },
+        {
+            "id": 4002,
+            "name": "糖果-鱼篓(马桶)",
+            "description": "糖果系列鱼篓",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 4,
+            "categoryId": 41,
+            "iconPath": "UI/Icon/OutdoorSkinIcons/4002"
+        },
+        {
+            "id": 4003,
+            "name": "砂锅",
+            "description": "",
+            "sellPrice": -1,
+            "buyPrice": 3,
+            "itemType": 4,
+            "categoryId": 41,
+            "iconPath": "UI/Icon/OutdoorSkinIcons/4003"
+        },
+        {
+            "id": 4101,
+            "name": "默认帐篷",
+            "description": "基础款帐篷",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 4,
+            "categoryId": 42,
+            "iconPath": "UI/Icon/OutdoorSkinIcons/4101"
+        },
+        {
+            "id": 4102,
+            "name": "糖果-帐篷",
+            "description": "糖果系列帐篷",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 4,
+            "categoryId": 42,
+            "iconPath": "UI/Icon/OutdoorSkinIcons/4102"
+        },
+        {
+            "id": 4201,
+            "name": "默认提示器",
+            "description": "基础款提示器",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 4,
+            "categoryId": 43,
+            "iconPath": "UI/Icon/OutdoorSkinIcons/4201"
+        },
+        {
+            "id": 4202,
+            "name": "糖果-提示器",
+            "description": "糖果系列提示器",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 4,
+            "categoryId": 43,
+            "iconPath": "UI/Icon/OutdoorSkinIcons/4202"
+        },
+        {
+            "id": 5001,
+            "name": "默认墙壁",
+            "description": "基础款墙壁",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 5,
+            "categoryId": 51,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5001"
+        },
+        {
+            "id": 5002,
+            "name": "糖果-墙壁",
+            "description": "糖果系列墙壁",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 5,
+            "categoryId": 51,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5002"
+        },
+        {
+            "id": 5051,
+            "name": "默认地板",
+            "description": "基础款地板",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 5,
+            "categoryId": 52,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5051"
+        },
+        {
+            "id": 5052,
+            "name": "糖果-地板",
+            "description": "糖果系列地板",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 5,
+            "categoryId": 52,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5052"
+        },
+        {
+            "id": 5101,
+            "name": "默认楼梯",
+            "description": "基础款楼梯",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 5,
+            "categoryId": 53,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5101"
+        },
+        {
+            "id": 5102,
+            "name": "糖果-楼梯",
+            "description": "糖果系列楼梯",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 5,
+            "categoryId": 53,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5102"
+        },
+        {
+            "id": 5151,
+            "name": "默认灯带",
+            "description": "基础款灯带",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 5,
+            "categoryId": 54,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5151"
+        },
+        {
+            "id": 5152,
+            "name": "糖果-灯带",
+            "description": "糖果系列灯带",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 5,
+            "categoryId": 54,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5152"
+        },
+        {
+            "id": 5201,
+            "name": "默认挂饰",
+            "description": "基础款挂饰",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 5,
+            "categoryId": 55,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5201"
+        },
+        {
+            "id": 5202,
+            "name": "糖果-挂饰",
+            "description": "糖果系列挂饰",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 5,
+            "categoryId": 55,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5202"
+        },
+        {
+            "id": 5251,
+            "name": "默认望远镜",
+            "description": "基础款望远镜",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 5,
+            "categoryId": 56,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5251"
+        },
+        {
+            "id": 5252,
+            "name": "糖果-望远镜",
+            "description": "糖果系列望远镜",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 5,
+            "categoryId": 56,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5252"
+        },
+        {
+            "id": 5301,
+            "name": "默认昆虫房",
+            "description": "基础款昆虫房",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 5,
+            "categoryId": 57,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5301"
+        },
+        {
+            "id": 5302,
+            "name": "糖果-昆虫房",
+            "description": "糖果系列昆虫房",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 5,
+            "categoryId": 57,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5302"
+        },
+        {
+            "id": 5351,
+            "name": "默认宠物屋",
+            "description": "基础款宠物屋",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 5,
+            "categoryId": 58,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5351"
+        },
+        {
+            "id": 5352,
+            "name": "糖果-宠物屋",
+            "description": "糖果系列宠物屋",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 5,
+            "categoryId": 58,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5352"
+        },
+        {
+            "id": 5401,
+            "name": "默认鱼缸",
+            "description": "基础款鱼缸",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 5,
+            "categoryId": 59,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5401"
+        },
+        {
+            "id": 5402,
+            "name": "糖果-鱼缸",
+            "description": "糖果系列鱼缸",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 5,
+            "categoryId": 59,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5402"
+        },
+        {
+            "id": 5451,
+            "name": "默认熊猫",
+            "description": "基础款熊猫",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 5,
+            "categoryId": 60,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5451"
+        },
+        {
+            "id": 5452,
+            "name": "糖果-熊猫",
+            "description": "糖果系列熊猫",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 5,
+            "categoryId": 60,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5452"
+        },
+        {
+            "id": 5501,
+            "name": "默认鹦鹉",
+            "description": "基础款鹦鹉",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 5,
+            "categoryId": 61,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5501"
+        },
+        {
+            "id": 5502,
+            "name": "糖果-鹦鹉",
+            "description": "糖果系列鹦鹉",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 5,
+            "categoryId": 61,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5502"
+        },
+        {
+            "id": 5551,
+            "name": "默认桌子",
+            "description": "基础款桌子",
+            "sellPrice": -1,
+            "buyPrice": 1,
+            "itemType": 5,
+            "categoryId": 62,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5551"
+        },
+        {
+            "id": 5552,
+            "name": "糖果-桌子",
+            "description": "糖果系列桌子",
+            "sellPrice": -1,
+            "buyPrice": 2,
+            "itemType": 5,
+            "categoryId": 62,
+            "iconPath": "UI/Icon/IndoorSkinIcons/5552"
         }
     ]
 }

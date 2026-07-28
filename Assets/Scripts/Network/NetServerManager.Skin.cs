@@ -1,0 +1,180 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+using Utils;
+
+public partial class NetServerManager
+{
+    public void RequestPlayerSkins()
+    {
+        StartCoroutine(RequestPlayerSkinsCoroutine());
+    }
+
+    internal IEnumerator RequestPlayerSkinsCoroutine()
+    {
+        int playerId = _currentPlayerId;
+        if (playerId <= 0)
+        {
+            Debug.LogWarning("[NetServerManager] 请求皮肤数据失败：玩家ID无效");
+            yield break;
+        }
+
+        string url = $"{serverUrl}/api/Player/skins/{playerId}";
+        Utils.Logger.Log($"[NetServerManager] 请求皮肤数据: {url}");
+
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    Utils.Logger.Log($"[NetServerManager] 皮肤数据响应原始JSON: {json}");
+                    
+                    var response = JsonUtility.FromJson<SkinResponse>(json);
+                    Utils.Logger.Log($"[NetServerManager] 皮肤数据解析成功: success={response.success}, message={response.message}, dataCount={response.data?.Count ?? 0}");
+                    
+                    ParsePlayerSkinsResponse(response);
+                }
+                catch (System.Exception e)
+                {
+                    Utils.Logger.LogError("[NetServerManager] 解析皮肤数据失败: " + e.Message);
+                }
+            }
+            else
+            {
+                Utils.Logger.LogError("[NetServerManager] 获取皮肤数据失败: " + request.error);
+            }
+        }
+    }
+
+    private void ParsePlayerSkinsResponse(SkinResponse response)
+    {
+        if (response == null || !response.success)
+        {
+            Utils.Logger.LogWarning("[NetServerManager] 皮肤数据为空或失败: " + (response?.message ?? "未知错误"));
+            return;
+        }
+
+        Dictionary<int, int> skins = new Dictionary<int, int>();
+        if (response.data != null)
+        {
+            foreach (var skin in response.data)
+            {
+                skins[skin.slotType] = skin.skinId;
+                Utils.Logger.Log($"[NetServerManager] 解析皮肤: slotType={skin.slotType}, skinId={skin.skinId}");
+            }
+        }
+
+        Utils.Logger.Log($"[NetServerManager] 解析皮肤数据完成，共 {skins.Count} 个皮肤");
+        CommunicateEvent.Modify<Dictionary<int, int>>(CommunicateEvent.EVENT_SKIN_DATA_UPDATED, skins);
+        
+        CommunicateEvent.Modify(CommunicateEvent.EVENT_REFRESH_BAG);
+        Utils.Logger.Log("[NetServerManager] 触发背包刷新事件");
+    }
+
+    public void RequestEquipSkin(int slotType, int skinId)
+    {
+        StartCoroutine(RequestEquipSkinCoroutine(slotType, skinId));
+    }
+
+    private IEnumerator RequestEquipSkinCoroutine(int slotType, int skinId)
+    {
+        int playerId = _currentPlayerId;
+        if (playerId <= 0)
+        {
+            Debug.LogWarning("[NetServerManager] 装备皮肤失败：玩家ID无效");
+            yield break;
+        }
+
+        string url = $"{serverUrl}/api/Player/skins/{playerId}/equip";
+        Utils.Logger.Log($"[NetServerManager] 请求装备皮肤: {url}, slotType={slotType}, skinId={skinId}");
+
+        var body = new Dictionary<string, object>
+        {
+            { "slotType", slotType },
+            { "skinId", skinId }
+        };
+
+        string jsonBody = NetUtils.SerializeToJson(body);
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
+        Utils.Logger.Log($"[NetServerManager] 装备皮肤请求体: {jsonBody}");
+
+        using (var request = new UnityWebRequest(url, "POST"))
+        {
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    string json = request.downloadHandler.text;
+                    Utils.Logger.Log($"[NetServerManager] 装备皮肤响应原始JSON: {json}");
+                    
+                    var response = JsonUtility.FromJson<SkinResponse>(json);
+                    Utils.Logger.Log($"[NetServerManager] 装备皮肤解析成功: success={response.success}, message={response.message}, dataCount={response.data?.Count ?? 0}");
+                    
+                    ParseEquipSkinResponse(response);
+                }
+                catch (System.Exception e)
+                {
+                    Utils.Logger.LogError("[NetServerManager] 解析装备皮肤响应失败: " + e.Message);
+                }
+            }
+            else
+            {
+                Utils.Logger.LogError("[NetServerManager] 装备皮肤失败: " + request.error);
+            }
+        }
+    }
+
+    private void ParseEquipSkinResponse(SkinResponse response)
+    {
+        if (response == null || !response.success)
+        {
+            Utils.Logger.LogWarning("[NetServerManager] 装备皮肤失败: " + (response?.message ?? "未知错误"));
+            return;
+        }
+
+        Dictionary<int, int> skins = new Dictionary<int, int>();
+        if (response.data != null)
+        {
+            foreach (var skin in response.data)
+            {
+                skins[skin.slotType] = skin.skinId;
+                Utils.Logger.Log($"[NetServerManager] 装备皮肤后: slotType={skin.slotType}, skinId={skin.skinId}");
+            }
+        }
+
+        Utils.Logger.Log($"[NetServerManager] 装备皮肤成功");
+        CommunicateEvent.Modify<Dictionary<int, int>>(CommunicateEvent.EVENT_SKIN_DATA_UPDATED, skins);
+        
+        CommunicateEvent.Modify(CommunicateEvent.EVENT_REFRESH_BAG);
+        Utils.Logger.Log("[NetServerManager] 装备皮肤成功，触发背包刷新事件");
+    }
+
+    [Serializable] private class SkinResponse
+    {
+        public bool success;
+        public string message;
+        public List<SkinData> data;
+    }
+
+    [Serializable] private class SkinData
+    {
+        public int slotType;
+        public int skinId;
+    }
+}

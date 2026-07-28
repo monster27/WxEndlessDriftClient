@@ -11,6 +11,8 @@ public class ItemDataExtractorEditor : EditorWindow
     private string fishDataPath = "Resources/JsonData/Game/BagItem/fishes.json";
     private string baitDataPath = "Resources/JsonData/Game/BagItem/baits.json";
     private string trashDataPath = "Resources/JsonData/Game/BagItem/trash.json";
+    private string indoorSkinDataPath = "Resources/JsonData/Game/BagItem/indoorSkin.json";
+    private string outdoorSkinDataPath = "Resources/JsonData/Game/BagItem/outdoorSkin.json";
     private string categoryDataPath = "Resources/JsonData/Game/GameFramework/itemCategories.json";
     private Vector2 scrollPosition;
     private List<ItemData> extractedItems = new List<ItemData>();
@@ -20,6 +22,8 @@ public class ItemDataExtractorEditor : EditorWindow
     private bool showFishList = true;
     private bool showBaitList = true;
     private bool showTrashList = true;
+    private bool showIndoorSkinList = true;
+    private bool showOutdoorSkinList = true;
 
     //[MenuItem("Tools/Item Tools/提取物品数据")]
     [MenuItem("Tools/游戏内容/3.物品通用数据/1.提取物品数据")]
@@ -50,6 +54,8 @@ public class ItemDataExtractorEditor : EditorWindow
         EditorGUILayout.LabelField($"鱼类数据: {fishDataPath}");
         EditorGUILayout.LabelField($"鱼饵数据: {baitDataPath}");
         EditorGUILayout.LabelField($"垃圾数据: {trashDataPath}");
+        EditorGUILayout.LabelField($"室内皮肤数据: {indoorSkinDataPath}");
+        EditorGUILayout.LabelField($"室外皮肤数据: {outdoorSkinDataPath}");
         EditorGUILayout.LabelField($"输出路径: {outputPath}");
 
         EditorGUILayout.EndVertical();
@@ -88,10 +94,14 @@ public class ItemDataExtractorEditor : EditorWindow
         List<ItemData> fishItems = extractedItems.FindAll(item => item.itemType == 1);
         List<ItemData> baitItems = extractedItems.FindAll(item => item.itemType == 2);
         List<ItemData> trashItems = extractedItems.FindAll(item => item.itemType == 3);
+        List<ItemData> outdoorSkinItems = extractedItems.FindAll(item => item.itemType == 4);
+        List<ItemData> indoorSkinItems = extractedItems.FindAll(item => item.itemType == 5);
 
         DrawItemGroup("🐟 鱼类数据", fishItems, ref showFishList);
         DrawItemGroup("🎣 鱼饵数据", baitItems, ref showBaitList);
         DrawItemGroup("🗑️ 垃圾数据", trashItems, ref showTrashList);
+        DrawItemGroup("🏕️ 室外皮肤数据", outdoorSkinItems, ref showOutdoorSkinList);
+        DrawItemGroup("🏠 室内皮肤数据", indoorSkinItems, ref showIndoorSkinList);
     }
 
     private void DrawItemGroup(string title, List<ItemData> items, ref bool isExpanded)
@@ -148,8 +158,8 @@ public class ItemDataExtractorEditor : EditorWindow
             case 1: return "鱼类";
             case 2: return "鱼饵";
             case 3: return "垃圾";
-            case 4: return "装备";
-            case 5: return "装饰";
+            case 4: return "室外皮肤";
+            case 5: return "室内皮肤";
             case 6: return "特殊";
             default: return "未知";
         }
@@ -267,6 +277,76 @@ public class ItemDataExtractorEditor : EditorWindow
                         itemType = 3,
                         categoryId = GetCategoryIdByItemId(trash.id),
                         iconPath = $"UI/Icon/TrashIcons/{trash.id}"
+                    };
+                }
+                extractedItems.Add(item);
+            }
+        }
+
+        List<OutdoorSkinData> outdoorSkins = LoadOutdoorSkinData();
+        if (outdoorSkins != null)
+        {
+            foreach (var skin in outdoorSkins)
+            {
+                ItemData existingItem = FindItemById(skin.id);
+                ItemData item;
+
+                if (existingItem != null)
+                {
+                    item = existingItem;
+                    item.name = skin.name;
+                    item.description = skin.description;
+                    item.itemType = 4;
+                    item.categoryId = GetCategoryIdByItemId(skin.id);
+                    item.iconPath = $"UI/Icon/OutdoorSkinIcons/{skin.id}";
+                }
+                else
+                {
+                    item = new ItemData
+                    {
+                        id = skin.id,
+                        name = skin.name,
+                        description = skin.description,
+                        sellPrice = -1,
+                        buyPrice = -1,
+                        itemType = 4,
+                        categoryId = GetCategoryIdByItemId(skin.id),
+                        iconPath = $"UI/Icon/OutdoorSkinIcons/{skin.id}"
+                    };
+                }
+                extractedItems.Add(item);
+            }
+        }
+
+        List<IndoorSkinData> indoorSkins = LoadIndoorSkinData();
+        if (indoorSkins != null)
+        {
+            foreach (var skin in indoorSkins)
+            {
+                ItemData existingItem = FindItemById(skin.id);
+                ItemData item;
+
+                if (existingItem != null)
+                {
+                    item = existingItem;
+                    item.name = skin.name;
+                    item.description = skin.description;
+                    item.itemType = 5;
+                    item.categoryId = GetCategoryIdByItemId(skin.id);
+                    item.iconPath = $"UI/Icon/IndoorSkinIcons/{skin.id}";
+                }
+                else
+                {
+                    item = new ItemData
+                    {
+                        id = skin.id,
+                        name = skin.name,
+                        description = skin.description,
+                        sellPrice = -1,
+                        buyPrice = -1,
+                        itemType = 5,
+                        categoryId = GetCategoryIdByItemId(skin.id),
+                        iconPath = $"UI/Icon/IndoorSkinIcons/{skin.id}"
                     };
                 }
                 extractedItems.Add(item);
@@ -432,6 +512,50 @@ public class ItemDataExtractorEditor : EditorWindow
         }
     }
 
+    private List<OutdoorSkinData> LoadOutdoorSkinData()
+    {
+        string fullPath = Path.Combine(Application.dataPath, outdoorSkinDataPath);
+        if (!File.Exists(fullPath))
+        {
+            Debug.LogWarning($"[物品提取] 室外皮肤文件不存在: {fullPath}");
+            return null;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(fullPath);
+            var wrapper = JsonUtility.FromJson<OutdoorSkinListWrapper>(json);
+            return wrapper?.decorations ?? null;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[物品提取] 加载室外皮肤数据失败: {e.Message}");
+            return null;
+        }
+    }
+
+    private List<IndoorSkinData> LoadIndoorSkinData()
+    {
+        string fullPath = Path.Combine(Application.dataPath, indoorSkinDataPath);
+        if (!File.Exists(fullPath))
+        {
+            Debug.LogWarning($"[物品提取] 室内皮肤文件不存在: {fullPath}");
+            return null;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(fullPath);
+            var wrapper = JsonUtility.FromJson<IndoorSkinListWrapper>(json);
+            return wrapper?.decorations ?? null;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[物品提取] 加载室内皮肤数据失败: {e.Message}");
+            return null;
+        }
+    }
+
     private void LoadCategoryData()
     {
         string fullPath = Path.Combine(Application.dataPath, categoryDataPath);
@@ -556,6 +680,18 @@ public class ItemDataExtractorEditor : EditorWindow
     private class TrashListWrapper
     {
         public List<TrashData> trashList;
+    }
+
+    [System.Serializable]
+    private class OutdoorSkinListWrapper
+    {
+        public List<OutdoorSkinData> decorations;
+    }
+
+    [System.Serializable]
+    private class IndoorSkinListWrapper
+    {
+        public List<IndoorSkinData> decorations;
     }
 }
 #endif

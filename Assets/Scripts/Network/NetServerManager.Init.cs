@@ -253,6 +253,7 @@ public partial class NetServerManager
 
         _initSteps.Add(new InitStep("加载背包数据", FetchPlayerInventoryCoroutine, 1.5f));
         _initSteps.Add(new InitStep("加载装备数据", FetchPlayerEquipmentCoroutine, 1.5f));
+        _initSteps.Add(new InitStep("加载皮肤数据", FetchPlayerSkinsCoroutine, 1.0f));
         _initSteps.Add(new InitStep("加载鱼篓数据", FetchPlayerFishInventoryCoroutine, 1.5f));
         _initSteps.Add(new InitStep("加载人物数据", FetchPlayerCharacterDataCoroutine, 1.5f));
         _initSteps.Add(new InitStep("加载金币数据", FetchPlayerGoldCoroutine, 1.0f));
@@ -266,6 +267,12 @@ public partial class NetServerManager
     }
 
     // ========== 各个步骤的 Coroutine ==========
+
+    private IEnumerator FetchPlayerSkinsCoroutine()
+    {
+        yield return RequestPlayerSkinsCoroutine();
+        Logger.Log("[NetServerManager] 初始化 - 皮肤数据加载完成");
+    }
 
     private IEnumerator FetchPlayerGoldCoroutine()
     {

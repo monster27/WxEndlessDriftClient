@@ -147,9 +147,18 @@ public partial class NetServerManager
 
     private bool IsItemEquipped(int itemId)
     {
-        return equippedRodId == itemId || equippedLineId == itemId || equippedHookId == itemId
+        bool isEquipped = equippedRodId == itemId || equippedLineId == itemId || equippedHookId == itemId
             || equippedSkill1Id == itemId || equippedSkill2Id == itemId
             || equippedCharacterId == itemId || equippedBaitId == itemId;
+        
+        if (!isEquipped && SkinManager.Instance != null)
+        {
+            isEquipped = SkinManager.Instance.IsSkinEquipped(itemId);
+            Debug.Log($"[NetServerManager] IsItemEquipped - itemId={itemId}, 皮肤装备检查: {isEquipped}");
+        }
+        
+        Debug.Log($"[NetServerManager] IsItemEquipped - itemId={itemId}, 最终结果: {isEquipped}");
+        return isEquipped;
     }
 
     // 在 NetServerManager.PlayerData.cs 中找到 IsEquipmentUnlocked 方法

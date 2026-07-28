@@ -1,0 +1,682 @@
+{
+    "collection": {
+        "categories": [
+            {
+                "id": 1,
+                "name": "鱼类图鉴",
+                "icon": "icon_fish",
+                "pages": [
+                    {
+                        "id": 801,
+                        "pageName": "岛屿101鱼类",
+                        "rewards": [
+                            {
+                                "percent": 10,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 20,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 30,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 40,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 50,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 60,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 70,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 80,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 90,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 100,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            }
+                        ],
+                        "entries": [
+                            1001,
+                            1002,
+                            1003,
+                            1004,
+                            1005,
+                            1006,
+                            1007,
+                            1008,
+                            1009,
+                            1010,
+                            1011,
+                            1012,
+                            1013,
+                            1014,
+                            1015
+                        ]
+                    },
+                    {
+                        "id": 802,
+                        "pageName": "岛屿102鱼类",
+                        "rewards": [
+                            {
+                                "percent": 10,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 20,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 30,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 40,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 50,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 60,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 70,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 80,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 90,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 100,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            }
+                        ],
+                        "entries": [
+                            1021,
+                            1022,
+                            1023,
+                            1024
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": 2,
+                "name": "幻鱼图鉴",
+                "icon": "icon_mythical",
+                "pages": [
+                    {
+                        "id": 831,
+                        "pageName": "传说幻鱼",
+                        "rewards": [
+                            {
+                                "percent": 10,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 20,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 30,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 40,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 50,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 60,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 70,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 80,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 90,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 100,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            }
+                        ],
+                        "entries": [
+                            2001,
+                            2002,
+                            2003,
+                            2004,
+                            2005
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": 3,
+                "name": "昆虫图鉴",
+                "icon": "icon_insect",
+                "pages": [
+                    {
+                        "id": 841,
+                        "pageName": "陆地昆虫",
+                        "rewards": [
+                            {
+                                "percent": 10,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 20,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 30,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 40,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 50,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 60,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 70,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 80,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 90,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 100,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            }
+                        ],
+                        "entries": [
+                            3001,
+                            3002,
+                            3003,
+                            3004,
+                            3005
+                        ]
+                    },
+                    {
+                        "id": 842,
+                        "pageName": "水生昆虫",
+                        "rewards": [
+                            {
+                                "percent": 10,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 20,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 30,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 40,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 50,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 60,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 70,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 80,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 90,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 100,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            }
+                        ],
+                        "entries": [
+                            3006,
+                            3007,
+                            3008
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": 4,
+                "name": "人物图鉴",
+                "icon": "icon_character",
+                "pages": [
+                    {
+                        "id": 851,
+                        "pageName": "渔夫",
+                        "rewards": [
+                            {
+                                "percent": 10,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 20,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 30,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 40,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 50,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 60,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 70,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 80,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 90,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 100,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            }
+                        ],
+                        "entries": [
+                            4001,
+                            4002,
+                            4003,
+                            4004,
+                            4005
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": 5,
+                "name": "宠物图鉴",
+                "icon": "icon_pet",
+                "pages": [
+                    {
+                        "id": 861,
+                        "pageName": "陆地宠物",
+                        "rewards": [
+                            {
+                                "percent": 10,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 20,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 30,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 40,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 50,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 60,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 70,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 80,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 90,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 100,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            }
+                        ],
+                        "entries": [
+                            5001,
+                            5002,
+                            5003,
+                            5004,
+                            5005
+                        ]
+                    },
+                    {
+                        "id": 862,
+                        "pageName": "水生宠物",
+                        "rewards": [
+                            {
+                                "percent": 10,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 20,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 30,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 40,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 50,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 60,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 70,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 80,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 90,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 100,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            }
+                        ],
+                        "entries": [
+                            5006,
+                            5007
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": 6,
+                "name": "皮肤图鉴",
+                "icon": "icon_Skin",
+                "pages": [
+                    {
+                        "id": 871,
+                        "pageName": "室内装饰",
+                        "rewards": [
+                            {
+                                "percent": 10,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 20,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 30,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 40,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 50,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 60,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 70,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 80,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 90,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 100,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            }
+                        ],
+                        "entries": [
+                            6001,
+                            6002,
+                            6003,
+                            6004,
+                            6005
+                        ]
+                    },
+                    {
+                        "id": 872,
+                        "pageName": "室外装饰",
+                        "rewards": [
+                            {
+                                "percent": 10,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 20,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 30,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 40,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 50,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 60,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 70,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 80,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 90,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            },
+                            {
+                                "percent": 100,
+                                "rewardId": 0,
+                                "rewardAmount": 0
+                            }
+                        ],
+                        "entries": [
+                            6006,
+                            6007,
+                            6008,
+                            6009,
+                            6010
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

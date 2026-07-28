@@ -174,6 +174,7 @@ public class ManagerManager : SingletonMono<ManagerManager>
         {
             ClickManager.Instance.IsEnabled = true;
         }
+        CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_ALL_LOADING_COMPLETE, "All loading complete");
     }
 
     private void OnDestroy()

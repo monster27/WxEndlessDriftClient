@@ -123,6 +123,18 @@ public static partial class CommunicateEvent
     /// <summary>【服务器向客户端发送通知】自动出售状态变更</summary>
     public const string EVENT_AUTO_SELL_STATUS_CHANGED = "S2C_EVENT_AUTO_SELL_STATUS_CHANGED";
 
+    /// <summary>【服务器向客户端发送通知】皮肤数据更新</summary>
+    public const string EVENT_SKIN_DATA_UPDATED = "S2C_EVENT_SKIN_DATA_UPDATED";
+
+    /// <summary>【服务器向客户端发送通知】皮肤装备变更</summary>
+    public const string EVENT_SKIN_EQUIPPED = "S2C_EVENT_SKIN_EQUIPPED";
+
+    /// <summary>【其他事件】所有加载完成</summary>
+    public const string EVENT_ALL_LOADING_COMPLETE = "OTHER_EVENT_ALL_LOADING_COMPLETE";
+
+    /// <summary>【其他事件】刷新背包</summary>
+    public const string EVENT_REFRESH_BAG = "OTHER_EVENT_REFRESH_BAG";
+
     #endregion
 
     #region UI - UI层请求事件（View层发送到UIManager）

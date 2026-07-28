@@ -16,20 +16,21 @@ namespace View.Detail
         private List<UI_BagPrefab> objectPool = new List<UI_BagPrefab>();
 
         void Start()
+    {
+        if (contentTransform == null)
         {
-            if (contentTransform == null)
-            {
-                contentTransform = transform.Find("Content");
-            }
-            
-            CommunicateEvent.Register<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipmentChanged);
+            contentTransform = transform.Find("Content");
         }
         
-        void OnDestroy()
-        {
-            // 取消注册装备状态更新事件
-            CommunicateEvent.Unregister<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipmentChanged);
-        }
+        CommunicateEvent.Register<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipmentChanged);
+        CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_SKIN_EQUIPPED, OnSkinEquipped);
+    }
+    
+    void OnDestroy()
+    {
+        CommunicateEvent.Unregister<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipmentChanged);
+        CommunicateEvent.Unregister<(int, int)>(CommunicateEvent.EVENT_SKIN_EQUIPPED, OnSkinEquipped);
+    }
         
         /// <summary>
         /// 装备状态更新事件处理器
@@ -46,6 +47,19 @@ namespace View.Detail
             {
                 UpdateBaitEquippedState(itemId);
             }
+        }
+        
+        /// <summary>
+        /// 皮肤装备状态更新事件处理器
+        /// </summary>
+        private void OnSkinEquipped((int, int) data)
+        {
+            int slotType = data.Item1;
+            int skinId = data.Item2;
+            
+            Debug.Log($"[BagDetail] 接收到皮肤装备状态更新事件: SlotType={slotType}, SkinId={skinId}");
+            
+            UpdateSkinEquippedState(slotType, skinId);
         }
         
         /// <summary>
@@ -75,6 +89,29 @@ namespace View.Detail
                     {
                         prefab.SetEquipped(shouldBeEquipped);
                         Debug.Log($"[BagDetail] 更新物品装备状态: itemId={itemId}, shouldBeEquipped={shouldBeEquipped}, activeSelf={prefab.gameObject.activeSelf}");
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// 更新皮肤的装备状态显示
+        /// </summary>
+        private void UpdateSkinEquippedState(int slotType, int newSkinId)
+        {
+            Debug.Log($"[BagDetail] UpdateSkinEquippedState - slotType={slotType}, newSkinId={newSkinId}");
+            
+            foreach (var kvp in itemPrefabs)
+            {
+                int itemId = kvp.Key;
+                bool shouldBeEquipped = (itemId == newSkinId);
+                
+                foreach (var prefab in kvp.Value)
+                {
+                    if (prefab != null)
+                    {
+                        prefab.SetEquipped(shouldBeEquipped);
+                        Debug.Log($"[BagDetail] 更新皮肤装备状态: itemId={itemId}, shouldBeEquipped={shouldBeEquipped}");
                     }
                 }
             }
@@ -362,7 +399,11 @@ namespace View.Detail
         /// </summary>
         private bool IsItemEquipped(int itemId)
         {
-            return CommunicateEvent.Request<int, bool>(CommunicateEvent.EVENT_IS_ITEM_EQUIPPED, itemId);
+            bool isEquipped = CommunicateEvent.Request<int, bool>(CommunicateEvent.EVENT_IS_ITEM_EQUIPPED, itemId);
+            
+            Debug.Log($"[BagDetail] IsItemEquipped - itemId={itemId}, 事件检查结果: {isEquipped}");
+            
+            return isEquipped;
         }
 
         private int CalculateNeededPrefabs(int totalQuantity, int maxStack)

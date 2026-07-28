@@ -121,7 +121,7 @@ namespace View.Detail
 
         private void OnItemClick()
         {
-            Debug.Log($"[UI_BagPrefab] 点击物品: ID={itemId}, 名称={itemData.name}, 数量={quantity}, 是否已装备={isEquipped}, categoryId={itemData?.categoryId}");
+            Debug.Log($"[UI_BagPrefab] 点击物品: ID={itemId}, 名称={itemData.name}, 数量={quantity}, 是否已装备={isEquipped}, categoryId={itemData?.categoryId}, itemType={itemData?.itemType}");
 
             if (itemData != null && itemData.itemType == 2)
             {
@@ -134,6 +134,23 @@ namespace View.Detail
                     //UseNestBait();
                 }
             }
+            else if (itemData != null && (itemData.itemType == 4 || itemData.itemType == 5))
+            {
+                EquipSkin();
+            }
+        }
+
+        private void EquipSkin()
+        {
+            if (itemData == null) return;
+            
+            int slotType = itemData.categoryId;
+            Debug.Log($"[UI_BagPrefab] 装备皮肤: itemId={itemId}, slotType={slotType}, name={itemData.name}");
+            
+            NetServerManager.Instance?.RequestEquipSkin(slotType, itemId);
+            
+            isEquipped = true;
+            UpdateDisplay();
         }
 
         /// <summary>

@@ -207,6 +207,30 @@ public class SkillListWrapper { public List<SkillData> skills; }
 
 #region 背包物品数据
 
+// 室外装饰皮肤
+[System.Serializable]
+public class OutdoorSkinData
+{
+    public int id;
+    public string name = string.Empty;
+    public string description = string.Empty;
+    public int categoryId;
+}
+[System.Serializable]
+public class OutdoorSkinListWrapper { public List<OutdoorSkinData> decorations; }
+
+// 室内装饰皮肤
+[System.Serializable]
+public class IndoorSkinData
+{
+    public int id;
+    public string name = string.Empty;
+    public string description = string.Empty;
+    public int categoryId;
+}
+[System.Serializable]
+public class IndoorSkinListWrapper { public List<IndoorSkinData> decorations; }
+
 // 鱼饵
 [System.Serializable] public class BaitData { public int id; public string name; public string description; public int baseWeight; public int unlockScene; }
 [System.Serializable] public class BaitListWrapper { public BaitData[] baits; }
