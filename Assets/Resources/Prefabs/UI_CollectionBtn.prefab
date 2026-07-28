@@ -168,7 +168,7 @@ GameObject:
   - component: {fileID: 4119757931812030710}
   - component: {fileID: 7065974099997344109}
   - component: {fileID: 7283491455403596303}
-  - component: {fileID: 174228720485281168}
+  - component: {fileID: 2503143269539724044}
   m_Layer: 5
   m_HasEditorInfo: 1
   m_Name: UI_CollectionBtn
@@ -200,7 +200,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 230, y: 230}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4119757931812030710
 CanvasRenderer:
@@ -284,7 +284,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &174228720485281168
+--- !u!114 &2503143269539724044
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -293,22 +293,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 3441971727286902718}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7cd4cc94bc39cbd47ad5159756918c6c, type: 3}
+  m_Script: {fileID: 11500000, guid: 595e0fe287efafc4d8c2f9394ee6dffc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  iconImage: {fileID: 8666519458886579807}
-  quantityText: {fileID: 0}
+  icon: {fileID: 8666519458886579807}
+  levelImage: {fileID: 4534319436826255807}
+  shinyToggleButton: {fileID: 2890244173932597198}
+  shinyImage: {fileID: 2937295645958427762}
   nameText: {fileID: 3535663313722562208}
-  weightText: {fileID: 0}
-  priceText: {fileID: 0}
-  starRatingText: {fileID: 0}
-  starRatingImage: {fileID: 4534319436826255807}
   rarityBackgroundImage: {fileID: 2013883157308476561}
-  selectButton: {fileID: 7283491455403596303}
-  selectedImage: {fileID: 0}
-  newCatchImage: {fileID: 0}
-  shinyIconImage: {fileID: 2937295645958427762}
-  lockIcon: {fileID: 0}
 --- !u!1 &3504945544659299133
 GameObject:
   m_ObjectHideFlags: 0

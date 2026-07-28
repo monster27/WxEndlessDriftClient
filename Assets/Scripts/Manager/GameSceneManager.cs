@@ -12,13 +12,14 @@ public class GameSceneManager : SingletonMonoFromScene<GameSceneManager>
     {
         if (indoorSceneObj != null)
         {
-            indoorSceneObj.SetActive(true);
+            indoorSceneObj.SetActive(false);
         }
         if (outdoorSceneObj != null)
         {
-            outdoorSceneObj.SetActive(false);
+            outdoorSceneObj.SetActive(true);
         }
-        Debug.Log("[GameSceneManager] 初始化完成，默认打开室内场景");
+        isIndoor = false;
+        Debug.Log("[GameSceneManager] 初始化完成，默认打开室外场景");
     }
 
     private void OnEnable()

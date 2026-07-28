@@ -257,6 +257,7 @@ public class FishData
     public int struggleTime;
     public float flashProbability;
     public float baseWeight;
+    public float maxWeight;  // 最大重量
     public int baseExp;
     public float scale = 1.0f;  // 新增 Scale 参数
 }

@@ -831,9 +831,164 @@ public partial class NetServerManager
         public List<ItemKV> fishItems;
     }
 
+    [Serializable]
+    public class PlayerFishCollectionData
+    {
+        public int id;
+        public int playerId;
+        public int fishId;
+        public float maxWeight;
+        public int catchCount;
+        public string firstCatchTime;
+        public bool isCollected;
+        public bool isShiny;
+        public int collectionLevel;
+        
+        // 兼容属性（大写命名）
+        public int Id => id;
+        public int PlayerId => playerId;
+        public int FishId => fishId;
+        public float MaxWeight => maxWeight;
+        public int CatchCount => catchCount;
+        public string FirstCatchTime => firstCatchTime;
+        public bool IsCollected => isCollected;
+        public bool IsShiny => isShiny;
+        public int CollectionLevel => collectionLevel;
+    }
+
+    [Serializable]
+    public class CollectionReward
+    {
+        public int percent;
+        public int rewardId;
+        public int rewardAmount;
+        public bool claimed;
+    }
+
+    [Serializable]
+    public class PlayerCollectionProgress
+    {
+        public int categoryId;
+        public int pageId;
+        public float completionPercent;
+        public int completedCount;
+        public int totalCount;
+        public List<CollectionReward> availableRewards;
+        public List<CollectionReward> claimedRewards;
+    }
+
     private Dictionary<int, List<FishDetailData>> fishDetailData = new Dictionary<int, List<FishDetailData>>();
+    private Dictionary<int, PlayerFishCollectionData> playerCollectionData = new Dictionary<int, PlayerFishCollectionData>();
+    private List<PlayerCollectionProgress> playerCollectionProgress = new List<PlayerCollectionProgress>();
 
     public Dictionary<int, List<FishDetailData>> GetFishDetailData() => fishDetailData;
+
+    public int GetFishCollectionCatchCount(int fishId)
+    {
+        if (playerCollectionData.TryGetValue(fishId, out var data))
+        {
+            return data.CatchCount;
+        }
+        return 0;
+    }
+
+    public float GetFishCollectionMaxWeight(int fishId)
+    {
+        if (playerCollectionData.TryGetValue(fishId, out var data))
+        {
+            return data.MaxWeight;
+        }
+        return 0f;
+    }
+
+    public bool HasCollectedFish(int fishId)
+    {
+        return playerCollectionData.ContainsKey(fishId);
+    }
+
+    public Dictionary<int, PlayerFishCollectionData> GetPlayerCollectionData()
+    {
+        return playerCollectionData;
+    }
+
+    public List<PlayerCollectionProgress> GetPlayerCollectionProgress()
+    {
+        return playerCollectionProgress;
+    }
+
+    public void FetchPlayerCollection(Action onComplete = null)
+    {
+        StartCoroutine(FetchPlayerCollectionCoroutine(onComplete));
+    }
+
+    private IEnumerator FetchPlayerCollectionCoroutine(Action onComplete = null)
+    {
+        yield return FetchGetJson(ServerUrls.Player.CollectionById(_currentPlayerId), json =>
+        {
+            try
+            {
+                Logger.Log($"[NetServerManager] 图鉴原始JSON数据: {json}");
+                playerCollectionData.Clear();
+                var list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<PlayerFishCollectionData>>(json);
+                if (list != null)
+                {
+                    foreach (var item in list)
+                    {
+                        playerCollectionData[item.FishId] = item;
+                        Logger.Log($"[NetServerManager] 图鉴数据 - FishId:{item.FishId}, CatchCount:{item.CatchCount}, MaxWeight:{item.MaxWeight}");
+                    }
+                    Logger.Log($"[NetServerManager] 图鉴数据加载完成: {playerCollectionData.Count} 种鱼");
+                }
+                else
+                {
+                    Logger.LogWarning($"[NetServerManager] 图鉴数据为空或解析结果为null");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[NetServerManager] 解析图鉴数据失败: {ex.Message}");
+            }
+            
+            PlayerDataManager.Instance?.SyncCollectionFromServer();
+            onComplete?.Invoke();
+        }, "图鉴数据");
+    }
+
+    public void FetchPlayerCollectionProgress(Action onComplete = null)
+    {
+        StartCoroutine(FetchPlayerCollectionProgressCoroutine(onComplete));
+    }
+
+    private IEnumerator FetchPlayerCollectionProgressCoroutine(Action onComplete = null)
+    {
+        yield return FetchGetJson(ServerUrls.Player.CollectionProgressById(_currentPlayerId), json =>
+        {
+            try
+            {
+                Logger.Log($"[NetServerManager] 图鉴进度原始JSON数据: {json}");
+                playerCollectionProgress.Clear();
+                var list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<PlayerCollectionProgress>>(json);
+                if (list != null)
+                {
+                    playerCollectionProgress.AddRange(list);
+                    foreach (var progress in playerCollectionProgress)
+                    {
+                        Logger.Log($"[NetServerManager] 图鉴进度 - CategoryId:{progress.categoryId}, PageId:{progress.pageId}, Completion:{progress.completionPercent}%, AvailableRewards:{progress.availableRewards?.Count ?? 0}");
+                    }
+                    Logger.Log($"[NetServerManager] 图鉴进度加载完成: {playerCollectionProgress.Count} 条");
+                }
+                else
+                {
+                    Logger.LogWarning($"[NetServerManager] 图鉴进度数据为空或解析结果为null");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[NetServerManager] 解析图鉴进度数据失败: {ex.Message}");
+            }
+            onComplete?.Invoke();
+        }, "图鉴进度");
+    }
 
     public void FetchFishBagLevel(Action<FishBagLevelResponse> onSuccess = null)
     {

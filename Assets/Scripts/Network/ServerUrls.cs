@@ -73,6 +73,10 @@ public static class ServerUrls
         public static string ToggleAutoSell(int playerId) => $"{FishBag}/{playerId}/toggle-auto-sell";
         public static string FishBagFilterConfig(int playerId) => $"{FishBag}/{playerId}/filter-config";
 
+        public const string Collection = "/api/player/collection";
+        public static string CollectionById(int playerId) => $"{Collection}/{playerId}";
+        public static string CollectionProgressById(int playerId) => $"{Collection}/progress/{playerId}";
+
         public const string InventoryAdd = "/api/player/inventory/add";
         public const string CharacterAdd = "/api/player/character/add";
         public const string MallItems = "/api/player/mall/items";

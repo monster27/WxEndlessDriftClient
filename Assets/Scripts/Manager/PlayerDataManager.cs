@@ -5,11 +5,22 @@ using SharedModels;
 using System.Collections;
 using System.Linq;
 
+public struct CollectionFishData
+{
+    public int fishId;
+    public int catchCount;
+    public float maxWeight;
+    public bool isCollected;
+    public bool isShiny;
+    public int collectionLevel;
+}
+
 public class PlayerDataManager : SingletonMono<PlayerDataManager>
 {
     private Dictionary<int, int> playerInventory = new Dictionary<int, int>();
     private Dictionary<int, int> fishInventory = new Dictionary<int, int>();
     private Dictionary<int, List<FishDetailData>> fishDetailData = new Dictionary<int, List<FishDetailData>>();
+    private Dictionary<int, CollectionFishData> collectionData = new Dictionary<int, CollectionFishData>();
 
     private int fishBagCapacity = 20;
     private int gold = 0;
@@ -490,6 +501,108 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             return fishDetailData[fishId];
         }
         return new List<FishDetailData>();
+    }
+
+    public int GetFishCatchCount(int fishId)
+    {
+        if (collectionData.TryGetValue(fishId, out var collection))
+        {
+            return collection.catchCount;
+        }
+        if (NetServerManager.Instance != null)
+        {
+            return NetServerManager.Instance.GetFishCollectionCatchCount(fishId);
+        }
+        if (fishInventory != null && fishInventory.ContainsKey(fishId))
+        {
+            return fishInventory[fishId];
+        }
+        return 0;
+    }
+
+    public float GetFishMaxWeight(int fishId)
+    {
+        if (collectionData.TryGetValue(fishId, out var collection))
+        {
+            return collection.maxWeight;
+        }
+        if (NetServerManager.Instance != null)
+        {
+            return NetServerManager.Instance.GetFishCollectionMaxWeight(fishId);
+        }
+        float maxWeight = 0f;
+        if (fishDetailData != null && fishDetailData.ContainsKey(fishId))
+        {
+            foreach (var detail in fishDetailData[fishId])
+            {
+                if (detail.weight > maxWeight)
+                {
+                    maxWeight = detail.weight;
+                }
+            }
+        }
+        return maxWeight;
+    }
+
+    public void SyncCollectionFromServer()
+    {
+        if (NetServerManager.Instance != null)
+        {
+            var serverCollection = NetServerManager.Instance.GetPlayerCollectionData();
+            if (serverCollection != null)
+            {
+                collectionData.Clear();
+                foreach (var kvp in serverCollection)
+                {
+                    collectionData[kvp.Key] = new CollectionFishData
+                    {
+                        fishId = kvp.Key,
+                        catchCount = kvp.Value.catchCount,
+                        maxWeight = kvp.Value.maxWeight,
+                        isCollected = kvp.Value.isCollected,
+                        isShiny = kvp.Value.isShiny,
+                        collectionLevel = kvp.Value.collectionLevel
+                    };
+                }
+                Debug.Log($"[PlayerDataManager] 图鉴数据同步完成: {collectionData.Count} 种鱼");
+            }
+        }
+    }
+
+    public int GetCollectionCatchCount(int fishId)
+    {
+        if (collectionData.TryGetValue(fishId, out var data))
+        {
+            return data.catchCount;
+        }
+        return 0;
+    }
+
+    public float GetCollectionMaxWeight(int fishId)
+    {
+        if (collectionData.TryGetValue(fishId, out var data))
+        {
+            return data.maxWeight;
+        }
+        return 0f;
+    }
+
+    public int GetCollectionLevel(int fishId)
+    {
+        if (collectionData.TryGetValue(fishId, out var data))
+        {
+            return data.collectionLevel;
+        }
+        return 0;
+    }
+
+    public bool HasCaughtShinyFish(int fishId)
+    {
+        if (collectionData.TryGetValue(fishId, out var data))
+        {
+            return data.isShiny;
+        }
+        return false;
     }
 
     public void RefreshUI()

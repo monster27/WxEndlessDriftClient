@@ -18,6 +18,7 @@ public class MainGameView : BaseView
     public Button centerCameraBtn;  // 居中摄像头按钮
     public Button MapBtn;
     public Button homeBtn;         // 切换室内外场景按钮
+    public Button collectionBtn;   // 图鉴按钮
 
     // 菜单控制按钮
     public Button menuOpenBtn;      // 打开菜单按钮
@@ -114,6 +115,11 @@ public class MainGameView : BaseView
         {
             homeBtn.onClick.AddListener(OnHomeBtnClick);
         }
+        // ✅ 新增：图鉴按钮
+        if (collectionBtn != null)
+        {
+            collectionBtn.onClick.AddListener(OnCollectionBtnClick);
+        }
 
         if (mainTile != null)
         {
@@ -144,6 +150,13 @@ public class MainGameView : BaseView
     {
         Debug.Log("[MainGameView] OnHomeBtnClick - 点击切换室内外场景按钮");
         CommunicateEvent.Modify("UI_ToggleScene");
+    }
+
+    // ✅ 新增：图鉴按钮点击
+    private void OnCollectionBtnClick()
+    {
+        Debug.Log("[MainGameView] OnCollectionBtnClick - 点击图鉴按钮");
+        CommunicateEvent.Modify("UI_OpenCollection");
     }
 
     private void OnBagBtnClick()

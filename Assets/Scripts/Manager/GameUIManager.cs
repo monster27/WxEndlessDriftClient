@@ -14,6 +14,7 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     public AdvertisingView advertisingView;
     public MapView mapView;
     public DialogView dialogView;  // ✅ 新增
+    public CollectionView collectionView;  // ✅ 新增
 
     public void Init()
     {
@@ -42,6 +43,11 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
             mapView.BaseViewInit();
         }
 
+        if (collectionView != null)  // ✅ 新增
+        {
+            collectionView.BaseViewInit();
+        }
+
         RegisterEvents();
     }
 
@@ -52,6 +58,7 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         CommunicateEvent.Register("UI_OpenMall", OpenMall);
         CommunicateEvent.Register("UI_OpenEquipment", OpenEquipment);
         CommunicateEvent.Register("UI_OpenMap", OpenMap);  // ✅ 新增
+        CommunicateEvent.Register("UI_OpenCollection", OpenCollection);  // ✅ 新增
 
         CommunicateEvent.Register<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, ShowTip);
         CommunicateEvent.Register<CommunicateEvent.AdvertisingRequest>(CommunicateEvent.EVENT_UI_SHOW_ADVERTISING, OnShowAdvertisingRequest);
@@ -168,6 +175,24 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         if (mapView != null)
         {
             mapView.HideView();
+        }
+    }
+
+    // ✅ 新增：打开图鉴
+    public void OpenCollection()
+    {
+        if (collectionView != null)
+        {
+            collectionView.OpenCollection();
+        }
+    }
+
+    // ✅ 新增：关闭图鉴
+    public void CloseCollection()
+    {
+        if (collectionView != null)
+        {
+            collectionView.CloseCollection();
         }
     }
 

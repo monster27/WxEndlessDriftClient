@@ -183,6 +183,8 @@ namespace SharedModels
         public long caughtTimestamp;
         public bool isShiny;  // 是否闪光鱼
         public bool isLocked; // 是否锁定
+        public int catchCount; // 钓获次数
+        public float maxWeight; // 钓到的最大重量
     }
 
     [Serializable]
