@@ -31,9 +31,6 @@ namespace View.Detail
         private bool isSold = false;
         private FishDetailData fishDetail;
 
-        // 闪光脉冲协程引用
-        private Coroutine shinyPulseCoroutine = null;
-
         public int ItemId => itemId;
         public int Quantity => quantity;
         public bool IsSelected => isSelected;
@@ -80,11 +77,6 @@ namespace View.Detail
 
         void OnEnable()
         {
-            // 当物体被激活时，如果是闪光鱼且图标显示，重新启动脉冲
-            if (IsShiny && shinyIconImage != null && shinyIconImage.gameObject.activeSelf)
-            {
-                StartShinyPulse();
-            }
         }
 
         public void Init(int id, int qty, ItemData data, bool isNewCatchFlag = false, FishDetailData detail = null)
@@ -264,29 +256,15 @@ namespace View.Detail
         }
 
         /// <summary>
-        /// 更新闪光图标显示
+        /// 更新闪光图标显示（仅控制显隐，闪光效果由IconShinyEffect组件处理）
         /// </summary>
         private void UpdateShinyIconDisplay()
         {
             bool isShiny = fishDetail?.isShiny ?? false;
-            Debug.Log($"[UI_FishBagPrefab] UpdateShinyIconDisplay - itemId={itemId}, isShiny={isShiny}");
 
             if (shinyIconImage != null)
             {
                 shinyIconImage.gameObject.SetActive(isShiny);
-                if (isShiny)
-                {
-                    Debug.Log($"[UI_FishBagPrefab] 闪光鱼图标显示: {itemId}");
-                    StartShinyPulse();
-                }
-                else
-                {
-                    StopShinyPulse();
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"[UI_FishBagPrefab] shinyIconImage 为 null! itemId={itemId}");
             }
         }
 
@@ -312,78 +290,6 @@ namespace View.Detail
             {
                 fishDetail.isLocked = locked;
                 UpdateLockIconDisplay();
-            }
-        }
-
-        /// <summary>
-        /// 启动闪光图标脉冲闪烁效果
-        /// </summary>
-        private void StartShinyPulse()
-        {
-            if (shinyIconImage == null) return;
-
-            // ✅ 检查 GameObject 是否激活，如果未激活则启动协程会失败，等待 OnEnable 时启动
-            if (!gameObject.activeInHierarchy)
-            {
-                Debug.Log($"[UI_FishBagPrefab] GameObject 未激活，延迟启动脉冲: {gameObject.name}");
-                return;
-            }
-
-            // 如果已有协程在运行，先停止
-            if (shinyPulseCoroutine != null)
-            {
-                StopCoroutine(shinyPulseCoroutine);
-                shinyPulseCoroutine = null;
-            }
-
-            // 重置为完全不透明，然后启动脉冲
-            Color c = shinyIconImage.color;
-            c.a = 1f;
-            shinyIconImage.color = c;
-            shinyPulseCoroutine = StartCoroutine(ShinyPulseCoroutine());
-        }
-
-        /// <summary>
-        /// 停止闪光图标脉冲闪烁效果
-        /// </summary>
-        private void StopShinyPulse()
-        {
-            if (shinyPulseCoroutine != null)
-            {
-                StopCoroutine(shinyPulseCoroutine);
-                shinyPulseCoroutine = null;
-            }
-
-            if (shinyIconImage != null)
-            {
-                // 重置为完全不透明
-                Color c = shinyIconImage.color;
-                c.a = 1f;
-                shinyIconImage.color = c;
-            }
-        }
-
-        /// <summary>
-        /// 闪光图标脉冲闪烁协程（呼吸效果）
-        /// </summary>
-        private IEnumerator ShinyPulseCoroutine()
-        {
-            if (shinyIconImage == null) yield break;
-
-            float speed = 2.5f;
-            float minAlpha = 0.2f;
-            float maxAlpha = 1f;
-
-            while (true)
-            {
-                float t = Mathf.PingPong(Time.time * speed, 1f);
-                float alpha = Mathf.Lerp(minAlpha, maxAlpha, t);
-
-                Color c = shinyIconImage.color;
-                c.a = alpha;
-                shinyIconImage.color = c;
-
-                yield return null;
             }
         }
 
@@ -682,13 +588,5 @@ namespace View.Detail
             return CalculateDisplayPrice();
         }
 
-        private void OnDestroy()
-        {
-            if (shinyPulseCoroutine != null)
-            {
-                StopCoroutine(shinyPulseCoroutine);
-                shinyPulseCoroutine = null;
-            }
         }
-    }
 }

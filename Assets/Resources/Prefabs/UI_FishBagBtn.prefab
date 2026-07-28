@@ -247,6 +247,7 @@ GameObject:
   - component: {fileID: 7188479441778713324}
   - component: {fileID: 1228262634876331229}
   - component: {fileID: 3267996356528929370}
+  - component: {fileID: 4374360422949482608}
   m_Layer: 5
   m_HasEditorInfo: 1
   m_Name: ShinyImg
@@ -313,6 +314,27 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4374360422949482608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3201489633021293707}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aef144062f59f8c47bd2b05b70c7d814, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableOnStart: 1
+  pulseSpeed: 2.5
+  minAlpha: 0.2
+  maxAlpha: 1
+  targetImage: {fileID: 3267996356528929370}
+  enableRotation: 0
+  rotationSpeed: 30
+  enableScale: 0
+  scaleAmount: 0.1
 --- !u!1 &3390827209214355543
 GameObject:
   m_ObjectHideFlags: 0
