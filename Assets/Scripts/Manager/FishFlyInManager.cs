@@ -69,7 +69,7 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
             return;
         }
 
-        float flip = SceneMatManager.Instance != null && SceneMatManager.Instance.CurrentSceneFlip ? -1f : 1f;
+        float flip = SceneMatManager.Instance != null && SceneMatManager.Instance.CurrentSceneFlip ? 1f : 0f;
         float scale = isFish ? CalculateFishScale(weight) : _defaultScale;
 
         Fly(texture, flip, scale);

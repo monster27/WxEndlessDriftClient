@@ -17,6 +17,9 @@ public partial class NetServerManager
 
     private HashSet<int> unlockedCharacters = new HashSet<int>();
     private HashSet<int> unlockedEquipment = new HashSet<int>();
+    
+    // 图鉴情报
+    private HashSet<int> purchasedCollectionInfoPages = new HashSet<int>();
 
     public event Action OnAllDataLoaded;
 
@@ -990,6 +993,102 @@ public partial class NetServerManager
         }, "图鉴进度");
     }
 
+    /// <summary>
+    /// 检查是否已购买图鉴页面情报
+    /// </summary>
+    public bool HasPurchasedCollectionInfo(int pageId)
+    {
+        return purchasedCollectionInfoPages.Contains(pageId);
+    }
+    
+    /// <summary>
+    /// 添加已购买的图鉴页面情报
+    /// </summary>
+    public void AddPurchasedCollectionInfo(int pageId)
+    {
+        purchasedCollectionInfoPages.Add(pageId);
+    }
+    
+    /// <summary>
+    /// 获取所有已购买的图鉴页面情报
+    /// </summary>
+    public List<int> GetPurchasedCollectionInfoPages()
+    {
+        return new List<int>(purchasedCollectionInfoPages);
+    }
+    
+    /// <summary>
+    /// 从服务器获取已购买的图鉴情报
+    /// </summary>
+    public void FetchPurchasedCollectionInfo(Action onComplete = null)
+    {
+        StartCoroutine(FetchPurchasedCollectionInfoCoroutine(onComplete));
+    }
+    
+    private IEnumerator FetchPurchasedCollectionInfoCoroutine(Action onComplete = null)
+    {
+        yield return FetchGetJson(ServerUrls.Player.PurchasedCollectionInfoById(_currentPlayerId), json =>
+        {
+            try
+            {
+                purchasedCollectionInfoPages.Clear();
+                var list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<int>>(json);
+                if (list != null)
+                {
+                    purchasedCollectionInfoPages.UnionWith(list);
+                    Logger.Log($"[NetServerManager] 已购买图鉴情报加载完成: {list.Count} 页");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[NetServerManager] 解析已购买图鉴情报失败: {ex.Message}");
+            }
+        }, "已购买图鉴情报");
+
+        // 无论请求成功或失败，都调用 onComplete
+        onComplete?.Invoke();
+    }
+    
+    /// <summary>
+    /// 购买图鉴情报页面
+    /// </summary>
+    public void PurchaseCollectionInfo(int pageId, Action<bool> onComplete = null)
+    {
+        StartCoroutine(PurchaseCollectionInfoCoroutine(pageId, onComplete));
+    }
+    
+    private IEnumerator PurchaseCollectionInfoCoroutine(int pageId, Action<bool> onComplete = null)
+    {
+        var requestData = new { playerId = _currentPlayerId, pageId = pageId };
+        string jsonBody = Newtonsoft.Json.JsonConvert.SerializeObject(requestData);
+        
+        yield return FetchPostJson(ServerUrls.Player.PurchaseCollectionInfo, jsonBody, json =>
+        {
+            try
+            {
+                var result = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+                bool success = result != null && result.ContainsKey("success") && (bool)result["success"];
+                
+                if (success)
+                {
+                    purchasedCollectionInfoPages.Add(pageId);
+                    Logger.Log($"[NetServerManager] 购买图鉴情报页面 {pageId} 成功");
+                }
+                else
+                {
+                    Logger.LogWarning($"[NetServerManager] 购买图鉴情报页面 {pageId} 失败");
+                }
+                
+                onComplete?.Invoke(success);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[NetServerManager] 解析购买图鉴情报结果失败: {ex.Message}");
+                onComplete?.Invoke(false);
+            }
+        }, "购买图鉴情报");
+    }
+
     public void FetchFishBagLevel(Action<FishBagLevelResponse> onSuccess = null)
     {
         StartCoroutine(FetchFishBagLevelCoroutine(onSuccess));
@@ -1010,6 +1109,11 @@ public partial class NetServerManager
     public void UpgradeFishBag(Action<bool, string> onComplete = null)
     {
         StartCoroutine(UpgradeFishBagCoroutine(onComplete));
+    }
+
+    public void UpgradeFishBagByAd(Action<bool, string> onComplete = null)
+    {
+        StartCoroutine(UpgradeFishBagByAdCoroutine(onComplete));
     }
 
     private IEnumerator UpgradeFishBagCoroutine(Action<bool, string> onComplete = null)
@@ -1055,6 +1159,51 @@ public partial class NetServerManager
             isFishBagFull = GetTotalFishCount() >= fishBagCapacity;
         }
         
+        onComplete?.Invoke(upgradeSuccess, upgradeMessage);
+    }
+
+    private IEnumerator UpgradeFishBagByAdCoroutine(Action<bool, string> onComplete = null)
+    {
+        bool upgradeSuccess = false;
+        string upgradeMessage = "";
+        int newCapacity = fishBagCapacity;
+
+        yield return FetchPostJson(ServerUrls.Player.FishBagUpgradeByAd(_currentPlayerId), "{}", responseText =>
+        {
+            try
+            {
+                var resp = JsonUtility.FromJson<FishBagUpgradeResponse>(responseText);
+                if (resp != null)
+                {
+                    Logger.Log($"[NetServerManager] 鱼篓广告升级结果: success={resp.success}, message={resp.message}");
+                    upgradeSuccess = resp.success;
+                    upgradeMessage = resp.message;
+                    if (resp.success && resp.capacity > 0)
+                    {
+                        newCapacity = resp.capacity;
+                    }
+                }
+                else
+                {
+                    upgradeSuccess = false;
+                    upgradeMessage = "解析升级结果失败";
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[NetServerManager] 解析鱼篓广告升级结果失败: {ex.Message}");
+                upgradeSuccess = false;
+                upgradeMessage = "解析升级结果失败";
+            }
+        }, "鱼篓广告升级");
+
+        if (upgradeSuccess)
+        {
+            fishBagCapacity = newCapacity;
+            yield return FetchPlayerFishBag();
+            isFishBagFull = GetTotalFishCount() >= fishBagCapacity;
+        }
+
         onComplete?.Invoke(upgradeSuccess, upgradeMessage);
     }
 

@@ -16,6 +16,7 @@ public class ItemData
     public int itemType;
     public int categoryId;
     public string iconPath;
+    public List<int> collectionInfoPages; // 所属图鉴情报页面ID列表
 }
 
 /// <summary>

@@ -19,6 +19,22 @@ public partial class NetServerManager
             if (success)
             {
                 Logger.Log($"[NetServerManager] 购买成功: {message}");
+
+                // 图鉴情报商品：购买成功后记录到情报表
+                if (itemId >= 801 && itemId <= 899)
+                {
+                    PurchaseCollectionInfo(itemId, (infoSuccess) =>
+                    {
+                        if (infoSuccess)
+                        {
+                            Logger.Log($"[NetServerManager] 图鉴情报页面 {itemId} 购买记录成功");
+                        }
+                        else
+                        {
+                            Logger.LogWarning($"[NetServerManager] 图鉴情报页面 {itemId} 购买记录失败（可能已购买）");
+                        }
+                    });
+                }
             }
             else
             {

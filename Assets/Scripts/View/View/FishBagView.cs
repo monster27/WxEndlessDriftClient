@@ -34,6 +34,7 @@ public class FishBagView : BaseView
     private bool _isAutoSellEnabled = false;
     private bool _hasAutoSellFeature = false;
     private Coroutine _timerCoroutine;
+    private int _currentUpgradeCost = 0;
 
     public enum SortType
     {
@@ -657,6 +658,7 @@ public class FishBagView : BaseView
                 return;
             }
 
+            _currentUpgradeCost = data.upgradeCost;
             ShowUpgradeDialog(data.upgradeDescription);
         });
     }
@@ -677,25 +679,74 @@ public class FishBagView : BaseView
             return;
         }
 
-        netManager.UpgradeFishBag((success, message) =>
-        {
-            if (success)
-            {
-                ShowTip(message);
-                RefreshItems();
+        int currentGold = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_GOLD, 0);
+        Debug.Log($"[FishBagView] 当前金币: {currentGold}, 升级成本: {_currentUpgradeCost}");
 
-                bool isFishBagFull = CommunicateEvent.Request<int, bool>("IsFishBagFull", 0);
-                if (!isFishBagFull)
-                {
-                    ShowTip("鱼篓有空位了，可以继续钓鱼！");
-                    CommunicateEvent.Modify("FishBagUpgradeSuccess");
-                }
-            }
-            else
+        if (currentGold < _currentUpgradeCost)
+        {
+            Debug.Log("[FishBagView] 金币不足，跳转广告界面");
+            string adInfo = $"金币不足！升级需要{_currentUpgradeCost}金币，观看广告可免费升级鱼篓！";
+            GameUIManager.Instance.ShowAdvertising(adInfo, 0, "看广告升级", (bool adSuccess) =>
             {
-                ShowTip("升级失败: " + message);
+                if (adSuccess)
+                {
+                    Debug.Log("[FishBagView] 广告观看成功，执行免费升级");
+                    DoUpgradeFishBagByAd();
+                }
+                else
+                {
+                    Debug.Log("[FishBagView] 广告观看失败或取消");
+                    ShowTip("广告未完成，升级取消");
+                }
+            });
+            return;
+        }
+
+        DoUpgradeFishBag();
+    }
+
+    private void DoUpgradeFishBag()
+    {
+        var netManager = NetServerManager.Instance;
+        if (netManager == null)
+        {
+            Debug.LogError("[FishBagView] NetServerManager.Instance 为空");
+            return;
+        }
+
+        netManager.UpgradeFishBag(HandleUpgradeResult);
+    }
+
+    private void DoUpgradeFishBagByAd()
+    {
+        var netManager = NetServerManager.Instance;
+        if (netManager == null)
+        {
+            Debug.LogError("[FishBagView] NetServerManager.Instance 为空");
+            return;
+        }
+
+        netManager.UpgradeFishBagByAd(HandleUpgradeResult);
+    }
+
+    private void HandleUpgradeResult(bool success, string message)
+    {
+        if (success)
+        {
+            ShowTip(message);
+            RefreshItems();
+
+            bool isFishBagFull = CommunicateEvent.Request<int, bool>("IsFishBagFull", 0);
+            if (!isFishBagFull)
+            {
+                ShowTip("鱼篓有空位了，可以继续钓鱼！");
+                CommunicateEvent.Modify("FishBagUpgradeSuccess");
             }
-        });
+        }
+        else
+        {
+            ShowTip("升级失败: " + message);
+        }
     }
 
     private void ShowTip(string message)

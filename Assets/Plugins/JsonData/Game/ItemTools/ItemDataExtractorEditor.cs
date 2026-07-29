@@ -584,7 +584,7 @@ public class ItemDataExtractorEditor : EditorWindow
     {
         if (categoryWrapper == null || categoryWrapper.categories == null)
         {
-            return 0;
+            return 99; // 返回特殊分类
         }
 
         foreach (var category in categoryWrapper.categories)
@@ -605,7 +605,7 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
-        return 0;
+        return 99; // 不在任何分类范围内，返回特殊分类
     }
 
     private void SaveItemsToJson()

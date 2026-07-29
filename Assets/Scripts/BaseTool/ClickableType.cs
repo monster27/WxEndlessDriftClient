@@ -6,12 +6,13 @@ using UnityEngine;
 /// </summary>
 public enum ClickableType
 {
-    Player,     // 玩家
-    Shop,       // 商店
-    NPC,        // NPC
-    FishBag,    // 鱼篓
-    NestBaitsPlacement,  // 窝料
-    Decoration  // 装饰
+    Player,               // 玩家
+    Shop,                 // 商店
+    NPC,                  // NPC
+    FishBag,              // 鱼篓
+    NestBaitsPlacement,   // 窝料
+    Tent,                 // 帐篷
+    Table = 20,           // 桌子
 }
 
 /// <summary>
@@ -24,7 +25,7 @@ public class ClickableObject : MonoBehaviour
     public ClickableType objectType;
     public string objData;
 
-    private void OnMouseDown()
+    private void OnMouseUp()
     {
         ClickManager.Instance.OnObjectClicked(this);
     }

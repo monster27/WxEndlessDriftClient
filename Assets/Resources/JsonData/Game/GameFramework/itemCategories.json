@@ -1,7 +1,7 @@
 {
     "categories": [
         {
-            "id": 1,
+            "id": 11,
             "name": "水产",
             "code": "A",
             "description": "A.水产",
@@ -73,15 +73,35 @@
             ]
         },
         {
+            "id": 7,
+            "name": "图鉴情报",
+            "code": "G",
+            "description": "G.图鉴情报",
+            "startId": 800,
+            "endId": 899,
+            "subCategories": [
+                { "id": 71, "name": "图鉴情报", "description": "各场景图鉴情报", "startId": 801, "endId": 899 }
+            ]
+        },
+        {
             "id": 9,
             "name": "垃圾",
             "code": "I",
             "description": "I.垃圾",
             "startId": 9001,
-            "endId": 9999,
+            "endId": 9020,
             "subCategories": [
-                { "id": 91, "name": "垃圾", "description": "钓到的垃圾物品", "startId": 9001, "endId": 9999 }
+                { "id": 91, "name": "垃圾", "description": "钓到的垃圾物品", "startId": 9001, "endId": 9020 }
             ]
+        },
+        {
+            "id": 99,
+            "name": "特殊",
+            "code": "S",
+            "description": "S.特殊 - 不在其他分类范围内的物品",
+            "startId": 0,
+            "endId": 0,
+            "subCategories": []
         }
     ],
     "notes": [

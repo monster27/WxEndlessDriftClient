@@ -293,6 +293,44 @@ public class ItemDataEditor : EditorWindow
             EditorGUILayout.LabelField("图标路径:", GUILayout.Width(100));
             item.iconPath = EditorGUILayout.TextField(item.iconPath);
             EditorGUILayout.EndHorizontal();
+            GUILayout.Space(5);
+            
+            // 图鉴情报页面ID列表
+            EditorGUILayout.BeginVertical("box");
+            EditorGUILayout.LabelField("图鉴情报页面ID列表", EditorStyles.boldLabel);
+            
+            if (item.collectionInfoPages == null)
+            {
+                item.collectionInfoPages = new List<int>();
+            }
+            
+            // 显示现有页面ID
+            for (int i = 0; i < item.collectionInfoPages.Count; i++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"页面 {i + 1}:", GUILayout.Width(60));
+                item.collectionInfoPages[i] = EditorGUILayout.IntField(item.collectionInfoPages[i]);
+                if (GUILayout.Button("移除", GUILayout.Width(50)))
+                {
+                    item.collectionInfoPages.RemoveAt(i);
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+            
+            // 添加新页面ID
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("添加页面:", GUILayout.Width(60));
+            int newPageId = EditorGUILayout.IntField(0);
+            if (GUILayout.Button("添加", GUILayout.Width(50)))
+            {
+                if (newPageId > 0 && !item.collectionInfoPages.Contains(newPageId))
+                {
+                    item.collectionInfoPages.Add(newPageId);
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+            
+            EditorGUILayout.EndVertical();
             
             EditorGUILayout.EndVertical();
             GUILayout.Space(15);

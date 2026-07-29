@@ -18,7 +18,7 @@ public class CollectionView : BaseView
     public Button nextPageButton;            // 下一页按钮
     public Text pageInfoText;                // 页码信息文本
     public Transform collectionPrefabParent; // 图鉴条目父容器
-    public CollFishInfoPanel collFishInfoPanel;  // 图鉴详情面板
+    public CollInfoPanel collInfoPanel;  // 图鉴详情面板
 
     [Header("预制体")]
     public GameObject collectionPrefab;      // 图鉴条目预制体（编辑器填入）
@@ -109,8 +109,11 @@ public class CollectionView : BaseView
             {
                 NetServerManager.Instance.FetchPlayerCollectionProgress(() =>
                 {
-                    UpdateCategoryToggle(0);  // 默认选中第一个分类
-                    RefreshCurrentPage();  // 刷新当前页面
+                    NetServerManager.Instance.FetchPurchasedCollectionInfo(() =>
+                    {
+                        UpdateCategoryToggle(0);  // 默认选中第一个分类
+                        RefreshCurrentPage();  // 刷新当前页面
+                    });
                 });
             });
         }
@@ -452,11 +455,14 @@ public class CollectionView : BaseView
 
             if (collectionPrefab != null)
             {
-                // 初始化图鉴条目（鱼类分类传入true）
-                collectionPrefab.Init(entryId, currentCategoryIndex == 0);
+                // 获取情报状态
+                CollectionInfoState infoState = GetEntryInfoState(entryId);
+                
+                // 初始化图鉴条目（鱼类分类传入true，传入情报状态）
+                collectionPrefab.Init(entryId, currentCategoryIndex == 0, infoState);
 
-                // 如果是鱼类分类，设置收集等级和闪光状态
-                if (currentCategoryIndex == 0)
+                // 如果是鱼类分类且已获取物品，设置收集等级和闪光状态
+                if (currentCategoryIndex == 0 && infoState == CollectionInfoState.Obtained)
                 {
                     int level = GetFishCollectionLevel(entryId);
                     collectionPrefab.SetCollectionLevel(level);
@@ -472,6 +478,58 @@ public class CollectionView : BaseView
                 activePrefabs.Add(collectionPrefab);
             }
         }
+    }
+    
+    /// <summary>
+    /// 获取条目情报状态
+    /// </summary>
+    private CollectionInfoState GetEntryInfoState(int entryId)
+    {
+        // 判断是否已经获取过物品
+        bool hasObtained = false;
+        if (currentCategoryIndex == 0)
+        {
+            // 鱼类：捕获过就算获取
+            int catchCount = PlayerDataManager.Instance?.GetFishCatchCount(entryId) ?? 0;
+            hasObtained = catchCount > 0;
+        }
+        else
+        {
+            // 非鱼类：物品数量大于0就算获取
+            int itemCount = PlayerDataManager.Instance?.GetItemQuantity(entryId) ?? 0;
+            hasObtained = itemCount > 0;
+        }
+        
+        if (hasObtained)
+        {
+            return CollectionInfoState.Obtained;
+        }
+        
+        // 检查是否已获取情报（购买了该页面的情报）
+        var page = GetCurrentPage();
+        if (page != null)
+        {
+            bool hasInfo = HasPageInfo(page.id);
+            if (hasInfo)
+            {
+                return CollectionInfoState.InfoObtained;
+            }
+        }
+        
+        return CollectionInfoState.Unknown;
+    }
+    
+    /// <summary>
+    /// 检查是否已购买该页面的情报
+    /// </summary>
+    private bool HasPageInfo(int pageId)
+    {
+        // 从NetServerManager获取已购买的情报页面列表
+        if (NetServerManager.Instance != null)
+        {
+            return NetServerManager.Instance.HasPurchasedCollectionInfo(pageId);
+        }
+        return false;
     }
 
     /// <summary>
@@ -495,10 +553,10 @@ public class CollectionView : BaseView
     /// <param name="prefab">被点击的图鉴条目</param>
     private void OnCollectionPrefabClick(UI_CollectionPrefab prefab)
     {
-        if (collFishInfoPanel != null)
+        if (collInfoPanel != null)
         {
             // 显示详情面板（鱼类分类传入true）
-            collFishInfoPanel.ShowInfo(prefab.EntryId, currentCategoryIndex == 0);
+            collInfoPanel.ShowInfo(prefab.EntryId, currentCategoryIndex == 0);
         }
     }
 

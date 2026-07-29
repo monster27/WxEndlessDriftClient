@@ -288,6 +288,9 @@ public partial class NetServerManager
         isFishBagFull = GetTotalFishCount() >= fishBagCapacity;
     }
 
+    private bool _pendingIsFirstCatch = false;
+    public bool PendingIsFirstCatch => _pendingIsFirstCatch;
+
     private void ProcessNewCatch(LastCatchInfo lastCatch, ref int lastCatchId)
     {
         if (lastCatch == null || lastCatch.fishId <= 0 || lastCatch.fishId == lastCatchId) return;
@@ -298,8 +301,12 @@ public partial class NetServerManager
 
         if (isPlayingReelAnimation || isFishBagFull) return;
 
+        // 在钓获前检查鱼篓中是否已有该鱼，判断是否为第一次获取
+        int currentCount = 0;
+        fishInventory.TryGetValue(lastCatch.fishId, out currentCount);
+        _pendingIsFirstCatch = (currentCount == 0);
+
         pendingCatchInfo = lastCatch;
-        if (lastCatch.goldEarned > 0) playerGold += lastCatch.goldEarned;
 
         // ⭐ 获取鱼类稀有度颜色并设置到鱼饵提示动画
         SetFishTipColorByFishId(lastCatch.fishId, struggleTime);
@@ -518,9 +525,9 @@ public partial class NetServerManager
     {
         if (catchInfo == null) return;
         Sprite icon = GetItemIcon(catchInfo.fishId);
-        
+
         bool isFish = IsFishItem(catchInfo.fishId);
-        
+
         GameUIManager.Instance?.ShowCatchResult(catchInfo.fishName, catchInfo.weight, icon, catchInfo.starRatingId, catchInfo.fishId, isFish);
         SyncCharacterDataFromServer();
     }

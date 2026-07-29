@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CollFishInfoPanel : MonoBehaviour
+public class CollInfoPanel : MonoBehaviour
 {
     public Button closeButton;
     public Button maskButton;

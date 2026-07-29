@@ -96,6 +96,12 @@ public class ClickManager : MonoBehaviour
             case ClickableType.FishBag:
                 GameUIManager.Instance.OpenFishBag();
                 break;
+            case ClickableType.Table:
+                CommunicateEvent.Modify("UI_OpenMap");
+                break;
+            case ClickableType.Tent:
+                CommunicateEvent.Modify("UI_ToggleScene");
+                break;
         }
     }
 

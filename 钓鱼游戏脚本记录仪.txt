@@ -1,4 +1,13 @@
 2026.7.28
+1.在物品分类框架中，里面包括json和Editor里面，将水产的分类设置成（11），然后将垃圾的ID取值范围设置成9001-9020，同时再增加一个99的分类，这个99的分类就是特殊，当ID都不在其他的ID取值范围之内的话，就把归属分为特殊
+2.通过图鉴的json，获取到里面的每一页的ID，比如801,802这种，每一页的ID都包含一个情报的物体，其中Icon的路径，参考值为：E:\TuanjieProject\WxEndlessDriftClient\Assets\Resources\UI\Icon\SpecialIcon\801.png
+3.在图鉴中，如果玩家从来都没获取过这个物品的话，这个Icon就会显示E:\TuanjieProject\WxEndlessDriftClient\Assets\Resources\UI\Icon\Common\unKnown.png，同时点击对应的按钮不能打开collInfoPanel
+4.同时每个还有一个是否有情报的参数，如果要是从来没获取过这个，同时还有这个情报的话，就会显示加上_Outline的图标，类似‪E:\TuanjieProject\WxEndlessDriftClient\Assets\Resources\UI\Icon\FishIcons\1001_Outline.png，这个可以打开InfoPanel
+5.如果是已经获取过的话，就正常显示，也可以打开collInfoPanel
+6.在物品数据提取器里面，增加情报的相关内容，在物品数据编辑器中，增加情报的一个列表，对应的就是图鉴里面的每一页的ID
+7.在商城里面增加图鉴json里面有ID的情报，当购买后，如果要是已经购买这个图鉴页面的ID，就表示这个页面的所有内容都是已经获取情报的状态，状态分为三个等级，未获取情报，已经获取情报，已经获取过，如果要是已经获取过的话，是不会再返回到获取情报的这种状态的，是不可逆的，最初都是未获取情报的
+8.修改MainViewShowFishTip这个脚本，和MainGameView脚本，MainGameView挂着MainViewShowFishTip这个脚本，当玩家钓上来物品是第一次进入鱼篓的时候，这个时候，图鉴从未获取情报状态或者已经获取情报状态到已经获取过这个阶段吗，这个时候会让MainViewShowFishTip这个物品显示，然后MainViewShowFishTip这个里面有一个Icon，还有一个Text，对应着是钓上来的物品的Icon和名称，隔三秒之后消失，同时这个里面也有对应的排队状态，如果是持续要显示的话，就排个队，可以参考MainGameView里面的MainTile
+
 0.给每一条鱼增加两个参数，第一个参数是钓上来的最大重量，还有一个就是每一条鱼被钓上来几次
 1.客户端增加一个CollectionView，CollFishInfoPanel，UI_CollectionPrefab，（这三个已经有了，修改就可以），将打开的逻辑检索一下，和其他的界面打开逻辑一样，都是从UIManager注册，然后调用再打开
 2.检索一下collection.json这个是图鉴的逻辑，图鉴的基本单位是在里面类似801这些，这个作为一个单一的图鉴，这个里面的entries为构成元素，当玩家有了这个ID的物品之后，这个就代表已经收集到了（第一个品类鱼类不一致，我会在后面写），当所有的全都收集到了之后，就是百分之百，然后按照百分比会给提供奖励，但是现阶段只需要让客户端显示对应的ID和数量就可以，在collection.json有对应的内容，当完成了对应的百分比之后，就会在CollectionView的奖赏按钮显示，点击之后打开对应的对话界面，还有就是，如果要是如果六个大分类的里面如果要是没有参数的话，那就都是0，等其他的内容好了之后再说

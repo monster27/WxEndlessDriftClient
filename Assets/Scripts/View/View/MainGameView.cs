@@ -34,6 +34,7 @@ public class MainGameView : BaseView
     public Text baitCountTxt;  // 窝料数量显示
     public Text fishCountTxt;  // 鱼篓数量显示
     public MainTile mainTile;
+    public MainViewShowFishTip newItemTip;
 
     // 需要控制显隐的UI面板（例如侧边栏菜单）
     public GameObject menuPanel;
@@ -125,6 +126,11 @@ public class MainGameView : BaseView
         {
             Vector3 initialPos = mainTile.transform.position;
             mainTile.Init(initialPos);
+        }
+        
+        if (newItemTip != null)
+        {
+            newItemTip.Init();
         }
 
         SetMenuPanelState(isMenuOpen);
@@ -547,6 +553,30 @@ public class MainGameView : BaseView
         if (mainTile != null)
         {
             mainTile.EnqueueCatchResult(itemName, weight, icon);
+        }
+        
+        // 检查是否是第一次获取该物品，如果是，显示新物品提示
+        if (newItemTip != null && itemId > 0 && IsFirstTimeObtain(itemId, isFish))
+        {
+            newItemTip.EnqueueNewItem(itemName, icon);
+        }
+    }
+    
+    /// <summary>
+    /// 检查是否是第一次获取该物品
+    /// </summary>
+    private bool IsFirstTimeObtain(int itemId, bool isFish)
+    {
+        if (isFish)
+        {
+            // 鱼类：使用 NetServerManager 中记录的钓获前鱼篓状态
+            return NetServerManager.Instance != null && NetServerManager.Instance.PendingIsFirstCatch;
+        }
+        else
+        {
+            // 非鱼类：检查物品数量是否为1（刚刚第一次获得）
+            int itemCount = PlayerDataManager.Instance?.GetItemQuantity(itemId) ?? 0;
+            return itemCount == 1;
         }
     }
 

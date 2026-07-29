@@ -67,6 +67,7 @@ public static class ServerUrls
         public static string SellFish(int playerId) => $"{FishBag}/{playerId}/sell";
         public static string FishBagLevel(int playerId) => $"{FishBag}/{playerId}/level";
         public static string FishBagUpgrade(int playerId) => $"{FishBag}/{playerId}/upgrade";
+        public static string FishBagUpgradeByAd(int playerId) => $"{FishBag}/{playerId}/upgrade-by-ad";
         public static string FishBagAutoSellTimer(int playerId) => $"{FishBag}/{playerId}/auto-sell-timer";
         public static string FishBagAutoSellStatus(int playerId) => $"{FishBag}/{playerId}/auto-sell-status";
         public static string SetFishLocked(int playerId) => $"{FishBag}/{playerId}/fish/lock";
@@ -76,6 +77,8 @@ public static class ServerUrls
         public const string Collection = "/api/player/collection";
         public static string CollectionById(int playerId) => $"{Collection}/{playerId}";
         public static string CollectionProgressById(int playerId) => $"{Collection}/progress/{playerId}";
+        public static string PurchasedCollectionInfoById(int playerId) => $"{Collection}/purchased-info/{playerId}";
+        public const string PurchaseCollectionInfo = "/api/player/collection/purchase-info";
 
         public const string InventoryAdd = "/api/player/inventory/add";
         public const string CharacterAdd = "/api/player/character/add";
