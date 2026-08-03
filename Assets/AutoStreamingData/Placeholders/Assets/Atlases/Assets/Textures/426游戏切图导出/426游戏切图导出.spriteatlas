@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &1
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: "426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA"
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 0.125
+    packables:
+    - {fileID: 2800000, guid: 1f73e2b3c814f6b4c998715757b7e96d, type: 3}
+    - {fileID: 2800000, guid: 98e9b78a293ff4a4e91186e99b82fe21, type: 3}
+    - {fileID: 2800000, guid: b36e66eed93212140b2c6eea84293bf1, type: 3}
+    - {fileID: 2800000, guid: 6b2b5a8b59da96948beedf892e6c1966, type: 3}
+    - {fileID: 2800000, guid: e3abd0d50c067494998c5131af38ac82, type: 3}
+    - {fileID: 2800000, guid: 74e8938e41e27ee438a7a47d02d4b9ea, type: 3}
+    - {fileID: 2800000, guid: b6ae1659db1d6a841b3904814b308f32, type: 3}
+    - {fileID: 2800000, guid: f1165bd3fcbbdf541808d1654a969c85, type: 3}
+    - {fileID: 2800000, guid: 08aeb98172f4d9b428d9b43af5395aa3, type: 3}
+    - {fileID: 2800000, guid: 920ea1ca80eaaba4285d20a47e3b9fa0, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys: []
+  m_MasterAtlas: {fileID: 4343727234628468602, guid: 3f6c4bf2a3de13b4bba68096aef56025, type: 2}
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
+  m_RenderDataMap: {}
+  m_Tag: "426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA"
+  m_IsVariant: 1
+  m_IsPlaceholder: 1

@@ -75,7 +75,9 @@ public partial class NetServerManager
 
         Utils.Logger.Log($"[NetServerManager] 解析皮肤数据完成，共 {skins.Count} 个皮肤");
         CommunicateEvent.Modify<Dictionary<int, int>>(CommunicateEvent.EVENT_SKIN_DATA_UPDATED, skins);
-        
+
+        // 直接触发Bag_RefreshItems（与装备流程一致），确保即使BagView未激活也能刷新背包
+        CommunicateEvent.Modify("Bag_RefreshItems");
         CommunicateEvent.Modify(CommunicateEvent.EVENT_REFRESH_BAG);
         Utils.Logger.Log("[NetServerManager] 触发背包刷新事件");
     }
@@ -160,7 +162,9 @@ public partial class NetServerManager
 
         Utils.Logger.Log($"[NetServerManager] 装备皮肤成功");
         CommunicateEvent.Modify<Dictionary<int, int>>(CommunicateEvent.EVENT_SKIN_DATA_UPDATED, skins);
-        
+
+        // 直接触发Bag_RefreshItems（与装备流程一致）
+        CommunicateEvent.Modify("Bag_RefreshItems");
         CommunicateEvent.Modify(CommunicateEvent.EVENT_REFRESH_BAG);
         Utils.Logger.Log("[NetServerManager] 装备皮肤成功，触发背包刷新事件");
     }

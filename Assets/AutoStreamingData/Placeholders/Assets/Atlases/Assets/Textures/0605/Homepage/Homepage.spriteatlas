@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &1
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Homepage
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 0.125
+    packables:
+    - {fileID: 2800000, guid: 25c0a96c6d61de848a539e33ea42b54b, type: 3}
+    - {fileID: 2800000, guid: b457eeb66fa6c8441809aa0654d5b1de, type: 3}
+    - {fileID: 2800000, guid: b3dd15e9258021f47b9ea650525f8404, type: 3}
+    - {fileID: 2800000, guid: 6ff246d56abcfb444b7cf778c03f2939, type: 3}
+    - {fileID: 2800000, guid: 44fbdd20d8cf1ea49b2938b37ec27afb, type: 3}
+    - {fileID: 2800000, guid: 44f93cc26da5b9844b478595a3ea1a7f, type: 3}
+    - {fileID: 2800000, guid: 4cba67e03a9aba34fa385516ecd3d524, type: 3}
+    - {fileID: 2800000, guid: 40407901e7f11db42aa4fc54789e2a02, type: 3}
+    - {fileID: 2800000, guid: d577c66e70f81c04091290a63d0e69d8, type: 3}
+    - {fileID: 2800000, guid: 7bf0950dc51852749922e07deca32c50, type: 3}
+    - {fileID: 2800000, guid: 6bbd6a174ceb9314691f626c3a1fb5cf, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys: []
+  m_MasterAtlas: {fileID: 4343727234628468602, guid: a67ce613d96843040af8af592272494d, type: 2}
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
+  m_RenderDataMap: {}
+  m_Tag: Homepage
+  m_IsVariant: 1
+  m_IsPlaceholder: 1

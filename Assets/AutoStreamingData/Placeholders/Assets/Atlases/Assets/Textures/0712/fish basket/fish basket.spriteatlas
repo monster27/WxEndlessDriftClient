@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &1
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: fish basket
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 0.125
+    packables:
+    - {fileID: 2800000, guid: 678725343658ef245bd82b32735602d3, type: 3}
+    - {fileID: 2800000, guid: bb13a471372825747aa827b2bc777ecd, type: 3}
+    - {fileID: 2800000, guid: 8f7db3304824f7346ab46ca39f3ed326, type: 3}
+    - {fileID: 2800000, guid: 6924b313246f23a4992e1e34ea11b2b4, type: 3}
+    - {fileID: 2800000, guid: b320167bcbdf9dd469acc166aca4d71d, type: 3}
+    - {fileID: 2800000, guid: 22de332b8fdb54846974bd4da183fb2e, type: 3}
+    - {fileID: 2800000, guid: dc0c7f6528bb32a41afcab8d0dfc71d9, type: 3}
+    - {fileID: 2800000, guid: 9ebe5f6852911b34c8930857a4b0ed0b, type: 3}
+    - {fileID: 2800000, guid: ae47ecd180f2de4419e694f1e3f5592a, type: 3}
+    - {fileID: 2800000, guid: d8783a8c4711e8141bc13c5d903c9400, type: 3}
+    - {fileID: 2800000, guid: 3d002b0771c17da4dbe51c3d609acc4e, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys: []
+  m_MasterAtlas: {fileID: 4343727234628468602, guid: 1a4c148b9c620d84e90a6868e311ea3a, type: 2}
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
+  m_RenderDataMap: {}
+  m_Tag: fish basket
+  m_IsVariant: 1
+  m_IsPlaceholder: 1

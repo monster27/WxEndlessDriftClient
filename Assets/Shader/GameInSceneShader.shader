@@ -1,4 +1,4 @@
-Shader "Custom/GameInSceneShader"
+Shader "Custom/GameInSceneShader_Fixed"
 {
     Properties
     {
@@ -63,6 +63,8 @@ Shader "Custom/GameInSceneShader"
                 float4 vertex : SV_POSITION;
                 float4 color : COLOR;
                 float2 blinkUv : TEXCOORD1;
+                // ===== 修复1: 把 flip 信息传递到片段着色器 =====
+                float flip : TEXCOORD2;
             };
 
             sampler2D _MainTex;
@@ -81,7 +83,6 @@ Shader "Custom/GameInSceneShader"
             float _BlinkOffsetY;
             float _BlinkScale;
             
-            // ========== 序列帧属性 ==========
             float _SpriteSheetEnabled;
             float _Rows;
             float _Columns;
@@ -89,7 +90,7 @@ Shader "Custom/GameInSceneShader"
 
             float _Transition;
 
-            // 计算单张序列帧的UV
+            // ===== 修复2: 序列帧计算移到片段着色器 =====
             float2 getFrameUV(float2 baseUV, float rows, float columns, float speed)
             {
                 float totalFrames = rows * columns;
@@ -108,6 +109,7 @@ Shader "Custom/GameInSceneShader"
                 return frameUV;
             }
 
+            // ===== 修复3: Flip 只在片段着色器中处理 =====
             float2 applyFlip(float2 uv, float flip, float lockFlip)
             {
                 float actualFlip = flip * (1.0 - lockFlip);
@@ -119,6 +121,7 @@ Shader "Custom/GameInSceneShader"
             {
                 if (_BlinkEnabled > 0.5)
                 {
+                    // ===== 修复4: 检查 BlinkTex 是否有效 =====
                     fixed4 blinkCol = tex2D(_BlinkTex, blinkUv) * _BlinkColor;
                     
                     float blinkLuminance = blinkCol.r * 0.299 + blinkCol.g * 0.587 + blinkCol.b * 0.114;
@@ -145,8 +148,9 @@ Shader "Custom/GameInSceneShader"
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 
-                float2 uv = applyFlip(v.uv, _Flip, _LockFlip);
-                o.uv = uv;
+                // ===== 修复5: 不在这里做 flip，只传递原始 UV =====
+                o.uv = v.uv;
+                o.flip = _Flip * (1.0 - _LockFlip); // 传递 flip 值到片段着色器
                 
                 float2 blinkUv = v.uv;
                 blinkUv.x += _BlinkOffsetX;
@@ -160,25 +164,26 @@ Shader "Custom/GameInSceneShader"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                float2 baseUV = i.uv;
+                // ===== 修复6: 在片段着色器中做 flip =====
+                float2 baseUV = applyFlip(i.uv, i.flip, 0);
+                
                 fixed4 spriteCol;
                 
-                // ========== 判断是否启用序列帧动画 ==========
                 if (_SpriteSheetEnabled > 0.5)
                 {
-                    // 序列帧模式：计算当前帧UV
                     float2 frameUV = getFrameUV(baseUV, _Rows, _Columns, _Speed);
                     spriteCol = tex2D(_MainTex, frameUV);
                 }
                 else
                 {
-                    // 单纹理模式：直接采样主纹理
                     spriteCol = tex2D(_MainTex, baseUV);
                 }
                 
-                // 纹理过渡
+                // ===== 修复7: 纹理过渡时检查 _NextTex 是否有效 =====
                 fixed4 nextCol = tex2D(_NextTex, baseUV);
-                fixed4 finalSpriteCol = lerp(spriteCol, nextCol, _Transition);
+                // 如果 _NextTex 是空的，使用 spriteCol 作为 fallback
+                float transitionWeight = saturate(_Transition);
+                fixed4 finalSpriteCol = lerp(spriteCol, nextCol, transitionWeight);
                 
                 finalSpriteCol *= i.color;
                 finalSpriteCol = applyBlink(finalSpriteCol, i.blinkUv);

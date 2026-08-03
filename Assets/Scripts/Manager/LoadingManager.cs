@@ -15,9 +15,11 @@ public class LoadingManager : MonoBehaviour
     public Text progressText;
     public Text statusText;          // 显示当前加载步骤
     public Text detailText;          // 显示详细信息（进度、日志等）
+    public Button skipButton;        // 强制跳转按钮
 
     [Header("设置")]
     [SerializeField] private string gameSceneName = "GameScene";
+    [SerializeField] private int gameSceneIndex = 2;   // GameScene 在 Build Settings 中的索引
     [SerializeField] private float minLoadTime = 1.5f;
 
     // 加载步骤定义
@@ -51,6 +53,16 @@ public class LoadingManager : MonoBehaviour
         // 设置初始状态
         UpdateStatus("初始化加载系统...", "");
         UpdateProgress(0f);
+
+        // 绑定强制跳转按钮
+        if (skipButton != null)
+        {
+            skipButton.onClick.AddListener(ForceJumpToNextScene);
+        }
+        else
+        {
+            Logger.LogWarning("[LoadingManager] skipButton 未绑定，强制跳转功能不可用");
+        }
 
         // 启动加载流程
         StartCoroutine(LoadAllSystems());
@@ -95,7 +107,162 @@ public class LoadingManager : MonoBehaviour
 
         // 跳转场景
         Logger.Log("[LoadingManager] 所有系统加载完成，跳转到游戏场景");
-        SceneManager.LoadScene(gameSceneName);
+        StartCoroutine(LoadSceneWithFallback(gameSceneName, gameSceneIndex));
+    }
+
+    /// <summary>
+    /// 强制跳转到下个场景（由按钮点击触发）
+    /// </summary>
+    public void ForceJumpToNextScene()
+    {
+        Logger.Log("[LoadingManager] 用户点击强制跳转按钮");
+        StopAllCoroutines();
+        StartCoroutine(LoadSceneWithFallback(gameSceneName, gameSceneIndex));
+    }
+
+    // ========== 场景加载（多级降级方案） ==========
+
+    /// <summary>
+    /// 场景名称验证与修复（忽略大小写匹配 Build Settings 中的场景）
+    /// </summary>
+    private string ValidateAndFixSceneName(string sceneName)
+    {
+        // 微信小游戏环境下 SceneUtility 可能不可靠，遍历所有场景手动匹配
+        int sceneCount = SceneManager.sceneCountInBuildSettings;
+        Logger.Log($"[LoadingManager] Build Settings 中共有 {sceneCount} 个场景");
+
+        for (int i = 0; i < sceneCount; i++)
+        {
+            string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
+            if (string.IsNullOrEmpty(scenePath))
+            {
+                Logger.LogWarning($"[LoadingManager] 索引 {i} 的场景路径为空");
+                continue;
+            }
+
+            Logger.Log($"[LoadingManager]   [{i}] {scenePath}");
+
+            // 提取场景名称（不含路径和后缀）
+            string nameFromPath = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+
+            // 忽略大小写比较
+            if (string.Equals(nameFromPath, sceneName, System.StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.Log($"[LoadingManager] 场景名称匹配成功: '{sceneName}' -> '{nameFromPath}' (索引={i})");
+                return nameFromPath;
+            }
+        }
+
+        Logger.LogWarning($"[LoadingManager] 未在 Build Settings 中找到场景 '{sceneName}'，将使用原始名称尝试");
+        return sceneName;
+    }
+
+    /// <summary>
+    /// 增强版场景跳转：名称加载 → 索引加载 → 异步加载 → 紧急降级
+    /// </summary>
+    private IEnumerator LoadSceneWithFallback(string sceneName, int sceneIndex)
+    {
+        Logger.Log($"[LoadingManager] 开始场景跳转，目标: '{sceneName}' (索引={sceneIndex})");
+        UpdateStatus("正在跳转场景...", $"目标: {sceneName}");
+
+        // ===== 第一步：验证并修复场景名称 =====
+        string fixedName = ValidateAndFixSceneName(sceneName);
+
+        // ===== 第二步：尝试按名称加载 =====
+        bool loaded = false;
+        string lastError = "";
+
+        Logger.Log("[LoadingManager] 尝试方案1: 按名称加载");
+        try
+        {
+            SceneManager.LoadScene(fixedName);
+            loaded = true;
+            yield break;
+        }
+        catch (System.Exception ex)
+        {
+            lastError = $"按名称加载失败: {ex.Message}";
+            Logger.LogWarning($"[LoadingManager] 方案1失败 - {lastError}");
+        }
+
+        yield return null;
+
+        // ===== 第三步：尝试按索引加载 =====
+        Logger.Log($"[LoadingManager] 尝试方案2: 按索引 {sceneIndex} 加载");
+        try
+        {
+            SceneManager.LoadScene(sceneIndex);
+            loaded = true;
+            yield break;
+        }
+        catch (System.Exception ex)
+        {
+            lastError = $"按索引加载失败: {ex.Message}";
+            Logger.LogWarning($"[LoadingManager] 方案2失败 - {lastError}");
+        }
+
+        yield return null;
+
+        // ===== 第四步：尝试异步按名称加载 =====
+        Logger.Log("[LoadingManager] 尝试方案3: 异步按名称加载");
+        UpdateStatus("正在异步加载...", "尝试异步加载场景");
+        {
+            AsyncOperation asyncOp = null;
+            try
+            {
+                asyncOp = SceneManager.LoadSceneAsync(fixedName);
+            }
+            catch (System.Exception ex)
+            {
+                lastError = $"异步按名称加载失败: {ex.Message}";
+                Logger.LogWarning($"[LoadingManager] 方案3失败 - {lastError}");
+            }
+
+            if (asyncOp != null)
+            {
+                while (!asyncOp.isDone)
+                {
+                    UpdateProgress(asyncOp.progress);
+                    yield return null;
+                }
+                yield break;
+            }
+        }
+
+        yield return null;
+
+        // ===== 第五步：尝试异步按索引加载 =====
+        Logger.Log($"[LoadingManager] 尝试方案4: 异步按索引 {sceneIndex} 加载");
+        {
+            AsyncOperation asyncOp = null;
+            try
+            {
+                asyncOp = SceneManager.LoadSceneAsync(sceneIndex);
+            }
+            catch (System.Exception ex)
+            {
+                lastError = $"异步按索引加载失败: {ex.Message}";
+                Logger.LogWarning($"[LoadingManager] 方案4失败 - {lastError}");
+            }
+
+            if (asyncOp != null)
+            {
+                while (!asyncOp.isDone)
+                {
+                    UpdateProgress(asyncOp.progress);
+                    yield return null;
+                }
+                yield break;
+            }
+        }
+
+        // ===== 所有方案均失败 =====
+        if (!loaded)
+        {
+            string fullError = $"场景跳转失败！已尝试所有方案。\n最后错误: {lastError}\n请检查 Build Settings 中是否已添加 GameScene (索引应为 {sceneIndex})";
+            Logger.LogError($"[LoadingManager] {fullError}");
+            UpdateStatus("跳转失败", fullError);
+        }
     }
 
     // ========== 加载 LoadDataManager ==========

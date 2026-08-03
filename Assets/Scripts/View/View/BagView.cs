@@ -56,6 +56,11 @@ public class BagView : BaseView
     {
         CommunicateEvent.Register(CommunicateEvent.EVENT_REFRESH_BAG, OnBagRefresh);
         Debug.Log("[BagView] 注册背包刷新事件监听");
+
+        // 主动触发一次刷新，确保初始化阶段（BagView未就绪时）错过的Bag_RefreshItems事件得到补偿
+        // 这样装备/鱼饵/皮肤的已装备标记都能正确显示
+        CommunicateEvent.Modify("Bag_RefreshItems");
+        Debug.Log("[BagView] 初始化时主动触发背包刷新");
     }
 
     private void OnDestroy()
@@ -203,7 +208,38 @@ public class BagView : BaseView
 
         gameObject.SetActive(true);
 
+        // 检查数据是否已初始化
+        var loadDataManager = LoadDataManager.Instance;
+        var playerDataManager = PlayerDataManager.Instance;
+        bool isNetInitialized = NetServerManager.Instance != null && NetServerManager.Instance.IsInitialized;
+
+        if (loadDataManager != null && !loadDataManager.isDataLoaded)
+        {
+            Debug.Log("[BagView] 物品数据未加载，触发加载");
+            loadDataManager.LoadAllData();
+        }
+
+        if (!isNetInitialized)
+        {
+            Debug.Log("[BagView] 网络数据未初始化，触发初始化");
+            NetServerManager.Instance?.StartInitialization();
+        }
+
+        // 无论是否已初始化，都触发刷新事件
+        // 如果数据已就绪则立即刷新，如果未就绪则等待数据加载完成后自动刷新
         RefreshItems();
+
+        // 主动刷新一次，确保即使初始化数据还在加载中，UI也能在数据就绪后显示
+        if (playerDataManager != null && loadDataManager != null && loadDataManager.isDataLoaded)
+        {
+            var inventory = playerDataManager.GetInventory();
+            var itemDataMap = loadDataManager.GetItemDataMap();
+            if (inventory != null && itemDataMap != null && inventory.Count > 0)
+            {
+                UpdateBagItems(inventory, itemDataMap);
+                Debug.Log("[BagView] OpenBag: 主动刷新背包UI");
+            }
+        }
 
         SendEvent();
 

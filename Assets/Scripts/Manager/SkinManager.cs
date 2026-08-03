@@ -32,8 +32,32 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
     private const string OUTDOOR_SKIN_PATH_PREFIX = "UI/Icon/OutdoorSkinIcons/";
     private const string INDOOR_SKIN_PATH_PREFIX = "UI/Icon/IndoorSkinIcons/";
 
+    // 默认皮肤ID（与服务器 PlayerSkinManager.InitializeDefaultSkins 保持一致）
+    private static readonly Dictionary<int, int> DefaultSkins = new Dictionary<int, int>
+    {
+        { 41, 4001 },  // 室外-鱼篓
+        { 42, 4101 },  // 室外-帐篷
+        { 43, 4201 },  // 室外-指示器
+        { 51, 5001 },  // 室内-墙壁
+        { 52, 5051 },  // 室内-地板
+        { 53, 5101 },  // 室内-楼梯
+        { 54, 5151 },  // 室内-灯带
+        { 55, 5201 },  // 室内-挂饰
+        { 56, 5251 },  // 室内-望远镜
+        { 57, 5301 },  // 室内-昆虫房
+        { 58, 5351 },  // 室内-宠物屋
+        { 59, 5401 },  // 室内-鱼缸
+        { 60, 5451 },  // 室内-熊猫
+        { 61, 5501 },  // 室内-鹦鹉
+        { 62, 5551 }   // 室内-桌子
+    };
+
     private void Awake()
     {
+        // 用默认皮肤初始化equippedSkins，确保在服务器数据未返回前皮肤也显示为"已装备"
+        equippedSkins = new Dictionary<int, int>(DefaultSkins);
+        Debug.Log($"[SkinManager] Awake: 用默认皮肤初始化，共 {equippedSkins.Count} 个");
+
         RegisterEvents();
         CheckAndApplySkins();
     }
@@ -104,9 +128,14 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
 
     public int GetEquippedSkin(int slotType)
     {
-        if (equippedSkins.TryGetValue(slotType, out int skinId))
+        if (equippedSkins.TryGetValue(slotType, out int skinId) && skinId > 0)
         {
             return skinId;
+        }
+        // 未装备皮肤时返回默认皮肤ID
+        if (DefaultSkins.TryGetValue(slotType, out int defaultSkinId))
+        {
+            return defaultSkinId;
         }
         return 0;
     }
@@ -123,8 +152,19 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
 
     public void ApplyAllSkins()
     {
-        Debug.Log($"[SkinManager] 开始应用所有皮肤，共 {equippedSkins.Count} 个");
+        Debug.Log($"[SkinManager] 开始应用所有皮肤，已装备 {equippedSkins.Count} 个");
+
+        // 合并已装备皮肤和默认皮肤：已装备的优先，未装备的使用默认值
+        var allSkins = new Dictionary<int, int>(DefaultSkins);
         foreach (var kvp in equippedSkins)
+        {
+            if (kvp.Value > 0)
+            {
+                allSkins[kvp.Key] = kvp.Value;
+            }
+        }
+
+        foreach (var kvp in allSkins)
         {
             ApplySkinRender(kvp.Key, kvp.Value);
         }
@@ -133,12 +173,18 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
 
     private void OnSkinDataUpdated(Dictionary<int, int> skins)
     {
-        equippedSkins.Clear();
+        // 先重置为默认皮肤，确保所有槽位都有初始值
+        equippedSkins = new Dictionary<int, int>(DefaultSkins);
+
+        // 用服务器数据覆盖默认值（服务器数据优先）
         foreach (var kvp in skins)
         {
-            equippedSkins[kvp.Key] = kvp.Value;
+            if (kvp.Value > 0)
+            {
+                equippedSkins[kvp.Key] = kvp.Value;
+            }
         }
-        Debug.Log($"[SkinManager] 皮肤数据更新，共 {skins.Count} 个皮肤");
+        Debug.Log($"[SkinManager] 皮肤数据更新，服务器返回 {skins.Count} 个，合并后共 {equippedSkins.Count} 个皮肤");
 
         if (isSceneMatReady && SceneMatManager.Instance != null && SceneMatManager.Instance.IsInitialized)
         {

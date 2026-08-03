@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &1
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: "\u80CC\u5305\u754C\u9762"
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 0.125
+    packables:
+    - {fileID: 2800000, guid: 5dfc9f67911c9304a9e6e8a420578179, type: 3}
+    - {fileID: 2800000, guid: 7cb1d78e91c9396468055ca9597ae21e, type: 3}
+    - {fileID: 2800000, guid: 1375eabda40f90042b8aafc23bf60774, type: 3}
+    - {fileID: 2800000, guid: 7da9ecf1b5f66d249abf347c2c1dab53, type: 3}
+    - {fileID: 2800000, guid: 5e0877c04d665164b8c6abd5c7297ffb, type: 3}
+    - {fileID: 2800000, guid: 4a57d09db9857fe4a8ffdb531433b4ef, type: 3}
+    - {fileID: 2800000, guid: cffc53308317ef3479eb1bc7ff7f4987, type: 3}
+    - {fileID: 2800000, guid: ad86d7c2a6c5b44458813a13deb9ea56, type: 3}
+    - {fileID: 2800000, guid: 4bca51ac4fdbb0a4fb3be897f1dcfa83, type: 3}
+    - {fileID: 2800000, guid: 73ef09978e47929459fbf83b784b56d4, type: 3}
+    - {fileID: 2800000, guid: 1ade7861f50480d43b6093303e0304e8, type: 3}
+    - {fileID: 2800000, guid: 4b27314b49cb4554da1351563a43475b, type: 3}
+    - {fileID: 2800000, guid: 4a614b6b0cdcf9f4783eaefe872b885b, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys: []
+  m_MasterAtlas: {fileID: 4343727234628468602, guid: ddedd7e6d29f4d74a9bc613571cc40ea, type: 2}
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
+  m_RenderDataMap: {}
+  m_Tag: "\u80CC\u5305\u754C\u9762"
+  m_IsVariant: 1
+  m_IsPlaceholder: 1

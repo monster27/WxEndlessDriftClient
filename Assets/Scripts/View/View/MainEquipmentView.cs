@@ -596,7 +596,7 @@ public class MainEquipmentView : MonoBehaviour
         {
             if (characterLevelText != null)
             {
-                characterLevelText.text = $"等级: {playerData.currentLevel}";
+                characterLevelText.text = $"{playerData.currentLevel}";
             }
 
             int requiredExp = CommunicateEvent.Request<int, int>("CharacterManager_GetExpToNextLevel", 0);

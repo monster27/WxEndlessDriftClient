@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BaitIcons
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 968ed21a1e10bd446887dd3be3757a31, type: 3}
+    - {fileID: 2800000, guid: 4591ba38717fd894bbab7b9d88a7071b, type: 3}
+    - {fileID: 2800000, guid: 400faf6e295407a41a7288ff4cbdacc8, type: 3}
+    - {fileID: 2800000, guid: 3044f6def99a1b54f87f893364cd31d9, type: 3}
+    - {fileID: 2800000, guid: d85cdbf505e1d2d44b671d67eba979f1, type: 3}
+    - {fileID: 2800000, guid: ced7fe9325b35b6458611900503155d3, type: 3}
+    - {fileID: 2800000, guid: 629f687f0aa241f43992bcefbf50882a, type: 3}
+    - {fileID: 2800000, guid: 6fcc6399ee2cfe34fb66cc50a4a8a06f, type: 3}
+    - {fileID: 2800000, guid: 621c62f81d53c074ca81ceb1ffc2a863, type: 3}
+    - {fileID: 2800000, guid: 294b472db6d3911429a38d91788c63ca, type: 3}
+    - {fileID: 2800000, guid: 2a6ed26192e5e0b49a1249e6f0a0a2a8, type: 3}
+    - {fileID: 2800000, guid: 121192a7018d071428f138dd98f30860, type: 3}
+    - {fileID: 2800000, guid: b17b4775f3187ea48b3bdf86dc16e6e0, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys: []
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
+  m_RenderDataMap: {}
+  m_Tag: BaitIcons
+  m_IsVariant: 0
+  m_IsPlaceholder: 0

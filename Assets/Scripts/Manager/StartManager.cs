@@ -16,15 +16,16 @@ public class StartManager : MonoBehaviour
 
     private void Start()
     {
-        Screen.SetResolution(750, 1334, true);
+        //Screen.SetResolution(750, 1334, true);
+        LoadFont700w();
 
         UpdateModeButton();
-        
+
         if (localModeButton != null)
         {
             localModeButton.onClick.AddListener(ToggleLocalMode);
         }
-        
+
         if (loginButton != null)
         {
             loginButton.onClick.AddListener(OnLoginButtonClick);
@@ -72,7 +73,7 @@ public class StartManager : MonoBehaviour
         {
             modeText.text = ServerUrls.IsLocalMode ? "本地模式" : "远程模式";
         }
-        
+
         if (localModeButton != null)
         {
             var colors = localModeButton.colors;
@@ -103,13 +104,13 @@ public class StartManager : MonoBehaviour
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
 
         string url = ServerUrls.GetFullUrl(ServerUrls.Auth.Login);
-        Debug.Log($"[StartManager] 发送登录请求: {url}"); 
+        Debug.Log($"[StartManager] 发送登录请求: {url}");
 
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
         {
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-    request.downloadHandler = new DownloadHandlerBuffer();
-    request.SetRequestHeader("Content-Type", "application/json");
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
             request.timeout = 10;
 
             yield return request.SendWebRequest();
@@ -117,7 +118,7 @@ public class StartManager : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 string responseText = request.downloadHandler.text;
-    Debug.Log($"登录响应: {responseText}");
+                Debug.Log($"登录响应: {responseText}");
 
                 try
                 {
@@ -141,20 +142,20 @@ public class StartManager : MonoBehaviour
                                 Debug.Log($"[StartManager] 从服务器获取场景ID: {response.sceneId}");
                             }
                             else
-{
-    Debug.LogWarning("[StartManager] EnvManager 不存在，延迟设置场景ID");
-    // 延迟设置，等待EnvManager初始化
-    StartCoroutine(DelayedSetSceneId(response.sceneId));
-}
+                            {
+                                Debug.LogWarning("[StartManager] EnvManager 不存在，延迟设置场景ID");
+                                // 延迟设置，等待EnvManager初始化
+                                StartCoroutine(DelayedSetSceneId(response.sceneId));
+                            }
                         }
 
                         // 跳转到加载场景
                         LoadLoadingScene();
                     }
                     else
-{
-    Debug.LogError($"[StartManager] 登录失败: {response?.message ?? "未知错误"}");
-}
+                    {
+                        Debug.LogError($"[StartManager] 登录失败: {response?.message ?? "未知错误"}");
+                    }
                 }
                 catch (System.Exception ex)
                 {
@@ -162,60 +163,74 @@ public class StartManager : MonoBehaviour
                 }
             }
             else
-{
-    Debug.LogError($"[StartManager] 登录请求失败: {request.error}");
-}
+            {
+                Debug.LogError($"[StartManager] 登录请求失败: {request.error}");
+            }
         }
     }
 
     // ✅ 新增：延迟设置场景ID（等待EnvManager初始化）
     private IEnumerator DelayedSetSceneId(int sceneId)
-{
-    int maxAttempts = 30; // 最多等待3秒
-    int attempts = 0;
-
-    while (EnvManager.Instance == null && attempts < maxAttempts)
     {
-        yield return new WaitForSeconds(0.1f);
-        attempts++;
+        int maxAttempts = 30; // 最多等待3秒
+        int attempts = 0;
+
+        while (EnvManager.Instance == null && attempts < maxAttempts)
+        {
+            yield return new WaitForSeconds(0.1f);
+            attempts++;
+        }
+
+        if (EnvManager.Instance != null)
+        {
+            EnvManager.Instance.currentSceneId = sceneId;
+            Debug.Log($"[StartManager] 延迟设置场景ID成功: {sceneId}");
+        }
+        else
+        {
+            Debug.LogWarning("[StartManager] 延迟设置场景ID失败 - EnvManager 未找到");
+        }
     }
 
-    if (EnvManager.Instance != null)
+    private void LoadLoadingScene()
     {
-        EnvManager.Instance.currentSceneId = sceneId;
-        Debug.Log($"[StartManager] 延迟设置场景ID成功: {sceneId}");
+        Debug.Log("[StartManager] 跳转到加载场景: LoadingScene");
+        SceneManager.LoadScene("LoadingScene");
     }
-    else
+
+    public Font LoadFont700w()
     {
-        Debug.LogWarning("[StartManager] 延迟设置场景ID失败 - EnvManager 未找到");
+        Font font = Resources.Load<Font>("TTF/700w");
+        if (font == null)
+        {
+            Debug.LogError("加载字体 700w 失败 failed！请检查路径: Assets/Resources/TTF/700w.ttf");
+        }
+        else
+        {
+            Debug.Log("加载字体 江城园体700w 成功 succeed ！");
+        }
+            return font;
     }
-}
 
-private void LoadLoadingScene()
-{
-    Debug.Log("[StartManager] 跳转到加载场景: LoadingScene");
-    SceneManager.LoadScene("LoadingScene");
-}
+    // ========== 数据类 ==========
 
-// ========== 数据类 ==========
+    [System.Serializable]
+    public class LoginRequest
+    {
+        public string Username;
+        public string Password;
+    }
 
-[System.Serializable]
-public class LoginRequest
-{
-    public string Username;
-    public string Password;
-}
-
-// ✅ 修改：添加 sceneId 字段
-[System.Serializable]
-public class LoginResponse
-{
-    public bool success;
-    public int playerId;
-    public string message;
-    public bool isNewUser;
-    public bool autoFishingStarted;
-    public string autoFishingMessage;
-    public int sceneId;  // ✅ 新增
-}
+    // ✅ 修改：添加 sceneId 字段
+    [System.Serializable]
+    public class LoginResponse
+    {
+        public bool success;
+        public int playerId;
+        public string message;
+        public bool isNewUser;
+        public bool autoFishingStarted;
+        public string autoFishingMessage;
+        public int sceneId;  // ✅ 新增
+    }
 }
