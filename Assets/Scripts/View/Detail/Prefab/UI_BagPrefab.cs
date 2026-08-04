@@ -38,6 +38,8 @@ namespace View.Detail
         {
             if (itemButton != null)
             {
+                // ✅ 先移除所有旧监听器，再添加新的，防止池化复用时叠加重复监听器
+                itemButton.onClick.RemoveAllListeners();
                 itemButton.onClick.AddListener(OnItemClick);
             }
             itemId = id;

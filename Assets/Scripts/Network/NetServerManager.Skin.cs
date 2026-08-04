@@ -85,8 +85,26 @@ public partial class NetServerManager
         Utils.Logger.Log("[NetServerManager] 皮肤数据已更新到 NetServerManager，等待初始化完成统一刷新");
     }
 
+    // ✅ 防重复请求：记录上次装备请求的槽位、皮肤ID和时间
+    private int _lastEquipSkinSlot = -1;
+    private int _lastEquipSkinId = -1;
+    private float _lastEquipSkinTime = 0f;
+    private const float EQUIP_SKIN_COOLDOWN = 0.5f; // 500ms 冷却
+
     public void RequestEquipSkin(int slotType, int skinId)
     {
+        // ✅ 防重复：同一槽位+皮肤ID在冷却时间内直接忽略
+        if (slotType == _lastEquipSkinSlot && skinId == _lastEquipSkinId
+            && Time.time - _lastEquipSkinTime < EQUIP_SKIN_COOLDOWN)
+        {
+            Utils.Logger.Log($"[NetServerManager] 装备皮肤请求被防重复拦截: slotType={slotType}, skinId={skinId}（{EQUIP_SKIN_COOLDOWN}s内重复）");
+            return;
+        }
+
+        _lastEquipSkinSlot = slotType;
+        _lastEquipSkinId = skinId;
+        _lastEquipSkinTime = Time.time;
+
         StartCoroutine(RequestEquipSkinCoroutine(slotType, skinId));
     }
 
