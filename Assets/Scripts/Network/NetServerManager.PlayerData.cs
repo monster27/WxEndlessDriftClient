@@ -15,6 +15,18 @@ public partial class NetServerManager
     private int fishBagCapacity = 20;
     private int playerGold = 0;
 
+    // ===== 皮肤数据（存储在NetServerManager中，确保IsItemEquipped不依赖SkinManager） =====
+    // 默认皮肤（与SkinManager.DefaultSkins一致）
+    private static readonly Dictionary<int, int> DefaultSkins = new Dictionary<int, int>
+    {
+        { 41, 4001 }, { 42, 4101 }, { 43, 4201 },
+        { 51, 5001 }, { 52, 5051 }, { 53, 5101 }, { 54, 5151 },
+        { 55, 5201 }, { 56, 5251 }, { 57, 5301 }, { 58, 5351 },
+        { 59, 5401 }, { 60, 5451 }, { 61, 5501 }, { 62, 5551 }
+    };
+    // 当前装备的皮肤（slotType → skinId），初始为默认皮肤
+    private Dictionary<int, int> equippedSkinsData = new Dictionary<int, int>(DefaultSkins);
+
     private HashSet<int> unlockedCharacters = new HashSet<int>();
     private HashSet<int> unlockedEquipment = new HashSet<int>();
     
@@ -150,18 +162,44 @@ public partial class NetServerManager
 
     private bool IsItemEquipped(int itemId)
     {
+        // 基础装备检查
         bool isEquipped = equippedRodId == itemId || equippedLineId == itemId || equippedHookId == itemId
             || equippedSkill1Id == itemId || equippedSkill2Id == itemId
             || equippedCharacterId == itemId || equippedBaitId == itemId;
-        
-        if (!isEquipped && SkinManager.Instance != null)
+
+        // 皮肤检查：优先使用NetServerManager自己的数据（确保不依赖SkinManager.Instance）
+        if (!isEquipped)
         {
-            isEquipped = SkinManager.Instance.IsSkinEquipped(itemId);
-            Debug.Log($"[NetServerManager] IsItemEquipped - itemId={itemId}, 皮肤装备检查: {isEquipped}");
+            isEquipped = equippedSkinsData.ContainsValue(itemId);
         }
-        
-        Debug.Log($"[NetServerManager] IsItemEquipped - itemId={itemId}, 最终结果: {isEquipped}");
+
         return isEquipped;
+    }
+
+    /// <summary>
+    /// 更新皮肤数据（由NetServerManager.Skin.cs的ParsePlayerSkinsResponse调用）
+    /// </summary>
+    public void UpdateEquippedSkinsData(Dictionary<int, int> skins)
+    {
+        // 先重置为默认皮肤
+        equippedSkinsData = new Dictionary<int, int>(DefaultSkins);
+        // 用服务器数据覆盖
+        foreach (var kvp in skins)
+        {
+            if (kvp.Value > 0)
+            {
+                equippedSkinsData[kvp.Key] = kvp.Value;
+            }
+        }
+        Logger.Log($"[NetServerManager] 皮肤数据已更新到NetServerManager，共 {equippedSkinsData.Count} 个");
+    }
+
+    /// <summary>
+    /// 获取当前装备的皮肤数据副本（供 SkinManager 等模块主动查询，不依赖事件）
+    /// </summary>
+    public Dictionary<int, int> GetEquippedSkinsData()
+    {
+        return new Dictionary<int, int>(equippedSkinsData);
     }
 
     // 在 NetServerManager.PlayerData.cs 中找到 IsEquipmentUnlocked 方法
@@ -291,8 +329,9 @@ public partial class NetServerManager
             equippedSkill2Level = data.skill2Level > 0 ? data.skill2Level : 1;
 
             Logger.Log($"[NetServerManager] 装备数据从服务器同步完成: Rod={equippedRodId}(Lv.{equippedRodLevel}), Line={equippedLineId}(Lv.{equippedLineLevel}), Hook={equippedHookId}(Lv.{equippedHookLevel}), Char={equippedCharacterId}(Lv.{characterLevel}), Bait={equippedBaitId}");
-            
-            CommunicateEvent.Modify("Bag_RefreshItems");
+
+            // ✅ 移除Bag_RefreshItems，等待初始化完成统一刷新
+            Logger.Log("[NetServerManager] 装备数据已就绪，等待初始化完成统一刷新");
         }, "装备数据");
     }
 
@@ -324,7 +363,7 @@ public partial class NetServerManager
                     fishId = item.key,
                     weight = item.weight,
                     starRatingId = item.starRatingId,
-                    calculatedPrice = 0,
+                    calculatedPrice = item.calculatedPrice,  // ✅ 使用服务器返回的价格
                     caughtTimestamp = item.caughtTimestamp,
                     isShiny = item.isShiny,
                     isLocked = item.isLocked
@@ -475,7 +514,7 @@ public partial class NetServerManager
                     fishId = item.key,
                     weight = item.weight,
                     starRatingId = item.starRatingId,
-                    calculatedPrice = 0,
+                    calculatedPrice = item.calculatedPrice,  // ✅ 使用服务器返回的价格
                     caughtTimestamp = item.caughtTimestamp,
                     isShiny = item.isShiny,
                     isLocked = item.isLocked
@@ -598,10 +637,10 @@ public partial class NetServerManager
 
     // ========== 数据更新 ==========
 
-    private IEnumerator FetchPlayerDataAfterSell(List<int> itemIds, int totalPrice)
+    private IEnumerator FetchPlayerDataAfterSell(List<int> detailIds)
     {
         yield return null;
-        yield return FetchPlayerFishBag();  // ✅ 使用修复后的 FetchPlayerFishBag
+        yield return FetchPlayerFishBag();
         yield return FetchPlayerGold();
 
         isFishBagFull = GetTotalFishCount() >= fishBagCapacity;
@@ -798,6 +837,7 @@ public partial class NetServerManager
         public long caughtTimestamp;
         public bool isShiny;  // 是否闪光鱼
         public bool isLocked; // 是否锁定
+        public int calculatedPrice; // ✅ 服务器计算的售价
     }
     [Serializable] private class GoldResponse { public int gold; }
     [Serializable] private class CapacityResponse { public int capacity; }

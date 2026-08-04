@@ -74,12 +74,15 @@ public partial class NetServerManager
         }
 
         Utils.Logger.Log($"[NetServerManager] 解析皮肤数据完成，共 {skins.Count} 个皮肤");
+
+        // ✅ 关键：先把皮肤数据同步到 NetServerManager.equippedSkinsData，
+        //    确保 IsItemEquipped 不依赖 SkinManager.Instance 即可正确判断装备状态
+        UpdateEquippedSkinsData(skins);
+
         CommunicateEvent.Modify<Dictionary<int, int>>(CommunicateEvent.EVENT_SKIN_DATA_UPDATED, skins);
 
-        // 直接触发Bag_RefreshItems（与装备流程一致），确保即使BagView未激活也能刷新背包
-        CommunicateEvent.Modify("Bag_RefreshItems");
-        CommunicateEvent.Modify(CommunicateEvent.EVENT_REFRESH_BAG);
-        Utils.Logger.Log("[NetServerManager] 触发背包刷新事件");
+        // ✅ 移除EVENT_REFRESH_BAG，等待初始化完成统一刷新
+        Utils.Logger.Log("[NetServerManager] 皮肤数据已更新到 NetServerManager，等待初始化完成统一刷新");
     }
 
     public void RequestEquipSkin(int slotType, int skinId)
@@ -161,10 +164,12 @@ public partial class NetServerManager
         }
 
         Utils.Logger.Log($"[NetServerManager] 装备皮肤成功");
+
+        // ✅ 同步到 NetServerManager.equippedSkinsData，保证 IsItemEquipped 数据正确
+        UpdateEquippedSkinsData(skins);
+
         CommunicateEvent.Modify<Dictionary<int, int>>(CommunicateEvent.EVENT_SKIN_DATA_UPDATED, skins);
 
-        // 直接触发Bag_RefreshItems（与装备流程一致）
-        CommunicateEvent.Modify("Bag_RefreshItems");
         CommunicateEvent.Modify(CommunicateEvent.EVENT_REFRESH_BAG);
         Utils.Logger.Log("[NetServerManager] 装备皮肤成功，触发背包刷新事件");
     }

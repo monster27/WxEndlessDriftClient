@@ -57,7 +57,7 @@ public partial class NetServerManager
         CommunicateEvent.RegisterRequest<int, string>("GetCurrentFishingMode", _ => currentFishingMode.ToString());
 
         // ========== 售卖鱼 ==========
-        CommunicateEvent.Register<(List<int>, int)>(CommunicateEvent.EVENT_SELL_FISH_ITEMS, OnSellFishItems);
+        CommunicateEvent.Register<List<int>>(CommunicateEvent.EVENT_SELL_FISH_ITEMS, OnSellFishItems);
 
         // ========== 装备解锁 ==========
         CommunicateEvent.Register<int>("Equip_Unlock", OnUnlockEquipment);

@@ -28,8 +28,6 @@ public class FishBagView : BaseView
     public FishBagSelectPanel fishBagSelectPanel;
 
     private bool isAllSelected = false;
-    private const string EVENT_FISHBAG_SELL = "FishBag_Sell";
-
     private int _remainingSeconds = 0;
     private bool _isAutoSellEnabled = false;
     private bool _hasAutoSellFeature = false;
@@ -120,13 +118,11 @@ public class FishBagView : BaseView
 
     private void RegisterEvents()
     {
-        CommunicateEvent.Register<Dictionary<string, object>>(EVENT_FISHBAG_SELL, OnFishBagSell);
         CommunicateEvent.Register<NetServerManager.AutoSellTimerResponse>(CommunicateEvent.EVENT_AUTO_SELL_STATUS_CHANGED, OnAutoSellStatusChanged);
     }
 
     private void OnDestroy()
     {
-        CommunicateEvent.Unregister<Dictionary<string, object>>(EVENT_FISHBAG_SELL, OnFishBagSell);
         CommunicateEvent.Unregister<NetServerManager.AutoSellTimerResponse>(CommunicateEvent.EVENT_AUTO_SELL_STATUS_CHANGED, OnAutoSellStatusChanged);
     }
 
@@ -264,11 +260,25 @@ public class FishBagView : BaseView
     {
         if (PlayerDataManager.Instance != null)
         {
+            // ✅ 刷新前保存当前选中的鱼唯一ID列表，防止重建物品后选中状态丢失
+            HashSet<int> selectedFishIds = new HashSet<int>();
+            if (fishDetail != null)
+            {
+                List<UI_FishBagPrefab> allFishPrefabs = fishDetail.GetAllFishPrefabs();
+                foreach (var fishPrefab in allFishPrefabs)
+                {
+                    if (fishPrefab != null && fishPrefab.IsSelected && fishPrefab.FishDetail != null)
+                    {
+                        selectedFishIds.Add(fishPrefab.FishDetail.id);
+                    }
+                }
+            }
+
             var fishInventory = PlayerDataManager.Instance.GetFishInventory();
             var itemDataMap = LoadDataManager.Instance?.GetItemDataMap();
             var fishDetailData = PlayerDataManager.Instance.GetFishDetailData();
 
-            Debug.Log($"[FishBagView] RefreshItems - 鱼篓数据:");
+            Debug.Log($"[FishBagView] RefreshItems - 鱼篓数据 (保留选中: {selectedFishIds.Count} 个):");
             if (fishInventory != null)
             {
                 int totalCount = 0;
@@ -286,18 +296,22 @@ public class FishBagView : BaseView
 
             if (itemDataMap != null)
             {
-                Debug.Log($"   物品数据映射数量: {itemDataMap.Count}");
-            }
-
-            if (fishDetailData != null)
-            {
-                Debug.Log($"   详情数据数量: {fishDetailData.Count}");
-            }
-
-            if (itemDataMap != null)
-            {
                 UpdateFishDetail(fishInventory, itemDataMap, fishDetailData);
                 UpdateFishCountDisplay(fishInventory);
+
+                // ✅ 刷新后恢复选中状态
+                if (selectedFishIds.Count > 0 && fishDetail != null)
+                {
+                    List<UI_FishBagPrefab> allFishPrefabs = fishDetail.GetAllFishPrefabs();
+                    foreach (var fishPrefab in allFishPrefabs)
+                    {
+                        if (fishPrefab != null && fishPrefab.FishDetail != null && selectedFishIds.Contains(fishPrefab.FishDetail.id))
+                        {
+                            fishPrefab.SetSelection(true);
+                        }
+                    }
+                }
+
                 UpdateTotalSellPrice();
             }
         }
@@ -487,8 +501,8 @@ public class FishBagView : BaseView
         {
             List<UI_FishBagPrefab> allFishPrefabs = fishDetail.GetAllFishPrefabs();
             List<int> selectedItemIds = new List<int>();
+            List<int> selectedDetailIds = new List<int>();
             List<UI_FishBagPrefab> selectedPrefabs = new List<UI_FishBagPrefab>();
-            int totalPrice = 0;
 
             foreach (var fishPrefab in allFishPrefabs)
             {
@@ -500,9 +514,11 @@ public class FishBagView : BaseView
                         continue;
                     }
                     selectedItemIds.Add(fishPrefab.ItemId);
+                    if (fishPrefab.FishDetail != null && fishPrefab.FishDetail.id > 0)
+                    {
+                        selectedDetailIds.Add(fishPrefab.FishDetail.id);
+                    }
                     selectedPrefabs.Add(fishPrefab);
-                    totalPrice += fishPrefab.GetTotalSellPrice();
-                    Debug.Log($"[FishBagView] 选中物品: ID={fishPrefab.ItemId}, 价格={fishPrefab.GetTotalSellPrice()}");
                 }
             }
 
@@ -512,19 +528,15 @@ public class FishBagView : BaseView
                 return;
             }
 
-            Debug.LogFormat("[FishBagView] 准备售卖 {0} 个物品，总价: {1}金币", selectedItemIds.Count, totalPrice);
+            Debug.LogFormat("[FishBagView] 准备售卖 {0} 条鱼", selectedItemIds.Count);
 
             foreach (var prefab in selectedPrefabs)
             {
                 prefab.MarkAsSold();
             }
 
-            Dictionary<string, object> sellData = new Dictionary<string, object>
-            {
-                { "itemIds", selectedItemIds },
-                { "totalPrice", totalPrice }
-            };
-            CommunicateEvent.Modify(EVENT_FISHBAG_SELL, sellData);
+            // ✅ 只发送鱼ID详情列表，不发送价格（价格由服务器计算）
+            CommunicateEvent.Modify<List<int>>(CommunicateEvent.EVENT_SELL_FISH_ITEMS, selectedDetailIds);
 
             UpdateTotalSellPrice();
             UpdateFishCountDisplay(GetCurrentFishInventory());
@@ -538,23 +550,6 @@ public class FishBagView : BaseView
             return PlayerDataManager.Instance.GetFishInventory();
         }
         return new Dictionary<int, int>();
-    }
-
-    private void OnFishBagSell(Dictionary<string, object> data)
-    {
-        if (data.TryGetValue("itemIds", out object itemIdsObj) &&
-            data.TryGetValue("totalPrice", out object totalPriceObj))
-        {
-            List<int> itemIds = itemIdsObj as List<int>;
-            int totalPrice = System.Convert.ToInt32(totalPriceObj);
-
-            if (itemIds != null && itemIds.Count > 0)
-            {
-                Debug.LogFormat("[FishBagView] 收到售卖请求: 物品数量={0}, 总价={1}", itemIds.Count, totalPrice);
-
-                CommunicateEvent.Modify<(List<int>, int)>(CommunicateEvent.EVENT_SELL_FISH_ITEMS, (itemIds, totalPrice));
-            }
-        }
     }
 
     public void UpdateTotalSellPrice()

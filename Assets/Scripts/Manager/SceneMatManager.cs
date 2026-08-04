@@ -329,7 +329,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
             return;
         }
 
-        CameraManager.Instance.SetMirrorMode(currentSceneFlip);
+        //CameraManager.Instance.SetMirrorMode(currentSceneFlip);
 
         if (currentSceneFlip)
         {

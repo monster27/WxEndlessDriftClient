@@ -9,6 +9,7 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
     private Dictionary<int, int> equippedSkins = new Dictionary<int, int>();
     private bool isSceneMatReady = false;
     private bool hasPendingSkins = false;
+    private bool isSkinInitialized = false;
 
     private Dictionary<int, SceneMatManager.RenderElementType> slotTypeToRenderType = new Dictionary<int, SceneMatManager.RenderElementType>
     {
@@ -52,11 +53,32 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
         { 62, 5551 }   // 室内-桌子
     };
 
-    private void Awake()
+    /// <summary>
+    /// Unity Awake：确保即使 ManagerManager 在 Instance 就绪前调用失败，
+    /// SkinManager 也能在自身 Awake 时完成事件注册与默认皮肤初始化。
+    /// </summary>
+    protected override void Awake()
     {
+        base.Awake();
+        // 自主初始化，防止 ManagerManager.OnSceneLoaded 触发时 Instance 尚未就绪导致 Init 未被调用
+        if (!isSkinInitialized)
+        {
+            Init();
+        }
+    }
+
+    public void Init()
+    {
+        if (isSkinInitialized)
+        {
+            Debug.Log("[SkinManager] 已初始化，跳过重复调用");
+            return;
+        }
+        isSkinInitialized = true;
+
         // 用默认皮肤初始化equippedSkins，确保在服务器数据未返回前皮肤也显示为"已装备"
         equippedSkins = new Dictionary<int, int>(DefaultSkins);
-        Debug.Log($"[SkinManager] Awake: 用默认皮肤初始化，共 {equippedSkins.Count} 个");
+        Debug.Log($"[SkinManager] Init: 用默认皮肤初始化，共 {equippedSkins.Count} 个");
 
         RegisterEvents();
         CheckAndApplySkins();
@@ -87,10 +109,55 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
     {
         Debug.Log("[SkinManager] 收到所有加载完成事件，开始应用皮肤");
         isSceneMatReady = true;
+
+        // ✅ 主动从 NetServerManager 同步皮肤数据（降级方案，不依赖 EVENT_SKIN_DATA_UPDATED 事件）
+        // 解决事件时序问题导致服务器皮肤数据未流向 SkinManager 的问题
+        SyncSkinsFromNetServer();
+
         if (hasPendingSkins && equippedSkins.Count > 0)
         {
             ApplyAllSkins();
         }
+    }
+
+    /// <summary>
+    /// 确保皮肤数据已从 NetServerManager 同步（供外部模块如 BagView.OpenBag 主动调用）
+    /// </summary>
+    public void EnsureSkinsSynced()
+    {
+        SyncSkinsFromNetServer();
+    }
+
+    /// <summary>
+    /// 从 NetServerManager 主动拉取皮肤数据（不依赖事件，确保数据同步可靠）
+    /// </summary>
+    private void SyncSkinsFromNetServer()
+    {
+        if (NetServerManager.Instance == null)
+        {
+            Debug.LogWarning("[SkinManager] SyncSkinsFromNetServer - NetServerManager 为空，跳过");
+            return;
+        }
+
+        var skinsData = NetServerManager.Instance.GetEquippedSkinsData();
+        if (skinsData == null || skinsData.Count == 0)
+        {
+            Debug.LogWarning("[SkinManager] SyncSkinsFromNetServer - 服务器皮肤数据为空，保持默认值");
+            return;
+        }
+
+        // 使用与 OnSkinDataUpdated 相同的合并逻辑
+        equippedSkins = new Dictionary<int, int>(DefaultSkins);
+        int serverOverrideCount = 0;
+        foreach (var kvp in skinsData)
+        {
+            if (kvp.Value > 0)
+            {
+                equippedSkins[kvp.Key] = kvp.Value;
+                serverOverrideCount++;
+            }
+        }
+        Debug.Log($"[SkinManager] SyncSkinsFromNetServer - 主动同步成功，服务器覆盖 {serverOverrideCount} 个，合并后共 {equippedSkins.Count} 个皮肤");
     }
 
     public void SwitchToIndoorScene()
@@ -176,15 +243,17 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
         // 先重置为默认皮肤，确保所有槽位都有初始值
         equippedSkins = new Dictionary<int, int>(DefaultSkins);
 
-        // 用服务器数据覆盖默认值（服务器数据优先）
+        // 用服务器数据覆盖默认值（服务器数据优先，值为0的表示该槽位无皮肤）
+        int serverOverrideCount = 0;
         foreach (var kvp in skins)
         {
             if (kvp.Value > 0)
             {
                 equippedSkins[kvp.Key] = kvp.Value;
+                serverOverrideCount++;
             }
         }
-        Debug.Log($"[SkinManager] 皮肤数据更新，服务器返回 {skins.Count} 个，合并后共 {equippedSkins.Count} 个皮肤");
+        Debug.Log($"[SkinManager] 皮肤数据更新，服务器返回 {skins.Count} 个，覆盖默认 {serverOverrideCount} 个，合并后共 {equippedSkins.Count} 个皮肤");
 
         if (isSceneMatReady && SceneMatManager.Instance != null && SceneMatManager.Instance.IsInitialized)
         {

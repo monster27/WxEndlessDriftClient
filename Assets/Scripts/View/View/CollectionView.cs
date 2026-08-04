@@ -11,6 +11,7 @@ using System.Linq;
 public class CollectionView : BaseView
 {
     [Header("UI组件")]
+    public Text pageNameText;               // 页面名称文本
     public Text completionText;              // 完成度百分比文本
     public Button rewardButton;              // 奖励领取按钮
     public Toggle[] categoryToggles = new Toggle[6];  // 分类切换按钮数组（最多6个分类）
@@ -237,6 +238,10 @@ public class CollectionView : BaseView
         else
         {
             // 如果没有数据，重置显示
+            if (pageNameText != null)
+            {
+                pageNameText.text = "";
+            }
             completionText.text = "0";
             pageInfoText.text = "0/0";
             rewardButton.interactable = false;
@@ -249,6 +254,11 @@ public class CollectionView : BaseView
     /// <param name="page">当前页面数据</param>
     private void UpdatePageInfo(CollectionPage page)
     {
+        if (pageNameText != null)
+        {
+            pageNameText.text = page.pageName ?? "";
+        }
+
         var category = GetCurrentCategory();
         if (category != null)
         {
@@ -271,18 +281,49 @@ public class CollectionView : BaseView
         }
         else
         {
-            int completedCount = 0;
-            foreach (int entryId in page.entries)
-            {
-                if (IsEntryCompleted(entryId))
-                {
-                    completedCount++;
-                }
-            }
-            completion = page.entries.Count > 0 ? (float)completedCount / page.entries.Count * 100 : 0;
+            completion = CalculatePageCompletion(page);
         }
         
         completionText.text = Mathf.FloorToInt(completion).ToString();
+    }
+    
+    /// <summary>
+    /// 计算页面完成度（客户端回退，与服务器逻辑一致）
+    /// 鱼类：每条鱼3个条件，每个完成的条件贡献1/3
+    /// 非鱼类：每个条目1个条件，拥有即满足
+    /// </summary>
+    private float CalculatePageCompletion(CollectionPage page)
+    {
+        if (page.entries == null || page.entries.Count == 0)
+            return 0;
+        
+        bool isFishCategory = currentCategoryIndex == 0;
+        float completedConditions = 0;
+        float totalConditions = 0;
+        
+        if (isFishCategory)
+        {
+            totalConditions = page.entries.Count * 3f;
+            foreach (int entryId in page.entries)
+            {
+                int level = GetFishCollectionLevel(entryId); // 0-3
+                completedConditions += level;
+            }
+        }
+        else
+        {
+            totalConditions = page.entries.Count;
+            foreach (int entryId in page.entries)
+            {
+                int quantity = PlayerDataManager.Instance?.GetItemQuantity(entryId) ?? 0;
+                if (quantity > 0)
+                {
+                    completedConditions++;
+                }
+            }
+        }
+        
+        return totalConditions > 0 ? completedConditions / totalConditions * 100f : 0;
     }
     
     /// <summary>
@@ -299,34 +340,6 @@ public class CollectionView : BaseView
             }
         }
         return null;
-    }
-
-    /// <summary>
-    /// 检查条目是否已完成
-    /// </summary>
-    /// <param name="entryId">条目ID</param>
-    /// <returns>是否已完成</returns>
-    private bool IsEntryCompleted(int entryId)
-    {
-        // 鱼类分类（索引0）使用特殊的完成条件
-        if (currentCategoryIndex == 0)
-        {
-            return IsFishCompleted(entryId);
-        }
-
-        // 其他分类：只要捕获过就算完成
-        return PlayerDataManager.Instance?.GetFishCatchCount(entryId) > 0;
-    }
-
-    /// <summary>
-    /// 检查鱼类是否已完成收集（等级达到3级）
-    /// </summary>
-    /// <param name="fishId">鱼类ID</param>
-    /// <returns>是否完成</returns>
-    private bool IsFishCompleted(int fishId)
-    {
-        int level = GetFishCollectionLevel(fishId);
-        return level >= 3;  // 需要达到3级才算完成
     }
 
     /// <summary>
@@ -354,15 +367,7 @@ public class CollectionView : BaseView
         }
         else
         {
-            int completedCount = 0;
-            foreach (int entryId in page.entries)
-            {
-                if (IsEntryCompleted(entryId))
-                {
-                    completedCount++;
-                }
-            }
-            float completion = page.entries.Count > 0 ? (float)completedCount / page.entries.Count * 100 : 0;
+            float completion = CalculatePageCompletion(page);
 
             foreach (var reward in page.rewards)
             {
@@ -385,16 +390,7 @@ public class CollectionView : BaseView
         var page = GetCurrentPage();
         if (page != null)
         {
-            // 计算当前完成度
-            int completedCount = 0;
-            foreach (int entryId in page.entries)
-            {
-                if (IsEntryCompleted(entryId))
-                {
-                    completedCount++;
-                }
-            }
-            float completion = page.entries.Count > 0 ? (float)completedCount / page.entries.Count * 100 : 0;
+            float completion = CalculatePageCompletion(page);
 
             // 查找可领取的奖励
             foreach (var reward in page.rewards)
@@ -426,7 +422,7 @@ public class CollectionView : BaseView
     {
         foreach (int entryId in page.entries)
         {
-            CreatePrefab(entryId);
+            CreatePrefab(entryId, page.pageName);
         }
     }
 
@@ -434,7 +430,8 @@ public class CollectionView : BaseView
     /// 创建单个图鉴条目
     /// </summary>
     /// <param name="entryId">条目ID</param>
-    private void CreatePrefab(int entryId)
+    /// <param name="pageName">所属页面名称</param>
+    private void CreatePrefab(int entryId, string pageName = "")
     {
         GameObject prefab = null;
         
@@ -457,9 +454,9 @@ public class CollectionView : BaseView
             {
                 // 获取情报状态
                 CollectionInfoState infoState = GetEntryInfoState(entryId);
-                
-                // 初始化图鉴条目（鱼类分类传入true，传入情报状态）
-                collectionPrefab.Init(entryId, currentCategoryIndex == 0, infoState);
+
+                // 初始化图鉴条目（鱼类分类传入true，传入情报状态和页面名称）
+                collectionPrefab.Init(entryId, currentCategoryIndex == 0, infoState, pageName);
 
                 // 如果是鱼类分类且已获取物品，设置收集等级和闪光状态
                 if (currentCategoryIndex == 0 && infoState == CollectionInfoState.Obtained)

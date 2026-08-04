@@ -266,7 +266,7 @@ public class ZpfTool : Editor
     /// <summary>
     /// 切换物体显隐状态
     /// </summary>
-    [MenuItem("Tools/Zpf/显隐 &1")]
+    [MenuItem("Tools/通用/显隐 &1")]
     public static void SetObjActive()
     {
         GameObject[] selectObjs = Selection.gameObjects;
@@ -282,7 +282,7 @@ public class ZpfTool : Editor
     /// <summary>
     /// 设置名称
     /// </summary>
-    [MenuItem("Tools/Zpf/名称 &2")]
+    [MenuItem("Tools/通用/名称 &2")]
     public static void SetObjName()
     {
         GameObject[] selectObjs = Selection.gameObjects;
@@ -298,7 +298,7 @@ public class ZpfTool : Editor
     /// <summary>
     ///
     /// </summary>
-    [MenuItem("Tools/Zpf/排序 &3")]
+    [MenuItem("Tools/通用/排序 &3")]
     public static void SetObjWH()
     {
         GameObject[] selectObjs = Selection.gameObjects;
@@ -313,7 +313,7 @@ public class ZpfTool : Editor
     /// <summary>
     /// 设置比例宽高
     /// </summary>
-    [MenuItem("Tools/Zpf/宽高 &4")]
+    [MenuItem("Tools/通用/宽高 &4")]
     public static void SetObjWH2()
     {
         GameObject[] selectObjs = Selection.gameObjects;
@@ -847,7 +847,7 @@ public class ZpfTool : Editor
     /// <summary>
     /// 清除保存的服务器路径
     /// </summary>
-    [MenuItem("Tools/Zpf/清除服务器路径")]
+    [MenuItem("Tools/通用/清除服务器路径")]
     public static void ClearServerPath()
     {
         if (EditorPrefs.HasKey(SERVER_PATH_KEY))

@@ -559,25 +559,16 @@ namespace View.Detail
 
         private int CalculateDisplayPrice()
         {
+            // ✅ 优先使用服务器返回的 calculatedPrice（每条鱼独立价格）
             if (fishDetail != null && fishDetail.calculatedPrice > 0)
             {
                 return fishDetail.calculatedPrice;
             }
 
+            // ✅ 降级：使用物品基础售价，不乘以星级倍率（服务器已处理价格计算）
             if (itemData != null)
             {
-                int basePrice = itemData.sellPrice;
-
-                if (fishDetail != null && fishDetail.starRatingId > 0 && LoadDataManager.Instance != null)
-                {
-                    var starRating = LoadDataManager.Instance.GetStarRatingById(fishDetail.starRatingId);
-                    if (starRating != null)
-                    {
-                        return Mathf.RoundToInt(basePrice * starRating.multiplier);
-                    }
-                }
-
-                return basePrice;
+                return itemData.sellPrice;
             }
 
             return 0;

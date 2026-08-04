@@ -27,9 +27,11 @@ public class UI_CollectionPrefab : MonoBehaviour
     private bool hasShiny = false;
     private ItemData itemData;
     private CollectionInfoState infoState = CollectionInfoState.Unknown;
+    private string pageName = "";  // 页面名称
 
     public int EntryId => entryId;
     public CollectionInfoState InfoState => infoState;
+    public string PageName => pageName;
     public event System.Action<UI_CollectionPrefab> OnClick;
 
     void Start()
@@ -45,14 +47,15 @@ public class UI_CollectionPrefab : MonoBehaviour
         }
     }
 
-    public void Init(int id, bool fishFlag, CollectionInfoState state = CollectionInfoState.Unknown)
+    public void Init(int id, bool fishFlag, CollectionInfoState state = CollectionInfoState.Unknown, string pageName = "")
     {
         entryId = id;
         isFish = fishFlag;
         infoState = state;
+        this.pageName = pageName ?? "";
 
         UpdateDisplayByState();
-        
+
         if (!isFish && shinyToggleButton != null)
         {
             shinyToggleButton.gameObject.SetActive(false);
@@ -89,13 +92,15 @@ public class UI_CollectionPrefab : MonoBehaviour
             icon.sprite = unknownSprite;
             icon.gameObject.SetActive(true);
         }
-        
+
         nameText.text = "???";
-        
+
         if (levelImage != null) levelImage.gameObject.SetActive(false);
         if (shinyImage != null) shinyImage.gameObject.SetActive(false);
-        if (rarityBackgroundImage != null) rarityBackgroundImage.gameObject.SetActive(false);
-        
+
+        // ✅ 鱼类在未获取情报状态也显示稀有度背景图
+        UpdateRarityBackground();
+
         // 禁用点击事件
         Button button = GetComponent<Button>();
         if (button != null)
@@ -122,13 +127,13 @@ public class UI_CollectionPrefab : MonoBehaviour
                 icon.sprite = outlineSprite;
                 icon.gameObject.SetActive(true);
             }
-            
+
             var fishData = LoadDataManager.Instance?.GetFishById(entryId);
             if (fishData != null)
             {
                 nameText.text = fishData.name;
             }
-            
+
             UpdateRarityBackground();
         }
         else
@@ -148,16 +153,14 @@ public class UI_CollectionPrefab : MonoBehaviour
                     icon.gameObject.SetActive(true);
                 }
             }
-            
-            if (rarityBackgroundImage != null)
-            {
-                rarityBackgroundImage.gameObject.SetActive(false);
-            }
+
+            // ✅ 非鱼类物品也显示稀有度背景图（使用默认稀有度0）
+            UpdateRarityBackground();
         }
-        
+
         if (levelImage != null) levelImage.gameObject.SetActive(false);
         if (shinyImage != null) shinyImage.gameObject.SetActive(false);
-        
+
         // 启用点击事件
         Button button = GetComponent<Button>();
         if (button != null)
@@ -225,10 +228,8 @@ public class UI_CollectionPrefab : MonoBehaviour
             }
         }
 
-        if (rarityBackgroundImage != null)
-        {
-            rarityBackgroundImage.gameObject.SetActive(false);
-        }
+        // ✅ 非鱼类物品也显示稀有度背景图（使用默认稀有度0）
+        UpdateRarityBackground();
     }
 
     private void UpdateLevelDisplay()

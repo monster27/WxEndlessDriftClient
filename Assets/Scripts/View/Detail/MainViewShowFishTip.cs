@@ -167,7 +167,7 @@ public class MainViewShowFishTip : MonoBehaviour
         if (nameText != null)
         {
             nameText.text = data.itemName;
-            nameText.color = new Color(1f, 1f, 1f, 0f);
+            //nameText.color = new Color(1f, 1f, 1f, 0f);
         }
 
         gameObject.SetActive(true);

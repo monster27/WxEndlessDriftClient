@@ -205,6 +205,10 @@ public partial class NetServerManager
             AutoStartFishing();
             Logger.Log("[NetServerManager] 自动钓鱼已启动");
         }
+
+        // ✅ 背包刷新事件(EVENT_REFRESH_BAG)已移至 ManagerManager.OnAllLoadingComplete 中发送
+        // 确保在 EVENT_ALL_LOADING_COMPLETE（SkinManager 同步皮肤数据）之后才刷新背包 UI
+        Logger.Log("[NetServerManager] 初始化完成，等待 ManagerManager 触发背包刷新");
     }
 
     // ========== 等待连接完成的协程 ==========

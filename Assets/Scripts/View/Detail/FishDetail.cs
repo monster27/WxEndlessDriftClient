@@ -22,6 +22,9 @@ namespace View.Detail
 
         private Dictionary<int, List<FishDetailData>> currentFishDetailData = new Dictionary<int, List<FishDetailData>>();
 
+        // 缓存数据签名，用于判断是否需要刷新
+        private string lastDataSignature = "";
+
         public void SetFishBagItemPrefab(GameObject prefab)
         {
             if (fishBagItemPrefab == null)
@@ -60,6 +63,15 @@ namespace View.Detail
         public void UpdateFishItems(Dictionary<int, ItemData> itemDataMap, Dictionary<int, int> newInventory, Dictionary<int, List<FishDetailData>> detailData)
         {
             if (newInventory == null) newInventory = new Dictionary<int, int>();
+
+            // ✅ 数据比对：生成签名，数据未变化则跳过刷新
+            string newSignature = GenerateDataSignature(newInventory, detailData);
+            if (newSignature == lastDataSignature && fishPrefabs.Count > 0)
+            {
+                Debug.Log("[FishDetail] 数据无变化，跳过刷新");
+                return;
+            }
+            lastDataSignature = newSignature;
 
             Debug.Log($"[FishDetail] ===== 开始更新鱼篓显示 =====");
             Debug.Log($"[FishDetail] 传入数据 - itemDataMap数量: {itemDataMap?.Count ?? 0}, newInventory物品类型数: {newInventory.Count}, detailData数量: {detailData?.Count ?? 0}");
@@ -341,6 +353,35 @@ namespace View.Detail
             }
 
             Debug.Log($"[FishDetail] SortFishItems - 完成排序，共 {allActivePrefabs.Count} 条鱼");
+        }
+
+        // ✅ 数据签名生成：用于比对数据是否变化，避免不必要的 UI 重建
+        private string GenerateDataSignature(Dictionary<int, int> inventory, Dictionary<int, List<FishDetailData>> detailData)
+        {
+            var sb = new System.Text.StringBuilder();
+            if (inventory != null)
+            {
+                foreach (var kvp in inventory.OrderBy(k => k.Key))
+                {
+                    sb.Append($"{kvp.Key}:{kvp.Value},");
+                }
+            }
+            sb.Append("|");
+            if (detailData != null)
+            {
+                foreach (var kvp in detailData.OrderBy(k => k.Key))
+                {
+                    sb.Append($"{kvp.Key}:{kvp.Value?.Count ?? 0},");
+                    if (kvp.Value != null)
+                    {
+                        foreach (var d in kvp.Value)
+                        {
+                            sb.Append($"{d.id}-{d.weight:F2}-{d.calculatedPrice}-{d.starRatingId}-{d.isShiny}-{d.isLocked},");
+                        }
+                    }
+                }
+            }
+            return sb.ToString();
         }
 
         private float GetSortValue(UI_FishBagPrefab prefab, FishBagView.SortType sortType)

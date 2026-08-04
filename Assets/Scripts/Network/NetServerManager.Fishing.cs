@@ -554,30 +554,51 @@ public partial class NetServerManager
 
     // ========== 鱼操作 ==========
 
-    public void OnSellFishItems((List<int>, int) data)
+    public void OnSellFishItems(List<int> detailIds)
     {
         if (!CheckNetworkConnection()) return;
-        var (itemIds, totalPrice) = data;
 
-        var fishCountMap = new Dictionary<int, int>();
-        foreach (var fishId in itemIds)
-            fishCountMap[fishId] = fishCountMap.TryGetValue(fishId, out int c) ? c + 1 : 1;
-
-        var sellItems = fishCountMap.Select(kvp => new Dictionary<string, object>
+        if (detailIds == null || detailIds.Count == 0)
         {
-            { "fishId", kvp.Key }, { "quantity", kvp.Value }
-        }).ToList();
+            Logger.LogWarning("[NetServerManager] 售卖鱼失败：没有选择任何鱼");
+            return;
+        }
 
-        Logger.Log($"[NetServerManager] 售卖鱼: {fishCountMap.Count}种, {itemIds.Count}条, 总价{totalPrice}");
+        // ✅ 使用服务器期望的字段名：fishItemIds（不是 detailIds）
+        var requestData = new Dictionary<string, object>
+        {
+            { "fishItemIds", detailIds },
+            { "totalPrice", 0 }  // 服务器会自动计算价格，传0即可
+        };
 
-        var requestData = new Dictionary<string, object> { { "items", sellItems }, { "totalPrice", totalPrice } };
+        Logger.Log($"[NetServerManager] 售卖鱼: {detailIds.Count}条, fishItemIds=[{string.Join(",", detailIds)}]");
 
-        // 【调试】打印实际发送的JSON
         string jsonToSend = NetUtils.SerializeToJson(requestData);
         Logger.Log($"[NetServerManager] 发送JSON: {jsonToSend}");
 
-        StartCoroutine(SendRequest<object>(ServerUrls.Player.SellFish(_currentPlayerId), requestData,
-            _ => { Logger.Log("[NetServerManager] 售卖鱼成功"); StartCoroutine(FetchPlayerDataAfterSell(itemIds, totalPrice)); },
+        StartCoroutine(SendRequest<SellFishResponse>(ServerUrls.Player.SellFish(_currentPlayerId), requestData,
+            response =>
+            {
+                Logger.Log("[NetServerManager] 售卖鱼成功");
+
+                // ✅ 从服务器响应中提取金币和价格数据
+                if (response != null)
+                {
+                    if (response.gold > 0)
+                    {
+                        playerGold = response.gold;
+                        Logger.Log($"[NetServerManager] 售卖后金币: {playerGold}");
+                        // ✅ 立即更新 UI，不等待 FetchPlayerGold
+                        GameUIManager.Instance?.UpdateGoldDisplay(playerGold);
+                    }
+                    if (response.totalPrice > 0)
+                    {
+                        Logger.Log($"[NetServerManager] 售卖获得金币: {response.totalPrice}");
+                    }
+                }
+
+                StartCoroutine(FetchPlayerDataAfterSell(detailIds));
+            },
             error => { Logger.LogWarning("[NetServerManager] 售卖鱼失败: " + error); GameUIManager.Instance?.ShowTip("售卖失败，请重试"); }));
     }
 
@@ -602,6 +623,7 @@ public partial class NetServerManager
 
     // ========== 辅助数据类 ==========
 
+    [Serializable] private class SellFishResponse { public bool success; public string message; public int gold; public int fishCount; public int remaining; public int capacity; public int soldCount; public int totalPrice; }
     [Serializable] private class FishingCatchResponse { public bool success; public string message; public string fishName; public float weight; public int goldBalance; public bool isTrash; public int trashStreak; public float struggleTime; public bool isShiny; }
     [Serializable] private class AutoFishingResponse { public bool success; public string message; }
     [Serializable] private class FishingStatusResponse { public bool success; public bool isAutoFishing; public bool isPaused; public int trashStreak; public float nextFishingTime; public float continuousModeRemainingTime; public int fishingMode; public int currentWeatherId; public int timeSlotId; public int timeStatus; public LastCatchInfo lastCatch; }

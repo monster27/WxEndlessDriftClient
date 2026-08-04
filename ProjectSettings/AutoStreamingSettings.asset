@@ -187,19 +187,6 @@ AutoStreamingSettings:
     abSize: 425
   - serializedVersion: 2
     onDemandDownload: 1
-    assetPath: Assets/Atlases/Assets/Textures/0605/Homepage/bottom icon/bottom icon.spriteatlas
-    assetName: 
-    localFileId: 4343727234628468602
-    rtMem: 0
-    warningFlag: 0
-    refs:
-    - 2
-    maxPlaceholderSize: 1114112
-    width: 0
-    height: 0
-    abSize: 426
-  - serializedVersion: 2
-    onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/Common/Common.spriteatlas
     assetName: 
     localFileId: 4343727234628468602
@@ -212,6 +199,19 @@ AutoStreamingSettings:
     width: 0
     height: 0
     abSize: 408
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Atlases/Assets/Textures/0605/Homepage/bottom icon/bottom icon.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 426
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/fish basket/fish basket.spriteatlas
@@ -606,19 +606,6 @@ AutoStreamingSettings:
     abSize: 435
   - serializedVersion: 2
     onDemandDownload: 1
-    assetPath: Assets/Atlases/Assets/Resources/UI/Icon/BaitIcons/BaitIcons.spriteatlas
-    assetName: 
-    localFileId: 4343727234628468602
-    rtMem: 0
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 1114112
-    width: 0
-    height: 0
-    abSize: 424
-  - serializedVersion: 2
-    onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/Common/Common.spriteatlas
     assetName: 
     localFileId: 4343727234628468602
@@ -630,6 +617,19 @@ AutoStreamingSettings:
     width: 0
     height: 0
     abSize: 411
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Atlases/Assets/Resources/UI/Icon/BaitIcons/BaitIcons.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 424
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0712/0712.spriteatlas
@@ -769,14 +769,14 @@ AutoStreamingSettings:
     assetPath: Assets/Resources/GameScene/Scene/102/NPC_bak.png
     assetName: NPC_bak
     localFileId: 2800000
-    rtMem: 10512
+    rtMem: 30000
     warningFlag: 0
     refs:
     - res
     maxPlaceholderSize: 196640
-    width: 128
-    height: 128
-    abSize: 2093
+    width: 100
+    height: 100
+    abSize: 952
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Resources/TTF/700w SDF.asset
@@ -795,80 +795,67 @@ AutoStreamingSettings:
     assetPath: Assets/Resources/UI/Icon/WeatherIcon/0.png
     assetName: 0
     localFileId: 2800000
-    rtMem: 40096
+    rtMem: 160000
     warningFlag: 0
     refs:
     - res
     maxPlaceholderSize: 196640
-    width: 256
-    height: 256
-    abSize: 27245
+    width: 200
+    height: 200
+    abSize: 35308
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Resources/GameScene/Scene/102/EnvBg_bak.png
     assetName: EnvBg_bak
     localFileId: 2800000
-    rtMem: 158432
+    rtMem: 1000000
     warningFlag: 0
     refs:
     - res
     maxPlaceholderSize: 196640
-    width: 512
-    height: 512
-    abSize: 10218
+    width: 500
+    height: 500
+    abSize: 9927
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Resources/UI/Icon/IndoorSkinIcons/5001.png
     assetName: 5001
     localFileId: 2800000
-    rtMem: 2497712
+    rtMem: 407664
     warningFlag: 0
     refs:
     - 2
     - res
     maxPlaceholderSize: 196640
-    width: 2048
-    height: 2048
-    abSize: 394703
-  - serializedVersion: 2
-    onDemandDownload: 1
-    assetPath: Assets/TextMesh Pro/Sprites/EmojiOne.png
-    assetName: EmojiOne
-    localFileId: 2800000
-    rtMem: 158432
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 196640
-    width: 512
-    height: 512
-    abSize: 85222
+    width: 892
+    height: 1024
+    abSize: 89156
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/TextMesh Pro/Examples & Extras/Textures/Wipe Pattern - Circle.psd
     assetName: Wipe Pattern - Circle
     localFileId: 2800000
-    rtMem: 4096
+    rtMem: 16384
     warningFlag: 0
     refs:
     - res
     maxPlaceholderSize: 196640
     width: 64
     height: 64
-    abSize: 3054
+    abSize: 5057
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/TextMesh Pro/Examples & Extras/Sprites/Default Sprites.png
     assetName: Default Sprites
     localFileId: 2800000
-    rtMem: 349552
+    rtMem: 1048576
     warningFlag: 0
     refs:
     - res
     maxPlaceholderSize: 196640
     width: 512
     height: 512
-    abSize: 143197
+    abSize: 213746
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/TextMesh Pro/Examples & Extras/Textures/Sunny Days - Seamless.jpg
@@ -887,66 +874,79 @@ AutoStreamingSettings:
     assetPath: Assets/TextMesh Pro/Examples & Extras/Textures/Floor Cement.jpg
     assetName: Floor Cement
     localFileId: 2800000
-    rtMem: 158432
+    rtMem: 611520
     warningFlag: 0
     refs:
     - res
     maxPlaceholderSize: 196640
-    width: 512
-    height: 512
-    abSize: 149923
+    width: 520
+    height: 392
+    abSize: 427924
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/TextMesh Pro/Examples & Extras/Textures/Brushed Metal 3.jpg
     assetName: Brushed Metal 3
     localFileId: 2800000
-    rtMem: 79696
+    rtMem: 546816
     warningFlag: 0
     refs:
     - res
     maxPlaceholderSize: 196640
     width: 512
-    height: 256
-    abSize: 66855
+    height: 356
+    abSize: 164103
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/TextMesh Pro/Examples & Extras/Textures/Fruit Jelly (B&W).jpg
     assetName: Fruit Jelly (B&W)
     localFileId: 2800000
-    rtMem: 158432
+    rtMem: 786432
     warningFlag: 0
     refs:
     - res
     maxPlaceholderSize: 196640
     width: 512
     height: 512
-    abSize: 153975
+    abSize: 387044
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/TextMesh Pro/Examples & Extras/Textures/Gradient Diagonal (Color).jpg
     assetName: Gradient Diagonal (Color)
     localFileId: 2800000
-    rtMem: 256
+    rtMem: 768
     warningFlag: 0
     refs:
     - res
     maxPlaceholderSize: 196640
     width: 16
     height: 16
-    abSize: 342
+    abSize: 599
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/TextMesh Pro/Examples & Extras/Sprites/DropCap Numbers.psd
     assetName: DropCap Numbers
     localFileId: 2800000
-    rtMem: 158432
+    rtMem: 118336
     warningFlag: 0
     refs:
     - res
     maxPlaceholderSize: 196640
     width: 512
     height: 512
-    abSize: 30284
+    abSize: 17713
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/TextMesh Pro/Sprites/EmojiOne.png
+    assetName: EmojiOne
+    localFileId: 2800000
+    rtMem: 1048576
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 196640
+    width: 512
+    height: 512
+    abSize: 99388
   mAudios: []
   mMeshes: []
   mAnimations: []
@@ -970,7 +970,7 @@ AutoStreamingSettings:
     assetPath: Assets/Scenes/GameScene.scene
     assetName: 
     localFileId: -1
-    rtMem: 19721133
+    rtMem: 19438179
     warningFlag: 0
     refs: []
   - onDemandDownload: 0

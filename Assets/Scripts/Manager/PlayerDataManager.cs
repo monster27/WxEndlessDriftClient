@@ -153,19 +153,6 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         Debug.Log("[PlayerDataManager] NetServerManager 初始化完成，同步数据");
         SyncInventoryFromServer();
         SyncGoldFromServer();
-
-        // 强制刷新背包UI，确保装备/鱼饵/皮肤的已装备标记正确显示
-        // 此时所有数据（装备、皮肤、背包）都已加载完毕
-        if (GameUIManager.Instance != null && GameUIManager.Instance.bagView != null)
-        {
-            var bagInventory = GetInventory();
-            var itemDataMap = LoadDataManager.Instance?.GetItemDataMap();
-            if (bagInventory != null && itemDataMap != null)
-            {
-                GameUIManager.Instance.bagView.UpdateBagItems(bagInventory, itemDataMap);
-                Debug.Log("[PlayerDataManager] 初始化完成后强制刷新背包UI");
-            }
-        }
     }
 
     private void OnGoldChanged(Dictionary<string, object> data)

@@ -20,7 +20,6 @@ public class ManagerManager : SingletonMono<ManagerManager>
         InitGameSceneManagers();
     }
 
-
     private void InitGameSceneManagers()
     {
         Debug.Log("[ManagerManager] 开始初始化游戏场景管理器...");
@@ -58,31 +57,45 @@ public class ManagerManager : SingletonMono<ManagerManager>
         }
 
         // ====================================================================
-        // 4. NetServerManager - 网络管理器
+        // 4. ⭐ SkinManager - 皮肤管理器（提前初始化，确保 NetServerManager 查询时已存在）
+        // ====================================================================
+        if (SkinManager.Instance != null)
+        {
+            SkinManager.Instance.Init();
+            logBuilder.AppendLine("  SkinManager: 完成");
+        }
+        else
+        {
+            Debug.LogWarning("[ManagerManager] SkinManager 实例不存在，将延迟初始化");
+        }
+
+        // ====================================================================
+        // 5. ⭐ NetServerManager - 网络管理器（放在 SkinManager 之后）
         // ====================================================================
         if (NetServerManager.Instance != null)
         {
             NetServerManager.Instance.SetEnabled(true);
 
+            // ✅ 关键修复：启动网络数据初始化
             if (!NetServerManager.Instance.IsInitialized)
             {
-                Debug.LogWarning("[ManagerManager] NetServerManager 尚未初始化完成，等待...");
+                Debug.Log("[ManagerManager] 启动 NetServerManager 数据初始化...");
+                NetServerManager.Instance.StartInitialization();
+
+                // ✅ 订阅初始化完成事件，在数据加载完成后才触发 UI 初始化
+                NetServerManager.Instance.OnInitializationComplete += OnNetServerInitialized;
+            }
+            else
+            {
+                // 如果已经初始化完成，直接继续
+                OnNetServerInitialized();
             }
 
-            logBuilder.AppendLine($"  NetServerManager: 已就绪 (初始化完成: {NetServerManager.Instance.IsInitialized})");
+            logBuilder.AppendLine($"  NetServerManager: 已启动初始化");
         }
         else
         {
             Debug.LogError("[ManagerManager] NetServerManager 实例不存在！");
-        }
-
-        // ====================================================================
-        // 5. UIManager - UI 管理器
-        // ====================================================================
-        if (GameUIManager.Instance != null)
-        {
-            GameUIManager.Instance.Init();
-            logBuilder.AppendLine("  UIManager: 完成");
         }
 
         // ====================================================================
@@ -114,56 +127,84 @@ public class ManagerManager : SingletonMono<ManagerManager>
         }
 
         // ====================================================================
-        // 9. 场景切换 - 根据服务器数据切换场景
+        // 9. SceneMatManager - 场景材质管理器
         // ====================================================================
-        if (NetServerManager.Instance != null && NetServerManager.Instance.IsInitialized)
-        {
-            // 获取服务器返回的场景ID
-            int sceneId = EnvManager.Instance.currentSceneId;
-
-            // 调用 SceneMatManager 切换场景
-            SceneMatManager sceneMatManager = FindObjectOfType<SceneMatManager>();
-            if (sceneMatManager != null)
-            {
-                string sceneIdStr = sceneId.ToString();
-                Debug.Log($"[ManagerManager] 切换到场景: {sceneIdStr}");
-                sceneMatManager.SwitchScene(sceneIdStr);
-                logBuilder.AppendLine($"  场景切换: {sceneIdStr}");
-            }
-            else
-            {
-                Debug.LogWarning("[ManagerManager] SceneMatManager 未找到，无法切换场景");
-                logBuilder.AppendLine("  场景切换: 失败 (SceneMatManager 未找到)");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("[ManagerManager] NetServerManager 未初始化完成，跳过场景切换");
-            logBuilder.AppendLine("  场景切换: 跳过 (NetServerManager 未就绪)");
-        }
-
         if (SceneMatManager.Instance != null)
         {
             SceneMatManager.Instance.Init();
+            logBuilder.AppendLine("  SceneMatManager: 完成");
         }
 
+        // ====================================================================
+        // 10. FishFlyInManager - 鱼飞入管理器
+        // ====================================================================
         if (FishFlyInManager.Instance != null)
         {
             if (SceneMatManager.Instance != null)
             {
                 FishFlyInManager.Instance.Init(SceneMatManager.Instance.gameLayerQueue + 1);
             }
+            logBuilder.AppendLine("  FishFlyInManager: 完成");
+        }
+
+        // ====================================================================
+        // 11. UI 管理器 - 最后初始化（等待数据就绪才显示）
+        // ====================================================================
+        if (GameUIManager.Instance != null)
+        {
+            GameUIManager.Instance.Init();
+            logBuilder.AppendLine("  UIManager: 完成");
         }
 
         // ====================================================================
         // 完成加载
         // ====================================================================
-        logBuilder.AppendLine("[ManagerManager] 游戏场景管理器初始化完成");
+        logBuilder.AppendLine("[ManagerManager] 管理器初始化完成，等待网络数据...");
         Debug.Log(logBuilder.ToString());
 
         initializationComplete = true;
+    }
 
-        // 所有加载完成，启用ClickManager
+    /// <summary>
+    /// NetServerManager 初始化完成回调
+    /// </summary>
+    private void OnNetServerInitialized()
+    {
+        Debug.Log("[ManagerManager] NetServerManager 初始化完成，开始应用数据...");
+
+        // 取消订阅，防止重复触发
+        if (NetServerManager.Instance != null)
+        {
+            NetServerManager.Instance.OnInitializationComplete -= OnNetServerInitialized;
+        }
+
+        // ====================================================================
+        // 场景切换 - 根据服务器数据切换场景
+        // ====================================================================
+        if (NetServerManager.Instance != null && NetServerManager.Instance.IsInitialized)
+        {
+            int sceneId = EnvManager.Instance.currentSceneId;
+            string sceneIdStr = sceneId.ToString();
+            Debug.Log($"[ManagerManager] 切换到场景: {sceneIdStr}");
+
+            if (SceneMatManager.Instance != null)
+            {
+                SceneMatManager.Instance.SwitchScene(sceneIdStr);
+            }
+        }
+
+        // ====================================================================
+        // 应用皮肤（此时服务器数据已返回）
+        // ====================================================================
+        if (SkinManager.Instance != null)
+        {
+            // SkinManager 会通过事件自动应用皮肤
+            Debug.Log("[ManagerManager] 皮肤数据将自动应用");
+        }
+
+        // ====================================================================
+        // 触发所有加载完成事件
+        // ====================================================================
         OnAllLoadingComplete();
     }
 
@@ -174,7 +215,14 @@ public class ManagerManager : SingletonMono<ManagerManager>
         {
             ClickManager.Instance.IsEnabled = true;
         }
+
+        // 1. 先发送 EVENT_ALL_LOADING_COMPLETE，触发 SkinManager.OnAllLoadingComplete → SyncSkinsFromNetServer
         CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_ALL_LOADING_COMPLETE, "All loading complete");
+
+        // 2. ✅ 在 SkinManager 同步皮肤数据之后，再触发背包刷新
+        //    确保 BagView.RefreshItems 执行时 SkinManager.equippedSkins 已包含服务器数据
+        Debug.Log("[ManagerManager] 皮肤数据已同步，触发背包刷新事件");
+        CommunicateEvent.Modify(CommunicateEvent.EVENT_REFRESH_BAG);
     }
 
     private void OnDestroy()
