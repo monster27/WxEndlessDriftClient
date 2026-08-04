@@ -40,19 +40,10 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys:
-    - 991f728471c22a94cb3c949d54ac8134: 21300000
-    - 812568f915b1ac342a300bdee465412b: 21300000
-    - b3e14bab1e5e3cb448022e7f170ea9f3: 21300000
+    packedSpriteRenderDataKeys: []
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites:
-  - {fileID: 21300000, guid: 991f728471c22a94cb3c949d54ac8134, type: 3}
-  - {fileID: 21300000, guid: 812568f915b1ac342a300bdee465412b, type: 3}
-  - {fileID: 21300000, guid: b3e14bab1e5e3cb448022e7f170ea9f3, type: 3}
-  m_PackedSpriteNamesToIndex:
-  - Daily Reward
-  - ranking
-  - black market
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
   m_RenderDataMap: {}
   m_Tag: Left icon
   m_IsVariant: 0

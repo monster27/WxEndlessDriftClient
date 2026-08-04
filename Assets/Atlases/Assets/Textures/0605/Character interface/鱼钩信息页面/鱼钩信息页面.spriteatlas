@@ -41,22 +41,10 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys:
-    - 8663ac59363d8064ca590e0cd342cbfe: 21300000
-    - 059ab50d9261b304da152ef7aa4b1a8c: 21300000
-    - 830e722d72452934c857f61f070564ef: 21300000
-    - 2f61fb9d1a53206428666611a7827a5f: 21300000
+    packedSpriteRenderDataKeys: []
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites:
-  - {fileID: 21300000, guid: 8663ac59363d8064ca590e0cd342cbfe, type: 3}
-  - {fileID: 21300000, guid: 059ab50d9261b304da152ef7aa4b1a8c, type: 3}
-  - {fileID: 21300000, guid: 830e722d72452934c857f61f070564ef, type: 3}
-  - {fileID: 21300000, guid: 2f61fb9d1a53206428666611a7827a5f, type: 3}
-  m_PackedSpriteNamesToIndex:
-  - Gold Fish Hook Background Icon
-  - Fish hook background icon
-  - "\u9C7C\u94A9\u754C\u9762\u793A\u610F"
-  - Wizard Fish Hook Background
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
   m_RenderDataMap: {}
   m_Tag: "\u9C7C\u94A9\u4FE1\u606F\u9875\u9762"
   m_IsVariant: 0

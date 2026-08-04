@@ -43,28 +43,10 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys:
-    - 0780c771810879240833f1277d31624c: 21300000
-    - 1c0d1084a837f1549bc079cffaaf691b: 21300000
-    - 005c941afd890d247bff05a22e59df43: 21300000
-    - 745cb17a8ff36e9489c3d80551450adf: 21300000
-    - 86957f0bea0035a44b670ff76d2cf3b6: 21300000
-    - b5da203e1e15f6e46ad7517642383e86: 21300000
+    packedSpriteRenderDataKeys: []
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites:
-  - {fileID: 21300000, guid: 0780c771810879240833f1277d31624c, type: 3}
-  - {fileID: 21300000, guid: 1c0d1084a837f1549bc079cffaaf691b, type: 3}
-  - {fileID: 21300000, guid: 005c941afd890d247bff05a22e59df43, type: 3}
-  - {fileID: 21300000, guid: 745cb17a8ff36e9489c3d80551450adf, type: 3}
-  - {fileID: 21300000, guid: 86957f0bea0035a44b670ff76d2cf3b6, type: 3}
-  - {fileID: 21300000, guid: b5da203e1e15f6e46ad7517642383e86, type: 3}
-  m_PackedSpriteNamesToIndex:
-  - Idle_Stand
-  - Reel_Stand
-  - Reel
-  - Lazy
-  - Idle
-  - Lazy_Stand
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
   m_RenderDataMap: {}
   m_Tag: 3401
   m_IsVariant: 0

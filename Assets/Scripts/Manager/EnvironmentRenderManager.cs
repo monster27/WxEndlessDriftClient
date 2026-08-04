@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 /// <summary>
@@ -25,6 +26,10 @@ public class EnvironmentRenderManager : MonoBehaviour
     [Tooltip("天气层控制器 (Weather)")]
     public SceneMatCtrl weatherLayerController;
 
+    [Header("过渡设置")]
+    [Tooltip("过渡持续时间（秒）")]
+    public float transitionDuration = 0.8f;
+
     private Dictionary<int, Sprite> timeEnvironmentDict = new Dictionary<int, Sprite>();
     private Dictionary<int, Sprite> weatherEnvironmentDict = new Dictionary<int, Sprite>();
 
@@ -33,6 +38,10 @@ public class EnvironmentRenderManager : MonoBehaviour
     private int currentTimeId = 401;
     private int currentWeatherId = 301;
     private bool isInitialized = false;
+
+    // 过渡协程引用
+    private Coroutine currentTimeTransitionCoroutine;
+    private Coroutine currentWeatherTransitionCoroutine;
 
     private void Awake()
     {
@@ -134,7 +143,7 @@ public class EnvironmentRenderManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 设置时段层图片
+    /// 设置时段层图片（立即切换）
     /// </summary>
     public void SetTimeSprite(Sprite sprite)
     {
@@ -153,13 +162,14 @@ public class EnvironmentRenderManager : MonoBehaviour
         Texture2D texture = SpriteToTexture2D(sprite);
         if (texture != null)
         {
+            // ✅ 使用 SceneMatCtrl 的 SetMainTexture 方法
             timeLayerController.SetMainTexture(texture);
             Debug.Log($"[EnvironmentRenderManager] 设置时段层图片: {sprite.name}");
         }
     }
 
     /// <summary>
-    /// 设置时段层图片（带渐变）
+    /// 设置时段层图片（带渐变过渡）- 使用 SceneMatCtrl 的 TransitionTo 方法
     /// </summary>
     public void SetTimeSpriteSmooth(Sprite sprite, float duration = -1f)
     {
@@ -175,18 +185,26 @@ public class EnvironmentRenderManager : MonoBehaviour
             return;
         }
 
-        if (duration < 0) duration = 0.5f;
+        if (duration < 0) duration = transitionDuration;
+
+        // 停止正在进行的过渡
+        if (currentTimeTransitionCoroutine != null)
+        {
+            StopCoroutine(currentTimeTransitionCoroutine);
+            currentTimeTransitionCoroutine = null;
+        }
 
         Texture2D texture = SpriteToTexture2D(sprite);
         if (texture != null)
         {
-            timeLayerController.SetMainTextureSmooth(texture, duration);
+            // ✅ 使用 SceneMatCtrl 的 TransitionTo 方法
+            timeLayerController.TransitionTo(texture, duration);
             Debug.Log($"[EnvironmentRenderManager] 平滑设置时段层图片: {sprite.name}, 时长: {duration}s");
         }
     }
 
     /// <summary>
-    /// 设置天气层图片
+    /// 设置天气层图片（立即切换）
     /// </summary>
     public void SetWeatherSprite(Sprite sprite)
     {
@@ -205,13 +223,14 @@ public class EnvironmentRenderManager : MonoBehaviour
         Texture2D texture = SpriteToTexture2D(sprite);
         if (texture != null)
         {
+            // ✅ 使用 SceneMatCtrl 的 SetMainTexture 方法
             weatherLayerController.SetMainTexture(texture);
             Debug.Log($"[EnvironmentRenderManager] 设置天气层图片: {sprite.name}");
         }
     }
 
     /// <summary>
-    /// 设置天气层图片（带渐变）
+    /// 设置天气层图片（带渐变过渡）- 使用 SceneMatCtrl 的 TransitionTo 方法
     /// </summary>
     public void SetWeatherSpriteSmooth(Sprite sprite, float duration = -1f)
     {
@@ -227,12 +246,20 @@ public class EnvironmentRenderManager : MonoBehaviour
             return;
         }
 
-        if (duration < 0) duration = 0.5f;
+        if (duration < 0) duration = transitionDuration;
+
+        // 停止正在进行的过渡
+        if (currentWeatherTransitionCoroutine != null)
+        {
+            StopCoroutine(currentWeatherTransitionCoroutine);
+            currentWeatherTransitionCoroutine = null;
+        }
 
         Texture2D texture = SpriteToTexture2D(sprite);
         if (texture != null)
         {
-            weatherLayerController.SetMainTextureSmooth(texture, duration);
+            // ✅ 使用 SceneMatCtrl 的 TransitionTo 方法
+            weatherLayerController.TransitionTo(texture, duration);
             Debug.Log($"[EnvironmentRenderManager] 平滑设置天气层图片: {sprite.name}, 时长: {duration}s");
         }
     }
@@ -247,7 +274,7 @@ public class EnvironmentRenderManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 切换时段环境
+    /// 切换时段环境（带平滑过渡）
     /// </summary>
     public void SwitchTimeEnvironment(int timeId)
     {
@@ -280,12 +307,13 @@ public class EnvironmentRenderManager : MonoBehaviour
         currentTimeId = timeId;
         currentTimeSprite = target;
 
+        // ✅ 使用平滑过渡
         SetTimeSpriteSmooth(target);
         Debug.Log($"[EnvironmentRenderManager] 切换时段环境: ID={timeId}, 名称={(target != null ? target.name : "null")}");
     }
 
     /// <summary>
-    /// 切换天气环境
+    /// 切换天气环境（带平滑过渡）
     /// </summary>
     public void SwitchWeatherEnvironment(int weatherId)
     {
@@ -318,6 +346,7 @@ public class EnvironmentRenderManager : MonoBehaviour
         currentWeatherId = weatherId;
         currentWeatherSprite = target;
 
+        // ✅ 使用平滑过渡
         SetWeatherSpriteSmooth(target);
         Debug.Log($"[EnvironmentRenderManager] 切换天气环境: ID={weatherId}, 名称={(target != null ? target.name : "null")}");
     }
@@ -331,6 +360,13 @@ public class EnvironmentRenderManager : MonoBehaviour
         {
             Debug.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换时段");
             return;
+        }
+
+        // 停止正在进行的过渡
+        if (currentTimeTransitionCoroutine != null)
+        {
+            StopCoroutine(currentTimeTransitionCoroutine);
+            currentTimeTransitionCoroutine = null;
         }
 
         Sprite target = null;
@@ -369,6 +405,13 @@ public class EnvironmentRenderManager : MonoBehaviour
         {
             Debug.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换天气");
             return;
+        }
+
+        // 停止正在进行的过渡
+        if (currentWeatherTransitionCoroutine != null)
+        {
+            StopCoroutine(currentWeatherTransitionCoroutine);
+            currentWeatherTransitionCoroutine = null;
         }
 
         Sprite target = null;

@@ -45,34 +45,10 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys:
-    - 187648e4b2dab824e93241d6aafa72c5: 21300000
-    - b4a0c7a768489aa468017a1897ac4473: 21300000
-    - 5782771878f4c854cab6c5687d219a62: 21300000
-    - be5c366ac772df14db374922feafa93d: 21300000
-    - 5e22487a4c2ba964dafdd7856487d4b9: 21300000
-    - 29b9832dc8a5b06419da911013a8240e: 21300000
-    - 5675178ff080840468a1ec452dbb49a7: 21300000
-    - 22887d8f9f1b60541a2d75809eb0c471: 21300000
+    packedSpriteRenderDataKeys: []
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites:
-  - {fileID: 21300000, guid: 187648e4b2dab824e93241d6aafa72c5, type: 3}
-  - {fileID: 21300000, guid: b4a0c7a768489aa468017a1897ac4473, type: 3}
-  - {fileID: 21300000, guid: 5782771878f4c854cab6c5687d219a62, type: 3}
-  - {fileID: 21300000, guid: be5c366ac772df14db374922feafa93d, type: 3}
-  - {fileID: 21300000, guid: 5e22487a4c2ba964dafdd7856487d4b9, type: 3}
-  - {fileID: 21300000, guid: 29b9832dc8a5b06419da911013a8240e, type: 3}
-  - {fileID: 21300000, guid: 5675178ff080840468a1ec452dbb49a7, type: 3}
-  - {fileID: 21300000, guid: 22887d8f9f1b60541a2d75809eb0c471, type: 3}
-  m_PackedSpriteNamesToIndex:
-  - Tool base map
-  - Unused
-  - "\u9C7C\u94A9\u9875\u9762\u793A\u610F\u56FE"
-  - "\u9C7C\u7EBF\u9875\u9762\u793A\u610F\u56FE"
-  - Not placed
-  - "\u4EBA\u7269\u9053\u5177\u6280\u80FD\u672A\u88C5\u5907"
-  - Not placed 2
-  - "\u56FE\u9274\u9C7C"
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
   m_RenderDataMap: {}
   m_Tag: Other
   m_IsVariant: 0

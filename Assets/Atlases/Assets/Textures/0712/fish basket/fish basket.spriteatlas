@@ -49,46 +49,10 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys:
-    - 8f7db3304824f7346ab46ca39f3ed326: 21300000
-    - bb13a471372825747aa827b2bc777ecd: 21300000
-    - ae47ecd180f2de4419e694f1e3f5592a: 21300000
-    - 6df3a6a2fd1fb094fa7b4efd6c1cb3f7: 21300000
-    - 6924b313246f23a4992e1e34ea11b2b4: 21300000
-    - 678725343658ef245bd82b32735602d3: 21300000
-    - dc0c7f6528bb32a41afcab8d0dfc71d9: 21300000
-    - 3d002b0771c17da4dbe51c3d609acc4e: 21300000
-    - 9ebe5f6852911b34c8930857a4b0ed0b: 21300000
-    - 22de332b8fdb54846974bd4da183fb2e: 21300000
-    - b320167bcbdf9dd469acc166aca4d71d: 21300000
-    - d8783a8c4711e8141bc13c5d903c9400: 21300000
+    packedSpriteRenderDataKeys: []
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites:
-  - {fileID: 21300000, guid: 8f7db3304824f7346ab46ca39f3ed326, type: 3}
-  - {fileID: 21300000, guid: bb13a471372825747aa827b2bc777ecd, type: 3}
-  - {fileID: 21300000, guid: ae47ecd180f2de4419e694f1e3f5592a, type: 3}
-  - {fileID: 21300000, guid: 6df3a6a2fd1fb094fa7b4efd6c1cb3f7, type: 3}
-  - {fileID: 21300000, guid: 6924b313246f23a4992e1e34ea11b2b4, type: 3}
-  - {fileID: 21300000, guid: 678725343658ef245bd82b32735602d3, type: 3}
-  - {fileID: 21300000, guid: dc0c7f6528bb32a41afcab8d0dfc71d9, type: 3}
-  - {fileID: 21300000, guid: 3d002b0771c17da4dbe51c3d609acc4e, type: 3}
-  - {fileID: 21300000, guid: 9ebe5f6852911b34c8930857a4b0ed0b, type: 3}
-  - {fileID: 21300000, guid: 22de332b8fdb54846974bd4da183fb2e, type: 3}
-  - {fileID: 21300000, guid: b320167bcbdf9dd469acc166aca4d71d, type: 3}
-  - {fileID: 21300000, guid: d8783a8c4711e8141bc13c5d903c9400, type: 3}
-  m_PackedSpriteNamesToIndex:
-  - 3
-  - 2
-  - Select All
-  - plus sign 1
-  - 4
-  - 1
-  - Fish Basket Capacity Base Map
-  - "\u9C7C\u7BD3\u793A\u610F\u56FE"
-  - plus sign
-  - Distinguishing lines
-  - 5
-  - sell
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
   m_RenderDataMap: {}
   m_Tag: fish basket
   m_IsVariant: 0

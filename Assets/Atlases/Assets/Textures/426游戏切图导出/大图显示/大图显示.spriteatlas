@@ -42,25 +42,10 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys:
-    - f9a633205acb4f54183f8acdefa35dcf: 21300000
-    - f8e4ca2794fc3e24188629ed2d6c28a5: 21300000
-    - 5d3b8f28e46055747a7abd7051152f42: 21300000
-    - 9de28c9c67135fc48ba50d7d53202dd5: 21300000
-    - 1d1ec07e1614a2d4aac20891fa4d6c5f: 21300000
+    packedSpriteRenderDataKeys: []
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites:
-  - {fileID: 21300000, guid: f9a633205acb4f54183f8acdefa35dcf, type: 3}
-  - {fileID: 21300000, guid: f8e4ca2794fc3e24188629ed2d6c28a5, type: 3}
-  - {fileID: 21300000, guid: 5d3b8f28e46055747a7abd7051152f42, type: 3}
-  - {fileID: 21300000, guid: 9de28c9c67135fc48ba50d7d53202dd5, type: 3}
-  - {fileID: 21300000, guid: 1d1ec07e1614a2d4aac20891fa4d6c5f, type: 3}
-  m_PackedSpriteNamesToIndex:
-  - "\u77F3\u6591\u9C7C"
-  - "\u9875\u9762\u793A\u610F"
-  - "\u5E95\u56FE\u989C\u8272"
-  - "\u91D1\u67AA\u9C7C"
-  - "\u9B3C\u5934\u5200"
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
   m_RenderDataMap: {}
   m_Tag: "\u5927\u56FE\u663E\u793A"
   m_IsVariant: 0

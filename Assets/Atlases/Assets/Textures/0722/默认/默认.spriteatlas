@@ -39,16 +39,10 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys:
-    - f42be3659a7b3bc458d62b0b0cca38d8: 21300000
-    - 9dab083e27fe3c846ace5872eeaffe43: 21300000
+    packedSpriteRenderDataKeys: []
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites:
-  - {fileID: 21300000, guid: f42be3659a7b3bc458d62b0b0cca38d8, type: 3}
-  - {fileID: 21300000, guid: 9dab083e27fe3c846ace5872eeaffe43, type: 3}
-  m_PackedSpriteNamesToIndex:
-  - roughcast house
-  - "\u53C2\u8003\u56FE"
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
   m_RenderDataMap: {}
   m_Tag: "\u9ED8\u8BA4"
   m_IsVariant: 0

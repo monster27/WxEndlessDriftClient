@@ -44,31 +44,10 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys:
-    - 4ee42013026c6f246b2538e3ef6d4e79: 21300000
-    - b08c1ca3afb76764f9ea0b01131048e5: 21300000
-    - 0c961a162277e2c4c8f6751db6c5c701: 21300000
-    - 7489c576dae4b36478cd35089f517bee: 21300000
-    - a2285599f995e8c4887a57a34090f7f3: 21300000
-    - 1a6d0cba891539240a9c9d84a0fd2382: 21300000
-    - c728b97d340acbb4f98a3a5a24ad9db8: 21300000
+    packedSpriteRenderDataKeys: []
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites:
-  - {fileID: 21300000, guid: 4ee42013026c6f246b2538e3ef6d4e79, type: 3}
-  - {fileID: 21300000, guid: b08c1ca3afb76764f9ea0b01131048e5, type: 3}
-  - {fileID: 21300000, guid: 0c961a162277e2c4c8f6751db6c5c701, type: 3}
-  - {fileID: 21300000, guid: 7489c576dae4b36478cd35089f517bee, type: 3}
-  - {fileID: 21300000, guid: a2285599f995e8c4887a57a34090f7f3, type: 3}
-  - {fileID: 21300000, guid: 1a6d0cba891539240a9c9d84a0fd2382, type: 3}
-  - {fileID: 21300000, guid: c728b97d340acbb4f98a3a5a24ad9db8, type: 3}
-  m_PackedSpriteNamesToIndex:
-  - 203
-  - 202
-  - 206
-  - 0
-  - 201
-  - 204
-  - 205
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
   m_RenderDataMap: {}
   m_Tag: RarityBackground
   m_IsVariant: 0
