@@ -199,6 +199,17 @@ public class BagView : BaseView
                     subCfg.bagDetail.gameObject.SetActive(true);
                 }
             }
+
+            // ✅ 切换分类时更新该分类的物品数据（配合 OpenBag 的按需刷新优化）
+            if (PlayerDataManager.Instance != null && LoadDataManager.Instance != null)
+            {
+                var inventory = PlayerDataManager.Instance.GetInventory();
+                var itemDataMap = LoadDataManager.Instance.GetItemDataMap();
+                if (inventory != null && itemDataMap != null)
+                {
+                    UpdateSingleCategoryDetails(config, inventory, itemDataMap);
+                }
+            }
         }
     }
 
@@ -221,9 +232,76 @@ public class BagView : BaseView
 
         gameObject.SetActive(true);
 
-        RefreshItems();
+        // ✅ 优化：只更新当前可见分类，避免全量刷新所有分类导致卡顿
+        RefreshVisibleCategory();
 
         SendEvent();
+    }
+
+    /// <summary>
+    /// 只刷新当前可见分类（打开背包时使用，避免全量刷新所有分类）
+    /// </summary>
+    private void RefreshVisibleCategory()
+    {
+        Debug.Log("[BagView] RefreshVisibleCategory - 只刷新可见分类");
+
+        if (PlayerDataManager.Instance != null && LoadDataManager.Instance != null)
+        {
+            var inventory = PlayerDataManager.Instance.GetInventory();
+            // ✅ LoadDataManager.GetItemDataMap() 返回的是物品定义（名称、图标、分类），不是装备状态
+            // 装备状态由 BagDetail.IsItemEquipped → NetServerManager.IsItemEquippedCached 查询
+            var itemDataMap = LoadDataManager.Instance.GetItemDataMap();
+
+            if (inventory != null && itemDataMap != null)
+            {
+                // ✅ 确认装备缓存已就绪
+                if (NetServerManager.Instance != null)
+                {
+                    Debug.Log($"[BagView] RefreshVisibleCategory - 物品定义数: {itemDataMap.Count}, 背包物品数: {inventory.Count}, 装备缓存就绪: true");
+                }
+
+                // 只更新当前选中的分类
+                CategoryConfig currentCategory = GetCurrentCategory();
+                if (currentCategory != null)
+                {
+                    UpdateSingleCategoryDetails(currentCategory, inventory, itemDataMap);
+                }
+                else
+                {
+                    // 没有选中的分类，点击第一个有效分类
+                    ClickFirstValidCategory();
+                    currentCategory = GetCurrentCategory();
+                    if (currentCategory != null)
+                    {
+                        UpdateSingleCategoryDetails(currentCategory, inventory, itemDataMap);
+                    }
+                }
+
+                // 通知其他模块（EquipPlayerView 等）
+                CommunicateEvent.Modify("Bag_RefreshItems");
+                return;
+            }
+        }
+
+        // 降级：数据管理器未就绪
+        Debug.LogWarning("[BagView] RefreshVisibleCategory - 数据管理器未就绪，降级为事件刷新");
+        CommunicateEvent.Modify("Bag_RefreshItems");
+    }
+
+    /// <summary>
+    /// 更新单个大分类下的所有小分类
+    /// </summary>
+    private void UpdateSingleCategoryDetails(CategoryConfig config, Dictionary<int, int> inventory, Dictionary<int, ItemData> itemDataMap)
+    {
+        if (config == null) return;
+
+        foreach (SubCategoryConfig subCfg in config.subCategoryConfigs)
+        {
+            if (subCfg != null && subCfg.bagDetail != null)
+            {
+                subCfg.bagDetail.UpdateItemsBySingleCategory(itemDataMap, inventory, subCfg.subCategoryId);
+            }
+        }
     }
 
     private void SendEvent()

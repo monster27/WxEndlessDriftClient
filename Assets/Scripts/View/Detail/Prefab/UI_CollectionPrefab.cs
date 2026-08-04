@@ -14,6 +14,7 @@ public enum CollectionInfoState
 public class UI_CollectionPrefab : MonoBehaviour
 {
     public Image icon;
+    public Image levelHightLightMask;
     public Image levelImage;
     public Button shinyToggleButton;
     public Image shinyImage;
@@ -61,7 +62,7 @@ public class UI_CollectionPrefab : MonoBehaviour
             shinyToggleButton.gameObject.SetActive(false);
         }
     }
-    
+
     /// <summary>
     /// 根据情报状态更新显示
     /// </summary>
@@ -80,7 +81,7 @@ public class UI_CollectionPrefab : MonoBehaviour
                 break;
         }
     }
-    
+
     /// <summary>
     /// 显示未获取情报状态（显示unKnown图标）
     /// </summary>
@@ -89,26 +90,24 @@ public class UI_CollectionPrefab : MonoBehaviour
         Sprite unknownSprite = Resources.Load<Sprite>("UI/Icon/Common/unKnown");
         if (unknownSprite != null)
         {
-            icon.sprite = unknownSprite;
-            icon.gameObject.SetActive(true);
+            SetIcon(unknownSprite);
         }
 
         nameText.text = "???";
 
         if (levelImage != null) levelImage.gameObject.SetActive(false);
         if (shinyImage != null) shinyImage.gameObject.SetActive(false);
+        if (levelHightLightMask != null) levelHightLightMask.gameObject.SetActive(false);
 
-        // ✅ 鱼类在未获取情报状态也显示稀有度背景图
         UpdateRarityBackground();
 
-        // 禁用点击事件
         Button button = GetComponent<Button>();
         if (button != null)
         {
             button.interactable = false;
         }
     }
-    
+
     /// <summary>
     /// 显示已获取情报状态（显示Outline图标）
     /// </summary>
@@ -116,7 +115,6 @@ public class UI_CollectionPrefab : MonoBehaviour
     {
         if (isFish)
         {
-            // 显示鱼类Outline图标
             Sprite outlineSprite = Resources.Load<Sprite>($"UI/Icon/FishIcons/{entryId}_Outline");
             if (outlineSprite == null)
             {
@@ -124,8 +122,7 @@ public class UI_CollectionPrefab : MonoBehaviour
             }
             if (outlineSprite != null)
             {
-                icon.sprite = outlineSprite;
-                icon.gameObject.SetActive(true);
+                SetIcon(outlineSprite);
             }
 
             var fishData = LoadDataManager.Instance?.GetFishById(entryId);
@@ -149,26 +146,24 @@ public class UI_CollectionPrefab : MonoBehaviour
                 }
                 if (outlineSprite != null)
                 {
-                    icon.sprite = outlineSprite;
-                    icon.gameObject.SetActive(true);
+                    SetIcon(outlineSprite);
                 }
             }
 
-            // ✅ 非鱼类物品也显示稀有度背景图（使用默认稀有度0）
             UpdateRarityBackground();
         }
 
         if (levelImage != null) levelImage.gameObject.SetActive(false);
         if (shinyImage != null) shinyImage.gameObject.SetActive(false);
+        if (levelHightLightMask != null) levelHightLightMask.gameObject.SetActive(true);
 
-        // 启用点击事件
         Button button = GetComponent<Button>();
         if (button != null)
         {
             button.interactable = true;
         }
     }
-    
+
     /// <summary>
     /// 显示已获取物品状态（正常显示）
     /// </summary>
@@ -182,11 +177,12 @@ public class UI_CollectionPrefab : MonoBehaviour
         {
             LoadNonFishData();
         }
-        
+
         UpdateLevelDisplay();
         UpdateShinyDisplay();
-        
-        // 启用点击事件
+
+        if (levelHightLightMask != null) levelHightLightMask.gameObject.SetActive(true);
+
         Button button = GetComponent<Button>();
         if (button != null)
         {
@@ -197,12 +193,11 @@ public class UI_CollectionPrefab : MonoBehaviour
     private void LoadFishData()
     {
         itemData = LoadDataManager.Instance?.GetItemById(entryId);
-        
+
         Sprite fishSprite = Resources.Load<Sprite>($"UI/Icon/FishIcons/{entryId}");
         if (fishSprite != null)
         {
-            icon.sprite = fishSprite;
-            icon.gameObject.SetActive(true);
+            SetIcon(fishSprite);
         }
 
         var fishData = LoadDataManager.Instance?.GetFishById(entryId);
@@ -223,12 +218,10 @@ public class UI_CollectionPrefab : MonoBehaviour
             Sprite itemSprite = Resources.Load<Sprite>($"UI/Icon/ItemIcons/{entryId}");
             if (itemSprite != null)
             {
-                icon.sprite = itemSprite;
-                icon.gameObject.SetActive(true);
+                SetIcon(itemSprite);
             }
         }
 
-        // ✅ 非鱼类物品也显示稀有度背景图（使用默认稀有度0）
         UpdateRarityBackground();
     }
 
@@ -290,8 +283,25 @@ public class UI_CollectionPrefab : MonoBehaviour
 
         if (loadedSprite != null)
         {
-            icon.sprite = loadedSprite;
-            icon.color = Color.white;
+            SetIcon(loadedSprite);
+        }
+    }
+
+    /// <summary>
+    /// 设置图标（同时设置icon和iconHightLightMask）
+    /// </summary>
+    private void SetIcon(Sprite sprite)
+    {
+        if (icon != null)
+        {
+            icon.sprite = sprite;
+            icon.gameObject.SetActive(true);
+        }
+
+        if (levelHightLightMask != null)
+        {
+            levelHightLightMask.sprite = sprite;
+            levelHightLightMask.gameObject.SetActive(true);
         }
     }
 

@@ -20,22 +20,26 @@ namespace View.Detail
         private ItemData itemData;
         private bool isEquipped;
 
-        void Start()
+        //void Start()
+        //{
+        //    if (itemButton != null)
+        //    {
+        //        itemButton.onClick.AddListener(OnItemClick);
+        //    }
+            
+        //    // 默认隐藏已装备标记
+        //    if (equippedMarker != null)
+        //    {
+        //        equippedMarker.gameObject.SetActive(false);
+        //    }
+        //}
+
+        public void Init(int id, int qty, ItemData data, bool equipped = false)
         {
             if (itemButton != null)
             {
                 itemButton.onClick.AddListener(OnItemClick);
             }
-            
-            // 默认隐藏已装备标记
-            if (equippedMarker != null)
-            {
-                equippedMarker.gameObject.SetActive(false);
-            }
-        }
-
-        public void Init(int id, int qty, ItemData data, bool equipped = false)
-        {
             itemId = id;
             quantity = qty;
             itemData = data;

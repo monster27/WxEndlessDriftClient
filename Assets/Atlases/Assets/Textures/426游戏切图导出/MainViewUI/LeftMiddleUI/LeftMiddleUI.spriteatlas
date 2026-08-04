@@ -40,10 +40,19 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - 47982745b412ba6469ffb6ab9118eca1: 21300000
+    - 444d43bc12427854d9d97524247beb79: 21300000
+    - 223e05dda46fc384a8ffe205192793de: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 47982745b412ba6469ffb6ab9118eca1, type: 3}
+  - {fileID: 21300000, guid: 444d43bc12427854d9d97524247beb79, type: 3}
+  - {fileID: 21300000, guid: 223e05dda46fc384a8ffe205192793de, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - RankingIcon
+  - DailyRewardIcon
+  - BlackMarketIcon
   m_RenderDataMap: {}
   m_Tag: LeftMiddleUI
   m_IsVariant: 0

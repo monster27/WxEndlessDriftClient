@@ -44,10 +44,31 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - 2bbf31f11be812b47871c3bc911ab031: 21300000
+    - f4c4a363463fc1b428ffca760efb4715: 21300000
+    - 6623ba16dccc21345aa7cf46aae98048: 21300000
+    - 83ab54572f944eb47829e3b1eac13537: 21300000
+    - 69a7d6faf5deb414eadfd5e26846e2f9: 21300000
+    - cfc449dc0d5a06d4a8c15fc1e68f0d4b: 21300000
+    - c127c54feab270c468eac86a0c465c9a: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 2bbf31f11be812b47871c3bc911ab031, type: 3}
+  - {fileID: 21300000, guid: f4c4a363463fc1b428ffca760efb4715, type: 3}
+  - {fileID: 21300000, guid: 6623ba16dccc21345aa7cf46aae98048, type: 3}
+  - {fileID: 21300000, guid: 83ab54572f944eb47829e3b1eac13537, type: 3}
+  - {fileID: 21300000, guid: 69a7d6faf5deb414eadfd5e26846e2f9, type: 3}
+  - {fileID: 21300000, guid: cfc449dc0d5a06d4a8c15fc1e68f0d4b, type: 3}
+  - {fileID: 21300000, guid: c127c54feab270c468eac86a0c465c9a, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - GuideIcon
+  - BagIcon
+  - EggIcon
+  - HomeIcon
+  - PetIcon
+  - CharacterIcon
+  - FishBagIcon
   m_RenderDataMap: {}
   m_Tag: BottomUI
   m_IsVariant: 0

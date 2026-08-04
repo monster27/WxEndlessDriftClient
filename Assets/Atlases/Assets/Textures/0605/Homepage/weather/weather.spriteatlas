@@ -41,10 +41,22 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - cb16ec29f79454041ad7e67812faaa60: 21300000
+    - 9ea184da2eb6bef4ca3e0e2e5348c5c5: 21300000
+    - 4131992b95bca7a4ba8a0645a5f83666: 21300000
+    - fd3267aeba2a907409a0c428850c3d22: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: cb16ec29f79454041ad7e67812faaa60, type: 3}
+  - {fileID: 21300000, guid: 9ea184da2eb6bef4ca3e0e2e5348c5c5, type: 3}
+  - {fileID: 21300000, guid: 4131992b95bca7a4ba8a0645a5f83666, type: 3}
+  - {fileID: 21300000, guid: fd3267aeba2a907409a0c428850c3d22, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - late at night
+  - daytime
+  - early morning
+  - evening
   m_RenderDataMap: {}
   m_Tag: weather
   m_IsVariant: 0

@@ -41,10 +41,22 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - ea6f934b2d0f94241b23dfbbfa0b7ff6: 21300000
+    - fbc0563df652015438780c95024c4876: 21300000
+    - 7c5c725e02cfe8040b890478c7c945f6: 21300000
+    - c714c2be1d7d6c7418935d874d63a5b0: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: ea6f934b2d0f94241b23dfbbfa0b7ff6, type: 3}
+  - {fileID: 21300000, guid: fbc0563df652015438780c95024c4876, type: 3}
+  - {fileID: 21300000, guid: 7c5c725e02cfe8040b890478c7c945f6, type: 3}
+  - {fileID: 21300000, guid: c714c2be1d7d6c7418935d874d63a5b0, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Fish Coin Icon
+  - Upgrade button
+  - "\u9C7C\u7BD3\u5347\u7EA7\u793A\u610F\u56FE"
+  - Billboard base map
   m_RenderDataMap: {}
   m_Tag: "\u5347\u7EA7\u793A\u610F\u56FE"
   m_IsVariant: 0

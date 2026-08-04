@@ -20,6 +20,10 @@ public partial class NetServerManager
     private bool isPlayingReelAnimation = false;
     private float struggleStartTime = 0f;
     private float currentStruggleTime = 0f;
+    
+    // 待处理的动画请求（收杆动画结束后执行）
+    private enum PendingAnimationType { None, Idle, Lazy }
+    private PendingAnimationType pendingAnimationRequest = PendingAnimationType.None;
 
     private int lastCatchFishId = -1;
     private LastCatchInfo pendingCatchInfo = null;
@@ -488,13 +492,25 @@ public partial class NetServerManager
 
     public void NotifyPlayIdleAnimation()
     {
-        if (isPlayingReelAnimation) return;
+        if (isPlayingReelAnimation)
+        {
+            pendingAnimationRequest = PendingAnimationType.Idle;
+            Logger.Log("[NetServerManager] 收杆动画播放中，将Idle动画请求排入队列");
+            return;
+        }
+        pendingAnimationRequest = PendingAnimationType.None;
         PlayerAniManager.Instance?.PlayIdleAnimation();
     }
 
     public void NotifyPlayLazyAnimation()
     {
-        if (isPlayingReelAnimation) return;
+        if (isPlayingReelAnimation)
+        {
+            pendingAnimationRequest = PendingAnimationType.Lazy;
+            Logger.Log("[NetServerManager] 收杆动画播放中，将Lazy动画请求排入队列");
+            return;
+        }
+        pendingAnimationRequest = PendingAnimationType.None;
         PlayerAniManager.Instance?.PlayLazyAnimation();
     }
 
@@ -514,9 +530,37 @@ public partial class NetServerManager
             NotifySyncInventoryFromServer();
             if (GameUIManager.Instance?.fishBagView != null && GameUIManager.Instance.fishBagView.gameObject.activeSelf)
                 GameUIManager.Instance.fishBagView.RefreshItems();
-            // ✅ 修复：数据同步完成后由 PlayerDataManager.CheckAndUpdateAnimationState() 决定最终动画
-            // 避免使用旧的 isFishBagFull 值导致动画状态错误
+            
+            // ✅ 收杆动画结束后，执行待处理的动画请求
+            ExecutePendingAnimationRequest();
         });
+    }
+    
+    /// <summary>
+    /// 执行待处理的动画请求
+    /// </summary>
+    private void ExecutePendingAnimationRequest()
+    {
+        if (pendingAnimationRequest == PendingAnimationType.None)
+        {
+            // 没有待处理的请求，让 PlayerDataManager.CheckAndUpdateAnimationState 来决定
+            PlayerDataManager.Instance?.CheckAndUpdateAnimationState();
+            return;
+        }
+        
+        switch (pendingAnimationRequest)
+        {
+            case PendingAnimationType.Idle:
+                Logger.Log("[NetServerManager] 执行待处理的Idle动画请求");
+                PlayerAniManager.Instance?.PlayIdleAnimation();
+                break;
+            case PendingAnimationType.Lazy:
+                Logger.Log("[NetServerManager] 执行待处理的Lazy动画请求");
+                PlayerAniManager.Instance?.PlayLazyAnimation();
+                break;
+        }
+        
+        pendingAnimationRequest = PendingAnimationType.None;
     }
 
     // ========== 钓获显示 ==========

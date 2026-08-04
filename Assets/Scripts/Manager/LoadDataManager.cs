@@ -1174,16 +1174,23 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         }
     }
 
+    private Dictionary<int, ItemData> _cachedItemDataMap;
+
     public Dictionary<int, ItemData> GetItemDataMap()
     {
-        Dictionary<int, ItemData> itemDataMap = new Dictionary<int, ItemData>();
-
-        foreach (ItemData itemData in items)
+        // ✅ 缓存字典，避免每次调用都重新创建
+        if (_cachedItemDataMap != null && _cachedItemDataMap.Count == items.Count)
         {
-            itemDataMap[itemData.id] = itemData;
+            return _cachedItemDataMap;
         }
 
-        return itemDataMap;
+        _cachedItemDataMap = new Dictionary<int, ItemData>();
+        foreach (ItemData itemData in items)
+        {
+            _cachedItemDataMap[itemData.id] = itemData;
+        }
+
+        return _cachedItemDataMap;
     }
 
     [System.Serializable]

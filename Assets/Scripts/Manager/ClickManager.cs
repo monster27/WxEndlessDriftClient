@@ -3,6 +3,20 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 /// <summary>
+/// 可点击物体类型
+/// </summary>
+public enum ClickableType
+{
+    Player,               // 玩家
+    Shop,                 // 商店
+    NPC,                  // NPC
+    FishBag,              // 鱼篓
+    NestBaitsPlacement,   // 窝料
+    Tent,                 // 帐篷
+    Table = 20,           // 桌子
+}
+
+/// <summary>
 /// 点击管理器 - 单例
 /// </summary>
 public class ClickManager : MonoBehaviour

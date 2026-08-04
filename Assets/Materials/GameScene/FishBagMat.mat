@@ -76,6 +76,8 @@ Material:
     - _BlinkOffsetY: 0
     - _BlinkScale: 1
     - _BumpScale: 1
+    - _ClickScaleMin: 0.7
+    - _ClickTrigger: 0
     - _Columns: 4
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1

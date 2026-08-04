@@ -88,6 +88,9 @@ public partial class NetServerManager
 
                         Logger.Log($"[NetServerManager] 装备数据初始化完成: Rod={equippedRodId}(Lv.{equippedRodLevel}), Line={equippedLineId}(Lv.{equippedLineLevel}), Hook={equippedHookId}(Lv.{equippedHookLevel})");
 
+                        // ✅ 重建装备ID缓存
+                        RebuildEquippedItemCache();
+
                         CommunicateEvent.Modify("Equipment_Refresh");
                     }
                 }
@@ -517,6 +520,8 @@ public partial class NetServerManager
                 break;
         }
         Logger.Log($"[NetServerManager] 本地装备数据已更新: {slotType} = {itemId}");
+        // ✅ 重建装备ID缓存
+        RebuildEquippedItemCache();
     }
 
     private IEnumerator SendEquipRequest(int slotType, int itemId)

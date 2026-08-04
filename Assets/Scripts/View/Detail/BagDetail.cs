@@ -16,22 +16,22 @@ namespace View.Detail
         private List<UI_BagPrefab> objectPool = new List<UI_BagPrefab>();
 
         void Start()
-    {
-        if (contentTransform == null)
         {
-            contentTransform = transform.Find("Content");
+            if (contentTransform == null)
+            {
+                contentTransform = transform.Find("Content");
+            }
+
+            CommunicateEvent.Register<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipmentChanged);
+            CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_SKIN_EQUIPPED, OnSkinEquipped);
         }
-        
-        CommunicateEvent.Register<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipmentChanged);
-        CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_SKIN_EQUIPPED, OnSkinEquipped);
-    }
-    
-    void OnDestroy()
-    {
-        CommunicateEvent.Unregister<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipmentChanged);
-        CommunicateEvent.Unregister<(int, int)>(CommunicateEvent.EVENT_SKIN_EQUIPPED, OnSkinEquipped);
-    }
-        
+
+        void OnDestroy()
+        {
+            CommunicateEvent.Unregister<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, OnEquipmentChanged);
+            CommunicateEvent.Unregister<(int, int)>(CommunicateEvent.EVENT_SKIN_EQUIPPED, OnSkinEquipped);
+        }
+
         /// <summary>
         /// 装备状态更新事件处理器
         /// </summary>
@@ -39,16 +39,16 @@ namespace View.Detail
         {
             EquipmentSlotType slotType = data.Item1;
             int itemId = data.Item2;
-            
+
             Debug.Log($"[BagDetail] 接收到装备状态更新事件: SlotType={slotType}, ItemId={itemId}");
-            
+
             // 如果是鱼饵槽位的装备变化
             if (slotType == EquipmentSlotType.Bait)
             {
                 UpdateBaitEquippedState(itemId);
             }
         }
-        
+
         /// <summary>
         /// 皮肤装备状态更新事件处理器
         /// </summary>
@@ -56,24 +56,24 @@ namespace View.Detail
         {
             int slotType = data.Item1;
             int skinId = data.Item2;
-            
+
             Debug.Log($"[BagDetail] 接收到皮肤装备状态更新事件: SlotType={slotType}, SkinId={skinId}");
-            
+
             UpdateSkinEquippedState(slotType, skinId);
         }
-        
+
         /// <summary>
         /// 更新鱼饵的装备状态显示
         /// </summary>
         private void UpdateBaitEquippedState(int newBaitId)
         {
             Debug.Log($"[BagDetail] UpdateBaitEquippedState - newBaitId={newBaitId}");
-            
+
             foreach (var kvp in itemPrefabs)
             {
                 int itemId = kvp.Key;
                 bool shouldBeEquipped = false;
-                
+
                 if (itemId == 0)
                 {
                     shouldBeEquipped = (newBaitId == 0);
@@ -82,7 +82,7 @@ namespace View.Detail
                 {
                     shouldBeEquipped = (itemId == newBaitId);
                 }
-                
+
                 foreach (var prefab in kvp.Value)
                 {
                     if (prefab != null)
@@ -93,19 +93,19 @@ namespace View.Detail
                 }
             }
         }
-        
+
         /// <summary>
         /// 更新皮肤的装备状态显示
         /// </summary>
         private void UpdateSkinEquippedState(int slotType, int newSkinId)
         {
             Debug.Log($"[BagDetail] UpdateSkinEquippedState - slotType={slotType}, newSkinId={newSkinId}");
-            
+
             foreach (var kvp in itemPrefabs)
             {
                 int itemId = kvp.Key;
                 bool shouldBeEquipped = (itemId == newSkinId);
-                
+
                 foreach (var prefab in kvp.Value)
                 {
                     if (prefab != null)
@@ -354,7 +354,7 @@ namespace View.Detail
 
             int currentPrefabCount = prefabs.Count;
             int neededPrefabCount = CalculateNeededPrefabs(totalQuantity, maxStack);
-            
+
             if (isEquipped && totalQuantity == 0)
             {
                 neededPrefabCount = 1;
@@ -396,13 +396,21 @@ namespace View.Detail
 
         /// <summary>
         /// 检查物品是否已装备
+        /// ✅ 优化：优先使用 NetServerManager 的缓存查询（O(1)），避免事件系统开销
         /// </summary>
         private bool IsItemEquipped(int itemId)
         {
+            // ✅ 优先使用直接缓存查询（不走事件系统，性能更好）
+            if (NetServerManager.Instance != null)
+            {
+                bool cached = NetServerManager.Instance.IsItemEquippedCached(itemId);
+                Debug.Log($"[BagDetail] IsItemEquipped(缓存) - itemId={itemId}, result={cached}");
+                return cached;
+            }
+
+            // 降级：通过事件系统查询
             bool isEquipped = CommunicateEvent.Request<int, bool>(CommunicateEvent.EVENT_IS_ITEM_EQUIPPED, itemId);
-            
-            Debug.Log($"[BagDetail] IsItemEquipped - itemId={itemId}, 事件检查结果: {isEquipped}");
-            
+            Debug.Log($"[BagDetail] IsItemEquipped(降级) - itemId={itemId}, 事件检查结果: {isEquipped}");
             return isEquipped;
         }
 
@@ -472,7 +480,7 @@ namespace View.Detail
         private void CreateItemPrefab(int itemId, int quantity, ItemData itemData)
         {
             UI_BagPrefab prefab = null;
-            
+
             // 先从对象池获取
             if (objectPool.Count > 0)
             {

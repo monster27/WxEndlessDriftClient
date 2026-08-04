@@ -41,10 +41,22 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - 9baef19159018f545a930d2696b5eccc: 21300000
+    - ef7e25f91c89ed54b85535c904221223: 21300000
+    - 93ccbbba552dc9b4d801dc438ec07c11: 21300000
+    - 7cea426c2de11bb4ca4ddf25dfde033e: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 9baef19159018f545a930d2696b5eccc, type: 3}
+  - {fileID: 21300000, guid: ef7e25f91c89ed54b85535c904221223, type: 3}
+  - {fileID: 21300000, guid: 93ccbbba552dc9b4d801dc438ec07c11, type: 3}
+  - {fileID: 21300000, guid: 7cea426c2de11bb4ca4ddf25dfde033e, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - "\u9ED1\u73CD\u73E0"
+  - "\u661F\u8C61"
+  - WeatherIcon
+  - GoldBg
   m_RenderDataMap: {}
   m_Tag: LeftTopUI
   m_IsVariant: 0

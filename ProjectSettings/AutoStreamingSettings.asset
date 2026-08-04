@@ -22,7 +22,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 424
+    abSize: 693923
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/Equipment/Rod/Rod.spriteatlas
@@ -36,7 +36,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 424
+    abSize: 453130
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/EquipmentSample/EquipmentSample.spriteatlas
@@ -49,7 +49,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 419
+    abSize: 7868343
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/GameScene/Scene/102/102.spriteatlas
@@ -63,7 +63,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 419
+    abSize: 640842
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/Homepage/Homepage.spriteatlas
@@ -76,7 +76,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 414
+    abSize: 2115053
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/GameScene/Player/Ani/3401/3401.spriteatlas
@@ -90,7 +90,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 426
+    abSize: 1107880
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/GameScene/Static/Static.spriteatlas
@@ -104,7 +104,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 417
+    abSize: 219349
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/Collection/Collection.spriteatlas
@@ -117,7 +117,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 418
+    abSize: 3199347
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: "Assets/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/MainViewUI.spriteatlas"
@@ -130,7 +130,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 439
+    abSize: 1623463
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/FishIcons/FishIcons.spriteatlas
@@ -144,7 +144,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 424
+    abSize: 7442073
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/NestBaitIcons/NestBaitIcons.spriteatlas
@@ -157,7 +157,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 432
+    abSize: 61147
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/Homepage/Left icon/Left icon.spriteatlas
@@ -170,7 +170,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 423
+    abSize: 52589
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/StarRating/StarRating.spriteatlas
@@ -184,7 +184,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 425
+    abSize: 26110
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/Common/Common.spriteatlas
@@ -198,7 +198,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 408
+    abSize: 220910
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/Homepage/bottom icon/bottom icon.spriteatlas
@@ -211,7 +211,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 426
+    abSize: 334400
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/fish basket/fish basket.spriteatlas
@@ -225,7 +225,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 417
+    abSize: 2086299
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: "Assets/Atlases/Assets/Textures/0722/\u9ED8\u8BA4/\u9ED8\u8BA4.spriteatlas"
@@ -238,7 +238,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 413
+    abSize: 734544
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/UI/Common/Common.spriteatlas
@@ -252,7 +252,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 413
+    abSize: 705134
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/Common/Common.spriteatlas
@@ -265,7 +265,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 413
+    abSize: 13703
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/RarityBackground/RarityBackground.spriteatlas
@@ -278,7 +278,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 412
+    abSize: 101100
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/IndoorSkinIcons/IndoorSkinIcons.spriteatlas
@@ -292,7 +292,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 414
+    abSize: 2180005
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0712/Other/Other.spriteatlas
@@ -305,7 +305,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 414
+    abSize: 2455851
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/OutdoorSkinIcons/OutdoorSkinIcons.spriteatlas
@@ -319,7 +319,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 413
+    abSize: 273878
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0712/fish basket/fish basket.spriteatlas
@@ -333,7 +333,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 415
+    abSize: 422012
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/Collection/Collection.spriteatlas
@@ -346,7 +346,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 419
+    abSize: 29230
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/store/store.spriteatlas
@@ -359,7 +359,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 413
+    abSize: 2255942
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Plugins/IngameDebugConsole/Sprites/Unused/Unused.spriteatlas
@@ -372,7 +372,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 430
+    abSize: 8234
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: "Assets/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u80CC\u5305\u754C\u9762/\u80CC\u5305\u754C\u9762.spriteatlas"
@@ -386,7 +386,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 435
+    abSize: 1555543
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/SpecialIcon/SpecialIcon.spriteatlas
@@ -399,7 +399,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 423
+    abSize: 32554
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: "Assets/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA.spriteatlas"
@@ -413,7 +413,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 422
+    abSize: 240484
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0712/fish finder/fish finder.spriteatlas
@@ -426,7 +426,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 415
+    abSize: 51544
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/GameScene/Player/NestBaitsAni/NestBaitsAni.spriteatlas
@@ -440,7 +440,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 438
+    abSize: 48455
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/Equipment/Hook/Hook.spriteatlas
@@ -454,7 +454,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 426
+    abSize: 345654
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/Homepage/Right icon/Right icon.spriteatlas
@@ -467,7 +467,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 425
+    abSize: 155164
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/Equipment/Line/Line.spriteatlas
@@ -481,7 +481,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 423
+    abSize: 308870
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/Homepage/Fish icon/Fish icon.spriteatlas
@@ -494,7 +494,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 423
+    abSize: 1981287
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: "Assets/Atlases/Assets/Textures/0712/fish basket/\u5347\u7EA7\u793A\u610F\u56FE/\u5347\u7EA7\u793A\u610F\u56FE.spriteatlas"
@@ -508,7 +508,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 430
+    abSize: 488525
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/backpack/backpack.spriteatlas
@@ -522,7 +522,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 411
+    abSize: 1970872
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/GameScene/Player/Ani/3402/3402.spriteatlas
@@ -535,7 +535,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 425
+    abSize: 90538
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/Equipment/Level/Level.spriteatlas
@@ -549,7 +549,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 422
+    abSize: 341179
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Plugins/IngameDebugConsole/Sprites/Sprites.spriteatlas
@@ -562,7 +562,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 420
+    abSize: 11970
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/TimeIcon/TimeIcon.spriteatlas
@@ -576,7 +576,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 417
+    abSize: 9605
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/WeatherIcon/WeatherIcon.spriteatlas
@@ -590,7 +590,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 421
+    abSize: 424290
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: "Assets/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5546\u57CE\u754C\u9762/\u5546\u57CE\u754C\u9762.spriteatlas"
@@ -603,7 +603,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 435
+    abSize: 2655886
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/Common/Common.spriteatlas
@@ -616,7 +616,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 411
+    abSize: 99488
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/BaitIcons/BaitIcons.spriteatlas
@@ -629,7 +629,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 424
+    abSize: 239115
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0712/0712.spriteatlas
@@ -642,7 +642,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 401
+    abSize: 3974237
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/TrashIcons/TrashIcons.spriteatlas
@@ -655,7 +655,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 423
+    abSize: 98962
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/UI/MainPlayScene/Demo/Demo.spriteatlas
@@ -668,7 +668,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 421
+    abSize: 811213
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/Equipment/Character/Character.spriteatlas
@@ -682,7 +682,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 432
+    abSize: 467117
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/Character interface/Common/Common.spriteatlas
@@ -695,7 +695,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 432
+    abSize: 922813
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: "Assets/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u4E0A\u9C7C\u9876\u90E8\u5C0F\u5F39\u7A97/\u4E0A\u9C7C\u9876\u90E8\u5C0F\u5F39\u7A97.spriteatlas"
@@ -708,7 +708,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 456
+    abSize: 182516
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/Character interface/Character
@@ -723,7 +723,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 426
+    abSize: 8564624
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: "Assets/Atlases/Assets/Textures/0605/Character interface/\u9C7C\u7AFF\u4FE1\u606F\u9875\u9762/\u9C7C\u7AFF\u4FE1\u606F\u9875\u9762.spriteatlas"
@@ -736,7 +736,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 443
+    abSize: 1913367
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/GameScene/Scene/101/101.spriteatlas
@@ -750,7 +750,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 419
+    abSize: 1732532
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset
@@ -766,19 +766,6 @@ AutoStreamingSettings:
     abSize: 325607
   - serializedVersion: 2
     onDemandDownload: 1
-    assetPath: Assets/Resources/GameScene/Scene/102/NPC_bak.png
-    assetName: NPC_bak
-    localFileId: 2800000
-    rtMem: 30000
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 196640
-    width: 100
-    height: 100
-    abSize: 952
-  - serializedVersion: 2
-    onDemandDownload: 1
     assetPath: Assets/Resources/TTF/700w SDF.asset
     assetName: 700w Atlas
     localFileId: -4481064229695923682
@@ -792,161 +779,43 @@ AutoStreamingSettings:
     abSize: 335478
   - serializedVersion: 2
     onDemandDownload: 1
-    assetPath: Assets/Resources/UI/Icon/WeatherIcon/0.png
-    assetName: 0
-    localFileId: 2800000
-    rtMem: 160000
+    assetPath: Assets/Atlases/Assets/TextMesh Pro/Examples & Extras/Sprites/Sprites.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
     warningFlag: 0
     refs:
     - res
-    maxPlaceholderSize: 196640
-    width: 200
-    height: 200
-    abSize: 35308
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 321149
   - serializedVersion: 2
     onDemandDownload: 1
-    assetPath: Assets/Resources/GameScene/Scene/102/EnvBg_bak.png
-    assetName: EnvBg_bak
-    localFileId: 2800000
-    rtMem: 1000000
+    assetPath: Assets/Atlases/Assets/TextMesh Pro/Examples & Extras/Textures/Textures.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
     warningFlag: 0
     refs:
     - res
-    maxPlaceholderSize: 196640
-    width: 500
-    height: 500
-    abSize: 9927
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 3729723
   - serializedVersion: 2
     onDemandDownload: 1
-    assetPath: Assets/Resources/UI/Icon/IndoorSkinIcons/5001.png
-    assetName: 5001
-    localFileId: 2800000
-    rtMem: 407664
-    warningFlag: 0
-    refs:
-    - 2
-    - res
-    maxPlaceholderSize: 196640
-    width: 892
-    height: 1024
-    abSize: 89156
-  - serializedVersion: 2
-    onDemandDownload: 1
-    assetPath: Assets/TextMesh Pro/Examples & Extras/Textures/Wipe Pattern - Circle.psd
-    assetName: Wipe Pattern - Circle
-    localFileId: 2800000
-    rtMem: 16384
+    assetPath: Assets/Atlases/Assets/TextMesh Pro/Sprites/Sprites.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
     warningFlag: 0
     refs:
     - res
-    maxPlaceholderSize: 196640
-    width: 64
-    height: 64
-    abSize: 5057
-  - serializedVersion: 2
-    onDemandDownload: 1
-    assetPath: Assets/TextMesh Pro/Examples & Extras/Sprites/Default Sprites.png
-    assetName: Default Sprites
-    localFileId: 2800000
-    rtMem: 1048576
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 196640
-    width: 512
-    height: 512
-    abSize: 213746
-  - serializedVersion: 2
-    onDemandDownload: 1
-    assetPath: Assets/TextMesh Pro/Examples & Extras/Textures/Sunny Days - Seamless.jpg
-    assetName: Sunny Days - Seamless
-    localFileId: 2800000
-    rtMem: 59168
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 196640
-    width: 512
-    height: 256
-    abSize: 34750
-  - serializedVersion: 2
-    onDemandDownload: 1
-    assetPath: Assets/TextMesh Pro/Examples & Extras/Textures/Floor Cement.jpg
-    assetName: Floor Cement
-    localFileId: 2800000
-    rtMem: 611520
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 196640
-    width: 520
-    height: 392
-    abSize: 427924
-  - serializedVersion: 2
-    onDemandDownload: 1
-    assetPath: Assets/TextMesh Pro/Examples & Extras/Textures/Brushed Metal 3.jpg
-    assetName: Brushed Metal 3
-    localFileId: 2800000
-    rtMem: 546816
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 196640
-    width: 512
-    height: 356
-    abSize: 164103
-  - serializedVersion: 2
-    onDemandDownload: 1
-    assetPath: Assets/TextMesh Pro/Examples & Extras/Textures/Fruit Jelly (B&W).jpg
-    assetName: Fruit Jelly (B&W)
-    localFileId: 2800000
-    rtMem: 786432
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 196640
-    width: 512
-    height: 512
-    abSize: 387044
-  - serializedVersion: 2
-    onDemandDownload: 1
-    assetPath: Assets/TextMesh Pro/Examples & Extras/Textures/Gradient Diagonal (Color).jpg
-    assetName: Gradient Diagonal (Color)
-    localFileId: 2800000
-    rtMem: 768
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 196640
-    width: 16
-    height: 16
-    abSize: 599
-  - serializedVersion: 2
-    onDemandDownload: 1
-    assetPath: Assets/TextMesh Pro/Examples & Extras/Sprites/DropCap Numbers.psd
-    assetName: DropCap Numbers
-    localFileId: 2800000
-    rtMem: 118336
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 196640
-    width: 512
-    height: 512
-    abSize: 17713
-  - serializedVersion: 2
-    onDemandDownload: 1
-    assetPath: Assets/TextMesh Pro/Sprites/EmojiOne.png
-    assetName: EmojiOne
-    localFileId: 2800000
-    rtMem: 1048576
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 196640
-    width: 512
-    height: 512
-    abSize: 99388
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 165372
   mAudios: []
   mMeshes: []
   mAnimations: []
@@ -970,7 +839,7 @@ AutoStreamingSettings:
     assetPath: Assets/Scenes/GameScene.scene
     assetName: 
     localFileId: -1
-    rtMem: 19438179
+    rtMem: 47229966
     warningFlag: 0
     refs: []
   - onDemandDownload: 0

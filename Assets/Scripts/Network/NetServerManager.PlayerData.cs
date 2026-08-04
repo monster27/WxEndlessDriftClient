@@ -148,6 +148,43 @@ public partial class NetServerManager
     private int GetFishBagCapacity() => fishBagCapacity;
     public int GetPlayerGold() => playerGold;
 
+    /// <summary>
+    /// 已装备物品ID缓存（O(1)查找，避免每次通过事件系统逐个查询）
+    /// 在装备数据加载/变更时统一更新
+    /// </summary>
+    private HashSet<int> equippedItemCache = new HashSet<int>();
+
+    /// <summary>
+    /// 公开的装备状态查询方法（供 BagDetail 等UI模块直接调用，不走事件系统）
+    /// </summary>
+    public bool IsItemEquippedCached(int itemId)
+    {
+        return equippedItemCache != null && equippedItemCache.Contains(itemId);
+    }
+
+    /// <summary>
+    /// 重建装备ID缓存（在装备数据加载或变更时调用）
+    /// </summary>
+    private void RebuildEquippedItemCache()
+    {
+        equippedItemCache.Clear();
+        if (equippedRodId > 0) equippedItemCache.Add(equippedRodId);
+        if (equippedLineId > 0) equippedItemCache.Add(equippedLineId);
+        if (equippedHookId > 0) equippedItemCache.Add(equippedHookId);
+        if (equippedSkill1Id > 0) equippedItemCache.Add(equippedSkill1Id);
+        if (equippedSkill2Id > 0) equippedItemCache.Add(equippedSkill2Id);
+        if (equippedCharacterId > 0) equippedItemCache.Add(equippedCharacterId);
+        if (equippedBaitId > 0) equippedItemCache.Add(equippedBaitId);
+        if (equippedSkinsData != null)
+        {
+            foreach (var skinId in equippedSkinsData.Values)
+            {
+                if (skinId > 0) equippedItemCache.Add(skinId);
+            }
+        }
+        Logger.Log($"[NetServerManager] 装备ID缓存已重建，共 {equippedItemCache.Count} 个已装备物品");
+    }
+
     private bool IsCharacterObtained(int characterId)
     {
         if (characterId == 3401) return true;
@@ -191,6 +228,8 @@ public partial class NetServerManager
                 equippedSkinsData[kvp.Key] = kvp.Value;
             }
         }
+        // ✅ 重建装备ID缓存（皮肤数据变更后）
+        RebuildEquippedItemCache();
         Logger.Log($"[NetServerManager] 皮肤数据已更新到NetServerManager，共 {equippedSkinsData.Count} 个");
     }
 
@@ -329,6 +368,9 @@ public partial class NetServerManager
             equippedSkill2Level = data.skill2Level > 0 ? data.skill2Level : 1;
 
             Logger.Log($"[NetServerManager] 装备数据从服务器同步完成: Rod={equippedRodId}(Lv.{equippedRodLevel}), Line={equippedLineId}(Lv.{equippedLineLevel}), Hook={equippedHookId}(Lv.{equippedHookLevel}), Char={equippedCharacterId}(Lv.{characterLevel}), Bait={equippedBaitId}");
+
+            // ✅ 重建装备ID缓存
+            RebuildEquippedItemCache();
 
             // ✅ 移除Bag_RefreshItems，等待初始化完成统一刷新
             Logger.Log("[NetServerManager] 装备数据已就绪，等待初始化完成统一刷新");

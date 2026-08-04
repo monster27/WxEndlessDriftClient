@@ -230,32 +230,10 @@ public class ServerManager : SingletonMono<ServerManager>
                         PlayerDataManager.Instance.RefreshUI();
                     }
 
-                    // ========================================================
-                    // SimulationServer 相关代码已注释（当前使用网络模式）
-                    // ========================================================
-                    /*
-                    if (SimulationServer.Instance != null)
-                    {
-                        bool isFishBagFull = SimulationServer.Instance.IsFishBagFull();
-
-                        if (isFishBagFull)
-                        {
-                            PlayerAniManager.Instance.PlayLazyAnimation();
-                            Debug.Log("[ServerManager] 鱼篓已满，切换到Lazy动画");
-                        }
-                        else
-                        {
-                            PlayerAniManager.Instance.PlayIdleAnimation();
-                            Debug.Log("[ServerManager] 拉杆动画结束，切换到Idle动画");
-                        }
-
-                        SimulationServer.Instance.AutoFishingManager?.ResetNotificationState();
-                    }
-                    */
-                    
-                    // 默认播放Idle动画
-                    PlayerAniManager.Instance.PlayIdleAnimation();
-                    Debug.Log("[ServerManager] 拉杆动画结束，切换到Idle动画");
+                    // ✅ 移除默认的 Idle 动画播放
+                    // SyncInventoryFromServer 内部的 CheckAndUpdateAnimationState 会根据鱼篓状态决定动画
+                    // 如果鱼篓满了，会自动播放 Lazy 动画；否则播放 Idle 动画
+                    Debug.Log("[ServerManager] 拉杆动画结束，等待 CheckAndUpdateAnimationState 决定动画");
                 }
             );
         }
@@ -314,7 +292,6 @@ public class ServerManager : SingletonMono<ServerManager>
         if (PlayerAniManager.Instance != null)
         {
             PlayerAniManager.Instance.PlayReelAnimation(struggleTime, () => {
-                PlayerAniManager.Instance.PlayIdleAnimation();
                 ShowCatchResult(finalId);
 
                 if (PlayerDataManager.Instance != null)
@@ -322,6 +299,8 @@ public class ServerManager : SingletonMono<ServerManager>
                     PlayerDataManager.Instance.SyncInventoryFromServer();
                     PlayerDataManager.Instance.RefreshUI();
                 }
+                
+                // ✅ 移除默认的 Idle 动画播放，让 CheckAndUpdateAnimationState 决定
             });
         }
     }

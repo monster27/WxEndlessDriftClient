@@ -35,16 +35,36 @@ SpriteAtlas:
     variantMultiplier: 1
     packables:
     - {fileID: 2800000, guid: 1d8abf38af499864ca05d9ffc31473ba, type: 3}
+    - {fileID: 2800000, guid: 4b9509b5a5923b94e97f15774ca38efb, type: 3}
     - {fileID: 2800000, guid: 9d0cb52d46268b34199081625c81bf43, type: 3}
     - {fileID: 2800000, guid: 92f6fe08dcb5c0345b806a064e509a01, type: 3}
     - {fileID: 2800000, guid: 023f2cf3e6abb3c4889a7f2996909775, type: 3}
+    - {fileID: 2800000, guid: ea1d5acd759c13147bc49cb7f115e592, type: 3}
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - 023f2cf3e6abb3c4889a7f2996909775: 21300000
+    - 4b9509b5a5923b94e97f15774ca38efb: 21300000
+    - 92f6fe08dcb5c0345b806a064e509a01: 21300000
+    - 1d8abf38af499864ca05d9ffc31473ba: 21300000
+    - 9d0cb52d46268b34199081625c81bf43: 21300000
+    - ea1d5acd759c13147bc49cb7f115e592: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 023f2cf3e6abb3c4889a7f2996909775, type: 3}
+  - {fileID: 21300000, guid: 4b9509b5a5923b94e97f15774ca38efb, type: 3}
+  - {fileID: 21300000, guid: 92f6fe08dcb5c0345b806a064e509a01, type: 3}
+  - {fileID: 21300000, guid: 1d8abf38af499864ca05d9ffc31473ba, type: 3}
+  - {fileID: 21300000, guid: 9d0cb52d46268b34199081625c81bf43, type: 3}
+  - {fileID: 21300000, guid: ea1d5acd759c13147bc49cb7f115e592, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - NPC
+  - EnvBg_bak
+  - EnvTreasureBox
+  - EnvBg
+  - EnvElement
+  - NPC_bak
   m_RenderDataMap: {}
   m_Tag: 102
   m_IsVariant: 0

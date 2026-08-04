@@ -41,10 +41,22 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - dc3d2a31005cd39449756bf77cee3292: 21300000
+    - e0b734168782d0347b283dd92e91789a: 21300000
+    - 0bbca4db83e152e4490ec9b29ad69481: 21300000
+    - fc93a30d3355e8944a666a363be2f115: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: dc3d2a31005cd39449756bf77cee3292, type: 3}
+  - {fileID: 21300000, guid: e0b734168782d0347b283dd92e91789a, type: 3}
+  - {fileID: 21300000, guid: 0bbca4db83e152e4490ec9b29ad69481, type: 3}
+  - {fileID: 21300000, guid: fc93a30d3355e8944a666a363be2f115, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - 401
+  - 404
+  - 403
+  - 402
   m_RenderDataMap: {}
   m_Tag: TimeIcon
   m_IsVariant: 0

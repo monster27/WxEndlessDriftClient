@@ -47,10 +47,40 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - 21972a21aacfaf74798dd7120ccbb8dd: 21300000
+    - b920fc2235a1c97439d7a847aa18aa4b: 21300000
+    - 988dd596e692d2a498f221e9b4bcc730: 21300000
+    - b8287d3791d04a74e83e3ed095df1d6d: 21300000
+    - 33a2a1e88cc211e44819c3f28cadf776: 21300000
+    - 6af247b9f3fda524f89e45b18dbffa0c: 21300000
+    - d7d528e9e22313249a7e94e147bdabca: 21300000
+    - 8062635c65dbaf8438df881d1b3a5230: 21300000
+    - 081ef67ebe1392b4db045c6e066bd1b5: 21300000
+    - d75215af781bccd4285dc22de724cbfb: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 21972a21aacfaf74798dd7120ccbb8dd, type: 3}
+  - {fileID: 21300000, guid: b920fc2235a1c97439d7a847aa18aa4b, type: 3}
+  - {fileID: 21300000, guid: 988dd596e692d2a498f221e9b4bcc730, type: 3}
+  - {fileID: 21300000, guid: b8287d3791d04a74e83e3ed095df1d6d, type: 3}
+  - {fileID: 21300000, guid: 33a2a1e88cc211e44819c3f28cadf776, type: 3}
+  - {fileID: 21300000, guid: 6af247b9f3fda524f89e45b18dbffa0c, type: 3}
+  - {fileID: 21300000, guid: d7d528e9e22313249a7e94e147bdabca, type: 3}
+  - {fileID: 21300000, guid: 8062635c65dbaf8438df881d1b3a5230, type: 3}
+  - {fileID: 21300000, guid: 081ef67ebe1392b4db045c6e066bd1b5, type: 3}
+  - {fileID: 21300000, guid: d75215af781bccd4285dc22de724cbfb, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Effect upgrade background icon
+  - Get icon
+  - "\u9C7C\u7AFF\u4FE1\u606F\u9875\u9762\u793A\u610F\u56FE"
+  - Unused icon
+  - Phoenix fishing rod background
+  - Fishing rod background icon
+  - "\u9C7C\u7AFF\u4FE1\u606F\u9875\u9762\u793A\u610F\u56FE\uFF08\u91D1\u5E01\u4E0D\u591F\uFF09"
+  - Fishing rod background
+  - "\u9C7C\u7AFF\u9875\u9762\u793A\u610F\u56FE"
+  - In use icon
   m_RenderDataMap: {}
   m_Tag: "\u9C7C\u7AFF\u4FE1\u606F\u9875\u9762"
   m_IsVariant: 0

@@ -43,10 +43,28 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - c143de204960bf04f9fa2dbb3180bf82: 21300000
+    - 2d5ef9375f29dcd47a640695c8ffea9e: 21300000
+    - 084122a839864f64c90e1ff597f30a29: 21300000
+    - ea2eccba61bc5f543bad94a710c04e55: 21300000
+    - 78ef35ca33679d64e9c707db5138bca6: 21300000
+    - 715cd69c7a8bbb44691df577028e23ec: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: c143de204960bf04f9fa2dbb3180bf82, type: 3}
+  - {fileID: 21300000, guid: 2d5ef9375f29dcd47a640695c8ffea9e, type: 3}
+  - {fileID: 21300000, guid: 084122a839864f64c90e1ff597f30a29, type: 3}
+  - {fileID: 21300000, guid: ea2eccba61bc5f543bad94a710c04e55, type: 3}
+  - {fileID: 21300000, guid: 78ef35ca33679d64e9c707db5138bca6, type: 3}
+  - {fileID: 21300000, guid: 715cd69c7a8bbb44691df577028e23ec, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - background layer
+  - Yellowfin tuna
+  - Eel fish
+  - "\u9C7C\u7F38\u754C\u9762\u793A\u610F"
+  - Grouper
+  - tree
   m_RenderDataMap: {}
   m_Tag: fish tank
   m_IsVariant: 0

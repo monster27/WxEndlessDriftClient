@@ -50,10 +50,49 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - 2a6ed26192e5e0b49a1249e6f0a0a2a8: 21300000
+    - ced7fe9325b35b6458611900503155d3: 21300000
+    - b17b4775f3187ea48b3bdf86dc16e6e0: 21300000
+    - d85cdbf505e1d2d44b671d67eba979f1: 21300000
+    - 121192a7018d071428f138dd98f30860: 21300000
+    - 4591ba38717fd894bbab7b9d88a7071b: 21300000
+    - 621c62f81d53c074ca81ceb1ffc2a863: 21300000
+    - 6fcc6399ee2cfe34fb66cc50a4a8a06f: 21300000
+    - 968ed21a1e10bd446887dd3be3757a31: 21300000
+    - 294b472db6d3911429a38d91788c63ca: 21300000
+    - 400faf6e295407a41a7288ff4cbdacc8: 21300000
+    - 3044f6def99a1b54f87f893364cd31d9: 21300000
+    - 629f687f0aa241f43992bcefbf50882a: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 2a6ed26192e5e0b49a1249e6f0a0a2a8, type: 3}
+  - {fileID: 21300000, guid: ced7fe9325b35b6458611900503155d3, type: 3}
+  - {fileID: 21300000, guid: b17b4775f3187ea48b3bdf86dc16e6e0, type: 3}
+  - {fileID: 21300000, guid: d85cdbf505e1d2d44b671d67eba979f1, type: 3}
+  - {fileID: 21300000, guid: 121192a7018d071428f138dd98f30860, type: 3}
+  - {fileID: 21300000, guid: 4591ba38717fd894bbab7b9d88a7071b, type: 3}
+  - {fileID: 21300000, guid: 621c62f81d53c074ca81ceb1ffc2a863, type: 3}
+  - {fileID: 21300000, guid: 6fcc6399ee2cfe34fb66cc50a4a8a06f, type: 3}
+  - {fileID: 21300000, guid: 968ed21a1e10bd446887dd3be3757a31, type: 3}
+  - {fileID: 21300000, guid: 294b472db6d3911429a38d91788c63ca, type: 3}
+  - {fileID: 21300000, guid: 400faf6e295407a41a7288ff4cbdacc8, type: 3}
+  - {fileID: 21300000, guid: 3044f6def99a1b54f87f893364cd31d9, type: 3}
+  - {fileID: 21300000, guid: 629f687f0aa241f43992bcefbf50882a, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - 2005_
+  - 2003
+  - 2007
+  - 2002_
+  - 2006
+  - 2001
+  - 2004_
+  - 2004
+  - 0
+  - 2005
+  - 2001_
+  - 2002
+  - 2003_
   m_RenderDataMap: {}
   m_Tag: BaitIcons
   m_IsVariant: 0

@@ -355,7 +355,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         }
     }
 
-    private void CheckAndUpdateAnimationState()
+    public void CheckAndUpdateAnimationState()
     {
         if (NetServerManager.Instance == null)
         {
@@ -382,27 +382,18 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             return;
         }
 
-        if (NetServerManager.Instance.IsPlayingReelAnimation)
-        {
-            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 正在播放收杆动画，保持当前动画");
-            return;
-        }
-
-        if (PlayerAniManager.Instance.CurrentPlayerState == PlayerAniManager.PlayerAnimState.Reel)
-        {
-            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 收杆动画已结束，准备切换到目标动画");
-        }
-
+        // 无论是否正在播放收杆动画，都检查鱼篓状态并请求动画切换
+        // 如果正在播放收杆动画，NetServerManager 会将请求排入队列
         bool isFull = IsFishBagFull();
 
         if (isFull)
         {
-            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 鱼篓已满，切换到懒动画");
+            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 鱼篓已满，请求播放Lazy动画");
             NetServerManager.Instance.NotifyPlayLazyAnimation();
         }
         else
         {
-            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 鱼篓未满，切换到空闲动画");
+            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 鱼篓未满，请求播放Idle动画");
             NetServerManager.Instance.NotifyPlayIdleAnimation();
         }
     }

@@ -39,10 +39,16 @@ SpriteAtlas:
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
-    packedSpriteRenderDataKeys: []
+    packedSpriteRenderDataKeys:
+    - fabc0f1b050f3834dbdaff1c9d0d5998: 21300000
+    - 8aef17dc497950545b8bd5662503b026: 21300000
   m_MasterAtlas: {fileID: 0}
-  m_PackedSprites: []
-  m_PackedSpriteNamesToIndex: []
+  m_PackedSprites:
+  - {fileID: 21300000, guid: fabc0f1b050f3834dbdaff1c9d0d5998, type: 3}
+  - {fileID: 21300000, guid: 8aef17dc497950545b8bd5662503b026, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - fish finder
+  - Light
   m_RenderDataMap: {}
   m_Tag: fish finder
   m_IsVariant: 0
