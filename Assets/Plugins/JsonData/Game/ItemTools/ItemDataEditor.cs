@@ -21,6 +21,7 @@ public class ItemDataEditor : EditorWindow
     private float col5 = 60;
     private float col6 = 60;
     private float col7 = 60;
+    private float col8 = 50;
 
     private bool showFishList = true;
     private bool showBaitList = true;
@@ -28,12 +29,12 @@ public class ItemDataEditor : EditorWindow
     private bool showOtherList = true;
 
     //[MenuItem("Tools/Item Tools/编辑物品数据")]
-    [MenuItem("Tools/游戏内容/3.物品通用数据/2.编辑物品数据")]
+    [MenuItem("Tools/游戏内容/3.物品通用数据/2.编辑价格数据")]
 
     
     public static void ShowWindow()
     {
-        ItemDataEditor window = GetWindow<ItemDataEditor>("物品数据编辑器");
+        ItemDataEditor window = GetWindow<ItemDataEditor>("物品价格数据编辑器");
         window.minSize = new Vector2(750, 600);
         window.Show();
     }
@@ -106,6 +107,7 @@ public class ItemDataEditor : EditorWindow
             DrawResizableColumn("出售价", ref col5);
             DrawResizableColumn("购买价", ref col6);
             DrawResizableColumn("所属ID", ref col7);
+            DrawResizableColumn("唯一", ref col8);
             EditorGUILayout.LabelField("操作", GUILayout.Width(50));
             EditorGUILayout.EndHorizontal();
 
@@ -150,6 +152,7 @@ public class ItemDataEditor : EditorWindow
                 EditorGUILayout.LabelField(item.sellPrice.ToString(), GUILayout.Width(col5));
                 EditorGUILayout.LabelField(item.buyPrice.ToString(), GUILayout.Width(col6));
                 EditorGUILayout.LabelField(item.categoryId.ToString(), GUILayout.Width(col7));
+                EditorGUILayout.LabelField(item.isUnique ? "✓" : "✗", GUILayout.Width(col8));
 
                 GUI.backgroundColor = Color.white;
                 if (GUILayout.Button("编辑", GUILayout.Width(50))) selectedIndex = originalIndex;
@@ -217,6 +220,23 @@ public class ItemDataEditor : EditorWindow
             case 5: return "装饰";
             case 6: return "特殊";
             default: return "未知";
+        }
+    }
+
+    /// <summary>
+    /// 根据物品类型获取 isUnique 默认值
+    /// 饵料(2)、窝料(3)、水产(1)默认不唯一；其他物品默认唯一
+    /// </summary>
+    private bool GetDefaultIsUniqueForItemType(int itemType)
+    {
+        switch (itemType)
+        {
+            case 1: // 水产
+            case 2: // 饵料
+            case 3: // 窝料
+                return false;
+            default: // 装备、装饰、特殊等
+                return true;
         }
     }
 
@@ -292,6 +312,15 @@ public class ItemDataEditor : EditorWindow
             GUILayout.Space(20);
             EditorGUILayout.LabelField("图标路径:", GUILayout.Width(100));
             item.iconPath = EditorGUILayout.TextField(item.iconPath);
+            EditorGUILayout.EndHorizontal();
+            GUILayout.Space(5);
+            
+            // 是否唯一
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("是否唯一:", GUILayout.Width(100));
+            item.isUnique = EditorGUILayout.Toggle(item.isUnique, GUILayout.Width(30));
+            EditorGUILayout.LabelField(item.isUnique ? "唯一（可堆叠数量上限1）" : "不唯一（可堆叠）", GUILayout.Width(200));
+            GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             GUILayout.Space(5);
             
@@ -381,6 +410,38 @@ public class ItemDataEditor : EditorWindow
 
             items = wrapper.items;
             selectedIndex = -1;
+
+            // ✅ 自动填充 isUnique 默认值（仅在旧数据没有该字段时填充）
+            // 饵料(itemType=2)、窝料(itemType=3)、水产(itemType=1)默认不唯一
+            // 其他物品(itemType>=4)默认唯一
+            int autoFilledCount = 0;
+            foreach (var item in items)
+            {
+                // 检测是否为旧数据（isUnique 默认为 false 时可能未设置）
+                // 使用 itemType 判断是否需要自动设置
+                bool expectedDefault = GetDefaultIsUniqueForItemType(item.itemType);
+                // 如果当前值与预期默认值不同（可能是旧数据），且用户未手动修改过，则设置默认值
+                // 由于无法区分"用户设置的false"和"默认false"，我们采用规则：
+                // 只有当 itemType 属于非唯一类别且 isUnique 为 true 时，改为 false
+                // 或者当 itemType 属于唯一类别且 isUnique 为 false 时，改为 true
+                // 这样可以确保旧数据被正确迁移
+                if (item.itemType <= 3 && item.isUnique)
+                {
+                    item.isUnique = expectedDefault;
+                    autoFilledCount++;
+                }
+                else if (item.itemType >= 4 && !item.isUnique)
+                {
+                    item.isUnique = expectedDefault;
+                    autoFilledCount++;
+                }
+            }
+
+            if (autoFilledCount > 0)
+            {
+                Debug.Log($"[物品编辑器] 自动填充了 {autoFilledCount} 条物品的 isUnique 默认值");
+            }
+
             Debug.Log($"[物品编辑器] 加载了 {items.Count} 条物品数据");
         }
         catch (System.Exception e)

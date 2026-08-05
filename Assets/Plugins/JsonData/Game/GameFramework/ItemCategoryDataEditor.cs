@@ -12,7 +12,7 @@ public class ItemCategoryDataEditor : EditorWindow
 
     private const string DATA_PATH = "Resources/JsonData/Game/GameFramework/itemCategories.json";
 
-    [MenuItem("Tools/游戏内容/1.游戏框架数据/物品分类", false, 201)]
+    [MenuItem("Tools/游戏内容/1.游戏框架数据/物品分类", false)]
     public static void ShowWindow()
     {
         ItemCategoryDataEditor window = GetWindow<ItemCategoryDataEditor>("物品分类框架");

@@ -17,6 +17,7 @@ public class ItemData
     public int categoryId;
     public string iconPath;
     public List<int> collectionInfoPages; // 所属图鉴情报页面ID列表
+    public bool isUnique = true; // 是否唯一（饵料/窝料/水产默认不唯一，其他默认唯一）
 }
 
 /// <summary>

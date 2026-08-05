@@ -109,7 +109,9 @@ Material:
     - _SpriteSheetEnabled: 1
     - _SrcBlend: 1
     - _Transition: 0
+    - _TransitionSpeed: 1
     - _UVSec: 0
+    - _UseNextTex: 0
     - _ZWrite: 1
     m_Colors:
     - _BlinkColor: {r: 1, g: 1, b: 1, a: 1}

@@ -1,0 +1,235 @@
+{
+    "shopItems": [
+        {
+            "itemId": 801,
+            "price": 4,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 71
+        },
+        {
+            "itemId": 802,
+            "price": 5,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 71
+        },
+        {
+            "itemId": 4001,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 41
+        },
+        {
+            "itemId": 4002,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 41
+        },
+        {
+            "itemId": 4003,
+            "price": 3,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 41
+        },
+        {
+            "itemId": 4101,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 42
+        },
+        {
+            "itemId": 4102,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 42
+        },
+        {
+            "itemId": 4201,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 43
+        },
+        {
+            "itemId": 4202,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 43
+        },
+        {
+            "itemId": 5001,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 51
+        },
+        {
+            "itemId": 5002,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 51
+        },
+        {
+            "itemId": 5051,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 52
+        },
+        {
+            "itemId": 5052,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 52
+        },
+        {
+            "itemId": 5101,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 53
+        },
+        {
+            "itemId": 5102,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 53
+        },
+        {
+            "itemId": 5151,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 54
+        },
+        {
+            "itemId": 5152,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 54
+        },
+        {
+            "itemId": 5201,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 55
+        },
+        {
+            "itemId": 5202,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 55
+        },
+        {
+            "itemId": 5251,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 56
+        },
+        {
+            "itemId": 5252,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 56
+        },
+        {
+            "itemId": 5301,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 57
+        },
+        {
+            "itemId": 5302,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 57
+        },
+        {
+            "itemId": 5351,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 58
+        },
+        {
+            "itemId": 5352,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 58
+        },
+        {
+            "itemId": 5401,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 59
+        },
+        {
+            "itemId": 5402,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 59
+        },
+        {
+            "itemId": 5451,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 60
+        },
+        {
+            "itemId": 5452,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 60
+        },
+        {
+            "itemId": 5501,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 61
+        },
+        {
+            "itemId": 5502,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 61
+        },
+        {
+            "itemId": 5551,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 62
+        },
+        {
+            "itemId": 5552,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 62
+        }
+    ]
+}

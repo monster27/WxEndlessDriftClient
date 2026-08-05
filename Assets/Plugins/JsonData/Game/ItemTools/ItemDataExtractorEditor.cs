@@ -26,7 +26,7 @@ public class ItemDataExtractorEditor : EditorWindow
     private bool showOutdoorSkinList = true;
 
     //[MenuItem("Tools/Item Tools/提取物品数据")]
-    [MenuItem("Tools/游戏内容/3.物品通用数据/1.提取物品数据")]
+    [MenuItem("Tools/游戏内容/3.物品通用数据/1.提取物品数据(用于价格)")]
 
 
     
