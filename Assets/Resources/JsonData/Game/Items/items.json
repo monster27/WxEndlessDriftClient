@@ -7,9 +7,10 @@
             "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1001",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1002,
@@ -18,9 +19,10 @@
             "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1002",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1003,
@@ -29,9 +31,10 @@
             "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1003",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1004,
@@ -40,9 +43,10 @@
             "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1004",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1005,
@@ -51,9 +55,10 @@
             "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1005",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1006,
@@ -62,9 +67,10 @@
             "sellPrice": 20,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1006",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1007,
@@ -73,9 +79,10 @@
             "sellPrice": 20,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1007",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1008,
@@ -84,9 +91,10 @@
             "sellPrice": 20,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1008",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1009,
@@ -95,9 +103,10 @@
             "sellPrice": 20,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1009",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1010,
@@ -106,9 +115,10 @@
             "sellPrice": 40,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1010",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1011,
@@ -117,9 +127,10 @@
             "sellPrice": 40,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1011",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1012,
@@ -128,9 +139,10 @@
             "sellPrice": 40,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1012",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1013,
@@ -139,9 +151,10 @@
             "sellPrice": 80,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1013",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1014,
@@ -150,9 +163,10 @@
             "sellPrice": 80,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1014",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1015,
@@ -161,9 +175,10 @@
             "sellPrice": 100,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1015",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1021,
@@ -172,9 +187,10 @@
             "sellPrice": 5,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1021",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1022,
@@ -183,9 +199,10 @@
             "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1022",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1023,
@@ -194,9 +211,10 @@
             "sellPrice": 15,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1023",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 1024,
@@ -205,64 +223,70 @@
             "sellPrice": 20,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 1,
+            "categoryId": 11,
             "iconPath": "UI/Icon/FishIcons/1024",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 2001,
             "name": "玉米",
             "description": "基础鱼饵，对草食性鱼类有吸引力",
             "sellPrice": 10,
-            "buyPrice": -1,
+            "buyPrice": 1,
             "itemType": 2,
             "categoryId": 21,
             "iconPath": "UI/Icon/BaitIcons/2001",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 2002,
             "name": "海虫",
             "description": "常见鱼饵，杂食性鱼类都喜欢",
             "sellPrice": 11,
-            "buyPrice": -1,
+            "buyPrice": 2,
             "itemType": 2,
             "categoryId": 21,
             "iconPath": "UI/Icon/BaitIcons/2002",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 2003,
             "name": "秘制虾饵",
             "description": "蜜汁虾饵",
             "sellPrice": 12,
-            "buyPrice": -1,
+            "buyPrice": 3,
             "itemType": 2,
             "categoryId": 21,
             "iconPath": "UI/Icon/BaitIcons/2003",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 2004,
             "name": "小虾米",
             "description": "小虾米",
             "sellPrice": 13,
-            "buyPrice": -1,
+            "buyPrice": 4,
             "itemType": 2,
             "categoryId": 21,
             "iconPath": "UI/Icon/BaitIcons/2004",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 2005,
             "name": "小鱿鱼",
             "description": "小鱿鱼",
             "sellPrice": 14,
-            "buyPrice": -1,
+            "buyPrice": 5,
             "itemType": 2,
             "categoryId": 21,
             "iconPath": "UI/Icon/BaitIcons/2005",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 2006,
@@ -273,7 +297,8 @@
             "itemType": 2,
             "categoryId": 21,
             "iconPath": "UI/Icon/BaitIcons/2006",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 2007,
@@ -284,62 +309,8 @@
             "itemType": 2,
             "categoryId": 21,
             "iconPath": "UI/Icon/BaitIcons/2007",
-            "collectionInfoPages": []
-        },
-        {
-            "id": 2501,
-            "name": "融冠群岛窝料",
-            "description": "适用于融冠群岛的窝料，开启连续钓鱼模式",
-            "sellPrice": -1,
-            "buyPrice": -1,
-            "itemType": 3,
-            "categoryId": 22,
-            "iconPath": "UI/Icon/NestBaitIcons/2501",
-            "collectionInfoPages": []
-        },
-        {
-            "id": 2502,
-            "name": "珊瑚环心岛窝料",
-            "description": "适用于珊瑚环心岛的窝料，开启连续钓鱼模式",
-            "sellPrice": -1,
-            "buyPrice": -1,
-            "itemType": 3,
-            "categoryId": 22,
-            "iconPath": "UI/Icon/NestBaitIcons/2502",
-            "collectionInfoPages": []
-        },
-        {
-            "id": 2503,
-            "name": "场景三窝料",
-            "description": "适用于场景三的窝料，开启连续钓鱼模式",
-            "sellPrice": -1,
-            "buyPrice": -1,
-            "itemType": 3,
-            "categoryId": 22,
-            "iconPath": "UI/Icon/NestBaitIcons/2503",
-            "collectionInfoPages": []
-        },
-        {
-            "id": 801,
-            "name": "融冠群岛图鉴情报",
-            "description": "解锁融冠群岛所有鱼类的情报，可查看鱼类轮廓",
-            "sellPrice": -1,
-            "buyPrice": 4,
-            "itemType": 6,
-            "categoryId": 71,
-            "iconPath": "UI/Icon/SpecialIcon/801",
-            "collectionInfoPages": []
-        },
-        {
-            "id": 802,
-            "name": "珊瑚环心岛图鉴情报",
-            "description": "解锁珊瑚环心岛所有鱼类的情报，可查看鱼类轮廓",
-            "sellPrice": -1,
-            "buyPrice": 5,
-            "itemType": 6,
-            "categoryId": 71,
-            "iconPath": "UI/Icon/SpecialIcon/802",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 9001,
@@ -350,7 +321,8 @@
             "itemType": 3,
             "categoryId": 91,
             "iconPath": "UI/Icon/TrashIcons/9001",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 9002,
@@ -361,7 +333,8 @@
             "itemType": 3,
             "categoryId": 91,
             "iconPath": "UI/Icon/TrashIcons/9002",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 9003,
@@ -372,7 +345,8 @@
             "itemType": 3,
             "categoryId": 91,
             "iconPath": "UI/Icon/TrashIcons/9003",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": false
         },
         {
             "id": 4001,
@@ -383,7 +357,8 @@
             "itemType": 4,
             "categoryId": 41,
             "iconPath": "UI/Icon/OutdoorSkinIcons/4001",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 4002,
@@ -394,7 +369,8 @@
             "itemType": 4,
             "categoryId": 41,
             "iconPath": "UI/Icon/OutdoorSkinIcons/4002",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 4003,
@@ -405,7 +381,8 @@
             "itemType": 4,
             "categoryId": 41,
             "iconPath": "UI/Icon/OutdoorSkinIcons/4003",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 4101,
@@ -416,7 +393,8 @@
             "itemType": 4,
             "categoryId": 42,
             "iconPath": "UI/Icon/OutdoorSkinIcons/4101",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 4102,
@@ -427,7 +405,8 @@
             "itemType": 4,
             "categoryId": 42,
             "iconPath": "UI/Icon/OutdoorSkinIcons/4102",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 4201,
@@ -438,7 +417,8 @@
             "itemType": 4,
             "categoryId": 43,
             "iconPath": "UI/Icon/OutdoorSkinIcons/4201",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 4202,
@@ -449,7 +429,8 @@
             "itemType": 4,
             "categoryId": 43,
             "iconPath": "UI/Icon/OutdoorSkinIcons/4202",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5001,
@@ -460,7 +441,8 @@
             "itemType": 5,
             "categoryId": 51,
             "iconPath": "UI/Icon/IndoorSkinIcons/5001",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5002,
@@ -471,7 +453,8 @@
             "itemType": 5,
             "categoryId": 51,
             "iconPath": "UI/Icon/IndoorSkinIcons/5002",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5051,
@@ -482,7 +465,8 @@
             "itemType": 5,
             "categoryId": 52,
             "iconPath": "UI/Icon/IndoorSkinIcons/5051",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5052,
@@ -493,7 +477,8 @@
             "itemType": 5,
             "categoryId": 52,
             "iconPath": "UI/Icon/IndoorSkinIcons/5052",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5101,
@@ -504,7 +489,8 @@
             "itemType": 5,
             "categoryId": 53,
             "iconPath": "UI/Icon/IndoorSkinIcons/5101",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5102,
@@ -515,7 +501,8 @@
             "itemType": 5,
             "categoryId": 53,
             "iconPath": "UI/Icon/IndoorSkinIcons/5102",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5151,
@@ -526,7 +513,8 @@
             "itemType": 5,
             "categoryId": 54,
             "iconPath": "UI/Icon/IndoorSkinIcons/5151",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5152,
@@ -537,7 +525,8 @@
             "itemType": 5,
             "categoryId": 54,
             "iconPath": "UI/Icon/IndoorSkinIcons/5152",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5201,
@@ -548,7 +537,8 @@
             "itemType": 5,
             "categoryId": 55,
             "iconPath": "UI/Icon/IndoorSkinIcons/5201",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5202,
@@ -559,7 +549,8 @@
             "itemType": 5,
             "categoryId": 55,
             "iconPath": "UI/Icon/IndoorSkinIcons/5202",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5251,
@@ -570,7 +561,8 @@
             "itemType": 5,
             "categoryId": 56,
             "iconPath": "UI/Icon/IndoorSkinIcons/5251",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5252,
@@ -581,7 +573,8 @@
             "itemType": 5,
             "categoryId": 56,
             "iconPath": "UI/Icon/IndoorSkinIcons/5252",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5301,
@@ -592,7 +585,8 @@
             "itemType": 5,
             "categoryId": 57,
             "iconPath": "UI/Icon/IndoorSkinIcons/5301",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5302,
@@ -603,7 +597,8 @@
             "itemType": 5,
             "categoryId": 57,
             "iconPath": "UI/Icon/IndoorSkinIcons/5302",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5351,
@@ -614,7 +609,8 @@
             "itemType": 5,
             "categoryId": 58,
             "iconPath": "UI/Icon/IndoorSkinIcons/5351",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5352,
@@ -625,7 +621,8 @@
             "itemType": 5,
             "categoryId": 58,
             "iconPath": "UI/Icon/IndoorSkinIcons/5352",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5401,
@@ -636,7 +633,8 @@
             "itemType": 5,
             "categoryId": 59,
             "iconPath": "UI/Icon/IndoorSkinIcons/5401",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5402,
@@ -647,7 +645,8 @@
             "itemType": 5,
             "categoryId": 59,
             "iconPath": "UI/Icon/IndoorSkinIcons/5402",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5451,
@@ -658,7 +657,8 @@
             "itemType": 5,
             "categoryId": 60,
             "iconPath": "UI/Icon/IndoorSkinIcons/5451",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5452,
@@ -669,7 +669,8 @@
             "itemType": 5,
             "categoryId": 60,
             "iconPath": "UI/Icon/IndoorSkinIcons/5452",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5501,
@@ -680,7 +681,8 @@
             "itemType": 5,
             "categoryId": 61,
             "iconPath": "UI/Icon/IndoorSkinIcons/5501",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5502,
@@ -691,7 +693,8 @@
             "itemType": 5,
             "categoryId": 61,
             "iconPath": "UI/Icon/IndoorSkinIcons/5502",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5551,
@@ -702,7 +705,8 @@
             "itemType": 5,
             "categoryId": 62,
             "iconPath": "UI/Icon/IndoorSkinIcons/5551",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
         },
         {
             "id": 5552,
@@ -713,7 +717,44 @@
             "itemType": 5,
             "categoryId": 62,
             "iconPath": "UI/Icon/IndoorSkinIcons/5552",
-            "collectionInfoPages": []
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 2501,
+            "name": "融冠群岛窝料",
+            "description": "适用于融冠群岛窝料的窝料",
+            "sellPrice": -1,
+            "buyPrice": 10,
+            "itemType": 6,
+            "categoryId": 22,
+            "iconPath": "UI/Icon/NestBaitIcons/2501",
+            "collectionInfoPages": [],
+            "isUnique": false
+        },
+        {
+            "id": 2502,
+            "name": "珊瑚环心岛窝料",
+            "description": "适用于珊瑚环心岛的窝料",
+            "sellPrice": -1,
+            "buyPrice": 11,
+            "itemType": 6,
+            "categoryId": 22,
+            "iconPath": "UI/Icon/NestBaitIcons/2502",
+            "collectionInfoPages": [],
+            "isUnique": false
+        },
+        {
+            "id": 2503,
+            "name": "场景三窝料",
+            "description": "适用于场景三的窝料",
+            "sellPrice": -1,
+            "buyPrice": 13,
+            "itemType": 6,
+            "categoryId": 22,
+            "iconPath": "UI/Icon/NestBaitIcons/2503",
+            "collectionInfoPages": [],
+            "isUnique": false
         }
     ]
 }

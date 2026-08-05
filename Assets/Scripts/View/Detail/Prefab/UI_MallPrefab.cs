@@ -11,6 +11,7 @@ public class UI_MallPrefab : MonoBehaviour
     public Text priceText;
     public Text stockText;
     public Button itemButton;
+    public GameObject ownedObj;  // "已拥有"标识Obj，唯一物品且玩家已拥有时显示
 
     private int itemId;
     private ItemData itemData;
@@ -71,7 +72,28 @@ public class UI_MallPrefab : MonoBehaviour
 
         if (stockText != null && mallItemData != null)
         {
-            stockText.text = mallItemData.stock.ToString();
+            // 唯一物品不显示库存数量（库存对唯一物品无意义）
+            if (itemData.isUnique)
+            {
+                stockText.text = "";
+                stockText.gameObject.SetActive(false);
+            }
+            else
+            {
+                stockText.text = mallItemData.stock.ToString();
+                stockText.gameObject.SetActive(true);
+            }
+        }
+
+        // 唯一物品且玩家已拥有时显示"已拥有"标识，非唯一或不拥有时隐藏
+        if (ownedObj != null)
+        {
+            bool alreadyOwned = false;
+            if (itemData.isUnique && PlayerDataManager.Instance != null)
+            {
+                alreadyOwned = PlayerDataManager.Instance.GetItemQuantity(itemId) > 0;
+            }
+            ownedObj.SetActive(alreadyOwned);
         }
     }
 

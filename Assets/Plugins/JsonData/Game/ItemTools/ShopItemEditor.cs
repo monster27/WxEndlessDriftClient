@@ -30,6 +30,10 @@ public class ShopItemEditor : EditorWindow
 
     private bool isDataLoaded = false;
     private string searchFilter = "";
+
+    // ✅ 新增：是否显示价格与唯一性列
+    private bool showPriceColumn = true;
+    private bool showUniqueColumn = true;
     #endregion
 
     #region 菜单入口
@@ -37,7 +41,7 @@ public class ShopItemEditor : EditorWindow
     public static void ShowWindow()
     {
         ShopItemEditor window = GetWindow<ShopItemEditor>("商场物品编辑器");
-        window.minSize = new Vector2(800, 600);
+        window.minSize = new Vector2(900, 600);
         window.Show();
     }
     #endregion
@@ -167,6 +171,40 @@ public class ShopItemEditor : EditorWindow
         ExtractShopItemsFromAllItems();
     }
 
+    /// <summary>
+    /// ✅ 重新提取：从物品数据中重新提取商场物品（覆盖现有数据）
+    /// </summary>
+    private void ReExtractShopItemsFromAllItems()
+    {
+        // 清空现有数据
+        shopItems.Clear();
+        int extractedCount = 0;
+
+        foreach (var item in allItems)
+        {
+            // 只提取购买价格 > 0 的物品
+            if (item.buyPrice > 0)
+            {
+                var shopItem = new ShopItemData
+                {
+                    itemId = item.id,
+                    price = item.buyPrice,
+                    stock = 99, // 默认库存
+                    isOnSale = true, // 默认上架
+                    categoryId = item.categoryId,
+                    isUnique = item.isUnique // ✅ 从物品数据中读取 isUnique
+                };
+                shopItems.Add(shopItem);
+                extractedCount++;
+            }
+        }
+
+        Debug.Log($"[商场物品编辑器] 重新提取商场物品: {extractedCount} 条");
+        SaveShopItems();
+        EditorUtility.DisplayDialog("重新提取完成", $"从物品数据中重新提取了 {extractedCount} 条商场物品", "确定");
+        Repaint();
+    }
+
     private void ExtractShopItemsFromAllItems()
     {
         shopItems.Clear();
@@ -183,7 +221,8 @@ public class ShopItemEditor : EditorWindow
                     price = item.buyPrice,
                     stock = 99, // 默认库存
                     isOnSale = true, // 默认上架
-                    categoryId = item.categoryId
+                    categoryId = item.categoryId,
+                    isUnique = item.isUnique // ✅ 从物品数据中读取 isUnique
                 };
                 shopItems.Add(shopItem);
                 extractedCount++;
@@ -200,12 +239,27 @@ public class ShopItemEditor : EditorWindow
     {
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
-        // 刷新按钮
+        // 刷新按钮（重新加载所有数据）
         if (GUILayout.Button("🔄 刷新", EditorStyles.toolbarButton, GUILayout.Width(80)))
         {
             LoadAllData();
             Repaint();
         }
+
+        // ✅ 新增：重新提取按钮（从物品数据重新提取，覆盖现有商场数据）
+        GUI.backgroundColor = new Color(1f, 0.8f, 0.4f);
+        if (GUILayout.Button("📥 重新提取", EditorStyles.toolbarButton, GUILayout.Width(80)))
+        {
+            if (EditorUtility.DisplayDialog("确认重新提取",
+                "将从物品数据中重新提取所有购买价格 > 0 的物品作为商场商品，\n这将覆盖当前所有商场数据。\n\n确定继续吗？",
+                "确定", "取消"))
+            {
+                // 先加载最新的物品数据
+                LoadAllItems();
+                ReExtractShopItemsFromAllItems();
+            }
+        }
+        GUI.backgroundColor = Color.white;
 
         GUILayout.Space(10);
 
@@ -223,6 +277,10 @@ public class ShopItemEditor : EditorWindow
         // 统计信息
         int onSaleCount = shopItems.Count(s => s.isOnSale);
         EditorGUILayout.LabelField($"共 {shopItems.Count} 件商品 | 上架: {onSaleCount} 件", GUILayout.Width(200));
+
+        // ✅ 新增：显示/隐藏列开关
+        showPriceColumn = EditorGUILayout.ToggleLeft("价格", showPriceColumn, GUILayout.Width(50));
+        showUniqueColumn = EditorGUILayout.ToggleLeft("唯一", showUniqueColumn, GUILayout.Width(50));
 
         // 保存按钮
         GUI.backgroundColor = Color.green;
@@ -363,9 +421,20 @@ public class ShopItemEditor : EditorWindow
         EditorGUILayout.BeginHorizontal("box");
         EditorGUILayout.LabelField("ID", GUILayout.Width(60));
         EditorGUILayout.LabelField("物品名称", GUILayout.Width(130));
-        EditorGUILayout.LabelField("价格", GUILayout.Width(60));
+
+        if (showPriceColumn)
+        {
+            EditorGUILayout.LabelField("价格", GUILayout.Width(60));
+        }
+
         EditorGUILayout.LabelField("库存", GUILayout.Width(60));
         EditorGUILayout.LabelField("上架", GUILayout.Width(50));
+
+        if (showUniqueColumn)
+        {
+            EditorGUILayout.LabelField("唯一", GUILayout.Width(40));
+        }
+
         EditorGUILayout.LabelField("操作", GUILayout.Width(100));
         EditorGUILayout.EndHorizontal();
     }
@@ -380,15 +449,18 @@ public class ShopItemEditor : EditorWindow
         // 交替行背景色
         GUI.backgroundColor = (shopItem.itemId % 2 == 0) ? new Color(0.95f, 0.95f, 0.95f) : new Color(0.88f, 0.88f, 0.88f);
 
-        // ID
+        // ID（只读）
         EditorGUILayout.LabelField(shopItem.itemId.ToString(), GUILayout.Width(60));
 
-        // 名称 + 类型图标
+        // 名称 + 类型图标（只读）
         string typeIcon = GetItemTypeIcon(itemType);
         EditorGUILayout.LabelField($"{typeIcon} {itemName}", GUILayout.Width(130));
 
-        // 价格（可编辑）
-        shopItem.price = EditorGUILayout.IntField(shopItem.price, GUILayout.Width(60));
+        // 价格（可编辑，但重新提取时会覆盖）
+        if (showPriceColumn)
+        {
+            shopItem.price = EditorGUILayout.IntField(shopItem.price, GUILayout.Width(60));
+        }
 
         // 库存（可编辑）
         shopItem.stock = EditorGUILayout.IntField(shopItem.stock, GUILayout.Width(60));
@@ -396,10 +468,34 @@ public class ShopItemEditor : EditorWindow
         // 上架开关（可编辑）
         shopItem.isOnSale = EditorGUILayout.Toggle(shopItem.isOnSale, GUILayout.Width(50));
 
+        // ✅ 唯一性显示（只读，从物品数据同步）
+        if (showUniqueColumn)
+        {
+            // 从物品数据获取最新的 isUnique
+            var itemData = allItems.FirstOrDefault(i => i.id == shopItem.itemId);
+            bool isUnique = itemData?.isUnique ?? false;
+            EditorGUILayout.LabelField(isUnique ? "✓" : "✗", GUILayout.Width(40));
+
+            // 同步更新到 shopItem
+            shopItem.isUnique = isUnique;
+        }
+
         // 操作按钮
         if (GUILayout.Button("定位物品", GUILayout.Width(70)))
         {
-            EditorGUIUtility.PingObject(AssetDatabase.LoadAssetAtPath<Object>($"Assets/Resources/UI/Icon/{GetItemIconPath(shopItem.itemId)}"));
+            string iconPath = GetItemIconPath(shopItem.itemId);
+            if (!string.IsNullOrEmpty(iconPath))
+            {
+                var obj = AssetDatabase.LoadAssetAtPath<Object>($"Assets/Resources/{iconPath}.png");
+                if (obj != null)
+                {
+                    EditorGUIUtility.PingObject(obj);
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog("提示", $"未找到图标: {iconPath}", "确定");
+                }
+            }
         }
 
         GUI.backgroundColor = Color.white;
@@ -480,7 +576,7 @@ public class ShopItemEditor : EditorWindow
     private string GetItemIconPath(int itemId)
     {
         var item = allItems.FirstOrDefault(i => i.id == itemId);
-        return item?.iconPath ?? $"";
+        return item?.iconPath ?? "";
     }
 
     private void SaveShopItems()
@@ -514,6 +610,7 @@ public class ShopItemEditor : EditorWindow
         public int stock;
         public bool isOnSale;
         public int categoryId;
+        public bool isUnique; // ✅ 新增：是否唯一
     }
 
     [System.Serializable]

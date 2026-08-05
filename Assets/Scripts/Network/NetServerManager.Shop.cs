@@ -39,6 +39,7 @@ public partial class NetServerManager
             else
             {
                 Logger.LogWarning($"[NetServerManager] 购买失败: {message}");
+                GameUIManager.ShowMessage(message);
             }
         });
     }

@@ -11,6 +11,7 @@ public class ItemDataExtractorEditor : EditorWindow
     private string fishDataPath = "Resources/JsonData/Game/BagItem/fishes.json";
     private string baitDataPath = "Resources/JsonData/Game/BagItem/baits.json";
     private string trashDataPath = "Resources/JsonData/Game/BagItem/trash.json";
+    private string nestBaitDataPath = "Resources/JsonData/Game/BagItem/nestBaits.json";
     private string indoorSkinDataPath = "Resources/JsonData/Game/BagItem/indoorSkin.json";
     private string outdoorSkinDataPath = "Resources/JsonData/Game/BagItem/outdoorSkin.json";
     private string categoryDataPath = "Resources/JsonData/Game/GameFramework/itemCategories.json";
@@ -22,14 +23,11 @@ public class ItemDataExtractorEditor : EditorWindow
     private bool showFishList = true;
     private bool showBaitList = true;
     private bool showTrashList = true;
+    private bool showNestBaitList = true;
     private bool showIndoorSkinList = true;
     private bool showOutdoorSkinList = true;
 
-    //[MenuItem("Tools/Item Tools/提取物品数据")]
     [MenuItem("Tools/游戏内容/3.物品通用数据/1.提取物品数据(用于价格)")]
-
-
-    
     public static void ShowWindow()
     {
         GetWindow<ItemDataExtractorEditor>("物品数据提取器");
@@ -54,6 +52,7 @@ public class ItemDataExtractorEditor : EditorWindow
         EditorGUILayout.LabelField($"鱼类数据: {fishDataPath}");
         EditorGUILayout.LabelField($"鱼饵数据: {baitDataPath}");
         EditorGUILayout.LabelField($"垃圾数据: {trashDataPath}");
+        EditorGUILayout.LabelField($"窝料数据: {nestBaitDataPath}");
         EditorGUILayout.LabelField($"室内皮肤数据: {indoorSkinDataPath}");
         EditorGUILayout.LabelField($"室外皮肤数据: {outdoorSkinDataPath}");
         EditorGUILayout.LabelField($"输出路径: {outputPath}");
@@ -65,19 +64,19 @@ public class ItemDataExtractorEditor : EditorWindow
     private void DrawExtractButton()
     {
         EditorGUILayout.BeginVertical("box");
-        
+
         GUI.backgroundColor = new Color(0.7f, 0.9f, 0.7f);
         if (GUILayout.Button("提取物品数据", GUILayout.Height(35)))
         {
             ExtractItems();
         }
-        
+
         GUI.backgroundColor = new Color(0.9f, 0.7f, 0.7f);
         if (GUILayout.Button("写入物品数据", GUILayout.Height(35)))
         {
             WriteItemsData();
         }
-        
+
         GUI.backgroundColor = Color.white;
         EditorGUILayout.EndVertical();
         GUILayout.Space(10);
@@ -96,12 +95,14 @@ public class ItemDataExtractorEditor : EditorWindow
         List<ItemData> trashItems = extractedItems.FindAll(item => item.itemType == 3);
         List<ItemData> outdoorSkinItems = extractedItems.FindAll(item => item.itemType == 4);
         List<ItemData> indoorSkinItems = extractedItems.FindAll(item => item.itemType == 5);
+        List<ItemData> nestBaitItems = extractedItems.FindAll(item => item.itemType == 6);
 
         DrawItemGroup("🐟 鱼类数据", fishItems, ref showFishList);
         DrawItemGroup("🎣 鱼饵数据", baitItems, ref showBaitList);
         DrawItemGroup("🗑️ 垃圾数据", trashItems, ref showTrashList);
         DrawItemGroup("🏕️ 室外皮肤数据", outdoorSkinItems, ref showOutdoorSkinList);
         DrawItemGroup("🏠 室内皮肤数据", indoorSkinItems, ref showIndoorSkinList);
+        DrawItemGroup("🪣 窝料数据", nestBaitItems, ref showNestBaitList);
     }
 
     private void DrawItemGroup(string title, List<ItemData> items, ref bool isExpanded)
@@ -160,7 +161,7 @@ public class ItemDataExtractorEditor : EditorWindow
             case 3: return "垃圾";
             case 4: return "室外皮肤";
             case 5: return "室内皮肤";
-            case 6: return "特殊";
+            case 6: return "窝料";
             default: return "未知";
         }
     }
@@ -175,6 +176,7 @@ public class ItemDataExtractorEditor : EditorWindow
         List<FishData> fishes = LoadFishData();
         List<BaitData> baits = LoadBaitData();
         List<TrashData> trashList = LoadTrashData();
+        List<NestBaitData> nestBaits = LoadNestBaitData();
 
         if (fishes == null || fishes.Count == 0)
         {
@@ -182,8 +184,9 @@ public class ItemDataExtractorEditor : EditorWindow
             return;
         }
 
-        Debug.Log($"[物品提取] 加载完成：鱼类={fishes.Count}，鱼饵={baits?.Count ?? 0}，垃圾={trashList?.Count ?? 0}，已存在物品={existingItems.Count}");
+        Debug.Log($"[物品提取] 加载完成：鱼类={fishes.Count}，鱼饵={baits?.Count ?? 0}，垃圾={trashList?.Count ?? 0}，窝料={nestBaits?.Count ?? 0}，已存在物品={existingItems.Count}");
 
+        // ========== 处理鱼类 ==========
         foreach (var fish in fishes)
         {
             ItemData existingItem = FindItemById(fish.id);
@@ -215,6 +218,7 @@ public class ItemDataExtractorEditor : EditorWindow
             extractedItems.Add(item);
         }
 
+        // ========== 处理鱼饵 ==========
         if (baits != null)
         {
             foreach (var bait in baits)
@@ -249,6 +253,7 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
+        // ========== 处理垃圾 ==========
         if (trashList != null)
         {
             foreach (var trash in trashList)
@@ -283,6 +288,7 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
+        // ========== 处理室外皮肤 ==========
         List<OutdoorSkinData> outdoorSkins = LoadOutdoorSkinData();
         if (outdoorSkins != null)
         {
@@ -318,6 +324,7 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
+        // ========== 处理室内皮肤 ==========
         List<IndoorSkinData> indoorSkins = LoadIndoorSkinData();
         if (indoorSkins != null)
         {
@@ -353,6 +360,41 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
+        // ========== 处理窝料 ==========
+        if (nestBaits != null)
+        {
+            foreach (var nestBait in nestBaits)
+            {
+                ItemData existingItem = FindItemById(nestBait.id);
+                ItemData item;
+
+                if (existingItem != null)
+                {
+                    item = existingItem;
+                    item.name = nestBait.name;
+                    item.description = nestBait.description ?? "窝料，用于打窝吸引鱼类";
+                    item.itemType = 6;
+                    item.categoryId = GetCategoryIdByItemId(nestBait.id);
+                    item.iconPath = $"UI/Icon/NestBaitIcons/{nestBait.id}";
+                }
+                else
+                {
+                    item = new ItemData
+                    {
+                        id = nestBait.id,
+                        name = nestBait.name,
+                        description = nestBait.description ?? "窝料，用于打窝吸引鱼类",
+                        sellPrice = -1,
+                        buyPrice = -1,
+                        itemType = 6,
+                        categoryId = GetCategoryIdByItemId(nestBait.id),
+                        iconPath = $"UI/Icon/NestBaitIcons/{nestBait.id}"
+                    };
+                }
+                extractedItems.Add(item);
+            }
+        }
+
         SaveItemsToJson();
         Debug.Log($"[物品提取] 完成！共 {extractedItems.Count} 条物品");
         Repaint();
@@ -368,7 +410,7 @@ public class ItemDataExtractorEditor : EditorWindow
 
         // 加载现有数据进行比较
         LoadExistingItems();
-        
+
         // 检测不一致
         List<string> inconsistencies = new List<string>();
         foreach (var newItem in extractedItems)
@@ -397,7 +439,7 @@ public class ItemDataExtractorEditor : EditorWindow
                 message += "- " + inconsistency + "\n";
             }
             message += "\n是否强制覆盖？";
-            
+
             if (!EditorUtility.DisplayDialog("检测到不一致", message, "强制覆盖", "取消"))
             {
                 return;
@@ -512,6 +554,28 @@ public class ItemDataExtractorEditor : EditorWindow
         }
     }
 
+    private List<NestBaitData> LoadNestBaitData()
+    {
+        string fullPath = Path.Combine(Application.dataPath, nestBaitDataPath);
+        if (!File.Exists(fullPath))
+        {
+            Debug.LogWarning($"[物品提取] 窝料文件不存在: {fullPath}");
+            return null;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(fullPath);
+            var wrapper = JsonUtility.FromJson<NestBaitListWrapper>(json);
+            return wrapper?.nestBaits ?? null;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[物品提取] 加载窝料数据失败: {e.Message}");
+            return null;
+        }
+    }
+
     private List<OutdoorSkinData> LoadOutdoorSkinData()
     {
         string fullPath = Path.Combine(Application.dataPath, outdoorSkinDataPath);
@@ -584,7 +648,7 @@ public class ItemDataExtractorEditor : EditorWindow
     {
         if (categoryWrapper == null || categoryWrapper.categories == null)
         {
-            return 99; // 返回特殊分类
+            return 99;
         }
 
         foreach (var category in categoryWrapper.categories)
@@ -605,7 +669,7 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
-        return 99; // 不在任何分类范围内，返回特殊分类
+        return 99;
     }
 
     private void SaveItemsToJson()
@@ -629,6 +693,7 @@ public class ItemDataExtractorEditor : EditorWindow
         Debug.Log($"[物品提取] 已保存到: {fullPath}");
     }
 
+    // ========== 序列化类 ==========
     [System.Serializable]
     private class CategoryListWrapper
     {
@@ -680,6 +745,12 @@ public class ItemDataExtractorEditor : EditorWindow
     private class TrashListWrapper
     {
         public List<TrashData> trashList;
+    }
+
+    [System.Serializable]
+    private class NestBaitListWrapper
+    {
+        public List<NestBaitData> nestBaits;
     }
 
     [System.Serializable]

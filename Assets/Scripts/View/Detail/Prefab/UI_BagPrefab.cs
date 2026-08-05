@@ -70,8 +70,8 @@ namespace View.Detail
 
             if (quantityText != null)
             {
-                // 无鱼饵（itemId=0）、鱼类（categoryId=1）不显示数量文本
-                if (itemId == 0 || itemData.categoryId == 1)
+                // 无鱼饵（itemId=0）、鱼类（categoryId=1）、唯一物品（isUnique=true）不显示数量文本
+                if (itemId == 0 || itemData.categoryId == 1 || itemData.isUnique)
                 {
                     quantityText.text = "";
                     quantityText.gameObject.SetActive(false);

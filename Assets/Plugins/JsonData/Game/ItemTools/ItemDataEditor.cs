@@ -8,7 +8,7 @@ using System.Linq;
 
 public class ItemDataEditor : EditorWindow
 {
-    private Dictionary<string, int> groupPageIndex = new Dictionary<string, int>(); // 新增：存储每个组的当前页码
+    private Dictionary<string, int> groupPageIndex = new Dictionary<string, int>();
     private string inputPath = "JsonData/Game/Items/items";
     private List<ItemData> items = new List<ItemData>();
     private int selectedIndex = -1;
@@ -25,13 +25,11 @@ public class ItemDataEditor : EditorWindow
 
     private bool showFishList = true;
     private bool showBaitList = true;
-    private bool showNestList = true;
+    private bool showTrashList = true;
+    private bool showNestBaitList = true;
     private bool showOtherList = true;
 
-    //[MenuItem("Tools/Item Tools/编辑物品数据")]
     [MenuItem("Tools/游戏内容/3.物品通用数据/2.编辑价格数据")]
-
-    
     public static void ShowWindow()
     {
         ItemDataEditor window = GetWindow<ItemDataEditor>("物品价格数据编辑器");
@@ -67,18 +65,20 @@ public class ItemDataEditor : EditorWindow
 
         if (items.Count == 0)
         {
-            EditorGUILayout.LabelField("暂无数据，点击\"新增\"添加", EditorStyles.centeredGreyMiniLabel);
+            EditorGUILayout.LabelField("暂无数据，点击\"刷新\"加载", EditorStyles.centeredGreyMiniLabel);
             return;
         }
 
         List<ItemData> fishItems = items.FindAll(item => item.itemType == 1);
         List<ItemData> baitItems = items.FindAll(item => item.itemType == 2);
-        List<ItemData> nestItems = items.FindAll(item => item.itemType == 3);
-        List<ItemData> otherItems = items.FindAll(item => item.itemType >= 4);
+        List<ItemData> trashItems = items.FindAll(item => item.itemType == 3);
+        List<ItemData> nestBaitItems = items.FindAll(item => item.itemType == 6);
+        List<ItemData> otherItems = items.FindAll(item => item.itemType == 4 || item.itemType == 5);
 
         DrawItemGroup("🐟 水产数据", fishItems, ref showFishList);
         DrawItemGroup("🎣 饵料数据", baitItems, ref showBaitList);
-        DrawItemGroup("🪣 窝料数据", nestItems, ref showNestList);
+        DrawItemGroup("🗑️ 垃圾数据", trashItems, ref showTrashList);
+        DrawItemGroup("🪣 窝料数据", nestBaitItems, ref showNestBaitList);
         DrawItemGroup("📦 其他物品", otherItems, ref showOtherList);
     }
 
@@ -98,7 +98,6 @@ public class ItemDataEditor : EditorWindow
         {
             EditorGUI.indentLevel++;
 
-            // 固定表头
             EditorGUILayout.BeginHorizontal("box");
             DrawResizableColumn("ID", ref col1);
             DrawResizableColumn("名称", ref col2);
@@ -111,25 +110,19 @@ public class ItemDataEditor : EditorWindow
             EditorGUILayout.LabelField("操作", GUILayout.Width(50));
             EditorGUILayout.EndHorizontal();
 
-            // 创建滚动视图 - 每次显示5条
             int itemsPerPage = 5;
             int totalPages = Mathf.CeilToInt((float)groupItems.Count / itemsPerPage);
 
-            // 使用静态变量或成员变量来存储当前页码（需要在类中添加）
-            // 这里使用一个字典来存储每个组的当前页码
             if (!groupPageIndex.ContainsKey(title))
             {
                 groupPageIndex[title] = 0;
             }
 
             int currentPage = groupPageIndex[title];
-
-            // 计算当前页显示的项
             int startIndex = currentPage * itemsPerPage;
             int endIndex = Mathf.Min(startIndex + itemsPerPage, groupItems.Count);
 
-            // 滚动区域
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Height(180)); // 固定高度
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Height(180));
 
             for (int i = startIndex; i < endIndex; i++)
             {
@@ -162,30 +155,26 @@ public class ItemDataEditor : EditorWindow
 
             EditorGUILayout.EndScrollView();
 
-            // 分页控制
             if (totalPages > 1)
             {
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
 
-                // 上一页按钮
                 GUI.enabled = currentPage > 0;
                 if (GUILayout.Button("◀ 上一页", GUILayout.Width(80)))
                 {
                     groupPageIndex[title]--;
-                    scrollPosition = Vector2.zero; // 重置滚动位置
+                    scrollPosition = Vector2.zero;
                 }
                 GUI.enabled = true;
 
-                // 页码显示
                 EditorGUILayout.LabelField($"第 {currentPage + 1} / {totalPages} 页", GUILayout.Width(80));
 
-                // 下一页按钮
                 GUI.enabled = currentPage < totalPages - 1;
                 if (GUILayout.Button("下一页 ▶", GUILayout.Width(80)))
                 {
                     groupPageIndex[title]++;
-                    scrollPosition = Vector2.zero; // 重置滚动位置
+                    scrollPosition = Vector2.zero;
                 }
                 GUI.enabled = true;
 
@@ -215,28 +204,11 @@ public class ItemDataEditor : EditorWindow
         {
             case 1: return "水产";
             case 2: return "饵料";
-            case 3: return "窝料";
-            case 4: return "装备";
-            case 5: return "装饰";
-            case 6: return "特殊";
+            case 3: return "垃圾";
+            case 4: return "室外皮肤";
+            case 5: return "室内皮肤";
+            case 6: return "窝料";
             default: return "未知";
-        }
-    }
-
-    /// <summary>
-    /// 根据物品类型获取 isUnique 默认值
-    /// 饵料(2)、窝料(3)、水产(1)默认不唯一；其他物品默认唯一
-    /// </summary>
-    private bool GetDefaultIsUniqueForItemType(int itemType)
-    {
-        switch (itemType)
-        {
-            case 1: // 水产
-            case 2: // 饵料
-            case 3: // 窝料
-                return false;
-            default: // 装备、装饰、特殊等
-                return true;
         }
     }
 
@@ -248,19 +220,16 @@ public class ItemDataEditor : EditorWindow
         if (selectedIndex >= 0 && selectedIndex < items.Count)
         {
             ItemData item = items[selectedIndex];
-            
-            // 标题行
+
             EditorGUILayout.LabelField($"正在编辑: [{item.id}] {item.name}", EditorStyles.boldLabel);
             GUILayout.Space(10);
 
-            // 只读字段组
             EditorGUILayout.BeginVertical("box");
             EditorGUILayout.LabelField("基础信息 (不可修改)", EditorStyles.boldLabel);
             GUILayout.Space(5);
-            
+
             GUI.enabled = false;
-            
-            // ID和名称
+
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("ID:", GUILayout.Width(100));
             EditorGUILayout.IntField(item.id, GUILayout.Width(100));
@@ -269,32 +238,28 @@ public class ItemDataEditor : EditorWindow
             EditorGUILayout.TextField(item.name);
             EditorGUILayout.EndHorizontal();
             GUILayout.Space(5);
-            
-            // 描述
+
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("描述:", GUILayout.Width(100), GUILayout.Height(40));
             EditorGUILayout.TextArea(item.description, GUILayout.Height(40));
             EditorGUILayout.EndHorizontal();
             GUILayout.Space(5);
-            
-            // 物品类型
+
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("物品类型:", GUILayout.Width(100));
             EditorGUILayout.IntField(item.itemType, GUILayout.Width(100));
             EditorGUILayout.LabelField($"({GetItemTypeName(item.itemType)})", GUILayout.Width(100));
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
-            
+
             GUI.enabled = true;
             EditorGUILayout.EndVertical();
             GUILayout.Space(10);
 
-            // 可编辑字段组
             EditorGUILayout.BeginVertical("box");
             EditorGUILayout.LabelField("可编辑信息", EditorStyles.boldLabel);
             GUILayout.Space(5);
-            
-            // 价格
+
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("出售价格:", GUILayout.Width(100));
             item.sellPrice = EditorGUILayout.IntField(item.sellPrice, GUILayout.Width(100));
@@ -304,8 +269,7 @@ public class ItemDataEditor : EditorWindow
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             GUILayout.Space(5);
-            
-            // 所属ID和图标路径
+
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("所属分类ID:", GUILayout.Width(100));
             item.categoryId = EditorGUILayout.IntField(item.categoryId, GUILayout.Width(100));
@@ -314,8 +278,7 @@ public class ItemDataEditor : EditorWindow
             item.iconPath = EditorGUILayout.TextField(item.iconPath);
             EditorGUILayout.EndHorizontal();
             GUILayout.Space(5);
-            
-            // 是否唯一
+
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("是否唯一:", GUILayout.Width(100));
             item.isUnique = EditorGUILayout.Toggle(item.isUnique, GUILayout.Width(30));
@@ -323,17 +286,15 @@ public class ItemDataEditor : EditorWindow
             GUILayout.FlexibleSpace();
             EditorGUILayout.EndHorizontal();
             GUILayout.Space(5);
-            
-            // 图鉴情报页面ID列表
+
             EditorGUILayout.BeginVertical("box");
             EditorGUILayout.LabelField("图鉴情报页面ID列表", EditorStyles.boldLabel);
-            
+
             if (item.collectionInfoPages == null)
             {
                 item.collectionInfoPages = new List<int>();
             }
-            
-            // 显示现有页面ID
+
             for (int i = 0; i < item.collectionInfoPages.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
@@ -345,8 +306,7 @@ public class ItemDataEditor : EditorWindow
                 }
                 EditorGUILayout.EndHorizontal();
             }
-            
-            // 添加新页面ID
+
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("添加页面:", GUILayout.Width(60));
             int newPageId = EditorGUILayout.IntField(0);
@@ -358,13 +318,12 @@ public class ItemDataEditor : EditorWindow
                 }
             }
             EditorGUILayout.EndHorizontal();
-            
+
             EditorGUILayout.EndVertical();
-            
+
             EditorGUILayout.EndVertical();
             GUILayout.Space(15);
 
-            // 保存按钮
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             GUI.backgroundColor = Color.green;
@@ -411,36 +370,7 @@ public class ItemDataEditor : EditorWindow
             items = wrapper.items;
             selectedIndex = -1;
 
-            // ✅ 自动填充 isUnique 默认值（仅在旧数据没有该字段时填充）
-            // 饵料(itemType=2)、窝料(itemType=3)、水产(itemType=1)默认不唯一
-            // 其他物品(itemType>=4)默认唯一
-            int autoFilledCount = 0;
-            foreach (var item in items)
-            {
-                // 检测是否为旧数据（isUnique 默认为 false 时可能未设置）
-                // 使用 itemType 判断是否需要自动设置
-                bool expectedDefault = GetDefaultIsUniqueForItemType(item.itemType);
-                // 如果当前值与预期默认值不同（可能是旧数据），且用户未手动修改过，则设置默认值
-                // 由于无法区分"用户设置的false"和"默认false"，我们采用规则：
-                // 只有当 itemType 属于非唯一类别且 isUnique 为 true 时，改为 false
-                // 或者当 itemType 属于唯一类别且 isUnique 为 false 时，改为 true
-                // 这样可以确保旧数据被正确迁移
-                if (item.itemType <= 3 && item.isUnique)
-                {
-                    item.isUnique = expectedDefault;
-                    autoFilledCount++;
-                }
-                else if (item.itemType >= 4 && !item.isUnique)
-                {
-                    item.isUnique = expectedDefault;
-                    autoFilledCount++;
-                }
-            }
-
-            if (autoFilledCount > 0)
-            {
-                Debug.Log($"[物品编辑器] 自动填充了 {autoFilledCount} 条物品的 isUnique 默认值");
-            }
+            // isUnique 直接使用 items.json 中的字段值，不做推导覆盖
 
             Debug.Log($"[物品编辑器] 加载了 {items.Count} 条物品数据");
         }
@@ -472,6 +402,11 @@ public class ItemDataEditor : EditorWindow
         AssetDatabase.Refresh();
         Debug.Log($"[物品编辑器] 已保存 {items.Count} 条物品数据");
     }
-}
 
+    [System.Serializable]
+    private class ItemListWrapper
+    {
+        public List<ItemData> items;
+    }
+}
 #endif

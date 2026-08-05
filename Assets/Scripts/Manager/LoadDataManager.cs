@@ -460,12 +460,17 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         var wrapper = RWJsonData.ParseJson<ItemListWrapper>(json);
         items = (wrapper != null && wrapper.items != null) ? wrapper.items : new List<ItemData>();
 
+        // isUnique 直接使用 items.json 中的字段值，不做推导覆盖
+
+        // 清空缓存的 itemDataMap，使其在下次访问时按新数据重建
+        _cachedItemDataMap = null;
+
         if (items.Count > 0)
         {
             dataLog.AppendLine($"✓ 物品数据: 成功加载 {items.Count} 个物品");
             foreach (var item in items)
             {
-                dataLog.AppendLine($"    - ID: {item.id}, 名称: {item.name}, 类型: {item.itemType}, 售价: {item.sellPrice}");
+                dataLog.AppendLine($"    - ID: {item.id}, 名称: {item.name}, 类型: {item.itemType}, 售价: {item.sellPrice}, 唯一: {item.isUnique}");
             }
         }
         else

@@ -1,235 +1,316 @@
 {
     "shopItems": [
         {
-            "itemId": 801,
+            "itemId": 2001,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 21,
+            "isUnique": false
+        },
+        {
+            "itemId": 2002,
+            "price": 2,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 21,
+            "isUnique": false
+        },
+        {
+            "itemId": 2003,
+            "price": 3,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 21,
+            "isUnique": false
+        },
+        {
+            "itemId": 2004,
             "price": 4,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 71
+            "categoryId": 21,
+            "isUnique": false
         },
         {
-            "itemId": 802,
+            "itemId": 2005,
             "price": 5,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 71
+            "categoryId": 21,
+            "isUnique": false
         },
         {
             "itemId": 4001,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 41
+            "categoryId": 41,
+            "isUnique": true
         },
         {
             "itemId": 4002,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 41
+            "categoryId": 41,
+            "isUnique": true
         },
         {
             "itemId": 4003,
             "price": 3,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 41
+            "categoryId": 41,
+            "isUnique": true
         },
         {
             "itemId": 4101,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 42
+            "categoryId": 42,
+            "isUnique": true
         },
         {
             "itemId": 4102,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 42
+            "categoryId": 42,
+            "isUnique": true
         },
         {
             "itemId": 4201,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 43
+            "categoryId": 43,
+            "isUnique": true
         },
         {
             "itemId": 4202,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 43
+            "categoryId": 43,
+            "isUnique": true
         },
         {
             "itemId": 5001,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 51
+            "categoryId": 51,
+            "isUnique": true
         },
         {
             "itemId": 5002,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 51
+            "categoryId": 51,
+            "isUnique": true
         },
         {
             "itemId": 5051,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 52
+            "categoryId": 52,
+            "isUnique": true
         },
         {
             "itemId": 5052,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 52
+            "categoryId": 52,
+            "isUnique": true
         },
         {
             "itemId": 5101,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 53
+            "categoryId": 53,
+            "isUnique": true
         },
         {
             "itemId": 5102,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 53
+            "categoryId": 53,
+            "isUnique": true
         },
         {
             "itemId": 5151,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 54
+            "categoryId": 54,
+            "isUnique": true
         },
         {
             "itemId": 5152,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 54
+            "categoryId": 54,
+            "isUnique": true
         },
         {
             "itemId": 5201,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 55
+            "categoryId": 55,
+            "isUnique": true
         },
         {
             "itemId": 5202,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 55
+            "categoryId": 55,
+            "isUnique": true
         },
         {
             "itemId": 5251,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 56
+            "categoryId": 56,
+            "isUnique": true
         },
         {
             "itemId": 5252,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 56
+            "categoryId": 56,
+            "isUnique": true
         },
         {
             "itemId": 5301,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 57
+            "categoryId": 57,
+            "isUnique": true
         },
         {
             "itemId": 5302,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 57
+            "categoryId": 57,
+            "isUnique": true
         },
         {
             "itemId": 5351,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 58
+            "categoryId": 58,
+            "isUnique": true
         },
         {
             "itemId": 5352,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 58
+            "categoryId": 58,
+            "isUnique": true
         },
         {
             "itemId": 5401,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 59
+            "categoryId": 59,
+            "isUnique": true
         },
         {
             "itemId": 5402,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 59
+            "categoryId": 59,
+            "isUnique": true
         },
         {
             "itemId": 5451,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 60
+            "categoryId": 60,
+            "isUnique": true
         },
         {
             "itemId": 5452,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 60
+            "categoryId": 60,
+            "isUnique": true
         },
         {
             "itemId": 5501,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 61
+            "categoryId": 61,
+            "isUnique": true
         },
         {
             "itemId": 5502,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 61
+            "categoryId": 61,
+            "isUnique": true
         },
         {
             "itemId": 5551,
             "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 62
+            "categoryId": 62,
+            "isUnique": true
         },
         {
             "itemId": 5552,
             "price": 2,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 62
+            "categoryId": 62,
+            "isUnique": true
+        },
+        {
+            "itemId": 2501,
+            "price": 10,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 22,
+            "isUnique": false
+        },
+        {
+            "itemId": 2502,
+            "price": 11,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 22,
+            "isUnique": false
+        },
+        {
+            "itemId": 2503,
+            "price": 13,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 22,
+            "isUnique": false
         }
     ]
 }

@@ -71,6 +71,15 @@ public class MallItemDetailView : MonoBehaviour
         mallItemData = mallData;
 
         CalculateMaxQuantity();
+
+        // 唯一物品且玩家已拥有时，禁止购买（最大可购买数量置0）
+        if (itemData != null && itemData.isUnique && PlayerDataManager.Instance != null
+            && PlayerDataManager.Instance.GetItemQuantity(itemId) > 0)
+        {
+            maxQuantity = 0;
+            Debug.Log($"[MallItemDetailView] 该物品为唯一物品且玩家已拥有，禁止购买: itemId={itemId}");
+        }
+
         quantity = Mathf.Min(1, maxQuantity);
 
         UpdateDisplay();
@@ -180,6 +189,16 @@ public class MallItemDetailView : MonoBehaviour
     private void OnConfirmClick()
     {
         Debug.Log("[MallItemDetailView] OnConfirmClick - 点击确认购买");
+
+        // 客户端预检查：唯一物品且玩家已拥有时，直接拦截并提示
+        if (itemData != null && itemData.isUnique && PlayerDataManager.Instance != null
+            && PlayerDataManager.Instance.GetItemQuantity(itemId) > 0)
+        {
+            GameUIManager.ShowMessage("玩家已拥有");
+            Debug.LogWarning($"[MallItemDetailView] 唯一物品已拥有，购买被拦截: itemId={itemId}");
+            return;
+        }
+
         if (quantity <= 0)
         {
             Debug.LogWarning("[MallItemDetailView] 购买数量必须大于0");
