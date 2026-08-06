@@ -32,6 +32,7 @@ public class MainEquipmentView : MonoBehaviour
     public Image skill1LevelIcon;
     public GameObject skill1EquippedObj;
     public GameObject skill1UnequippedObj;
+    public GameObject skill1LockedObj;
 
     public Button skill2Btn;
     public Image skill2Icon;
@@ -39,6 +40,7 @@ public class MainEquipmentView : MonoBehaviour
     public Image skill2LevelIcon;
     public GameObject skill2EquippedObj;
     public GameObject skill2UnequippedObj;
+    public GameObject skill2LockedObj;
 
     public Button characterBtn;
     public Image characterIcon;
@@ -64,8 +66,8 @@ public class MainEquipmentView : MonoBehaviour
         if (fishingRodBtn != null) fishingRodBtn.onClick.AddListener(OnFishingRodClick);
         if (fishingLineBtn != null) fishingLineBtn.onClick.AddListener(OnFishingLineClick);
         if (fishingHookBtn != null) fishingHookBtn.onClick.AddListener(OnFishingHookClick);
-        if (skill1Btn != null) skill1Btn.onClick.AddListener(OnSkillClick);
-        if (skill2Btn != null) skill2Btn.onClick.AddListener(OnSkillClick);
+        if (skill1Btn != null) skill1Btn.onClick.AddListener(() => OnSkillClick(1));
+        if (skill2Btn != null) skill2Btn.onClick.AddListener(() => OnSkillClick(2));
         if (characterBtn != null) characterBtn.onClick.AddListener(OnCharacterClick);
 
         BindUnequippedObjClickEvents();
@@ -76,8 +78,10 @@ public class MainEquipmentView : MonoBehaviour
         AddButtonToObj(fishingRodUnequippedObj, OnFishingRodClick);
         AddButtonToObj(fishingLineUnequippedObj, OnFishingLineClick);
         AddButtonToObj(fishingHookUnequippedObj, OnFishingHookClick);
-        AddButtonToObj(skill1UnequippedObj, OnSkillClick);
-        AddButtonToObj(skill2UnequippedObj, OnSkillClick);
+        AddButtonToObj(skill1UnequippedObj, () => OnSkillClick(1));
+        AddButtonToObj(skill2UnequippedObj, () => OnSkillClick(2));
+        AddButtonToObj(skill1LockedObj, () => OnSkillClick(1));
+        AddButtonToObj(skill2LockedObj, () => OnSkillClick(2));
         AddButtonToObj(characterUnequippedObj, OnCharacterClick);
     }
 
@@ -451,6 +455,19 @@ public class MainEquipmentView : MonoBehaviour
 
     private void UpdateSkill1Display(int skillId)
     {
+        bool isSlotUnlocked = CommunicateEvent.Request<int, bool>("EVENT_IS_SKILL_SLOT_UNLOCKED", 1);
+
+        if (skill1LockedObj != null)
+            skill1LockedObj.SetActive(!isSlotUnlocked);
+
+        if (!isSlotUnlocked)
+        {
+            if (skill1EquippedObj != null) skill1EquippedObj.SetActive(false);
+            if (skill1UnequippedObj != null) skill1UnequippedObj.SetActive(false);
+            if (skill1Name != null) skill1Name.text = "未解锁";
+            return;
+        }
+
         bool isEquipped = skillId > 0;
 
         if (skill1EquippedObj != null)
@@ -507,6 +524,19 @@ public class MainEquipmentView : MonoBehaviour
 
     private void UpdateSkill2Display(int skillId)
     {
+        bool isSlotUnlocked = CommunicateEvent.Request<int, bool>("EVENT_IS_SKILL_SLOT_UNLOCKED", 2);
+
+        if (skill2LockedObj != null)
+            skill2LockedObj.SetActive(!isSlotUnlocked);
+
+        if (!isSlotUnlocked)
+        {
+            if (skill2EquippedObj != null) skill2EquippedObj.SetActive(false);
+            if (skill2UnequippedObj != null) skill2UnequippedObj.SetActive(false);
+            if (skill2Name != null) skill2Name.text = "未解锁";
+            return;
+        }
+
         bool isEquipped = skillId > 0;
 
         if (skill2EquippedObj != null)
@@ -625,20 +655,41 @@ public class MainEquipmentView : MonoBehaviour
         callback?.Invoke("OpenFishingHook", null);
     }
 
-    private void OnSkillClick()
+    private void OnSkillClick(int skillSlot)
     {
-        int skillSlot = 1;
-        if (UnityEngine.EventSystems.EventSystem.current != null)
-        {
-            if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject != null)
-            {
-                if (UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject == skill2Btn?.gameObject)
-                {
-                    skillSlot = 2;
-                }
-            }
-        }
         Debug.Log($"[MainEquipmentView] OnSkillClick - 点击技能按钮, skillSlot={skillSlot}");
+
+        // 检查技能槽位是否已解锁
+        bool isSlotUnlocked = CommunicateEvent.Request<int, bool>("EVENT_IS_SKILL_SLOT_UNLOCKED", skillSlot);
+        if (!isSlotUnlocked)
+        {
+            Debug.Log($"[MainEquipmentView] OnSkillClick - 技能槽位 {skillSlot} 未解锁，触发看广告解锁");
+            string slotName = skillSlot == 1 ? "技能1" : "技能2";
+            string info = $"看广告解锁{slotName}槽位";
+            callback?.Invoke("OpenAd", new object[] { info, skillSlot, "看广告解锁", (System.Action)(() =>
+            {
+                Debug.Log($"[MainEquipmentView] 看广告解锁技能槽位回调执行 - slot={skillSlot}");
+                if (NetServerManager.Instance != null)
+                {
+                    NetServerManager.Instance.UnlockSkillSlot(skillSlot, (success) =>
+                    {
+                        if (success)
+                        {
+                            Debug.Log($"[MainEquipmentView] 技能槽位 {skillSlot} 解锁成功");
+                            UpdateDisplay();
+                            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"{slotName}槽位解锁成功！");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"[MainEquipmentView] 技能槽位 {skillSlot} 解锁失败");
+                            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "解锁失败，请重试");
+                        }
+                    });
+                }
+            })});
+            return;
+        }
+
         callback?.Invoke("OpenSkill", new object[] { skillSlot });
     }
 

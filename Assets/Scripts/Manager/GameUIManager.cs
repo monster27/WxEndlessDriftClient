@@ -13,8 +13,8 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     public EquipmentView equipmentView;
     public AdvertisingView advertisingView;
     public MapView mapView;
-    public DialogView dialogView;  // ✅ 新增
-    public CollectionView collectionView;  // ✅ 新增
+    public DialogView dialogView;
+    public CollectionView collectionView;
 
     public void Init()
     {
@@ -38,12 +38,12 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
             equipmentView.Init();
         }
 
-        if (mapView != null)  // ✅ 新增
+        if (mapView != null)
         {
             mapView.BaseViewInit();
         }
 
-        if (collectionView != null)  // ✅ 新增
+        if (collectionView != null)
         {
             collectionView.BaseViewInit();
         }
@@ -57,13 +57,12 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         CommunicateEvent.Register("UI_OpenFishBag", OpenFishBag);
         CommunicateEvent.Register("UI_OpenMall", OpenMall);
         CommunicateEvent.Register("UI_OpenEquipment", OpenEquipment);
-        CommunicateEvent.Register("UI_OpenMap", OpenMap);  // ✅ 新增
-        CommunicateEvent.Register("UI_OpenCollection", OpenCollection);  // ✅ 新增
+        CommunicateEvent.Register("UI_OpenMap", OpenMap);
+        CommunicateEvent.Register("UI_OpenCollection", OpenCollection);
 
         CommunicateEvent.Register<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, ShowTip);
         CommunicateEvent.Register<CommunicateEvent.AdvertisingRequest>(CommunicateEvent.EVENT_UI_SHOW_ADVERTISING, OnShowAdvertisingRequest);
 
-        // ✅ 新增：注册场景切换请求事件
         CommunicateEvent.Register<Dictionary<string, object>>("SceneSwitchRequest", OnSceneSwitchRequest);
     }
 
@@ -160,7 +159,6 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         }
     }
 
-    // ✅ 新增：打开地图
     public void OpenMap()
     {
         if (mapView != null)
@@ -169,7 +167,6 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         }
     }
 
-    // ✅ 新增：关闭地图
     public void CloseMap()
     {
         if (mapView != null)
@@ -178,7 +175,6 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         }
     }
 
-    // ✅ 新增：打开图鉴
     public void OpenCollection()
     {
         if (collectionView != null)
@@ -187,7 +183,6 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         }
     }
 
-    // ✅ 新增：关闭图鉴
     public void CloseCollection()
     {
         if (collectionView != null)
@@ -196,7 +191,6 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         }
     }
 
-    // ✅ 新增：场景切换请求处理
     private void OnSceneSwitchRequest(Dictionary<string, object> data)
     {
         if (data == null || !data.ContainsKey("sceneId"))
@@ -208,15 +202,24 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         int sceneId = (int)data["sceneId"];
         Debug.Log($"[GameUIManager] 收到场景切换请求: {sceneId}");
 
-        // 发送到服务器处理
         CommunicateEvent.Modify<int>("Server_SceneSwitch", sceneId);
     }
 
-    public void ShowCatchResult(string itemName, float weight, Sprite icon, int starRatingId = 0, int itemId = 0, bool isFish = true)
+    /// <summary>
+    /// 显示钓获结果
+    /// </summary>
+    /// <param name="itemName">物品名称</param>
+    /// <param name="weight">重量</param>
+    /// <param name="icon">图标</param>
+    /// <param name="starRatingId">星级ID</param>
+    /// <param name="itemId">物品ID</param>
+    /// <param name="isFish">是否为鱼类</param>
+    /// <param name="isFirstCatch">是否为首次钓获该鱼</param>
+    public void ShowCatchResult(string itemName, float weight, Sprite icon, int starRatingId = 0, int itemId = 0, bool isFish = true, bool isFirstCatch = false)
     {
         if (mainGameView != null)
         {
-            mainGameView.ShowCatchResult(itemName, weight, icon, starRatingId, itemId, isFish);
+            mainGameView.ShowCatchResult(itemName, weight, icon, starRatingId, itemId, isFish, isFirstCatch);
         }
     }
 
@@ -312,9 +315,6 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         }
     }
 
-    /// <summary>
-    /// 更新鱼篓数量显示
-    /// </summary>
     public void UpdateFishCountDisplay(int currentCount, int maxCapacity)
     {
         if (mainGameView != null)
@@ -323,9 +323,6 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         }
     }
 
-    /// <summary>
-    /// 更新窝料数量显示
-    /// </summary>
     public void UpdateBaitCountDisplay(int baitCount)
     {
         if (mainGameView != null)
@@ -334,9 +331,6 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         }
     }
 
-    /// <summary>
-    /// 更新连续钓鱼模式剩余时间
-    /// </summary>
     public void UpdateContinuousModeRemainingTime(float remainingTime)
     {
         if (mainGameView != null)

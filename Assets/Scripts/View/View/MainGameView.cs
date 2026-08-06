@@ -8,21 +8,20 @@ public class MainGameView : BaseView
 {
     public TimeStatus timeStatus;
 
-    public Button hidePanelBtn;     // 右侧隐藏按钮（关闭菜单）
+    public Button hidePanelBtn;
     public Button showPanelBtn;
     public Button bagBtn;
     public Button fishBagBtn;
     public Button mallBtn;
     public Button equipBtn;
     public Button weatherAndTimeBtn;
-    public Button centerCameraBtn;  // 居中摄像头按钮
+    public Button centerCameraBtn;
     public Button MapBtn;
-    public Button homeBtn;         // 切换室内外场景按钮
-    public Button collectionBtn;   // 图鉴按钮
+    public Button homeBtn;
+    public Button collectionBtn;
 
-    // 菜单控制按钮
-    public Button menuOpenBtn;      // 打开菜单按钮
-    public Button menuCloseBtn;     // 关闭菜单按钮（面板上的关闭按钮）
+    public Button menuOpenBtn;
+    public Button menuCloseBtn;
 
     public GameObject btnPanel;
     public Text weatherTxt;
@@ -31,29 +30,24 @@ public class MainGameView : BaseView
     public Image timeIcon;
     public Text goldTxt;
     public Text baitCountdownTxt;
-    public Text baitCountTxt;  // 窝料数量显示
-    public Text fishCountTxt;  // 鱼篓数量显示
+    public Text baitCountTxt;
+    public Text fishCountTxt;
     public MainTile mainTile;
     public MainViewShowFishTip newItemTip;
 
-    // 需要控制显隐的UI面板（例如侧边栏菜单）
     public GameObject menuPanel;
-
-    // 窝料倒计时Text的GameObject（用于控制显隐）
     public GameObject baitCountdownObj;
 
-    // 当前窝料数量
     private int currentBaitCount = 0;
-
-    // 菜单当前状态
     private bool isMenuOpen = false;
 
-    // 天气时段渐隐字段
     private Coroutine fadeCoroutine;
-    private bool isFading = false;  // 是否正在渐隐中
+    private bool isFading = false;
 
     private int currentWeatherId = 301;
     private int currentTimeSlotId = 401;
+
+    private float localContinuousModeTime = 0f;
 
     public override void BaseViewInit()
     {
@@ -106,17 +100,14 @@ public class MainGameView : BaseView
         {
             centerCameraBtn.onClick.AddListener(OnCenterCameraBtnClick);
         }
-        // ✅ 新增：地图按钮
         if (MapBtn != null)
         {
             MapBtn.onClick.AddListener(OnMapBtnClick);
         }
-        // ✅ 新增：切换室内外场景按钮
         if (homeBtn != null)
         {
             homeBtn.onClick.AddListener(OnHomeBtnClick);
         }
-        // ✅ 新增：图鉴按钮
         if (collectionBtn != null)
         {
             collectionBtn.onClick.AddListener(OnCollectionBtnClick);
@@ -127,7 +118,7 @@ public class MainGameView : BaseView
             Vector3 initialPos = mainTile.transform.position;
             mainTile.Init(initialPos);
         }
-        
+
         if (newItemTip != null)
         {
             newItemTip.Init();
@@ -135,7 +126,6 @@ public class MainGameView : BaseView
 
         SetMenuPanelState(isMenuOpen);
         UpdateBaitCountDisplay();
-        //currentDisplayMode = DisplayMode.Text;
         UpdateDisplayMode();
         SetBtnPanelInitialState();
 
@@ -144,21 +134,18 @@ public class MainGameView : BaseView
         isInitialized = true;
     }
 
-    // ✅ 新增：地图按钮点击
     private void OnMapBtnClick()
     {
         Debug.Log("[MainGameView] OnMapBtnClick - 点击地图按钮");
         CommunicateEvent.Modify("UI_OpenMap");
     }
 
-    // ✅ 新增：切换室内外场景按钮点击
     private void OnHomeBtnClick()
     {
         Debug.Log("[MainGameView] OnHomeBtnClick - 点击切换室内外场景按钮");
         CommunicateEvent.Modify("UI_ToggleScene");
     }
 
-    // ✅ 新增：图鉴按钮点击
     private void OnCollectionBtnClick()
     {
         Debug.Log("[MainGameView] OnCollectionBtnClick - 点击图鉴按钮");
@@ -218,7 +205,6 @@ public class MainGameView : BaseView
         fadeCoroutine = null;
     }
 
-
     private void UpdateDisplayMode()
     {
         UpdateWeatherIcon(currentWeatherId);
@@ -250,17 +236,14 @@ public class MainGameView : BaseView
 
         if (sprite != null)
         {
-            // ✅ 只有当图标真正发生变化时，才触发渐隐效果
             if (timeIcon.sprite != sprite)
             {
-                // 先更新图标，再触发渐隐
                 timeIcon.sprite = sprite;
                 TimeTextFadeOutText();
                 Debug.Log($"[MainGameView] 时段图标已更新: {timeSlotId}");
             }
             else
             {
-                // 图标没变，不做任何操作
                 Debug.Log($"[MainGameView] 时段图标未变化: {timeSlotId}");
             }
         }
@@ -270,9 +253,6 @@ public class MainGameView : BaseView
         }
     }
 
-    /// <summary>
-    /// 打开菜单按钮点击
-    /// </summary>
     private void OnMenuOpenBtnClick()
     {
         Debug.Log("[MainGameView] OnMenuOpenBtnClick - 点击打开菜单");
@@ -280,9 +260,6 @@ public class MainGameView : BaseView
         SetMenuPanelState(isMenuOpen);
     }
 
-    /// <summary>
-    /// 关闭菜单按钮点击（面板上的关闭按钮）
-    /// </summary>
     private void OnMenuCloseBtnClick()
     {
         Debug.Log("[MainGameView] OnMenuCloseBtnClick - 点击关闭菜单");
@@ -290,9 +267,6 @@ public class MainGameView : BaseView
         SetMenuPanelState(isMenuOpen);
     }
 
-    /// <summary>
-    /// 右侧隐藏按钮点击
-    /// </summary>
     private void OnHideBtnClick()
     {
         Debug.Log("[MainGameView] OnHideBtnClick - 点击隐藏右侧");
@@ -300,6 +274,7 @@ public class MainGameView : BaseView
         hidePanelBtn.gameObject.SetActive(false);
         showPanelBtn.gameObject.SetActive(true);
     }
+
     private void OnShowBtnClick()
     {
         Debug.Log("[MainGameView] OnShowBtnClick - 点击显示按钮");
@@ -308,9 +283,6 @@ public class MainGameView : BaseView
         showPanelBtn.gameObject.SetActive(false);
     }
 
-    /// <summary>
-    /// 居中摄像头按钮点击
-    /// </summary>
     private void OnCenterCameraBtnClick()
     {
         Debug.Log("[MainGameView] OnCenterCameraBtnClick - 点击居中摄像头");
@@ -320,25 +292,18 @@ public class MainGameView : BaseView
         }
     }
 
-    /// <summary>
-    /// 设置菜单面板的显隐状态
-    /// </summary>
-    /// <param name="open">是否打开</param>
     private void SetMenuPanelState(bool open)
     {
-        // 控制面板显隐
         if (menuPanel != null)
         {
             menuPanel.SetActive(open);
         }
 
-        // 控制打开按钮的显隐：菜单关闭时显示，菜单打开时隐藏
         if (menuOpenBtn != null)
         {
             menuOpenBtn.gameObject.SetActive(!open);
         }
 
-        // 关闭按钮和隐藏按钮的显隐：菜单打开时显示，菜单关闭时隐藏
         if (menuCloseBtn != null)
         {
             menuCloseBtn.gameObject.SetActive(open);
@@ -349,25 +314,16 @@ public class MainGameView : BaseView
         }
     }
 
-    /// <summary>
-    /// 外部调用：设置菜单状态（用于初始化或强制设置）
-    /// </summary>
     public void SetMenuState(bool open)
     {
         isMenuOpen = open;
         SetMenuPanelState(isMenuOpen);
     }
 
-    /// <summary>
-    /// 获取菜单当前状态
-    /// </summary>
     public bool IsMenuOpen()
     {
         return isMenuOpen;
     }
-
-    // 本地连续模式剩余时间（用于UI倒计时显示）
-    private float localContinuousModeTime = 0f;
 
     void Update()
     {
@@ -406,16 +362,14 @@ public class MainGameView : BaseView
             baitCountdownObj.SetActive(true);
         }
     }
+
     private void SetBtnPanelInitialState()
     {
         OnShowBtnClick();
     }
-    /// <summary>
-    /// 更新窝料数量显示
-    /// </summary>
+
     public void UpdateBaitCountDisplay()
     {
-        // 从服务器获取当前窝料数量
         currentBaitCount = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_CURRENT_SCENE_BAIT_COUNT, 0);
 
         if (baitCountTxt != null)
@@ -424,9 +378,6 @@ public class MainGameView : BaseView
         }
     }
 
-    /// <summary>
-    /// 窝料数量变化事件处理器
-    /// </summary>
     private void OnBaitCountChanged()
     {
         Debug.Log("[MainGameView] OnBaitCountChanged - 窝料数量变化");
@@ -445,9 +396,6 @@ public class MainGameView : BaseView
         UpdateFishCountDisplay();
     }
 
-    /// <summary>
-    /// 更新鱼篓数量显示（由GameUIManager调用）
-    /// </summary>
     public void UpdateFishCount(int currentCount, int maxCapacity)
     {
         if (fishCountTxt != null)
@@ -456,9 +404,6 @@ public class MainGameView : BaseView
         }
     }
 
-    /// <summary>
-    /// 更新窝料数量显示（由GameUIManager调用）
-    /// </summary>
     public void UpdateBaitCount(int baitCount)
     {
         currentBaitCount = baitCount;
@@ -484,6 +429,7 @@ public class MainGameView : BaseView
             baitCountdownTxt.text = $"窝料: {minutes:00}:{seconds:00}";
         }
     }
+
     private void UpdateFishCountDisplay()
     {
         if (fishCountTxt == null) return;
@@ -506,7 +452,7 @@ public class MainGameView : BaseView
     public void UpdateTime(TimeStatus status, string timeName)
     {
         Debug.Log($"[MainGameView] UpdateTime called - status={status}, timeName={timeName}, gameTimeTxt={gameTimeTxt != null}");
-        
+
         if (gameTimeTxt != null)
         {
             gameTimeTxt.text = timeName;
@@ -516,7 +462,7 @@ public class MainGameView : BaseView
         {
             Debug.LogWarning("[MainGameView] gameTimeTxt 为 null，无法更新文本");
         }
-        
+
         timeStatus = status;
         currentTimeSlotId = 401 + (int)status;
         Debug.Log($"[MainGameView] currentTimeSlotId={currentTimeSlotId}");
@@ -526,7 +472,7 @@ public class MainGameView : BaseView
     public void UpdateWeather(int weatherId, string weatherName)
     {
         Debug.Log($"[MainGameView] UpdateWeather called - weatherId={weatherId}, weatherName={weatherName}, weatherTxt={weatherTxt != null}");
-        
+
         if (weatherTxt != null)
         {
             weatherTxt.text = weatherName;
@@ -536,47 +482,43 @@ public class MainGameView : BaseView
         {
             Debug.LogWarning("[MainGameView] weatherTxt 为 null，无法更新文本");
         }
-        
+
         currentWeatherId = weatherId;
         UpdateWeatherIcon(currentWeatherId);
     }
 
-    public void ShowCatchResult(string itemName, float weight, Sprite icon, int starRatingId = 0, int itemId = 0, bool isFish = true)
+    /// <summary>
+    /// 显示钓获结果
+    /// </summary>
+    /// <param name="itemName">物品名称</param>
+    /// <param name="weight">重量</param>
+    /// <param name="icon">图标</param>
+    /// <param name="starRatingId">星级ID</param>
+    /// <param name="itemId">物品ID</param>
+    /// <param name="isFish">是否为鱼类</param>
+    /// <param name="isFirstCatch">是否为首次钓获该鱼</param>
+    /// <summary>
+    /// 显示钓获结果
+    /// </summary>
+    public void ShowCatchResult(string itemName, float weight, Sprite icon, int starRatingId = 0, int itemId = 0, bool isFish = true, bool isFirstCatch = false)
     {
-        Debug.Log("ShowCatchResult");
-        
+        Debug.Log($"ShowCatchResult - itemId:{itemId}, isFish:{isFish}, isFirstCatch:{isFirstCatch}");
+
         if (FishFlyInManager.Instance != null && itemId > 0)
         {
             FishFlyInManager.Instance.Fly(itemId, weight, isFish);
         }
-        
+
         if (mainTile != null)
         {
             mainTile.EnqueueCatchResult(itemName, weight, icon);
         }
-        
-        // 检查是否是第一次获取该物品，如果是，显示新物品提示
-        if (newItemTip != null && itemId > 0 && IsFirstTimeObtain(itemId, isFish))
+
+        // ✅ 只有鱼类且是首次钓获时，才显示 newItemTip（垃圾不触发）
+        if (newItemTip != null && itemId > 0 && isFish && isFirstCatch)
         {
+            Debug.Log($"[MainGameView] 首次钓获新鱼: {itemName}, 显示 newItemTip");
             newItemTip.EnqueueNewItem(itemName, icon);
-        }
-    }
-    
-    /// <summary>
-    /// 检查是否是第一次获取该物品
-    /// </summary>
-    private bool IsFirstTimeObtain(int itemId, bool isFish)
-    {
-        if (isFish)
-        {
-            // 鱼类：使用 NetServerManager 中记录的钓获前鱼篓状态
-            return NetServerManager.Instance != null && NetServerManager.Instance.PendingIsFirstCatch;
-        }
-        else
-        {
-            // 非鱼类：检查物品数量是否为1（刚刚第一次获得）
-            int itemCount = PlayerDataManager.Instance?.GetItemQuantity(itemId) ?? 0;
-            return itemCount == 1;
         }
     }
 

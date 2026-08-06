@@ -76,7 +76,8 @@ public partial class NetServerManager
                             {
                                 id = item.itemId,
                                 price = item.price,
-                                stock = item.stock
+                                stock = item.stock,
+                                isUnique = item.isUnique
                             };
                             Logger.Log($"[NetServerManager] 商城物品: ID={item.itemId}, 价格={item.price}, 库存={item.stock}");
                         }
@@ -213,6 +214,7 @@ public partial class NetServerManager
         public int itemId;
         public int price;
         public int stock;
+        public bool isUnique;
     }
 
     [System.Serializable]

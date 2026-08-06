@@ -145,5 +145,6 @@ public static class ServerUrls
     {
         public const string Unlock = "/api/player/skills/unlock";
         public const string Upgrade = "/api/player/skills/upgrade";
+        public const string UnlockSlot = "/api/player/skills/unlock-slot";
     }
 }

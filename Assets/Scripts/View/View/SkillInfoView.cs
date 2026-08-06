@@ -374,6 +374,14 @@ public class SkillInfoView : MonoBehaviour
     {
         Debug.Log($"[SkillInfoView] OnEquipClick - skillId={currentSkillId}, currentSkillSlot={currentSkillSlot}");
 
+        // 检查技能槽位是否已解锁
+        bool isSlotUnlocked = CommunicateEvent.Request<int, bool>("EVENT_IS_SKILL_SLOT_UNLOCKED", currentSkillSlot);
+        if (!isSlotUnlocked)
+        {
+            CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"技能{currentSkillSlot}槽位未解锁，请先看广告解锁");
+            return;
+        }
+
         EquipState state = GetSkillState();
         if (state == EquipState.OwnerUse)
         {

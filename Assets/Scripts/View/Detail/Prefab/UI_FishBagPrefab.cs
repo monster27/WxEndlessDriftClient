@@ -565,7 +565,7 @@ namespace View.Detail
                 return fishDetail.calculatedPrice;
             }
 
-            // ✅ 降级：使用物品基础售价，不乘以星级倍率（服务器已处理价格计算）
+            // ✅ 降级：使用物品基础售价（垃圾等非鱼类物品直接使用 sellPrice）
             if (itemData != null)
             {
                 return itemData.sellPrice;

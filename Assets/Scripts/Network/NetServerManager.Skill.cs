@@ -37,13 +37,42 @@ public partial class NetServerManager
 
                 try
                 {
-                    var response = JsonUtility.FromJson<AddItemResponse>(responseText);
+                    var response = JsonUtility.FromJson<UnlockSkillResponse>(responseText);
                     if (response != null && response.success)
                 {
                     Logger.Log($"[NetServerManager] 成功解锁技能 {skillId}");
 
                     equipmentLevelMap[skillId] = 1;
                     Logger.Log($"[NetServerManager] 设置技能等级缓存: skillId={skillId}, level=1");
+
+                    // ✅ 更新本地背包数据，使 IsSkillObtained 返回正确结果
+                    if (response.inventory != null)
+                    {
+                        var inventoryDict = new Dictionary<int, int>();
+                        foreach (var item in response.inventory)
+                        {
+                            inventoryDict[item.key] = item.value;
+                        }
+                        playerInventory = inventoryDict;
+                        Logger.Log($"[NetServerManager] 解锁技能后背包数据已更新: {playerInventory.Count} 个物品");
+
+                        if (PlayerDataManager.Instance != null)
+                        {
+                            PlayerDataManager.Instance.UpdateInventoryFromServer(playerInventory);
+                        }
+                    }
+                    else
+                    {
+                        // 如果服务器未返回背包数据，主动同步
+                        if (PlayerDataManager.Instance != null)
+                        {
+                            PlayerDataManager.Instance.SyncInventoryFromServer();
+                        }
+                    }
+
+                    // ✅ 触发刷新事件，刷新技能列表界面
+                    CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_ITEM_QUANTITY_CHANGED, (skillId, 1));
+                    CommunicateEvent.Modify("Equipment_Refresh");
 
                     callback?.Invoke(true);
                 }
@@ -62,6 +91,74 @@ public partial class NetServerManager
             else
             {
                 Logger.LogError($"[NetServerManager] 解锁技能请求失败: {request.error}");
+                callback?.Invoke(false);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 解锁技能槽位（通过看广告）
+    /// </summary>
+    public void UnlockSkillSlot(int slot, System.Action<bool> callback)
+    {
+        StartCoroutine(UnlockSkillSlotCoroutine(slot, callback));
+    }
+
+    private IEnumerator UnlockSkillSlotCoroutine(int slot, System.Action<bool> callback)
+    {
+        string url = serverUrl + ServerUrls.Skill.UnlockSlot;
+        string jsonData = $"{{\"PlayerId\":{_currentPlayerId},\"Slot\":{slot}}}";
+
+        Logger.Log($"[NetServerManager] 解锁技能槽位请求: {jsonData}");
+
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string responseText = request.downloadHandler.text;
+                Logger.Log($"[NetServerManager] 解锁技能槽位响应: {responseText}");
+
+                try
+                {
+                    var response = JsonUtility.FromJson<UnlockSkillSlotResponse>(responseText);
+                    if (response != null && response.success)
+                    {
+                        Logger.Log($"[NetServerManager] 成功解锁技能槽位 {slot}");
+
+                        if (slot == 1)
+                            skill1SlotUnlocked = true;
+                        else if (slot == 2)
+                            skill2SlotUnlocked = true;
+
+                        // ✅ 触发装备刷新事件
+                        CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_EQUIP_CHANGED, ((int)EquipmentSlotType.Skill2, 0));
+                        CommunicateEvent.Modify("Equipment_Refresh");
+
+                        callback?.Invoke(true);
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"[NetServerManager] 解锁技能槽位失败: {response?.message ?? "未知错误"}");
+                        callback?.Invoke(false);
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"[NetServerManager] 解析解锁技能槽位响应失败: {ex.Message}");
+                    callback?.Invoke(false);
+                }
+            }
+            else
+            {
+                Logger.LogError($"[NetServerManager] 解锁技能槽位请求失败: {request.error}");
                 callback?.Invoke(false);
             }
         }
@@ -154,5 +251,29 @@ public partial class NetServerManager
         public string message;
         public int level;
         public int gold;
+    }
+
+    [System.Serializable]
+    private class SkillInventoryItem
+    {
+        public int key;
+        public int value;
+    }
+
+    [System.Serializable]
+    private class UnlockSkillResponse
+    {
+        public bool success;
+        public string message;
+        public List<SkillInventoryItem> inventory;
+    }
+
+    [System.Serializable]
+    private class UnlockSkillSlotResponse
+    {
+        public bool success;
+        public string message;
+        public bool skill1SlotUnlocked;
+        public bool skill2SlotUnlocked;
     }
 }

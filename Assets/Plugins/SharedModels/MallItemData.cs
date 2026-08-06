@@ -18,5 +18,6 @@ namespace SharedModels
         public int iconId;         // 图标ID
         public bool isHot;         // 是否热门
         public bool isNew;         // 是否新品
+        public bool isUnique;      // 是否唯一（唯一物品购买上限为1，已拥有则不可再购买）
     }
 }

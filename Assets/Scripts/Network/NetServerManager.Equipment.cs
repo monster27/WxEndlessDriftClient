@@ -19,6 +19,10 @@ public partial class NetServerManager
     private int characterLevel = 1;
     private int currentCharacterExp = 0;
 
+    // 技能槽位解锁状态
+    private bool skill1SlotUnlocked = true;
+    private bool skill2SlotUnlocked = false;
+
     // 装备等级数据
     private int equippedRodLevel = 1;
     private int equippedLineLevel = 1;
@@ -72,6 +76,9 @@ public partial class NetServerManager
                         equippedCharacterId = equipment.characterId > 0 ? equipment.characterId : 3401;
                         equippedBaitId = equipment.baitId;
                         characterLevel = equipment.characterLevel > 0 ? equipment.characterLevel : 1;
+
+                        skill1SlotUnlocked = equipment.skill1SlotUnlocked;
+                        skill2SlotUnlocked = equipment.skill2SlotUnlocked;
 
                         equippedRodLevel = equipment.rodLevel > 0 ? equipment.rodLevel : 1;
                         equippedLineLevel = equipment.lineLevel > 0 ? equipment.lineLevel : 1;
@@ -128,6 +135,11 @@ public partial class NetServerManager
             default:
                 return 0;
         }
+    }
+
+    public bool IsSkillSlotUnlocked(int slot)
+    {
+        return slot == 1 ? skill1SlotUnlocked : skill2SlotUnlocked;
     }
 
     private int GetCharacterLevel()
@@ -274,6 +286,9 @@ public partial class NetServerManager
                             equippedBaitId = response.equipment.baitId;
                             characterLevel = response.equipment.characterLevel > 0 ? response.equipment.characterLevel : 1;
 
+                            skill1SlotUnlocked = response.equipment.skill1SlotUnlocked;
+                            skill2SlotUnlocked = response.equipment.skill2SlotUnlocked;
+
                             // ✅ 更新装备等级数据
                             equippedRodLevel = response.equipment.rodLevel > 0 ? response.equipment.rodLevel : 1;
                             equippedLineLevel = response.equipment.lineLevel > 0 ? response.equipment.lineLevel : 1;
@@ -388,6 +403,9 @@ public partial class NetServerManager
                             equippedCharacterId = response.equipment.characterId > 0 ? response.equipment.characterId : 3401;
                             equippedBaitId = response.equipment.baitId;
                             characterLevel = response.equipment.characterLevel > 0 ? response.equipment.characterLevel : 1;
+
+                            skill1SlotUnlocked = response.equipment.skill1SlotUnlocked;
+                            skill2SlotUnlocked = response.equipment.skill2SlotUnlocked;
 
                             equippedRodLevel = response.equipment.rodLevel > 0 ? response.equipment.rodLevel : 1;
                             equippedLineLevel = response.equipment.lineLevel > 0 ? response.equipment.lineLevel : 1;
@@ -969,6 +987,8 @@ public partial class NetServerManager
         public int hookLevel;
         public int skill1Level;
         public int skill2Level;
+        public bool skill1SlotUnlocked;
+        public bool skill2SlotUnlocked;
     }
 
     [System.Serializable]
@@ -988,6 +1008,8 @@ public partial class NetServerManager
         public int hookLevel;
         public int skill1Level;
         public int skill2Level;
+        public bool skill1SlotUnlocked;
+        public bool skill2SlotUnlocked;
     }
 
     [System.Serializable]

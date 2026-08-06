@@ -361,6 +361,9 @@ public partial class NetServerManager
             equippedBaitId = data.baitId;
             characterLevel = data.characterLevel > 0 ? data.characterLevel : 1;
 
+            skill1SlotUnlocked = data.skill1SlotUnlocked;
+            skill2SlotUnlocked = data.skill2SlotUnlocked;
+
             equippedRodLevel = data.rodLevel > 0 ? data.rodLevel : 1;
             equippedLineLevel = data.lineLevel > 0 ? data.lineLevel : 1;
             equippedHookLevel = data.hookLevel > 0 ? data.hookLevel : 1;
@@ -591,6 +594,9 @@ public partial class NetServerManager
             equippedCharacterId = data.characterId > 0 ? data.characterId : 3401;
             equippedBaitId = data.baitId;
             characterLevel = data.characterLevel > 0 ? data.characterLevel : 1;
+
+            skill1SlotUnlocked = data.skill1SlotUnlocked;
+            skill2SlotUnlocked = data.skill2SlotUnlocked;
 
             // ✅ 更新装备等级数据
             equippedRodLevel = data.rodLevel > 0 ? data.rodLevel : 1;

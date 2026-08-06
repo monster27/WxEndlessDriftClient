@@ -41,6 +41,7 @@ public partial class NetServerManager
         CommunicateEvent.RegisterRequest<int, bool>(CommunicateEvent.EVENT_IS_CHARACTER_OBTAINED, characterId => IsCharacterObtained(characterId));
         CommunicateEvent.RegisterRequest<int, bool>(CommunicateEvent.EVENT_IS_SKILL_OBTAINED, skillId => IsSkillObtained(skillId));
         CommunicateEvent.RegisterRequest<int, bool>(CommunicateEvent.EVENT_IS_ITEM_EQUIPPED, itemId => IsItemEquipped(itemId));
+        CommunicateEvent.RegisterRequest<int, bool>("EVENT_IS_SKILL_SLOT_UNLOCKED", slot => IsSkillSlotUnlocked(slot));
 
         // ========== CharacterServerManager ==========
         CommunicateEvent.RegisterRequest<int, PlayerCharacterData>("CharacterServerManager_GetPlayerData", _ => GetPlayerCharacterData());

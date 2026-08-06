@@ -20,13 +20,14 @@ public partial class NetServerManager
     private bool isPlayingReelAnimation = false;
     private float struggleStartTime = 0f;
     private float currentStruggleTime = 0f;
-    
+
     // 待处理的动画请求（收杆动画结束后执行）
     private enum PendingAnimationType { None, Idle, Lazy }
     private PendingAnimationType pendingAnimationRequest = PendingAnimationType.None;
 
-    private int lastCatchFishId = -1;
+    private long lastCatchTimestamp = 0;
     private LastCatchInfo pendingCatchInfo = null;
+    private readonly Queue<LastCatchInfo> pendingCatchQueue = new Queue<LastCatchInfo>();
 
     public bool IsPaused => isPaused;
     public bool IsPlayingReelAnimation => isPlayingReelAnimation;
@@ -123,11 +124,11 @@ public partial class NetServerManager
         int sceneId = GetCurrentSceneId();
 
         var requestData = new Dictionary<string, object>
-    {
-        { "playerId", _currentPlayerId },
-        { "sceneId", sceneId },
-        { "baitId", actualBaitId }
-    };
+        {
+            { "playerId", _currentPlayerId },
+            { "sceneId", sceneId },
+            { "baitId", actualBaitId }
+        };
 
         Logger.Log($"[NetServerManager] StartAutoFishing - 发送启动请求, sceneId={sceneId}, baitId={actualBaitId}");
 
@@ -224,12 +225,12 @@ public partial class NetServerManager
                     Logger.Log($"[NetServerManager] 轮询状态: auto={response.isAutoFishing}, paused={response.isPaused}, nextTime={response.nextFishingTime}, hasCatch={response.lastCatch != null}");
 
                     bool wasPaused = isPaused, wasFull = isFishBagFull;
-                    
+
                     if (!response.isAutoFishing && isAutoFishing)
                     {
                         Logger.Log($"[NetServerManager] 警告: 服务器返回 isAutoFishing=false, 但本地状态为 true, 可能是服务器缓存丢失");
                         Logger.Log($"[NetServerManager] 当前鱼篓状态: {GetTotalFishCount()}/{fishBagCapacity}, 是否已满: {isFishBagFull}");
-                        
+
                         if (!isFishBagFull)
                         {
                             Logger.Log($"[NetServerManager] 鱼篓未满，保持本地自动钓鱼状态");
@@ -244,7 +245,7 @@ public partial class NetServerManager
                     {
                         isAutoFishing = response.isAutoFishing;
                     }
-                    
+
                     isPaused = response.isPaused;
                     trashStreak = response.trashStreak;
 
@@ -297,28 +298,63 @@ public partial class NetServerManager
 
     private void ProcessNewCatch(LastCatchInfo lastCatch, ref int lastCatchId)
     {
-        if (lastCatch == null || lastCatch.fishId <= 0 || lastCatch.fishId == lastCatchId) return;
-        lastCatchId = lastCatch.fishId;
+        if (lastCatch == null || lastCatch.fishId <= 0) return;
 
-        float struggleTime = lastCatch.struggleTime > 0 ? lastCatch.struggleTime : 1.5f;
-        Logger.Log($"[NetServerManager] 检测到新钓获: {lastCatch.fishName} (ID:{lastCatch.fishId}), {lastCatch.weight}kg, 挣扎{struggleTime}秒");
+        // ✅ 使用 caughtTimestamp 去重（每次钓获有唯一时间戳，同种鱼连续上钩也不会丢失）
+        if (lastCatch.caughtTimestamp == lastCatchTimestamp) return;
+        lastCatchTimestamp = lastCatch.caughtTimestamp;
 
-        if (isPlayingReelAnimation || isFishBagFull) return;
-
-        // 在钓获前检查鱼篓中是否已有该鱼，判断是否为第一次获取
+        // ✅ 在检测到新钓获时（而非动画开始时）检查是否为首次获取
+        // 因为动画回调中的 FetchFishInventoryFromServer 可能已更新 fishInventory，
+        // 导致后续排队捕获的首次判断失效
         int currentCount = 0;
         fishInventory.TryGetValue(lastCatch.fishId, out currentCount);
-        _pendingIsFirstCatch = (currentCount == 0);
+        lastCatch.isFirstCatch = (currentCount == 0);
 
-        pendingCatchInfo = lastCatch;
+        float struggleTime = lastCatch.struggleTime > 0 ? lastCatch.struggleTime : 1.5f;
+        Logger.Log($"[NetServerManager] 检测到新钓获: {lastCatch.fishName} (ID:{lastCatch.fishId}), {lastCatch.weight}kg, 挣扎{struggleTime}秒, 时间戳:{lastCatch.caughtTimestamp}, 首次:{lastCatch.isFirstCatch}");
+
+        // ✅ 如果正在播放收竿动画或鱼篓已满，将捕获加入队列，等动画结束后再显示
+        if (isPlayingReelAnimation || isFishBagFull)
+        {
+            Logger.Log($"[NetServerManager] 收竿动画中/鱼篓已满，捕获加入待显示队列: {lastCatch.fishName}");
+            pendingCatchQueue.Enqueue(lastCatch);
+            return;
+        }
+
+        StartCatchAnimation(lastCatch, struggleTime);
+    }
+
+    /// <summary>
+    /// 开始收竿动画并显示捕获结果
+    /// </summary>
+    private void StartCatchAnimation(LastCatchInfo catchInfo, float struggleTime)
+    {
+        // ✅ 使用在检测时已判定的 isFirstCatch，避免 fishInventory 被异步更新后导致误判
+        _pendingIsFirstCatch = catchInfo.isFirstCatch;
+
+        pendingCatchInfo = catchInfo;
 
         // ⭐ 获取鱼类稀有度颜色并设置到鱼饵提示动画
-        SetFishTipColorByFishId(lastCatch.fishId, struggleTime);
+        SetFishTipColorByFishId(catchInfo.fishId, struggleTime);
 
         NotifyPlayReelAnimation(struggleTime, () =>
         {
-            if (pendingCatchInfo != null) { ShowCatchResultFromServer(pendingCatchInfo); pendingCatchInfo = null; }
+            if (pendingCatchInfo != null)
+            {
+                ShowCatchResultFromServer(pendingCatchInfo);
+                pendingCatchInfo = null;
+            }
             StartCoroutine(FetchFishInventoryFromServer());
+
+            // ✅ 动画结束后，检查队列中是否有待显示的捕获
+            if (pendingCatchQueue.Count > 0)
+            {
+                var next = pendingCatchQueue.Dequeue();
+                float nextStruggle = next.struggleTime > 0 ? next.struggleTime : 1.5f;
+                Logger.Log($"[NetServerManager] 从队列中取出下一条捕获: {next.fishName}");
+                StartCatchAnimation(next, nextStruggle);
+            }
         });
     }
 
@@ -402,7 +438,11 @@ public partial class NetServerManager
             isPlayingReelAnimation = false;
             struggleStartTime = 0f;
             currentStruggleTime = 0f;
-            if (pendingCatchInfo != null) { ShowCatchResultFromServer(pendingCatchInfo); pendingCatchInfo = null; }
+            if (pendingCatchInfo != null)
+            {
+                ShowCatchResultFromServer(pendingCatchInfo);
+                pendingCatchInfo = null;
+            }
             StartCoroutine(FetchFishInventoryFromServer());
             NotifySyncInventoryFromServer();
             // ✅ 修复：数据同步完成后由 PlayerDataManager.CheckAndUpdateAnimationState() 决定最终动画
@@ -530,12 +570,12 @@ public partial class NetServerManager
             NotifySyncInventoryFromServer();
             if (GameUIManager.Instance?.fishBagView != null && GameUIManager.Instance.fishBagView.gameObject.activeSelf)
                 GameUIManager.Instance.fishBagView.RefreshItems();
-            
+
             // ✅ 收杆动画结束后，执行待处理的动画请求
             ExecutePendingAnimationRequest();
         });
     }
-    
+
     /// <summary>
     /// 执行待处理的动画请求
     /// </summary>
@@ -547,7 +587,7 @@ public partial class NetServerManager
             PlayerDataManager.Instance?.CheckAndUpdateAnimationState();
             return;
         }
-        
+
         switch (pendingAnimationRequest)
         {
             case PendingAnimationType.Idle:
@@ -559,12 +599,15 @@ public partial class NetServerManager
                 PlayerAniManager.Instance?.PlayLazyAnimation();
                 break;
         }
-        
+
         pendingAnimationRequest = PendingAnimationType.None;
     }
 
     // ========== 钓获显示 ==========
 
+    /// <summary>
+    /// 从服务器数据显示钓获结果
+    /// </summary>
     private void ShowCatchResultFromServer(LastCatchInfo catchInfo)
     {
         if (catchInfo == null) return;
@@ -572,7 +615,16 @@ public partial class NetServerManager
 
         bool isFish = IsFishItem(catchInfo.fishId);
 
-        GameUIManager.Instance?.ShowCatchResult(catchInfo.fishName, catchInfo.weight, icon, catchInfo.starRatingId, catchInfo.fishId, isFish);
+        // ✅ 直接传递 catchInfo.isFirstCatch，不再依赖全局变量 PendingIsFirstCatch
+        GameUIManager.Instance?.ShowCatchResult(
+            catchInfo.fishName,
+            catchInfo.weight,
+            icon,
+            catchInfo.starRatingId,
+            catchInfo.fishId,
+            isFish,
+            catchInfo.isFirstCatch  // ✅ 新增参数：是否首次钓获
+        );
         SyncCharacterDataFromServer();
     }
 
@@ -687,5 +739,6 @@ public partial class NetServerManager
         public int starRatingId;      // ✅ 新增：星级ID
         public long caughtTimestamp;  // ✅ 新增：捕获时间戳
         public bool isShiny;          // ✅ 新增：是否闪光鱼
+        public bool isFirstCatch;     // ✅ 客户端本地设置：是否为首次钓获该鱼
     }
 }
