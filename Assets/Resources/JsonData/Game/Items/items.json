@@ -800,6 +800,30 @@
                 1024
             ],
             "isUnique": true
+        },
+        {
+            "id": 7001,
+            "name": "融冠岛岛屿情报",
+            "description": "解锁融冠岛的岛屿情报，解锁后可查看该岛屿相关的图鉴条目",
+            "sellPrice": -1,
+            "buyPrice": 12,
+            "itemType": 8,
+            "categoryId": 70,
+            "iconPath": "UI/Icon/IslandInfoIcons/7001",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 7002,
+            "name": "彩虹岛岛屿情报",
+            "description": "解锁彩虹岛的岛屿情报，解锁后可查看该岛屿相关的图鉴条目",
+            "sellPrice": -1,
+            "buyPrice": 13,
+            "itemType": 8,
+            "categoryId": 70,
+            "iconPath": "UI/Icon/IslandInfoIcons/7002",
+            "collectionInfoPages": [],
+            "isUnique": true
         }
     ]
 }

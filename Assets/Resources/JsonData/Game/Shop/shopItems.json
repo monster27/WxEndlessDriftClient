@@ -343,6 +343,22 @@
             "isOnSale": true,
             "categoryId": 71,
             "isUnique": true
+        },
+        {
+            "itemId": 7001,
+            "price": 12,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 70,
+            "isUnique": true
+        },
+        {
+            "itemId": 7002,
+            "price": 13,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 70,
+            "isUnique": true
         }
     ]
 }

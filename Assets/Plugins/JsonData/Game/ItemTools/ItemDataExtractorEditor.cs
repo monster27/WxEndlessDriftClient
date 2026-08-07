@@ -15,12 +15,14 @@ public class ItemDataExtractorEditor : EditorWindow
     private string indoorSkinDataPath = "Resources/JsonData/Game/BagItem/indoorSkin.json";
     private string outdoorSkinDataPath = "Resources/JsonData/Game/BagItem/outdoorSkin.json";
     private string categoryDataPath = "Resources/JsonData/Game/GameFramework/itemCategories.json";
-    private string collectionDataPath = "Resources/JsonData/BaseFramework/collection.json";  // ✅ 新增：图鉴数据路径
+    private string collectionDataPath = "Resources/JsonData/BaseFramework/collection.json";
+    private string islandInfoDataPath = "Resources/JsonData/Game/GameFramework/islandInfo.json";  // ✅ 新增：岛屿情报数据路径
     private Vector2 scrollPosition;
     private List<ItemData> extractedItems = new List<ItemData>();
     private List<ItemData> existingItems = new List<ItemData>();
     private CategoryListWrapper categoryWrapper;
-    private CollectionWrapper collectionWrapper;  // ✅ 新增：图鉴数据包装器
+    private CollectionWrapper collectionWrapper;
+    private IslandInfoListWrapper islandInfoWrapper;  // ✅ 新增：岛屿情报数据包装器
 
     private bool showFishList = true;
     private bool showBaitList = true;
@@ -28,7 +30,8 @@ public class ItemDataExtractorEditor : EditorWindow
     private bool showNestBaitList = true;
     private bool showIndoorSkinList = true;
     private bool showOutdoorSkinList = true;
-    private bool showCollectionInfoList = true;  // ✅ 新增：图鉴情报列表折叠
+    private bool showCollectionInfoList = true;
+    private bool showIslandInfoList = true;  // ✅ 新增：岛屿情报列表折叠
 
     [MenuItem("Tools/游戏内容/3.物品通用数据/1.提取物品数据(用于价格)")]
     public static void ShowWindow()
@@ -58,7 +61,8 @@ public class ItemDataExtractorEditor : EditorWindow
         EditorGUILayout.LabelField($"窝料数据: {nestBaitDataPath}");
         EditorGUILayout.LabelField($"室内皮肤数据: {indoorSkinDataPath}");
         EditorGUILayout.LabelField($"室外皮肤数据: {outdoorSkinDataPath}");
-        EditorGUILayout.LabelField($"图鉴数据: {collectionDataPath}");  // ✅ 新增
+        EditorGUILayout.LabelField($"图鉴数据: {collectionDataPath}");
+        EditorGUILayout.LabelField($"岛屿情报数据: {islandInfoDataPath}");  // ✅ 新增
         EditorGUILayout.LabelField($"输出路径: {outputPath}");
 
         EditorGUILayout.EndVertical();
@@ -100,7 +104,8 @@ public class ItemDataExtractorEditor : EditorWindow
         List<ItemData> outdoorSkinItems = extractedItems.FindAll(item => item.itemType == 4);
         List<ItemData> indoorSkinItems = extractedItems.FindAll(item => item.itemType == 5);
         List<ItemData> nestBaitItems = extractedItems.FindAll(item => item.itemType == 6);
-        List<ItemData> collectionInfoItems = extractedItems.FindAll(item => item.itemType == 7);  // ✅ 新增：图鉴情报
+        List<ItemData> collectionInfoItems = extractedItems.FindAll(item => item.itemType == 7);
+        List<ItemData> islandInfoItems = extractedItems.FindAll(item => item.itemType == 8);  // ✅ 新增：岛屿情报（itemType=8）
 
         DrawItemGroup("🐟 鱼类数据", fishItems, ref showFishList);
         DrawItemGroup("🎣 鱼饵数据", baitItems, ref showBaitList);
@@ -108,7 +113,8 @@ public class ItemDataExtractorEditor : EditorWindow
         DrawItemGroup("🏕️ 室外皮肤数据", outdoorSkinItems, ref showOutdoorSkinList);
         DrawItemGroup("🏠 室内皮肤数据", indoorSkinItems, ref showIndoorSkinList);
         DrawItemGroup("🪣 窝料数据", nestBaitItems, ref showNestBaitList);
-        DrawItemGroup("📖 图鉴情报数据", collectionInfoItems, ref showCollectionInfoList);  // ✅ 新增
+        DrawItemGroup("📖 图鉴情报数据", collectionInfoItems, ref showCollectionInfoList);
+        DrawItemGroup("🏝️ 岛屿情报数据", islandInfoItems, ref showIslandInfoList);  // ✅ 新增
     }
 
     private void DrawItemGroup(string title, List<ItemData> items, ref bool isExpanded)
@@ -168,7 +174,8 @@ public class ItemDataExtractorEditor : EditorWindow
             case 4: return "室外皮肤";
             case 5: return "室内皮肤";
             case 6: return "窝料";
-            case 7: return "图鉴情报";  // ✅ 新增
+            case 7: return "图鉴情报";
+            case 8: return "岛屿情报";  // ✅ 新增
             default: return "未知";
         }
     }
@@ -179,7 +186,8 @@ public class ItemDataExtractorEditor : EditorWindow
 
         LoadExistingItems();
         LoadCategoryData();
-        LoadCollectionData();  // ✅ 新增：加载图鉴数据
+        LoadCollectionData();
+        LoadIslandInfoData();  // ✅ 新增：加载岛屿情报数据
 
         List<FishData> fishes = LoadFishData();
         List<BaitData> baits = LoadBaitData();
@@ -403,8 +411,7 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
-        // ========== ✅ 新增：处理图鉴情报 ==========
-        // ========== ✅ 处理图鉴情报 ==========
+        // ========== 处理图鉴情报 ==========
         if (collectionWrapper?.collection?.categories != null)
         {
             foreach (var category in collectionWrapper.collection.categories)
@@ -413,13 +420,11 @@ public class ItemDataExtractorEditor : EditorWindow
                 {
                     foreach (var page in category.pages)
                     {
-                        // 图鉴情报的ID就是页面的ID
                         int infoId = page.id;
 
-                        // 如果 page.id 小于 7000，映射到 7000-7199 范围
                         if (infoId < 7000)
                         {
-                            infoId = 7000 + (infoId - 800);  // 801 -> 7101, 802 -> 7102
+                            infoId = 7000 + (infoId - 800);
                         }
 
                         string infoName = page.pageName + "图鉴情报";
@@ -454,7 +459,6 @@ public class ItemDataExtractorEditor : EditorWindow
                             };
                         }
 
-                        // 如果页面有条目，将条目ID存入 collectionInfoPages
                         if (page.entries != null && page.entries.Count > 0)
                         {
                             if (item.collectionInfoPages == null)
@@ -477,8 +481,53 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
+        // ========== ✅ 新增：处理岛屿情报 ==========
+        if (islandInfoWrapper?.islandInfoList != null)
+        {
+            foreach (var islandInfo in islandInfoWrapper.islandInfoList)
+            {
+                int infoId = islandInfo.infoId;
+                string infoName = islandInfo.infoName;
+                string infoDescription = $"解锁{islandInfo.islandName}的岛屿情报，解锁后可查看该岛屿相关的图鉴条目";
+
+                ItemData existingItem = FindItemById(infoId);
+                ItemData item;
+
+                if (existingItem != null)
+                {
+                    item = existingItem;
+                    item.name = infoName;
+                    item.description = infoDescription;
+                    item.itemType = 8;
+                    item.categoryId = GetCategoryIdByItemId(infoId);
+                    item.iconPath = islandInfo.iconPath ?? $"UI/Icon/IslandInfoIcons/{infoId}";
+                    item.isUnique = true;
+                    item.sellPrice = islandInfo.sellPrice;
+                    item.buyPrice = islandInfo.price > 0 ? islandInfo.price : -1;
+                }
+                else
+                {
+                    item = new ItemData
+                    {
+                        id = infoId,
+                        name = infoName,
+                        description = infoDescription,
+                        sellPrice = islandInfo.sellPrice,
+                        buyPrice = islandInfo.price > 0 ? islandInfo.price : -1,
+                        itemType = 8,
+                        categoryId = GetCategoryIdByItemId(infoId),
+                        iconPath = islandInfo.iconPath ?? $"UI/Icon/IslandInfoIcons/{infoId}",
+                        isUnique = true
+                    };
+                }
+
+                extractedItems.Add(item);
+                Debug.Log($"[物品提取] 添加岛屿情报: ID={infoId}, Name={infoName}, Price={islandInfo.price}");
+            }
+        }
+
         SaveItemsToJson();
-        Debug.Log($"[物品提取] 完成！共 {extractedItems.Count} 条物品（含 {extractedItems.FindAll(i => i.itemType == 7).Count} 条图鉴情报）");
+        Debug.Log($"[物品提取] 完成！共 {extractedItems.Count} 条物品（含 {extractedItems.FindAll(i => i.itemType == 7).Count} 条图鉴情报，{extractedItems.FindAll(i => i.itemType == 8).Count} 条岛屿情报）");
         Repaint();
     }
 
@@ -490,17 +539,14 @@ public class ItemDataExtractorEditor : EditorWindow
             return;
         }
 
-        // 加载现有数据进行比较
         LoadExistingItems();
 
-        // 检测不一致
         List<string> inconsistencies = new List<string>();
         foreach (var newItem in extractedItems)
         {
             var existingItem = FindItemById(newItem.id);
             if (existingItem != null)
             {
-                // 检查名称和描述是否一致
                 if (existingItem.name != newItem.name)
                 {
                     inconsistencies.Add($"ID {newItem.id}: 名称不一致 ({existingItem.name} → {newItem.name})");
@@ -509,7 +555,6 @@ public class ItemDataExtractorEditor : EditorWindow
                 {
                     inconsistencies.Add($"ID {newItem.id}: 描述不一致");
                 }
-                // 检查 isUnique 是否一致
                 if (existingItem.isUnique != newItem.isUnique)
                 {
                     inconsistencies.Add($"ID {newItem.id}: isUnique 不一致 ({existingItem.isUnique} → {newItem.isUnique})");
@@ -517,7 +562,6 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
-        // 显示不一致信息并确认
         if (inconsistencies.Count > 0)
         {
             string message = "检测到以下不一致：\n";
@@ -533,7 +577,6 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
-        // 写入数据
         SaveItemsToJson();
         EditorUtility.DisplayDialog("成功", $"物品数据写入成功！共 {extractedItems.Count} 条物品", "确定");
         Repaint();
@@ -731,7 +774,6 @@ public class ItemDataExtractorEditor : EditorWindow
         }
     }
 
-    // ✅ 新增：加载图鉴数据
     private void LoadCollectionData()
     {
         string fullPath = Path.Combine(Application.dataPath, collectionDataPath);
@@ -756,6 +798,34 @@ public class ItemDataExtractorEditor : EditorWindow
         {
             Debug.LogError($"[物品提取] 加载图鉴数据失败: {e.Message}");
             collectionWrapper = null;
+        }
+    }
+
+    // ✅ 新增：加载岛屿情报数据
+    private void LoadIslandInfoData()
+    {
+        string fullPath = Path.Combine(Application.dataPath, islandInfoDataPath);
+
+        if (!File.Exists(fullPath))
+        {
+            Debug.LogWarning($"[物品提取] 岛屿情报数据文件不存在: {fullPath}");
+            islandInfoWrapper = null;
+            return;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(fullPath);
+            islandInfoWrapper = JsonUtility.FromJson<IslandInfoListWrapper>(json);
+            if (islandInfoWrapper?.islandInfoList != null)
+            {
+                Debug.Log($"[物品提取] 已加载岛屿情报数据，共 {islandInfoWrapper.islandInfoList.Count} 个");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[物品提取] 加载岛屿情报数据失败: {e.Message}");
+            islandInfoWrapper = null;
         }
     }
 
@@ -880,7 +950,6 @@ public class ItemDataExtractorEditor : EditorWindow
         public List<IndoorSkinData> decorations;
     }
 
-    // ✅ 新增：图鉴数据序列化类
     [System.Serializable]
     private class CollectionWrapper
     {
@@ -917,6 +986,32 @@ public class ItemDataExtractorEditor : EditorWindow
         public int percent;
         public int rewardId;
         public int rewardAmount;
+    }
+
+    // ✅ 新增：岛屿情报序列化类
+    [System.Serializable]
+    private class IslandInfoListWrapper
+    {
+        public List<IslandInfoSaveData> islandInfoList;
+        public string version;
+        public string lastUpdateTime;
+    }
+
+    [System.Serializable]
+    private class IslandInfoSaveData
+    {
+        public int infoId;
+        public int islandId;
+        public string islandName;
+        public string infoName;
+        public int price;
+        public bool isOnSale;
+        public int stock;
+        public bool isUnique;
+        public int buyPrice;
+        public int sellPrice;
+        public string iconPath;
+        public int categoryId;
     }
 }
 #endif

@@ -1,0 +1,22 @@
+{
+    "islandInfoList": [
+        {
+            "infoId": 7001,
+            "islandId": 101,
+            "islandName": "融冠岛",
+            "infoName": "融冠岛岛屿情报",
+            "categoryId": 7,
+            "iconPath": "UI/Icon/IslandInfoIcons/7001"
+        },
+        {
+            "infoId": 7002,
+            "islandId": 102,
+            "islandName": "彩虹岛",
+            "infoName": "彩虹岛岛屿情报",
+            "categoryId": 7,
+            "iconPath": "UI/Icon/IslandInfoIcons/7002"
+        }
+    ],
+    "version": "1.0",
+    "lastUpdateTime": "2026-08-07 23:27:21"
+}

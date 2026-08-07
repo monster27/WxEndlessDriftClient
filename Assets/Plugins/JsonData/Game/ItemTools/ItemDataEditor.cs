@@ -27,13 +27,14 @@ public class ItemDataEditor : EditorWindow
     private bool showTrashList = true;
     private bool showNestBaitList = true;
     private bool showOtherList = true;
-    private bool showCollectionInfoList = true;  // ✅ 新增：图鉴情报列表
+    private bool showCollectionInfoList = true;
+    private bool showIslandInfoList = true;  // ✅ 新增：岛屿情报列表
 
     // ===== 筛选相关 =====
     private int selectedTypeFilter = -1; // -1=全部
     private string[] typeFilterOptions;
 
-    // ===== 新增：水产岛屿筛选 =====
+    // ===== 水产岛屿筛选 =====
     private int selectedFishIslandFilter = -1; // -1=全部
     private string[] fishIslandFilterOptions;
 
@@ -82,7 +83,7 @@ public class ItemDataEditor : EditorWindow
 
         GUILayout.Space(10);
 
-        // ===== 新增：水产岛屿筛选（仅当筛选类型为"水产"或"全部"时可用）=====
+        // ===== 水产岛屿筛选（仅当筛选类型为"水产"或"全部"时可用）=====
         bool enableIslandFilter = (selectedTypeFilter == -1) ||
                                   (selectedTypeFilter < typeFilterOptions.Length &&
                                    typeFilterOptions[selectedTypeFilter + 1].Contains("水产"));
@@ -105,9 +106,6 @@ public class ItemDataEditor : EditorWindow
         GUILayout.Space(5);
     }
 
-    /// <summary>
-    /// 构建类型筛选选项列表
-    /// </summary>
     private void BuildTypeFilterOptions()
     {
         var typeSet = new HashSet<int>();
@@ -129,9 +127,6 @@ public class ItemDataEditor : EditorWindow
         typeFilterOptions = options.ToArray();
     }
 
-    /// <summary>
-    /// 构建水产岛屿筛选选项列表
-    /// </summary>
     private void BuildFishIslandFilterOptions()
     {
         var islandNames = new Dictionary<int, string>
@@ -146,7 +141,6 @@ public class ItemDataEditor : EditorWindow
         var options = new List<string>();
         options.Add("全部");
 
-        // 从 fishes.json 读取岛屿数据
         string fishPath = Path.Combine(Application.dataPath, "Resources", "JsonData/Game/BagItem/fishes.json");
         if (File.Exists(fishPath))
         {
@@ -162,13 +156,11 @@ public class ItemDataEditor : EditorWindow
                         islandSet.Add(fish.islandId);
                     }
 
-                    // 排序，0和-1放在最后
                     var sortedIslands = islandSet
                         .Where(id => id > 0)
                         .OrderBy(id => id)
                         .ToList();
 
-                    // 添加0和-1（如果有）
                     if (islandSet.Contains(0))
                         sortedIslands.Add(0);
                     if (islandSet.Contains(-1))
@@ -192,7 +184,6 @@ public class ItemDataEditor : EditorWindow
             }
         }
 
-        // 如果没有读取到数据，使用默认岛屿列表
         if (options.Count <= 1)
         {
             foreach (var kvp in islandNames.OrderBy(k => k.Key))
@@ -204,14 +195,10 @@ public class ItemDataEditor : EditorWindow
         fishIslandFilterOptions = options.ToArray();
     }
 
-    /// <summary>
-    /// 获取经过筛选后的数据列表
-    /// </summary>
     private List<ItemData> GetFilteredItems()
     {
         var result = items;
 
-        // 类型筛选
         if (selectedTypeFilter != -1 && typeFilterOptions.Length > 1)
         {
             string selectedOption = typeFilterOptions[selectedTypeFilter + 1];
@@ -227,10 +214,8 @@ public class ItemDataEditor : EditorWindow
             }
         }
 
-        // 水产岛屿筛选（仅当筛选类型为"全部"或"水产"时生效）
         if (selectedFishIslandFilter != -1 && fishIslandFilterOptions.Length > 1)
         {
-            // 检查当前筛选类型是否是水产或全部
             bool isFishType = (selectedTypeFilter == -1) ||
                               (selectedTypeFilter < typeFilterOptions.Length &&
                                typeFilterOptions[selectedTypeFilter + 1].Contains("水产"));
@@ -245,7 +230,6 @@ public class ItemDataEditor : EditorWindow
                     string idStr = selectedOption.Substring(startIndex + 1, endIndex - startIndex - 1);
                     if (int.TryParse(idStr, out int islandId))
                     {
-                        // 获取该岛屿的鱼类ID列表
                         var fishIds = GetFishIdsByIsland(islandId);
                         result = result.Where(item => fishIds.Contains(item.id)).ToList();
                     }
@@ -256,9 +240,6 @@ public class ItemDataEditor : EditorWindow
         return result;
     }
 
-    /// <summary>
-    /// 根据岛屿获取鱼类ID列表
-    /// </summary>
     private HashSet<int> GetFishIdsByIsland(int islandId)
     {
         var fishIds = new HashSet<int>();
@@ -309,14 +290,16 @@ public class ItemDataEditor : EditorWindow
         List<ItemData> baitItems = filteredItems.FindAll(item => item.itemType == 2);
         List<ItemData> trashItems = filteredItems.FindAll(item => item.itemType == 3);
         List<ItemData> nestBaitItems = filteredItems.FindAll(item => item.itemType == 6);
-        List<ItemData> collectionInfoItems = filteredItems.FindAll(item => item.itemType == 7);  // ✅ 新增：图鉴情报
+        List<ItemData> collectionInfoItems = filteredItems.FindAll(item => item.itemType == 7);
+        List<ItemData> islandInfoItems = filteredItems.FindAll(item => item.itemType == 8);  // ✅ 新增：岛屿情报
         List<ItemData> otherItems = filteredItems.FindAll(item => item.itemType == 4 || item.itemType == 5);
 
         DrawItemGroup("🐟 水产数据", fishItems, ref showFishList);
         DrawItemGroup("🎣 饵料数据", baitItems, ref showBaitList);
         DrawItemGroup("🗑️ 垃圾数据", trashItems, ref showTrashList);
         DrawItemGroup("🪣 窝料数据", nestBaitItems, ref showNestBaitList);
-        DrawItemGroup("📖 图鉴情报数据", collectionInfoItems, ref showCollectionInfoList);  // ✅ 新增
+        DrawItemGroup("📖 图鉴情报数据", collectionInfoItems, ref showCollectionInfoList);
+        DrawItemGroup("🏝️ 岛屿情报数据", islandInfoItems, ref showIslandInfoList);  // ✅ 新增
         DrawItemGroup("📦 其他物品", otherItems, ref showOtherList);
 
         EditorGUILayout.EndScrollView();
@@ -406,7 +389,8 @@ public class ItemDataEditor : EditorWindow
             case 4: return "室外皮肤";
             case 5: return "室内皮肤";
             case 6: return "窝料";
-            case 7: return "图鉴情报";  // ✅ 新增
+            case 7: return "图鉴情报";
+            case 8: return "岛屿情报";  // ✅ 新增
             default: return "未知";
         }
     }
