@@ -630,11 +630,31 @@ public partial class NetServerManager
 
     private bool IsFishItem(int itemId)
     {
-        if (LoadDataManager.Instance?.items == null) return true;
-        foreach (var item in LoadDataManager.Instance.items)
-            if (item.id == itemId)
-                return item.categoryId == 1;
-        return true;
+        // ✅ 方案1：通过 fishDict 判断是否为鱼类（最可靠）
+        if (LoadDataManager.Instance?.fishes != null)
+        {
+            foreach (var fish in LoadDataManager.Instance.fishes)
+            {
+                if (fish.id == itemId)
+                    return true;
+            }
+        }
+
+        // ✅ 方案2：通过 items 的 categoryId 判断（降级方案）
+        if (LoadDataManager.Instance?.items != null)
+        {
+            foreach (var item in LoadDataManager.Instance.items)
+            {
+                if (item.id == itemId && item.categoryId == 11)  // 鱼类分类ID是11
+                    return true;
+            }
+        }
+
+        // ✅ 方案3：通过 fishId 范围判断（垃圾 ID 是 9001-9020）
+        if (itemId >= 1001 && itemId <= 1999)
+            return true;
+
+        return false;
     }
 
     private Sprite GetItemIcon(int itemId)
@@ -649,7 +669,6 @@ public partial class NetServerManager
     public void OnServerFishingResult(FishingResult result) { }
 
     // ========== 鱼操作 ==========
-
     public void OnSellFishItems(List<int> detailIds)
     {
         if (!CheckNetworkConnection()) return;
@@ -657,15 +676,16 @@ public partial class NetServerManager
         if (detailIds == null || detailIds.Count == 0)
         {
             Logger.LogWarning("[NetServerManager] 售卖鱼失败：没有选择任何鱼");
+            GameUIManager.Instance?.ShowTip("请选择要出售的鱼");
             return;
         }
 
         // ✅ 使用服务器期望的字段名：fishItemIds（不是 detailIds）
         var requestData = new Dictionary<string, object>
-        {
-            { "fishItemIds", detailIds },
-            { "totalPrice", 0 }  // 服务器会自动计算价格，传0即可
-        };
+    {
+        { "fishItemIds", detailIds },
+        { "totalPrice", 0 }  // 服务器会自动计算价格，传0即可
+    };
 
         Logger.Log($"[NetServerManager] 售卖鱼: {detailIds.Count}条, fishItemIds=[{string.Join(",", detailIds)}]");
 
@@ -690,12 +710,20 @@ public partial class NetServerManager
                     if (response.totalPrice > 0)
                     {
                         Logger.Log($"[NetServerManager] 售卖获得金币: {response.totalPrice}");
+
+                        // ✅ 显示卖鱼成功Tip
+                        string tipMessage = $"💰 出售成功！\n共出售 {response.soldCount} 条鱼\n获得 {response.totalPrice} 金币";
+                        GameUIManager.Instance?.ShowTip(tipMessage);
                     }
                 }
 
                 StartCoroutine(FetchPlayerDataAfterSell(detailIds));
             },
-            error => { Logger.LogWarning("[NetServerManager] 售卖鱼失败: " + error); GameUIManager.Instance?.ShowTip("售卖失败，请重试"); }));
+            error =>
+            {
+                Logger.LogWarning("[NetServerManager] 售卖鱼失败: " + error);
+                GameUIManager.Instance?.ShowTip("售卖失败，请重试");
+            }));
     }
 
     public void NotifyAddFish(int fishId, int quantity) { }

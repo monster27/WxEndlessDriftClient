@@ -1136,7 +1136,7 @@
             "description": "高强度精钢材质，大幅提升闪光鱼捕获概率",
             "category": 3,
             "iconPath": "",
-            "maxLevel": 10,
+            "maxLevel": 12,
             "isPassive": false,
             "cooldownTime": 0.0,
             "duration": 0.0,
@@ -1340,6 +1340,46 @@
                     "levelDescription": "精钢鱼钩的巅峰",
                     "upgradeDescription": "闪光率+45%，重量倾向+0.22",
                     "upgradeCost": 1350
+                },
+                {
+                    "level": 11,
+                    "paramsList": [
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "",
+                    "upgradeDescription": "",
+                    "upgradeCost": -1
+                },
+                {
+                    "level": 12,
+                    "paramsList": [
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        },
+                        {
+                            "paramId": 0,
+                            "value": 0.0
+                        }
+                    ],
+                    "levelDescription": "",
+                    "upgradeDescription": "",
+                    "upgradeCost": -1
                 }
             ],
             "obtainStatus": 0,

@@ -4,49 +4,49 @@
             "id": 2001,
             "name": "玉米",
             "description": "基础鱼饵，对草食性鱼类有吸引力",
-            "baseWeight": 100,
+            "baseWeight": 0,
             "unlockScene": 101
         },
         {
             "id": 2002,
             "name": "海虫",
             "description": "常见鱼饵，杂食性鱼类都喜欢",
-            "baseWeight": 110,
+            "baseWeight": 0,
             "unlockScene": 101
         },
         {
             "id": 2003,
             "name": "秘制虾饵",
             "description": "蜜汁虾饵",
-            "baseWeight": 120,
+            "baseWeight": 0,
             "unlockScene": 102
         },
         {
             "id": 2004,
             "name": "小虾米",
             "description": "小虾米",
-            "baseWeight": 130,
+            "baseWeight": 0,
             "unlockScene": 103
         },
         {
             "id": 2005,
             "name": "小鱿鱼",
             "description": "小鱿鱼",
-            "baseWeight": 140,
+            "baseWeight": 0,
             "unlockScene": 104
         },
         {
             "id": 2006,
             "name": "扇贝",
             "description": "海鲜类鱼饵，对海洋鱼类效果显著",
-            "baseWeight": 150,
+            "baseWeight": 0,
             "unlockScene": 105
         },
         {
             "id": 2007,
             "name": "传奇鱼饵",
             "description": "传说级鱼饵，大幅提升稀有鱼出现概率",
-            "baseWeight": 200,
+            "baseWeight": 0,
             "unlockScene": 106
         }
     ]

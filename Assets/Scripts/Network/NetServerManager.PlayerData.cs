@@ -1503,7 +1503,27 @@ public partial class NetServerManager
         
         onComplete?.Invoke(success);
     }
+    // 在 NetServerManager.PlayerData.cs 中添加
 
+    // ========== 辅助方法 ==========
+
+    /// <summary>
+    /// 根据物品ID获取物品名称
+    /// </summary>
+    private string GetItemNameById(int itemId)
+    {
+        // ✅ 使用 LoadDataManager.Instance.GetItemById
+        if (LoadDataManager.Instance != null)
+        {
+            var itemData = LoadDataManager.Instance.GetItemById(itemId);
+            if (itemData != null)
+            {
+                return itemData.name;
+            }
+        }
+
+        return $"物品#{itemId}";
+    }
     [Serializable]
     public class FishBagFilterConfigResponse
     {

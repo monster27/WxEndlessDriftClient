@@ -29,7 +29,7 @@ public class BaitDataJsonEditor : BaseDataEditor<BaitData>
     [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/2001_鱼饵")]
     public static void ShowWindow()
     {
-        BaitDataJsonEditor window = GetWindow<BaitDataJsonEditor>("饵料数据编辑器");
+        BaitDataJsonEditor window = GetWindow<BaitDataJsonEditor>("鱼饵数据编辑器");
         window.minSize = new Vector2(800, 600);
         window.Show();
     }
@@ -67,7 +67,7 @@ public class BaitDataJsonEditor : BaseDataEditor<BaitData>
 
         DrawResizableColumn("ID", ref col1, "col1");
         DrawResizableColumn("名称", ref col2, "col2");
-        DrawResizableColumn("权重", ref col3, "col3");
+        DrawResizableColumn("权重(备用)", ref col3, "col3");
         DrawResizableColumn("解锁场景", ref col4, "col4");
         DrawResizableColumn("描述", ref col5, "col5");
 

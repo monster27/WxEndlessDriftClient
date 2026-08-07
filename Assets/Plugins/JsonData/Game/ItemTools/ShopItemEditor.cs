@@ -34,6 +34,10 @@ public class ShopItemEditor : EditorWindow
     // ✅ 新增：是否显示价格与唯一性列
     private bool showPriceColumn = true;
     private bool showUniqueColumn = true;
+
+    // ✅ 新增：分类下拉筛选
+    private int selectedCategoryFilter = -1; // -1=全部
+    private string[] categoryFilterOptions;
     #endregion
 
     #region 菜单入口
@@ -50,6 +54,7 @@ public class ShopItemEditor : EditorWindow
     private void OnEnable()
     {
         LoadAllData();
+        BuildCategoryFilterOptions();
     }
 
     private void OnGUI()
@@ -74,6 +79,7 @@ public class ShopItemEditor : EditorWindow
         LoadAllItems();
         LoadShopItems();
         isDataLoaded = true;
+        BuildCategoryFilterOptions();
         Debug.Log($"[商场物品编辑器] 加载完成: 总物品={allItems.Count}, 商场物品={shopItems.Count}");
     }
 
@@ -176,23 +182,22 @@ public class ShopItemEditor : EditorWindow
     /// </summary>
     private void ReExtractShopItemsFromAllItems()
     {
-        // 清空现有数据
         shopItems.Clear();
         int extractedCount = 0;
 
         foreach (var item in allItems)
         {
-            // 只提取购买价格 > 0 的物品
+            // 只提取购买价格 > 0 的物品（包括图鉴情报）
             if (item.buyPrice > 0)
             {
                 var shopItem = new ShopItemData
                 {
                     itemId = item.id,
                     price = item.buyPrice,
-                    stock = 99, // 默认库存
-                    isOnSale = true, // 默认上架
+                    stock = 99,
+                    isOnSale = true,
                     categoryId = item.categoryId,
-                    isUnique = item.isUnique // ✅ 从物品数据中读取 isUnique
+                    isUnique = item.isUnique
                 };
                 shopItems.Add(shopItem);
                 extractedCount++;
@@ -212,17 +217,17 @@ public class ShopItemEditor : EditorWindow
 
         foreach (var item in allItems)
         {
-            // 只提取购买价格 > 0 的物品
+            // 只提取购买价格 > 0 的物品（包括图鉴情报）
             if (item.buyPrice > 0)
             {
                 var shopItem = new ShopItemData
                 {
                     itemId = item.id,
                     price = item.buyPrice,
-                    stock = 99, // 默认库存
-                    isOnSale = true, // 默认上架
+                    stock = 99,
+                    isOnSale = true,
                     categoryId = item.categoryId,
-                    isUnique = item.isUnique // ✅ 从物品数据中读取 isUnique
+                    isUnique = item.isUnique
                 };
                 shopItems.Add(shopItem);
                 extractedCount++;
@@ -231,6 +236,67 @@ public class ShopItemEditor : EditorWindow
 
         Debug.Log($"[商场物品编辑器] 从物品数据提取商场物品: {extractedCount} 条");
         SaveShopItems();
+    }
+
+    /// <summary>
+    /// 构建分类筛选选项列表
+    /// </summary>
+    private void BuildCategoryFilterOptions()
+    {
+        var options = new List<string>();
+        options.Add("全部");
+
+        // 从 shopItems 中收集所有分类ID
+        var categoryIds = shopItems.Select(s => s.categoryId).Distinct().OrderBy(id => id).ToList();
+
+        foreach (var id in categoryIds)
+        {
+            string name = GetCategoryName(id);
+            options.Add($"{name} ({id})");
+        }
+
+        categoryFilterOptions = options.ToArray();
+
+        // 如果选中的分类超出范围，重置
+        if (selectedCategoryFilter >= categoryFilterOptions.Length)
+        {
+            selectedCategoryFilter = -1;
+        }
+    }
+
+    /// <summary>
+    /// 获取经过分类筛选后的物品列表
+    /// </summary>
+    private List<ShopItemData> GetFilteredShopItems()
+    {
+        var result = shopItems;
+
+        // 分类筛选
+        if (selectedCategoryFilter != -1 && categoryFilterOptions.Length > 1)
+        {
+            string selectedOption = categoryFilterOptions[selectedCategoryFilter + 1];
+            int startIndex = selectedOption.LastIndexOf('(');
+            int endIndex = selectedOption.LastIndexOf(')');
+            if (startIndex != -1 && endIndex != -1 && startIndex < endIndex)
+            {
+                string idStr = selectedOption.Substring(startIndex + 1, endIndex - startIndex - 1);
+                if (int.TryParse(idStr, out int categoryId))
+                {
+                    result = result.Where(s => s.categoryId == categoryId).ToList();
+                }
+            }
+        }
+
+        // 搜索筛选
+        if (!string.IsNullOrEmpty(searchFilter))
+        {
+            result = result.Where(s =>
+                GetItemName(s.itemId).ToLower().Contains(searchFilter) ||
+                s.itemId.ToString().Contains(searchFilter)
+            ).ToList();
+        }
+
+        return result;
     }
     #endregion
 
@@ -246,7 +312,7 @@ public class ShopItemEditor : EditorWindow
             Repaint();
         }
 
-        // ✅ 新增：重新提取按钮（从物品数据重新提取，覆盖现有商场数据）
+        // 重新提取按钮
         GUI.backgroundColor = new Color(1f, 0.8f, 0.4f);
         if (GUILayout.Button("📥 重新提取", EditorStyles.toolbarButton, GUILayout.Width(80)))
         {
@@ -254,17 +320,28 @@ public class ShopItemEditor : EditorWindow
                 "将从物品数据中重新提取所有购买价格 > 0 的物品作为商场商品，\n这将覆盖当前所有商场数据。\n\n确定继续吗？",
                 "确定", "取消"))
             {
-                // 先加载最新的物品数据
                 LoadAllItems();
                 ReExtractShopItemsFromAllItems();
+                BuildCategoryFilterOptions();
             }
         }
         GUI.backgroundColor = Color.white;
 
         GUILayout.Space(10);
 
+        // ✅ 新增：分类筛选下拉框
+        EditorGUILayout.LabelField("分类:", GUILayout.Width(35));
+
+        if (selectedCategoryFilter >= categoryFilterOptions.Length)
+            selectedCategoryFilter = -1;
+
+        int newFilterIndex = EditorGUILayout.Popup(selectedCategoryFilter + 1, categoryFilterOptions, GUILayout.Width(150));
+        selectedCategoryFilter = newFilterIndex - 1;
+
+        GUILayout.Space(5);
+
         // 搜索框
-        GUILayout.Label("搜索:", GUILayout.Width(40));
+        GUILayout.Label("搜索:", GUILayout.Width(35));
         string newSearch = EditorGUILayout.TextField(searchFilter, GUILayout.Width(150));
         if (newSearch != searchFilter)
         {
@@ -275,10 +352,11 @@ public class ShopItemEditor : EditorWindow
         GUILayout.FlexibleSpace();
 
         // 统计信息
-        int onSaleCount = shopItems.Count(s => s.isOnSale);
-        EditorGUILayout.LabelField($"共 {shopItems.Count} 件商品 | 上架: {onSaleCount} 件", GUILayout.Width(200));
+        var filteredItems = GetFilteredShopItems();
+        int onSaleCount = filteredItems.Count(s => s.isOnSale);
+        EditorGUILayout.LabelField($"共 {filteredItems.Count} 件商品 | 上架: {onSaleCount} 件", GUILayout.Width(200));
 
-        // ✅ 新增：显示/隐藏列开关
+        // 显示/隐藏列开关
         showPriceColumn = EditorGUILayout.ToggleLeft("价格", showPriceColumn, GUILayout.Width(50));
         showUniqueColumn = EditorGUILayout.ToggleLeft("唯一", showUniqueColumn, GUILayout.Width(50));
 
@@ -306,12 +384,14 @@ public class ShopItemEditor : EditorWindow
         var fishItems = shopItems.Where(s => GetItemType(s.itemId) == 1).ToList();
         var baitItems = shopItems.Where(s => GetItemType(s.itemId) == 2).ToList();
         var skinItems = shopItems.Where(s => GetItemType(s.itemId) == 4 || GetItemType(s.itemId) == 5).ToList();
-        var otherItems = shopItems.Where(s => GetItemType(s.itemId) >= 3).ToList();
+        var collectionInfoItems = shopItems.Where(s => GetItemType(s.itemId) == 7).ToList(); // ✅ 新增：图鉴情报
+        var otherItems = shopItems.Where(s => GetItemType(s.itemId) == 3 || GetItemType(s.itemId) == 6).ToList();
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField($"🐟 水产: {fishItems.Count} 件", GUILayout.Width(120));
         EditorGUILayout.LabelField($"🎣 饵料: {baitItems.Count} 件", GUILayout.Width(120));
         EditorGUILayout.LabelField($"🎨 皮肤: {skinItems.Count} 件", GUILayout.Width(120));
+        EditorGUILayout.LabelField($"📖 图鉴情报: {collectionInfoItems.Count} 件", GUILayout.Width(140));
         EditorGUILayout.LabelField($"📦 其他: {otherItems.Count} 件", GUILayout.Width(120));
         EditorGUILayout.EndHorizontal();
 
@@ -321,11 +401,17 @@ public class ShopItemEditor : EditorWindow
 
     private void DrawCategoryList()
     {
+        // 获取筛选后的数据
+        var filteredItems = GetFilteredShopItems();
+
+        if (filteredItems.Count == 0)
+        {
+            EditorGUILayout.HelpBox("当前筛选条件下没有数据", MessageType.Info);
+            return;
+        }
+
         // 按分类分组
-        var groupedItems = shopItems
-            .Where(s => string.IsNullOrEmpty(searchFilter) ||
-                        GetItemName(s.itemId).ToLower().Contains(searchFilter) ||
-                        s.itemId.ToString().Contains(searchFilter))
+        var groupedItems = filteredItems
             .GroupBy(s => s.categoryId)
             .OrderBy(g => g.Key)
             .ToList();
@@ -468,15 +554,12 @@ public class ShopItemEditor : EditorWindow
         // 上架开关（可编辑）
         shopItem.isOnSale = EditorGUILayout.Toggle(shopItem.isOnSale, GUILayout.Width(50));
 
-        // ✅ 唯一性显示（只读，从物品数据同步）
+        // 唯一性显示（只读，从物品数据同步）
         if (showUniqueColumn)
         {
-            // 从物品数据获取最新的 isUnique
             var itemData = allItems.FirstOrDefault(i => i.id == shopItem.itemId);
             bool isUnique = itemData?.isUnique ?? false;
             EditorGUILayout.LabelField(isUnique ? "✓" : "✗", GUILayout.Width(40));
-
-            // 同步更新到 shopItem
             shopItem.isUnique = isUnique;
         }
 
@@ -569,6 +652,7 @@ public class ShopItemEditor : EditorWindow
             case 3: return "🪣";
             case 4: return "🏕️";
             case 5: return "🏠";
+            case 7: return "📖";  // ✅ 新增：图鉴情报图标
             default: return "📦";
         }
     }
@@ -610,7 +694,7 @@ public class ShopItemEditor : EditorWindow
         public int stock;
         public bool isOnSale;
         public int categoryId;
-        public bool isUnique; // ✅ 新增：是否唯一
+        public bool isUnique;
     }
 
     [System.Serializable]

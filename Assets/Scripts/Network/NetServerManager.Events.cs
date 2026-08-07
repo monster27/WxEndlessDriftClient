@@ -74,6 +74,14 @@ public partial class NetServerManager
         // ✅ 新增：场景切换
         CommunicateEvent.Register<int>("Server_SceneSwitch", SwitchPlayerScene);
 
+        // ✅ 新增：人物等级奖励查询（客户端检查是否已领取）
+        CommunicateEvent.RegisterRequest<int, bool>("HasClaimedLevelReward", playerId =>
+        {
+            // TODO: 后续优化 - 从服务器查询该等级奖励是否已领取
+            // 目前返回 false，表示未领取（客户端可显示奖励按钮）
+            return false;
+        });
+
         Logger.Log("[NetServerManager] 事件处理器注册完成！");
     }
 

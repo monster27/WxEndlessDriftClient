@@ -54,12 +54,14 @@ namespace SharedModels
         public int capacity;
     }
 
+    // ✅ 修改 HeartbeatResponse 类
     [Serializable]
     public class HeartbeatResponse
     {
         public long serverTime;
         public long clientTime;
         public bool isConnected;
+        public bool mallDataRefreshed;  // ✅ 新增
     }
 
     [Serializable]

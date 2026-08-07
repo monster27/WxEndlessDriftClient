@@ -32,11 +32,9 @@ public class MallView : MonoBehaviour
 
         CommunicateEvent.Register<int>("Mall_ItemClicked", OnMallItemClicked);
 
-        // 订阅金币变更事件
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
         CommunicateEvent.Register<Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_MALL_DATA_CHANGED, OnMallDataChanged);
 
-        // 初始化物品数据映射
         if (LoadDataManager.Instance != null)
         {
             itemDataMap = LoadDataManager.Instance.GetItemDataMap();
@@ -47,8 +45,6 @@ public class MallView : MonoBehaviour
     private void OnDestroy()
     {
         CommunicateEvent.Unregister<int>("Mall_ItemClicked", OnMallItemClicked);
-
-        // 取消订阅金币变更事件
         CommunicateEvent.Unregister<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
         CommunicateEvent.Unregister<Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_MALL_DATA_CHANGED, OnMallDataChanged);
     }
@@ -69,7 +65,6 @@ public class MallView : MonoBehaviour
 
             if (itemDataMap != null && itemDataMap.TryGetValue(itemId, out itemData))
             {
-                // 尝试从当前 mallData 获取
                 if (mallData != null && mallData.TryGetValue(itemId, out mallItemData))
                 {
                     mallItemDetailView.ShowItem(itemId, itemData, mallItemData);
@@ -77,7 +72,6 @@ public class MallView : MonoBehaviour
                 }
             }
 
-            // 如果本地没有，从服务器获取最新数据
             mallItemData = CommunicateEvent.Request<int, MallItemData>(CommunicateEvent.EVENT_GET_MALL_ITEM, itemId);
             if (mallItemData != null && LoadDataManager.Instance != null)
             {
@@ -114,14 +108,49 @@ public class MallView : MonoBehaviour
 
     private void OnMallDataChanged(Dictionary<int, MallItemData> newMallData)
     {
+        Debug.Log($"[MallView] OnMallDataChanged - 收到商城数据更新，共 {newMallData?.Count ?? 0} 个商品");
+
+        if (newMallData == null || newMallData.Count == 0)
+        {
+            Debug.LogWarning("[MallView] OnMallDataChanged - 收到的数据为空");
+            return;
+        }
+
+        // ✅ 打印每个商品的库存，便于调试
+        foreach (var kvp in newMallData)
+        {
+            Debug.Log($"[MallView] 收到商品数据: itemId={kvp.Key}, stock={kvp.Value.stock}");
+        }
+
+        // ✅ 直接使用传入的新数据
         mallData = newMallData;
-        RefreshMallData();
+
+        // ✅ 如果商城打开，立即刷新UI
+        if (gameObject.activeSelf)
+        {
+            Debug.Log("[MallView] 商城已打开，立即刷新UI");
+            UpdateMallItems();
+        }
+        else
+        {
+            Debug.Log("[MallView] 商城未打开，数据已缓存，下次打开时生效");
+        }
     }
 
     public void RefreshMallData()
     {
+        Debug.Log("[MallView] RefreshMallData - 从服务器请求最新商城数据");
         mallData = CommunicateEvent.Request<int, Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_GET_MALL_ITEMS, 0);
-        UpdateMallItems();
+
+        if (mallData != null && mallData.Count > 0)
+        {
+            Debug.Log($"[MallView] 从服务器获取到 {mallData.Count} 个商品");
+            UpdateMallItems();
+        }
+        else
+        {
+            Debug.LogWarning("[MallView] 从服务器获取商城数据失败或为空");
+        }
     }
 
     private void UpdateGoldDisplay()
@@ -135,19 +164,22 @@ public class MallView : MonoBehaviour
 
     private void UpdateMallItems()
     {
-        if (mallData == null)
+        if (mallData == null || mallData.Count == 0)
+        {
+            Debug.LogWarning("[MallView] UpdateMallItems - mallData 为空");
             return;
-        
-        if (itemDataMap == null)
+        }
+
+        if (itemDataMap == null || itemDataMap.Count == 0)
         {
             if (LoadDataManager.Instance != null)
             {
                 itemDataMap = LoadDataManager.Instance.GetItemDataMap();
                 Debug.Log($"[MallView] 延迟初始化 itemDataMap，共 {itemDataMap.Count} 个物品");
             }
-            if (itemDataMap == null)
+            if (itemDataMap == null || itemDataMap.Count == 0)
             {
-                Debug.LogWarning("[MallView] itemDataMap 仍然为 null，无法更新商城物品");
+                Debug.LogWarning("[MallView] itemDataMap 为空，无法更新商城物品");
                 return;
             }
         }
@@ -155,6 +187,7 @@ public class MallView : MonoBehaviour
         currentMallItemIds.Clear();
         ReturnUnusedToPool();
 
+        int updatedCount = 0;
         foreach (var kvp in mallData)
         {
             int itemId = kvp.Key;
@@ -164,20 +197,31 @@ public class MallView : MonoBehaviour
                 continue;
 
             if (!itemDataMap.TryGetValue(itemId, out ItemData itemData))
+            {
+                Debug.LogWarning($"[MallView] 未找到物品数据: itemId={itemId}");
                 continue;
+            }
 
             currentMallItemIds.Add(itemId);
 
             if (mallItemPrefabs.ContainsKey(itemId))
             {
-                mallItemPrefabs[itemId].UpdateDisplay(itemData, mallItem);
-                mallItemPrefabs[itemId].gameObject.SetActive(true);
+                // ✅ 强制更新显示
+                var prefab = mallItemPrefabs[itemId];
+                prefab.UpdateDisplay(itemData, mallItem);
+                prefab.gameObject.SetActive(true);
+                updatedCount++;
+
+                Debug.Log($"[MallView] 更新商品: itemId={itemId}, stock={mallItem.stock}");
             }
             else
             {
                 CreateMallItemPrefab(itemId, itemData, mallItem);
+                updatedCount++;
             }
         }
+
+        Debug.Log($"[MallView] UpdateMallItems 完成，更新了 {updatedCount} 个商品");
     }
 
     private void CreateMallItemPrefab(int itemId, ItemData itemData, MallItemData mallItem)
@@ -201,6 +245,8 @@ public class MallView : MonoBehaviour
         mallPrefab.Init(itemId, itemData, mallItem);
         mallPrefab.gameObject.SetActive(true);
         mallItemPrefabs[itemId] = mallPrefab;
+
+        Debug.Log($"[MallView] 创建商品预制体: itemId={itemId}, stock={mallItem.stock}");
     }
 
     private void ReturnUnusedToPool()
@@ -229,6 +275,7 @@ public class MallView : MonoBehaviour
                 if (itemDataMap.TryGetValue(itemId, out ItemData itemData))
                 {
                     mallItemPrefabs[itemId].UpdateDisplay(itemData, mallItem);
+                    Debug.Log($"[MallView] 更新商品库存: itemId={itemId}, stock={mallItem.stock}");
                 }
             }
         }

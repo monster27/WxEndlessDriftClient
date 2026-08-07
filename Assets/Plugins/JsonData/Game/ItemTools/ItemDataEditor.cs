@@ -8,7 +8,6 @@ using System.Linq;
 
 public class ItemDataEditor : EditorWindow
 {
-    private Dictionary<string, int> groupPageIndex = new Dictionary<string, int>();
     private string inputPath = "JsonData/Game/Items/items";
     private List<ItemData> items = new List<ItemData>();
     private int selectedIndex = -1;
@@ -28,6 +27,15 @@ public class ItemDataEditor : EditorWindow
     private bool showTrashList = true;
     private bool showNestBaitList = true;
     private bool showOtherList = true;
+    private bool showCollectionInfoList = true;  // ✅ 新增：图鉴情报列表
+
+    // ===== 筛选相关 =====
+    private int selectedTypeFilter = -1; // -1=全部
+    private string[] typeFilterOptions;
+
+    // ===== 新增：水产岛屿筛选 =====
+    private int selectedFishIslandFilter = -1; // -1=全部
+    private string[] fishIslandFilterOptions;
 
     [MenuItem("Tools/游戏内容/3.物品通用数据/2.编辑价格数据")]
     public static void ShowWindow()
@@ -40,6 +48,8 @@ public class ItemDataEditor : EditorWindow
     private void OnEnable()
     {
         LoadItemsFromJson();
+        BuildTypeFilterOptions();
+        BuildFishIslandFilterOptions();
     }
 
     private void OnGUI()
@@ -52,34 +62,265 @@ public class ItemDataEditor : EditorWindow
     private void DrawToolbar()
     {
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-        if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60))) LoadItemsFromJson();
+        if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60)))
+        {
+            LoadItemsFromJson();
+            BuildTypeFilterOptions();
+            BuildFishIslandFilterOptions();
+        }
+
+        GUILayout.Space(20);
+
+        // ===== 类型筛选下拉框 =====
+        EditorGUILayout.LabelField("筛选类型:", GUILayout.Width(60));
+
+        if (selectedTypeFilter >= typeFilterOptions.Length)
+            selectedTypeFilter = 0;
+
+        int newFilterIndex = EditorGUILayout.Popup(selectedTypeFilter + 1, typeFilterOptions, GUILayout.Width(120));
+        selectedTypeFilter = newFilterIndex - 1;
+
+        GUILayout.Space(10);
+
+        // ===== 新增：水产岛屿筛选（仅当筛选类型为"水产"或"全部"时可用）=====
+        bool enableIslandFilter = (selectedTypeFilter == -1) ||
+                                  (selectedTypeFilter < typeFilterOptions.Length &&
+                                   typeFilterOptions[selectedTypeFilter + 1].Contains("水产"));
+
+        GUI.enabled = enableIslandFilter;
+
+        EditorGUILayout.LabelField("鱼类岛屿:", GUILayout.Width(60));
+
+        if (selectedFishIslandFilter >= fishIslandFilterOptions.Length)
+            selectedFishIslandFilter = 0;
+
+        int newIslandIndex = EditorGUILayout.Popup(selectedFishIslandFilter + 1, fishIslandFilterOptions, GUILayout.Width(120));
+        selectedFishIslandFilter = newIslandIndex - 1;
+
+        GUI.enabled = true;
+
         GUILayout.FlexibleSpace();
-        EditorGUILayout.LabelField($"共 {items.Count} 条数据（仅可编辑售价）", GUILayout.Width(200));
+        EditorGUILayout.LabelField($"共 {GetFilteredItems().Count} / {items.Count} 条数据", GUILayout.Width(200));
         EditorGUILayout.EndHorizontal();
         GUILayout.Space(5);
+    }
+
+    /// <summary>
+    /// 构建类型筛选选项列表
+    /// </summary>
+    private void BuildTypeFilterOptions()
+    {
+        var typeSet = new HashSet<int>();
+        foreach (var item in items)
+        {
+            typeSet.Add(item.itemType);
+        }
+
+        var options = new List<string>();
+        options.Add("全部");
+
+        var sortedTypes = typeSet.OrderBy(t => t).ToList();
+        foreach (var type in sortedTypes)
+        {
+            string typeName = GetItemTypeName(type);
+            options.Add($"{typeName} ({type})");
+        }
+
+        typeFilterOptions = options.ToArray();
+    }
+
+    /// <summary>
+    /// 构建水产岛屿筛选选项列表
+    /// </summary>
+    private void BuildFishIslandFilterOptions()
+    {
+        var islandNames = new Dictionary<int, string>
+        {
+            { 101, "融冠岛" },
+            { 102, "彩虹岛" },
+            { 103, "场景三" },
+            { 104, "场景四" },
+            { 105, "场景五" }
+        };
+
+        var options = new List<string>();
+        options.Add("全部");
+
+        // 从 fishes.json 读取岛屿数据
+        string fishPath = Path.Combine(Application.dataPath, "Resources", "JsonData/Game/BagItem/fishes.json");
+        if (File.Exists(fishPath))
+        {
+            try
+            {
+                string json = File.ReadAllText(fishPath);
+                var wrapper = JsonUtility.FromJson<FishListWrapper>(json);
+                if (wrapper?.fishes != null)
+                {
+                    var islandSet = new HashSet<int>();
+                    foreach (var fish in wrapper.fishes)
+                    {
+                        islandSet.Add(fish.islandId);
+                    }
+
+                    // 排序，0和-1放在最后
+                    var sortedIslands = islandSet
+                        .Where(id => id > 0)
+                        .OrderBy(id => id)
+                        .ToList();
+
+                    // 添加0和-1（如果有）
+                    if (islandSet.Contains(0))
+                        sortedIslands.Add(0);
+                    if (islandSet.Contains(-1))
+                        sortedIslands.Add(-1);
+
+                    foreach (var id in sortedIslands)
+                    {
+                        string name = id switch
+                        {
+                            0 => "所有岛屿",
+                            -1 => "无岛屿",
+                            _ => islandNames.ContainsKey(id) ? islandNames[id] : $"岛屿{id}"
+                        };
+                        options.Add($"{name} ({id})");
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[物品编辑器] 读取鱼类岛屿失败: {e.Message}");
+            }
+        }
+
+        // 如果没有读取到数据，使用默认岛屿列表
+        if (options.Count <= 1)
+        {
+            foreach (var kvp in islandNames.OrderBy(k => k.Key))
+            {
+                options.Add($"{kvp.Value} ({kvp.Key})");
+            }
+        }
+
+        fishIslandFilterOptions = options.ToArray();
+    }
+
+    /// <summary>
+    /// 获取经过筛选后的数据列表
+    /// </summary>
+    private List<ItemData> GetFilteredItems()
+    {
+        var result = items;
+
+        // 类型筛选
+        if (selectedTypeFilter != -1 && typeFilterOptions.Length > 1)
+        {
+            string selectedOption = typeFilterOptions[selectedTypeFilter + 1];
+            int startIndex = selectedOption.LastIndexOf('(');
+            int endIndex = selectedOption.LastIndexOf(')');
+            if (startIndex != -1 && endIndex != -1 && startIndex < endIndex)
+            {
+                string idStr = selectedOption.Substring(startIndex + 1, endIndex - startIndex - 1);
+                if (int.TryParse(idStr, out int typeId))
+                {
+                    result = result.Where(item => item.itemType == typeId).ToList();
+                }
+            }
+        }
+
+        // 水产岛屿筛选（仅当筛选类型为"全部"或"水产"时生效）
+        if (selectedFishIslandFilter != -1 && fishIslandFilterOptions.Length > 1)
+        {
+            // 检查当前筛选类型是否是水产或全部
+            bool isFishType = (selectedTypeFilter == -1) ||
+                              (selectedTypeFilter < typeFilterOptions.Length &&
+                               typeFilterOptions[selectedTypeFilter + 1].Contains("水产"));
+
+            if (isFishType)
+            {
+                string selectedOption = fishIslandFilterOptions[selectedFishIslandFilter + 1];
+                int startIndex = selectedOption.LastIndexOf('(');
+                int endIndex = selectedOption.LastIndexOf(')');
+                if (startIndex != -1 && endIndex != -1 && startIndex < endIndex)
+                {
+                    string idStr = selectedOption.Substring(startIndex + 1, endIndex - startIndex - 1);
+                    if (int.TryParse(idStr, out int islandId))
+                    {
+                        // 获取该岛屿的鱼类ID列表
+                        var fishIds = GetFishIdsByIsland(islandId);
+                        result = result.Where(item => fishIds.Contains(item.id)).ToList();
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// 根据岛屿获取鱼类ID列表
+    /// </summary>
+    private HashSet<int> GetFishIdsByIsland(int islandId)
+    {
+        var fishIds = new HashSet<int>();
+        string fishPath = Path.Combine(Application.dataPath, "Resources", "JsonData/Game/BagItem/fishes.json");
+
+        if (File.Exists(fishPath))
+        {
+            try
+            {
+                string json = File.ReadAllText(fishPath);
+                var wrapper = JsonUtility.FromJson<FishListWrapper>(json);
+                if (wrapper?.fishes != null)
+                {
+                    foreach (var fish in wrapper.fishes)
+                    {
+                        if (fish.islandId == islandId)
+                        {
+                            fishIds.Add(fish.id);
+                        }
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[物品编辑器] 读取鱼类数据失败: {e.Message}");
+            }
+        }
+
+        return fishIds;
     }
 
     private void DrawDataTable()
     {
         EditorGUILayout.LabelField("物品列表", EditorStyles.boldLabel);
 
-        if (items.Count == 0)
+        var filteredItems = GetFilteredItems();
+
+        if (filteredItems.Count == 0)
         {
-            EditorGUILayout.LabelField("暂无数据，点击\"刷新\"加载", EditorStyles.centeredGreyMiniLabel);
+            string message = items.Count == 0 ? "暂无数据，点击\"刷新\"加载" : "当前筛选条件下没有数据";
+            EditorGUILayout.LabelField(message, EditorStyles.centeredGreyMiniLabel);
             return;
         }
 
-        List<ItemData> fishItems = items.FindAll(item => item.itemType == 1);
-        List<ItemData> baitItems = items.FindAll(item => item.itemType == 2);
-        List<ItemData> trashItems = items.FindAll(item => item.itemType == 3);
-        List<ItemData> nestBaitItems = items.FindAll(item => item.itemType == 6);
-        List<ItemData> otherItems = items.FindAll(item => item.itemType == 4 || item.itemType == 5);
+        scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.ExpandHeight(true));
+
+        List<ItemData> fishItems = filteredItems.FindAll(item => item.itemType == 1);
+        List<ItemData> baitItems = filteredItems.FindAll(item => item.itemType == 2);
+        List<ItemData> trashItems = filteredItems.FindAll(item => item.itemType == 3);
+        List<ItemData> nestBaitItems = filteredItems.FindAll(item => item.itemType == 6);
+        List<ItemData> collectionInfoItems = filteredItems.FindAll(item => item.itemType == 7);  // ✅ 新增：图鉴情报
+        List<ItemData> otherItems = filteredItems.FindAll(item => item.itemType == 4 || item.itemType == 5);
 
         DrawItemGroup("🐟 水产数据", fishItems, ref showFishList);
         DrawItemGroup("🎣 饵料数据", baitItems, ref showBaitList);
         DrawItemGroup("🗑️ 垃圾数据", trashItems, ref showTrashList);
         DrawItemGroup("🪣 窝料数据", nestBaitItems, ref showNestBaitList);
+        DrawItemGroup("📖 图鉴情报数据", collectionInfoItems, ref showCollectionInfoList);  // ✅ 新增
         DrawItemGroup("📦 其他物品", otherItems, ref showOtherList);
+
+        EditorGUILayout.EndScrollView();
+        GUILayout.Space(5);
     }
 
     private void DrawItemGroup(string title, List<ItemData> groupItems, ref bool isExpanded)
@@ -110,21 +351,7 @@ public class ItemDataEditor : EditorWindow
             EditorGUILayout.LabelField("操作", GUILayout.Width(50));
             EditorGUILayout.EndHorizontal();
 
-            int itemsPerPage = 5;
-            int totalPages = Mathf.CeilToInt((float)groupItems.Count / itemsPerPage);
-
-            if (!groupPageIndex.ContainsKey(title))
-            {
-                groupPageIndex[title] = 0;
-            }
-
-            int currentPage = groupPageIndex[title];
-            int startIndex = currentPage * itemsPerPage;
-            int endIndex = Mathf.Min(startIndex + itemsPerPage, groupItems.Count);
-
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Height(180));
-
-            for (int i = startIndex; i < endIndex; i++)
+            for (int i = 0; i < groupItems.Count; i++)
             {
                 ItemData item = groupItems[i];
                 int originalIndex = items.IndexOf(item);
@@ -150,35 +377,6 @@ public class ItemDataEditor : EditorWindow
                 GUI.backgroundColor = Color.white;
                 if (GUILayout.Button("编辑", GUILayout.Width(50))) selectedIndex = originalIndex;
 
-                EditorGUILayout.EndHorizontal();
-            }
-
-            EditorGUILayout.EndScrollView();
-
-            if (totalPages > 1)
-            {
-                EditorGUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-
-                GUI.enabled = currentPage > 0;
-                if (GUILayout.Button("◀ 上一页", GUILayout.Width(80)))
-                {
-                    groupPageIndex[title]--;
-                    scrollPosition = Vector2.zero;
-                }
-                GUI.enabled = true;
-
-                EditorGUILayout.LabelField($"第 {currentPage + 1} / {totalPages} 页", GUILayout.Width(80));
-
-                GUI.enabled = currentPage < totalPages - 1;
-                if (GUILayout.Button("下一页 ▶", GUILayout.Width(80)))
-                {
-                    groupPageIndex[title]++;
-                    scrollPosition = Vector2.zero;
-                }
-                GUI.enabled = true;
-
-                GUILayout.FlexibleSpace();
                 EditorGUILayout.EndHorizontal();
             }
 
@@ -208,6 +406,7 @@ public class ItemDataEditor : EditorWindow
             case 4: return "室外皮肤";
             case 5: return "室内皮肤";
             case 6: return "窝料";
+            case 7: return "图鉴情报";  // ✅ 新增
             default: return "未知";
         }
     }
@@ -370,8 +569,6 @@ public class ItemDataEditor : EditorWindow
             items = wrapper.items;
             selectedIndex = -1;
 
-            // isUnique 直接使用 items.json 中的字段值，不做推导覆盖
-
             Debug.Log($"[物品编辑器] 加载了 {items.Count} 条物品数据");
         }
         catch (System.Exception e)
@@ -407,6 +604,32 @@ public class ItemDataEditor : EditorWindow
     private class ItemListWrapper
     {
         public List<ItemData> items;
+    }
+
+    [System.Serializable]
+    private class FishListWrapper
+    {
+        public List<FishData> fishes;
+    }
+
+    [System.Serializable]
+    private class FishData
+    {
+        public int id;
+        public string name;
+        public int rarityId;
+        public string description;
+        public int islandId;
+        public List<int> preferredIslandIds;
+        public List<int> preferredTimeIds;
+        public List<int> preferredBaitIds;
+        public List<int> preferredWeatherIds;
+        public int fishSpeciesId;
+        public int struggleTime;
+        public float flashProbability;
+        public float baseWeight;
+        public float baseExp;
+        public float scale;
     }
 }
 #endif

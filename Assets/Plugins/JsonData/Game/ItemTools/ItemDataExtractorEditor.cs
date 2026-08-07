@@ -15,10 +15,12 @@ public class ItemDataExtractorEditor : EditorWindow
     private string indoorSkinDataPath = "Resources/JsonData/Game/BagItem/indoorSkin.json";
     private string outdoorSkinDataPath = "Resources/JsonData/Game/BagItem/outdoorSkin.json";
     private string categoryDataPath = "Resources/JsonData/Game/GameFramework/itemCategories.json";
+    private string collectionDataPath = "Resources/JsonData/BaseFramework/collection.json";  // ✅ 新增：图鉴数据路径
     private Vector2 scrollPosition;
     private List<ItemData> extractedItems = new List<ItemData>();
     private List<ItemData> existingItems = new List<ItemData>();
     private CategoryListWrapper categoryWrapper;
+    private CollectionWrapper collectionWrapper;  // ✅ 新增：图鉴数据包装器
 
     private bool showFishList = true;
     private bool showBaitList = true;
@@ -26,6 +28,7 @@ public class ItemDataExtractorEditor : EditorWindow
     private bool showNestBaitList = true;
     private bool showIndoorSkinList = true;
     private bool showOutdoorSkinList = true;
+    private bool showCollectionInfoList = true;  // ✅ 新增：图鉴情报列表折叠
 
     [MenuItem("Tools/游戏内容/3.物品通用数据/1.提取物品数据(用于价格)")]
     public static void ShowWindow()
@@ -55,6 +58,7 @@ public class ItemDataExtractorEditor : EditorWindow
         EditorGUILayout.LabelField($"窝料数据: {nestBaitDataPath}");
         EditorGUILayout.LabelField($"室内皮肤数据: {indoorSkinDataPath}");
         EditorGUILayout.LabelField($"室外皮肤数据: {outdoorSkinDataPath}");
+        EditorGUILayout.LabelField($"图鉴数据: {collectionDataPath}");  // ✅ 新增
         EditorGUILayout.LabelField($"输出路径: {outputPath}");
 
         EditorGUILayout.EndVertical();
@@ -96,6 +100,7 @@ public class ItemDataExtractorEditor : EditorWindow
         List<ItemData> outdoorSkinItems = extractedItems.FindAll(item => item.itemType == 4);
         List<ItemData> indoorSkinItems = extractedItems.FindAll(item => item.itemType == 5);
         List<ItemData> nestBaitItems = extractedItems.FindAll(item => item.itemType == 6);
+        List<ItemData> collectionInfoItems = extractedItems.FindAll(item => item.itemType == 7);  // ✅ 新增：图鉴情报
 
         DrawItemGroup("🐟 鱼类数据", fishItems, ref showFishList);
         DrawItemGroup("🎣 鱼饵数据", baitItems, ref showBaitList);
@@ -103,6 +108,7 @@ public class ItemDataExtractorEditor : EditorWindow
         DrawItemGroup("🏕️ 室外皮肤数据", outdoorSkinItems, ref showOutdoorSkinList);
         DrawItemGroup("🏠 室内皮肤数据", indoorSkinItems, ref showIndoorSkinList);
         DrawItemGroup("🪣 窝料数据", nestBaitItems, ref showNestBaitList);
+        DrawItemGroup("📖 图鉴情报数据", collectionInfoItems, ref showCollectionInfoList);  // ✅ 新增
     }
 
     private void DrawItemGroup(string title, List<ItemData> items, ref bool isExpanded)
@@ -162,6 +168,7 @@ public class ItemDataExtractorEditor : EditorWindow
             case 4: return "室外皮肤";
             case 5: return "室内皮肤";
             case 6: return "窝料";
+            case 7: return "图鉴情报";  // ✅ 新增
             default: return "未知";
         }
     }
@@ -172,6 +179,7 @@ public class ItemDataExtractorEditor : EditorWindow
 
         LoadExistingItems();
         LoadCategoryData();
+        LoadCollectionData();  // ✅ 新增：加载图鉴数据
 
         List<FishData> fishes = LoadFishData();
         List<BaitData> baits = LoadBaitData();
@@ -395,8 +403,82 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
+        // ========== ✅ 新增：处理图鉴情报 ==========
+        // ========== ✅ 处理图鉴情报 ==========
+        if (collectionWrapper?.collection?.categories != null)
+        {
+            foreach (var category in collectionWrapper.collection.categories)
+            {
+                if (category.pages != null)
+                {
+                    foreach (var page in category.pages)
+                    {
+                        // 图鉴情报的ID就是页面的ID
+                        int infoId = page.id;
+
+                        // 如果 page.id 小于 7000，映射到 7000-7199 范围
+                        if (infoId < 7000)
+                        {
+                            infoId = 7000 + (infoId - 800);  // 801 -> 7101, 802 -> 7102
+                        }
+
+                        string infoName = page.pageName + "图鉴情报";
+                        string infoDescription = $"解锁{page.pageName}的图鉴情报，解锁后可查看该页面所有相关条目";
+
+                        ItemData existingItem = FindItemById(infoId);
+                        ItemData item;
+
+                        if (existingItem != null)
+                        {
+                            item = existingItem;
+                            item.name = infoName;
+                            item.description = infoDescription;
+                            item.itemType = 7;
+                            item.categoryId = GetCategoryIdByItemId(infoId);
+                            item.iconPath = $"UI/Icon/CollectionIcons/{infoId}";
+                            item.isUnique = true;
+                        }
+                        else
+                        {
+                            item = new ItemData
+                            {
+                                id = infoId,
+                                name = infoName,
+                                description = infoDescription,
+                                sellPrice = -1,
+                                buyPrice = -1,
+                                itemType = 7,
+                                categoryId = GetCategoryIdByItemId(infoId),
+                                iconPath = $"UI/Icon/CollectionIcons/{infoId}",
+                                isUnique = true
+                            };
+                        }
+
+                        // 如果页面有条目，将条目ID存入 collectionInfoPages
+                        if (page.entries != null && page.entries.Count > 0)
+                        {
+                            if (item.collectionInfoPages == null)
+                            {
+                                item.collectionInfoPages = new List<int>();
+                            }
+                            foreach (var entryId in page.entries)
+                            {
+                                if (!item.collectionInfoPages.Contains(entryId))
+                                {
+                                    item.collectionInfoPages.Add(entryId);
+                                }
+                            }
+                        }
+
+                        extractedItems.Add(item);
+                        Debug.Log($"[物品提取] 添加图鉴情报: ID={infoId}, Name={infoName}, Entries={page.entries?.Count ?? 0}");
+                    }
+                }
+            }
+        }
+
         SaveItemsToJson();
-        Debug.Log($"[物品提取] 完成！共 {extractedItems.Count} 条物品");
+        Debug.Log($"[物品提取] 完成！共 {extractedItems.Count} 条物品（含 {extractedItems.FindAll(i => i.itemType == 7).Count} 条图鉴情报）");
         Repaint();
     }
 
@@ -426,6 +508,11 @@ public class ItemDataExtractorEditor : EditorWindow
                 if (existingItem.description != newItem.description)
                 {
                     inconsistencies.Add($"ID {newItem.id}: 描述不一致");
+                }
+                // 检查 isUnique 是否一致
+                if (existingItem.isUnique != newItem.isUnique)
+                {
+                    inconsistencies.Add($"ID {newItem.id}: isUnique 不一致 ({existingItem.isUnique} → {newItem.isUnique})");
                 }
             }
         }
@@ -644,6 +731,34 @@ public class ItemDataExtractorEditor : EditorWindow
         }
     }
 
+    // ✅ 新增：加载图鉴数据
+    private void LoadCollectionData()
+    {
+        string fullPath = Path.Combine(Application.dataPath, collectionDataPath);
+
+        if (!File.Exists(fullPath))
+        {
+            Debug.LogWarning($"[物品提取] 图鉴数据文件不存在: {fullPath}");
+            collectionWrapper = null;
+            return;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(fullPath);
+            collectionWrapper = JsonUtility.FromJson<CollectionWrapper>(json);
+            if (collectionWrapper?.collection?.categories != null)
+            {
+                Debug.Log($"[物品提取] 已加载图鉴数据，共 {collectionWrapper.collection.categories.Count} 个分类");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[物品提取] 加载图鉴数据失败: {e.Message}");
+            collectionWrapper = null;
+        }
+    }
+
     private int GetCategoryIdByItemId(int itemId)
     {
         if (categoryWrapper == null || categoryWrapper.categories == null)
@@ -763,6 +878,45 @@ public class ItemDataExtractorEditor : EditorWindow
     private class IndoorSkinListWrapper
     {
         public List<IndoorSkinData> decorations;
+    }
+
+    // ✅ 新增：图鉴数据序列化类
+    [System.Serializable]
+    private class CollectionWrapper
+    {
+        public CollectionRoot collection;
+    }
+
+    [System.Serializable]
+    private class CollectionRoot
+    {
+        public List<CollectionCategory> categories;
+    }
+
+    [System.Serializable]
+    private class CollectionCategory
+    {
+        public int id;
+        public string name;
+        public string icon;
+        public List<CollectionPage> pages;
+    }
+
+    [System.Serializable]
+    private class CollectionPage
+    {
+        public int id;
+        public string pageName;
+        public List<CollectionReward> rewards;
+        public List<int> entries;
+    }
+
+    [System.Serializable]
+    private class CollectionReward
+    {
+        public int percent;
+        public int rewardId;
+        public int rewardAmount;
     }
 }
 #endif

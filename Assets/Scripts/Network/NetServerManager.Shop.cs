@@ -20,8 +20,10 @@ public partial class NetServerManager
             {
                 Logger.Log($"[NetServerManager] 购买成功: {message}");
 
-                // 图鉴情报商品：购买成功后记录到情报表
-                if (itemId >= 801 && itemId <= 899)
+                // ✅ 修改：从配置读取，判断是否为情报类型（itemType == 7）
+                // 岛屿情报和图鉴情报都属于情报类型
+                global::ItemData itemData = LoadDataManager.Instance?.GetItemById(itemId);
+                if (itemData != null && itemData.itemType == 7)
                 {
                     PurchaseCollectionInfo(itemId, (infoSuccess) =>
                     {
@@ -84,7 +86,6 @@ public partial class NetServerManager
 
                         Logger.Log($"[NetServerManager] 同步商城物品列表完成，共 {mallItems.Count} 个商品");
 
-                        // 【修复】使用 CommunicateEvent.EVENT_MALL_DATA_CHANGED
                         CommunicateEvent.Modify<Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_MALL_DATA_CHANGED, mallItems);
                     }
                 }
@@ -142,9 +143,23 @@ public partial class NetServerManager
                     var response = JsonUtility.FromJson<PurchaseMallItemResponse>(responseText);
                     if (response != null && response.success)
                     {
-                        Logger.Log($"[NetServerManager] 成功购买物品 {itemId}, 数量 {quantity}, 总价 {response.totalPrice}");
+                        Logger.Log($"[NetServerManager] 成功购买物品 {itemId}, 数量 {quantity}, 总价 {response.totalPrice}, 剩余金币 {response.remainingGold}");
+
+                        // ✅ 1. 更新本地金币
+                        playerGold = response.remainingGold;
+
+                        // ✅ 2. 触发金币变更事件
+                        CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, new Dictionary<string, object>
+                        {
+                            { "gold", playerGold },
+                            { "add", 0 },
+                            { "reduce", response.totalPrice }
+                        });
+                        CommunicateEvent.Modify<int>(CommunicateEvent.EVENT_GOLD_CHANGED, playerGold);
+
                         callback?.Invoke(true, response.message);
 
+                        // ✅ 3. 更新本地背包
                         if (playerInventory.ContainsKey(itemId))
                         {
                             playerInventory[itemId] += quantity;
@@ -156,12 +171,15 @@ public partial class NetServerManager
                             Logger.Log($"[NetServerManager] 本地背包数据新增: ItemId={itemId}, 数量={quantity}");
                         }
 
+                        // ✅ 4. 同步背包数据到 PlayerDataManager
                         PlayerDataManager.Instance?.SyncInventoryFromServer();
 
+                        // ✅ 5. 触发各种刷新事件
                         CommunicateEvent.Modify("Mall_PurchaseSuccess", itemId);
                         CommunicateEvent.Modify("Bag_RefreshItems");
                         CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_ITEM_QUANTITY_CHANGED, (itemId, playerInventory[itemId]));
 
+                        // ✅ 6. 窝料特殊处理
                         bool isNestBait = LoadDataManager.Instance.nestBaitDict.ContainsKey(itemId);
                         if (isNestBait)
                         {
@@ -170,6 +188,7 @@ public partial class NetServerManager
                             StartCoroutine(SyncContinuousModeStatusCoroutine());
                         }
 
+                        // ✅ 7. 鱼饵特殊处理
                         if (itemId >= 2001 && itemId <= 2007)
                         {
                             CommunicateEvent.Modify("BaitCountChanged");
@@ -177,24 +196,33 @@ public partial class NetServerManager
                             Logger.Log($"[NetServerManager] 发送鱼饵数量更新事件: itemId={itemId}");
                         }
 
+                        // ✅ 8. 同步商城数据（更新库存）
                         SyncMallItemsFromServer();
+
+                        // ✅ 9. 显示购买成功Tip
+                        string itemName = GetItemNameById(itemId);
+                        string tipMessage = $"🎣 购买成功！\n{itemName} x{quantity}\n花费 {response.totalPrice} 金币";
+                        GameUIManager.Instance?.ShowTip(tipMessage);
                     }
                     else
                     {
                         Logger.LogWarning($"[NetServerManager] 购买商城物品失败: {response?.message ?? "未知错误"}");
                         callback?.Invoke(false, response?.message ?? "购买失败");
+                        GameUIManager.Instance?.ShowTip($"购买失败：{response?.message ?? "未知错误"}");
                     }
                 }
                 catch (System.Exception ex)
                 {
                     Logger.LogError($"[NetServerManager] 解析购买商城物品响应失败: {ex.Message}");
                     callback?.Invoke(false, "解析响应失败");
+                    GameUIManager.Instance?.ShowTip("购买失败，请重试");
                 }
             }
             else
             {
                 Logger.LogError($"[NetServerManager] 购买商城物品请求失败: {request.error}");
                 callback?.Invoke(false, request.error);
+                GameUIManager.Instance?.ShowTip("网络请求失败，请检查网络");
             }
         }
     }

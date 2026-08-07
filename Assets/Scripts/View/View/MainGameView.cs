@@ -60,6 +60,9 @@ public class MainGameView : BaseView
         CommunicateEvent.Register("BaitDataUpdated", OnBaitDataUpdated);
         CommunicateEvent.Register("FishBagDataUpdated", OnFishBagDataUpdated);
 
+        // ✅ 新增：等级奖励通知
+        CommunicateEvent.Register<string>("OnLevelReward", OnLevelRewardReceived);
+
         if (bagBtn != null)
         {
             bagBtn.onClick.AddListener(OnBagBtnClick);
@@ -396,6 +399,15 @@ public class MainGameView : BaseView
         UpdateFishCountDisplay();
     }
 
+    /// <summary>
+    /// 接收等级奖励通知（客户端显示）
+    /// </summary>
+    private void OnLevelRewardReceived(string rewardMessage)
+    {
+        Debug.Log($"[MainGameView] 收到等级奖励: {rewardMessage}");
+        GameUIManager.Instance?.ShowTip($"🎉 {rewardMessage}");
+    }
+
     public void UpdateFishCount(int currentCount, int maxCapacity)
     {
         if (fishCountTxt != null)
@@ -497,9 +509,6 @@ public class MainGameView : BaseView
     /// <param name="itemId">物品ID</param>
     /// <param name="isFish">是否为鱼类</param>
     /// <param name="isFirstCatch">是否为首次钓获该鱼</param>
-    /// <summary>
-    /// 显示钓获结果
-    /// </summary>
     public void ShowCatchResult(string itemName, float weight, Sprite icon, int starRatingId = 0, int itemId = 0, bool isFish = true, bool isFirstCatch = false)
     {
         Debug.Log($"ShowCatchResult - itemId:{itemId}, isFish:{isFish}, isFirstCatch:{isFirstCatch}");
@@ -545,5 +554,8 @@ public class MainGameView : BaseView
         CommunicateEvent.Unregister("BaitCountChanged", OnBaitCountChanged);
         CommunicateEvent.Unregister("BaitDataUpdated", OnBaitDataUpdated);
         CommunicateEvent.Unregister("FishBagDataUpdated", OnFishBagDataUpdated);
+
+        // ✅ 取消注册等级奖励通知
+        CommunicateEvent.Unregister<string>("OnLevelReward", OnLevelRewardReceived);
     }
 }

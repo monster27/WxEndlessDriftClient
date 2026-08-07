@@ -31,14 +31,31 @@ public class FishingComponentJsonEditor : EditorWindow
     private Vector2 editScrollPosition = Vector2.zero;
     private Vector2 previewScrollPosition = Vector2.zero;
 
+    // 快速创建参数
     private int newId = 3001;
-    private string newName = "新钓鱼技能";
-    private int newCategoryIndex = 4;
-    private int newMaxLevel = 10;
+    private string newName = "新技能";
+    private int newCategoryIndex = 4; // 默认技能
+    private int newDefaultLevel = 30;
+
+    // 新增标记（用于显示新增条目高亮）- 仅在当前编辑会话有效
+    private HashSet<int> newItemIds = new HashSet<int>();
+
+    // ===== 编辑状态追踪 =====
+    private FishingComponentConfig editingComponentBackup;  // 进入编辑时的备份
+    private bool hasUnsavedChanges = false;
+
+    // ===== 最大等级编辑临时变量 =====
+    private int tempMaxLevel = 0;
 
     private readonly string[] categoryNames = { "全部", "钓竿", "钓线", "钓钩", "技能" };
+    private readonly string[] categoryDefaultNames = { "", "钓竿", "钓线", "钓钩", "技能" };
     private readonly int[] categoryStartIds = { 0, 3001, 3101, 3201, 3301 };
     private readonly int[] categoryEndIds = { 0, 3099, 3199, 3299, 3399 };
+
+    // 能力下拉选项缓存
+    private string[] abilityDisplayOptions;
+    private int[] abilityIdOptions;
+    private bool abilityOptionsLoaded = false;
 
     [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/3001_钓具与技能")]
     public static void ShowWindow()
@@ -47,6 +64,7 @@ public class FishingComponentJsonEditor : EditorWindow
         window.minSize = new Vector2(1000, 700);
         window.Show();
     }
+
     private void OnGUI()
     {
         if (currentMode == EditMode.List)
@@ -54,10 +72,32 @@ public class FishingComponentJsonEditor : EditorWindow
         else
             DrawEditMode();
     }
+
     private void OnEnable()
     {
         LoadAbilities();
         LoadData();
+        BuildAbilityOptions();
+        newItemIds.Clear();
+        hasUnsavedChanges = false;
+        editingComponentBackup = null;
+
+        // 初始化批量设置的范围为1到当前选中技能的最大等级，如果没有选中则默认为1-10
+        if (selectedComponentId != -1)
+        {
+            var comp = GetComponentById(selectedComponentId);
+            if (comp != null)
+            {
+                batchEndLevel = comp.maxLevel;
+                tempMaxLevel = comp.maxLevel;
+            }
+        }
+        else
+        {
+            batchEndLevel = 10;
+            tempMaxLevel = 10;
+        }
+        batchStartLevel = 1;
     }
 
     private void LoadAbilities()
@@ -82,6 +122,65 @@ public class FishingComponentJsonEditor : EditorWindow
                 Debug.LogError($"加载能力配置失败: {e.Message}");
             }
         }
+
+        BuildAbilityOptions();
+    }
+
+    private void BuildAbilityOptions()
+    {
+        var displayList = new List<string>();
+        var idList = new List<int>();
+
+        displayList.Add("(无参数)");
+        idList.Add(0);
+
+        foreach (var ability in abilityList.OrderBy(a => a.id))
+        {
+            displayList.Add($"[{ability.id}] {ability.name}");
+            idList.Add(ability.id);
+        }
+
+        abilityDisplayOptions = displayList.ToArray();
+        abilityIdOptions = idList.ToArray();
+        abilityOptionsLoaded = true;
+    }
+
+    private int GetAbilityIndex(int abilityId)
+    {
+        if (!abilityOptionsLoaded) BuildAbilityOptions();
+        for (int i = 0; i < abilityIdOptions.Length; i++)
+        {
+            if (abilityIdOptions[i] == abilityId)
+                return i;
+        }
+        return 0;
+    }
+
+    private int DrawAbilityPopup(string label, int currentAbilityId, ref float value, GUILayoutOption width = null)
+    {
+        if (!abilityOptionsLoaded) BuildAbilityOptions();
+
+        EditorGUILayout.BeginHorizontal();
+
+        EditorGUILayout.LabelField(label, GUILayout.Width(60));
+        int currentIndex = GetAbilityIndex(currentAbilityId);
+        int newIndex = EditorGUILayout.Popup(currentIndex, abilityDisplayOptions, width ?? GUILayout.Width(160));
+
+        int newAbilityId = abilityIdOptions[newIndex];
+
+        if (newAbilityId != 0)
+        {
+            EditorGUILayout.LabelField("数值:", GUILayout.Width(30));
+            value = EditorGUILayout.FloatField(value, GUILayout.Width(60));
+        }
+        else
+        {
+            value = 0f;
+        }
+
+        EditorGUILayout.EndHorizontal();
+
+        return newAbilityId;
     }
 
     private void DrawListMode()
@@ -112,11 +211,13 @@ public class FishingComponentJsonEditor : EditorWindow
         {
             LoadAbilities();
             LoadData();
+            BuildAbilityOptions();
+            newItemIds.Clear();
+            hasUnsavedChanges = false;
+            editingComponentBackup = null;
         }
         if (GUILayout.Button("➕ 新增", EditorStyles.toolbarButton, GUILayout.Width(70)))
             QuickCreateComponent();
-        if (GUILayout.Button("📥 预设", EditorStyles.toolbarButton, GUILayout.Width(70)))
-            ShowPresetMenu();
 
         EditorGUILayout.LabelField($"共{componentList.Count}条", EditorStyles.toolbarButton, GUILayout.Width(60));
         EditorGUILayout.EndHorizontal();
@@ -149,39 +250,34 @@ public class FishingComponentJsonEditor : EditorWindow
         EditorGUILayout.LabelField("快速创建", EditorStyles.boldLabel);
 
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("ID:", GUILayout.Width(25));
-        newId = EditorGUILayout.IntField(newId, GUILayout.Width(60));
-
-        if (newId < 3001 || newId > 3399)
-        {
-            GUI.backgroundColor = Color.red;
-            EditorGUILayout.LabelField("❌ ID应在3001-3399范围内", GUILayout.Width(150));
-            GUI.backgroundColor = Color.white;
-        }
-        else
-        {
-            GUI.backgroundColor = Color.green;
-            EditorGUILayout.LabelField("✓", GUILayout.Width(20));
-            GUI.backgroundColor = Color.white;
-        }
-
         EditorGUILayout.LabelField("名称:", GUILayout.Width(35));
         newName = EditorGUILayout.TextField(newName, GUILayout.Width(140));
-        EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("类别:", GUILayout.Width(35));
-        newCategoryIndex = EditorGUILayout.Popup(newCategoryIndex - 1, new string[] { "钓竿", "钓线", "钓钩", "技能" }) + 1;
+        int newCatIndex = EditorGUILayout.Popup(newCategoryIndex - 1, new string[] { "钓竿", "钓线", "钓钩", "技能" }) + 1;
 
-        EditorGUILayout.LabelField($"范围: {categoryStartIds[newCategoryIndex]}-{categoryEndIds[newCategoryIndex]}", GUILayout.Width(130));
+        if (newCatIndex != newCategoryIndex)
+        {
+            newCategoryIndex = newCatIndex;
+            newName = categoryDefaultNames[newCategoryIndex];
+        }
 
         EditorGUILayout.LabelField("等级:", GUILayout.Width(35));
-        newMaxLevel = EditorGUILayout.IntSlider(newMaxLevel, 1, 20, GUILayout.Width(120));
+        newDefaultLevel = EditorGUILayout.IntField(newDefaultLevel, GUILayout.Width(40));
 
         GUI.backgroundColor = new Color(0.2f, 0.7f, 0.2f);
         if (GUILayout.Button("创建", GUILayout.Width(50)))
             QuickCreateComponent();
         GUI.backgroundColor = Color.white;
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField($"ID范围: {categoryStartIds[newCategoryIndex]}-{categoryEndIds[newCategoryIndex]}", GUILayout.Width(250));
+        int nextId = GetNextAvailableIdInCategory((FishingComponentCategory)newCategoryIndex);
+        if (nextId > 0)
+            EditorGUILayout.LabelField($"下一个可用ID: {nextId}", GUILayout.Width(150));
+        else
+            EditorGUILayout.LabelField("⚠️ 该类别ID已满!", GUILayout.Width(150));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.EndVertical();
@@ -276,13 +372,21 @@ public class FishingComponentJsonEditor : EditorWindow
     private void DrawComponentItem(FishingComponentConfig item)
     {
         bool isSelected = selectedComponentId == item.id;
+        bool isNew = newItemIds.Contains(item.id);
+
+        if (isNew)
+            GUI.backgroundColor = new Color(0.6f, 1f, 0.6f);
+        else if (isSelected)
+            GUI.backgroundColor = Color.cyan;
+        else
+            GUI.backgroundColor = Color.white;
 
         EditorGUILayout.BeginHorizontal(isSelected ? "SelectionRect" : "box", GUILayout.Height(26));
 
         EditorGUILayout.LabelField(GetCategoryIcon(item.category), GUILayout.Width(35));
 
-        string displayName = $"[{item.id}] {item.name}";
-        if (displayName.Length > 20) displayName = displayName.Substring(0, 18) + "..";
+        string displayName = isNew ? $"🆕 [{item.id}] {item.name}" : $"[{item.id}] {item.name}";
+        if (displayName.Length > 22) displayName = displayName.Substring(0, 20) + "..";
         EditorGUILayout.LabelField(displayName, EditorStyles.boldLabel, GUILayout.Width(180));
 
         var categoryStyle = new GUIStyle(EditorStyles.miniLabel);
@@ -301,8 +405,7 @@ public class FishingComponentJsonEditor : EditorWindow
         GUI.backgroundColor = new Color(0.4f, 0.7f, 1f);
         if (GUILayout.Button("编辑", EditorStyles.miniButton, GUILayout.Width(45)))
         {
-            editingComponentId = item.id;
-            currentMode = EditMode.Edit;
+            EnterEditMode(item.id);
         }
         GUI.backgroundColor = new Color(1f, 0.5f, 0.5f);
         if (GUILayout.Button("删除", EditorStyles.miniButton, GUILayout.Width(45)))
@@ -310,6 +413,7 @@ public class FishingComponentJsonEditor : EditorWindow
             if (EditorUtility.DisplayDialog("确认删除", $"确定删除 [{item.id}] {item.name} 吗？", "删除", "取消"))
             {
                 componentList.Remove(item);
+                newItemIds.Remove(item.id);
                 if (selectedComponentId == item.id) selectedComponentId = -1;
                 SaveData();
                 Repaint();
@@ -319,6 +423,8 @@ public class FishingComponentJsonEditor : EditorWindow
 
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.EndHorizontal();
+
+        GUI.backgroundColor = Color.white;
 
         Rect lastRect = GUILayoutUtility.GetLastRect();
         if (Event.current.type == EventType.MouseDown && lastRect.Contains(Event.current.mousePosition))
@@ -344,12 +450,17 @@ public class FishingComponentJsonEditor : EditorWindow
             return;
         }
 
+        bool isNew = newItemIds.Contains(component.id);
+
         EditorGUILayout.LabelField("技能详情", EditorStyles.boldLabel);
         EditorGUILayout.BeginVertical("box");
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField(GetCategoryIcon(component.category), GUILayout.Width(30));
-        EditorGUILayout.LabelField($"ID: {component.id}", EditorStyles.boldLabel);
+        if (isNew)
+            EditorGUILayout.LabelField($"🆕 ID: {component.id} (新增)", EditorStyles.boldLabel);
+        else
+            EditorGUILayout.LabelField($"ID: {component.id}", EditorStyles.boldLabel);
         EditorGUILayout.LabelField($"名称: {component.name}", EditorStyles.boldLabel);
         EditorGUILayout.EndHorizontal();
 
@@ -364,9 +475,9 @@ public class FishingComponentJsonEditor : EditorWindow
 
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
         EditorGUILayout.LabelField("等级", EditorStyles.toolbarButton, GUILayout.Width(50));
-        EditorGUILayout.LabelField("参数1 (能力ID:值)", EditorStyles.toolbarButton, GUILayout.Width(150));
-        EditorGUILayout.LabelField("参数2 (能力ID:值)", EditorStyles.toolbarButton, GUILayout.Width(150));
-        EditorGUILayout.LabelField("参数3 (能力ID:值)", EditorStyles.toolbarButton, GUILayout.Width(150));
+        EditorGUILayout.LabelField("参数1", EditorStyles.toolbarButton, GUILayout.Width(180));
+        EditorGUILayout.LabelField("参数2", EditorStyles.toolbarButton, GUILayout.Width(180));
+        EditorGUILayout.LabelField("参数3", EditorStyles.toolbarButton, GUILayout.Width(180));
         EditorGUILayout.EndHorizontal();
 
         previewScrollPosition = EditorGUILayout.BeginScrollView(previewScrollPosition, GUILayout.Height(350));
@@ -379,30 +490,23 @@ public class FishingComponentJsonEditor : EditorWindow
                 EditorGUILayout.BeginHorizontal(i % 2 == 0 ? "box" : GUIStyle.none);
                 EditorGUILayout.LabelField($"Lv.{levelData.level}", GUILayout.Width(50));
 
-                if (levelData.paramsList != null)
+                for (int j = 0; j < 3; j++)
                 {
-                    for (int j = 0; j < 3; j++)
+                    if (j < levelData.paramsList.Count && levelData.paramsList[j].paramId != 0)
                     {
-                        if (j < levelData.paramsList.Count && levelData.paramsList[j].paramId != 0)
+                        var param = levelData.paramsList[j];
+                        string abilityName = GetAbilityName(param.paramId);
+                        string displayText = $"{param.paramId}:{param.value:F2}";
+                        if (!string.IsNullOrEmpty(abilityName))
                         {
-                            var param = levelData.paramsList[j];
-                            string abilityName = GetAbilityName(param.paramId);
-                            string displayText = $"{param.paramId}:{param.value:F2}";
-                            if (!string.IsNullOrEmpty(abilityName))
-                            {
-                                displayText = $"{abilityName}({param.value:F2})";
-                            }
-                            EditorGUILayout.LabelField(displayText, GUILayout.Width(150));
+                            displayText = $"{abilityName}({param.value:F2})";
                         }
-                        else
-                        {
-                            EditorGUILayout.LabelField("-", GUILayout.Width(150));
-                        }
+                        EditorGUILayout.LabelField(displayText, GUILayout.Width(180));
                     }
-                }
-                else
-                {
-                    EditorGUILayout.LabelField("无参数", GUILayout.Width(450));
+                    else
+                    {
+                        EditorGUILayout.LabelField("-", GUILayout.Width(180));
+                    }
                 }
                 EditorGUILayout.EndHorizontal();
             }
@@ -415,8 +519,7 @@ public class FishingComponentJsonEditor : EditorWindow
         GUI.backgroundColor = new Color(0.4f, 0.8f, 1f);
         if (GUILayout.Button("✏️ 编辑技能", GUILayout.Width(100)))
         {
-            editingComponentId = component.id;
-            currentMode = EditMode.Edit;
+            EnterEditMode(component.id);
         }
         GUI.backgroundColor = new Color(1f, 0.8f, 0.2f);
         if (GUILayout.Button("📋 复制技能", GUILayout.Width(100)))
@@ -429,6 +532,73 @@ public class FishingComponentJsonEditor : EditorWindow
 
     #region Edit Mode
 
+    private void EnterEditMode(int componentId)
+    {
+        var component = GetComponentById(componentId);
+        if (component == null) return;
+
+        editingComponentBackup = DeepCopy(component);
+        hasUnsavedChanges = false;
+
+        // 初始化最大等级临时变量
+        tempMaxLevel = component.maxLevel;
+
+        // 更新批量设置的范围为当前技能的最大等级
+        if (component != null)
+        {
+            batchEndLevel = component.maxLevel;
+            if (batchStartLevel > batchEndLevel)
+                batchStartLevel = 1;
+        }
+
+        editingComponentId = componentId;
+        currentMode = EditMode.Edit;
+        Repaint();
+    }
+
+    private FishingComponentConfig DeepCopy(FishingComponentConfig source)
+    {
+        var copy = new FishingComponentConfig
+        {
+            id = source.id,
+            name = source.name,
+            category = source.category,
+            maxLevel = source.maxLevel,
+            levelDataList = new List<FishingComponentLevelData>()
+        };
+
+        if (source.levelDataList != null)
+        {
+            foreach (var levelData in source.levelDataList)
+            {
+                var levelCopy = new FishingComponentLevelData
+                {
+                    level = levelData.level,
+                    levelDescription = levelData.levelDescription,
+                    upgradeDescription = levelData.upgradeDescription,
+                    upgradeCost = levelData.upgradeCost,
+                    paramsList = new List<FishingComponentParam>()
+                };
+
+                if (levelData.paramsList != null)
+                {
+                    foreach (var param in levelData.paramsList)
+                    {
+                        levelCopy.paramsList.Add(new FishingComponentParam
+                        {
+                            paramId = param.paramId,
+                            value = param.value
+                        });
+                    }
+                }
+
+                copy.levelDataList.Add(levelCopy);
+            }
+        }
+
+        return copy;
+    }
+
     private void DrawEditMode()
     {
         var component = GetComponentById(editingComponentId);
@@ -439,18 +609,75 @@ public class FishingComponentJsonEditor : EditorWindow
             return;
         }
 
+        bool isNew = newItemIds.Contains(component.id);
+
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
         GUI.backgroundColor = new Color(0.8f, 0.8f, 0.8f);
         if (GUILayout.Button("← 返回列表", EditorStyles.toolbarButton, GUILayout.Width(100)))
         {
-            currentMode = EditMode.List;
-            SaveData();
-            Repaint();
+            if (hasUnsavedChanges)
+            {
+                int choice = EditorUtility.DisplayDialogComplex(
+                    "未保存的更改",
+                    "当前技能有未保存的修改，是否保存？",
+                    "保存",     // 0
+                    "不保存",   // 1
+                    "取消"      // 2
+                );
+
+                if (choice == 0) // 保存
+                {
+                    SaveData();
+                    newItemIds.Remove(component.id);
+                    hasUnsavedChanges = false;
+                    editingComponentBackup = null;
+                    currentMode = EditMode.List;
+                    Repaint();
+                    return;
+                }
+                else if (choice == 1) // 不保存 - 恢复备份
+                {
+                    if (editingComponentBackup != null)
+                    {
+                        component.name = editingComponentBackup.name;
+                        component.category = editingComponentBackup.category;
+                        component.maxLevel = editingComponentBackup.maxLevel;
+                        component.levelDataList = editingComponentBackup.levelDataList;
+                        tempMaxLevel = editingComponentBackup.maxLevel;
+                    }
+                    hasUnsavedChanges = false;
+                    editingComponentBackup = null;
+                    currentMode = EditMode.List;
+                    Repaint();
+                    return;
+                }
+                else // 取消
+                {
+                    return;
+                }
+            }
+            else
+            {
+                editingComponentBackup = null;
+                currentMode = EditMode.List;
+                Repaint();
+                return;
+            }
         }
         GUI.backgroundColor = Color.white;
 
-        EditorGUILayout.LabelField($"编辑: [{component.id}] {component.name}", EditorStyles.boldLabel);
+        if (isNew)
+            EditorGUILayout.LabelField($"🆕 编辑: [{component.id}] {component.name} (新增)", EditorStyles.boldLabel);
+        else
+            EditorGUILayout.LabelField($"编辑: [{component.id}] {component.name}", EditorStyles.boldLabel);
+
+        if (hasUnsavedChanges)
+        {
+            GUI.backgroundColor = new Color(1f, 0.8f, 0.2f);
+            EditorGUILayout.LabelField("⚠️ 有未保存的修改", EditorStyles.boldLabel, GUILayout.Width(120));
+            GUI.backgroundColor = Color.white;
+        }
 
         GUILayout.FlexibleSpace();
 
@@ -459,6 +686,9 @@ public class FishingComponentJsonEditor : EditorWindow
         {
             SaveData();
             EditorUtility.DisplayDialog("保存成功", "数据已保存！", "确定");
+            newItemIds.Remove(component.id);
+            hasUnsavedChanges = false;
+            editingComponentBackup = null;
         }
         GUI.backgroundColor = Color.white;
 
@@ -472,7 +702,10 @@ public class FishingComponentJsonEditor : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("ID:", GUILayout.Width(60));
-        EditorGUILayout.LabelField(component.id.ToString());
+        if (isNew)
+            EditorGUILayout.LabelField($"{component.id} 🆕", EditorStyles.boldLabel);
+        else
+            EditorGUILayout.LabelField(component.id.ToString());
 
         int categoryIdx = (int)component.category;
         if (component.id < categoryStartIds[categoryIdx] || component.id > categoryEndIds[categoryIdx])
@@ -485,7 +718,12 @@ public class FishingComponentJsonEditor : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("名称:", GUILayout.Width(60));
-        component.name = EditorGUILayout.TextField(component.name);
+        string newName = EditorGUILayout.TextField(component.name);
+        if (newName != component.name)
+        {
+            component.name = newName;
+            hasUnsavedChanges = true;
+        }
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
@@ -495,24 +733,51 @@ public class FishingComponentJsonEditor : EditorWindow
         if (newCatIndex != currentCatIndex)
         {
             component.category = (FishingComponentCategory)newCatIndex;
+            hasUnsavedChanges = true;
         }
         EditorGUILayout.EndHorizontal();
 
+        // ===== 修复：使用临时变量存储最大等级输入值 =====
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("最大等级:", GUILayout.Width(60));
-        int newMaxLevel = EditorGUILayout.IntSlider(component.maxLevel, 1, 20);
-        if (newMaxLevel != component.maxLevel)
+        // 显示当前最大等级，但用临时变量存储输入
+        tempMaxLevel = EditorGUILayout.IntField(tempMaxLevel, GUILayout.Width(50));
+        EditorGUILayout.LabelField($"当前: {component.maxLevel}", GUILayout.Width(80));
+
+        GUI.backgroundColor = new Color(0.4f, 0.9f, 0.4f);
+        if (GUILayout.Button("确认", GUILayout.Width(50)))
         {
-            AdjustLevelDataCount(component, newMaxLevel);
-            component.maxLevel = newMaxLevel;
+            if (tempMaxLevel >= 1 && tempMaxLevel <= 100)
+            {
+                // 更新最大等级
+                component.maxLevel = tempMaxLevel;
+                // 调整等级列表
+                AdjustLevelDataCount(component, tempMaxLevel);
+                hasUnsavedChanges = true;
+                // 更新批量设置的范围
+                batchEndLevel = tempMaxLevel;
+                if (batchStartLevel > batchEndLevel)
+                    batchStartLevel = 1;
+                // 强制刷新界面
+                Repaint();
+                EditorUtility.DisplayDialog("成功", $"最大等级已更新为 {tempMaxLevel}", "确定");
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("错误", "最大等级必须在 1-100 之间！", "确定");
+                // 恢复显示当前值
+                tempMaxLevel = component.maxLevel;
+            }
         }
+        GUI.backgroundColor = Color.white;
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.EndVertical();
         GUILayout.Space(10);
 
         EditorGUILayout.BeginVertical("box");
-        EditorGUILayout.LabelField("等级参数配置 (能力ID参考: 701-713)", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("等级参数配置", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox("从 abilities.json 动态加载能力列表", MessageType.Info);
 
         DrawBatchSettings(component);
         GUILayout.Space(10);
@@ -531,20 +796,27 @@ public class FishingComponentJsonEditor : EditorWindow
     {
         EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
         EditorGUILayout.LabelField("批量设置:", GUILayout.Width(60));
+
+        // 批量设置范围 - 动态调整为1到当前技能的最大等级
         batchStartLevel = EditorGUILayout.IntField(batchStartLevel, GUILayout.Width(50));
         EditorGUILayout.LabelField("到", GUILayout.Width(20));
+
+        // 限制范围在1到最大等级之间
+        int maxLevel = component != null ? component.maxLevel : 10;
+        if (batchEndLevel > maxLevel) batchEndLevel = maxLevel;
+        if (batchEndLevel < 1) batchEndLevel = 1;
+
         batchEndLevel = EditorGUILayout.IntField(batchEndLevel, GUILayout.Width(50));
+        EditorGUILayout.LabelField($"(1-{maxLevel})", GUILayout.Width(60));
 
-        EditorGUILayout.LabelField("能力ID:", GUILayout.Width(55));
-        batchParam1Id = EditorGUILayout.IntField(batchParam1Id, GUILayout.Width(60));
-        string abilityHint = GetAbilityName(batchParam1Id);
-        if (!string.IsNullOrEmpty(abilityHint))
+        int oldParamId = batchParam1Id;
+        float oldValue = batchParam1Value;
+        batchParam1Id = DrawAbilityPopup("能力:", batchParam1Id, ref batchParam1Value, GUILayout.Width(180));
+
+        if (oldParamId != batchParam1Id || Math.Abs(oldValue - batchParam1Value) > 0.0001f)
         {
-            EditorGUILayout.LabelField($"({abilityHint})", GUILayout.Width(100));
+            hasUnsavedChanges = true;
         }
-
-        EditorGUILayout.LabelField("值:", GUILayout.Width(25));
-        batchParam1Value = EditorGUILayout.FloatField(batchParam1Value, GUILayout.Width(60));
 
         if (GUILayout.Button("应用", GUILayout.Width(60)))
         {
@@ -561,55 +833,46 @@ public class FishingComponentJsonEditor : EditorWindow
 
         EnsureParamsList(levelData);
 
-        DrawParamField("参数1", levelData.paramsList[0]);
-        DrawParamField("参数2", levelData.paramsList[1]);
-        DrawParamField("参数3", levelData.paramsList[2]);
+        int oldParam1 = levelData.paramsList[0].paramId;
+        float oldVal1 = levelData.paramsList[0].value;
+        int oldParam2 = levelData.paramsList[1].paramId;
+        float oldVal2 = levelData.paramsList[1].value;
+        int oldParam3 = levelData.paramsList[2].paramId;
+        float oldVal3 = levelData.paramsList[2].value;
+        string oldLevelDesc = levelData.levelDescription;
+        string oldUpgradeDesc = levelData.upgradeDescription;
+        int oldUpgradeCost = levelData.upgradeCost;
+
+        levelData.paramsList[0].paramId = DrawAbilityPopup("参数1:", levelData.paramsList[0].paramId, ref levelData.paramsList[0].value, GUILayout.Width(180));
+        levelData.paramsList[1].paramId = DrawAbilityPopup("参数2:", levelData.paramsList[1].paramId, ref levelData.paramsList[1].value, GUILayout.Width(180));
+        levelData.paramsList[2].paramId = DrawAbilityPopup("参数3:", levelData.paramsList[2].paramId, ref levelData.paramsList[2].value, GUILayout.Width(180));
+
+        if (oldParam1 != levelData.paramsList[0].paramId || Math.Abs(oldVal1 - levelData.paramsList[0].value) > 0.0001f ||
+            oldParam2 != levelData.paramsList[1].paramId || Math.Abs(oldVal2 - levelData.paramsList[1].value) > 0.0001f ||
+            oldParam3 != levelData.paramsList[2].paramId || Math.Abs(oldVal3 - levelData.paramsList[2].value) > 0.0001f)
+        {
+            hasUnsavedChanges = true;
+        }
 
         GUILayout.Space(5);
         EditorGUILayout.LabelField("等级描述:", GUILayout.Width(60));
-        levelData.levelDescription = EditorGUILayout.TextArea(levelData.levelDescription, GUILayout.Height(60));
+        string newLevelDesc = EditorGUILayout.TextArea(levelData.levelDescription, GUILayout.Height(60));
+        if (newLevelDesc != oldLevelDesc) { levelData.levelDescription = newLevelDesc; hasUnsavedChanges = true; }
 
         GUILayout.Space(5);
         EditorGUILayout.LabelField("升级效果:", GUILayout.Width(60));
-        levelData.upgradeDescription = EditorGUILayout.TextField(levelData.upgradeDescription);
+        string newUpgradeDesc = EditorGUILayout.TextField(levelData.upgradeDescription);
+        if (newUpgradeDesc != oldUpgradeDesc) { levelData.upgradeDescription = newUpgradeDesc; hasUnsavedChanges = true; }
 
         GUILayout.Space(5);
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("升级费用:", GUILayout.Width(60));
-        levelData.upgradeCost = EditorGUILayout.IntField(levelData.upgradeCost);
+        int newUpgradeCost = EditorGUILayout.IntField(levelData.upgradeCost);
+        if (newUpgradeCost != oldUpgradeCost) { levelData.upgradeCost = newUpgradeCost; hasUnsavedChanges = true; }
         EditorGUILayout.LabelField("金币", GUILayout.Width(40));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.EndVertical();
-    }
-
-    private void DrawParamField(string label, FishingComponentParam param)
-    {
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField($"{label} 能力ID:", GUILayout.Width(70));
-        param.paramId = EditorGUILayout.IntField(param.paramId, GUILayout.Width(60));
-
-        string abilityName = GetAbilityName(param.paramId);
-        if (param.paramId != 0)
-        {
-            if (!string.IsNullOrEmpty(abilityName))
-            {
-                EditorGUILayout.LabelField($"({abilityName})", GUILayout.Width(120));
-            }
-            else
-            {
-                EditorGUILayout.LabelField("(未知能力)", GUILayout.Width(80));
-            }
-
-            EditorGUILayout.LabelField("数值:", GUILayout.Width(30));
-            param.value = EditorGUILayout.FloatField(param.value, GUILayout.Width(70));
-        }
-        else
-        {
-            EditorGUILayout.LabelField("(无参数)", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(100));
-        }
-
-        EditorGUILayout.EndHorizontal();
     }
 
     private string GetAbilityName(int abilityId)
@@ -638,6 +901,7 @@ public class FishingComponentJsonEditor : EditorWindow
         if (component.levelDataList == null)
             component.levelDataList = new List<FishingComponentLevelData>();
 
+        // 如果新数量大于当前数量，添加新等级
         while (component.levelDataList.Count < newCount)
         {
             int newLevel = component.levelDataList.Count + 1;
@@ -651,11 +915,14 @@ public class FishingComponentJsonEditor : EditorWindow
                     new FishingComponentParam { paramId = 0, value = 0f }
                 }
             });
+            hasUnsavedChanges = true;
         }
 
+        // 如果新数量小于当前数量，移除多余的等级
         while (component.levelDataList.Count > newCount)
         {
             component.levelDataList.RemoveAt(component.levelDataList.Count - 1);
+            hasUnsavedChanges = true;
         }
     }
 
@@ -734,11 +1001,6 @@ public class FishingComponentJsonEditor : EditorWindow
                 Debug.LogError($"加载数据失败: {e.Message}");
             }
         }
-
-        if (componentList.Count == 0)
-        {
-            AddHardcodedDefaults();
-        }
     }
 
     private void EnsureLevelData(FishingComponentConfig component)
@@ -775,38 +1037,37 @@ public class FishingComponentJsonEditor : EditorWindow
         if (!Directory.Exists(directory))
             Directory.CreateDirectory(directory);
 
+        componentList = componentList.OrderBy(c => c.id).ToList();
+
         var array = new FishingComponentConfigArray { items = componentList.ToArray() };
         string json = JsonUtility.ToJson(array, true);
         File.WriteAllText(fullPath, json);
 
         AssetDatabase.Refresh();
         Debug.Log($"保存成功: {fullPath}");
+
+        hasUnsavedChanges = false;
     }
 
     private void QuickCreateComponent()
     {
-        if (!IsIdInRange(newId, (FishingComponentCategory)newCategoryIndex))
+        int autoId = GetNextAvailableIdInCategory((FishingComponentCategory)newCategoryIndex);
+        if (autoId == -1)
         {
-            EditorUtility.DisplayDialog("错误", $"ID {newId} 不在 {categoryNames[newCategoryIndex]} 的范围内！\n范围: {categoryStartIds[newCategoryIndex]}-{categoryEndIds[newCategoryIndex]}", "确定");
-            return;
-        }
-
-        if (IsIdExists(newId))
-        {
-            EditorUtility.DisplayDialog("错误", $"ID {newId} 已存在！", "确定");
+            EditorUtility.DisplayDialog("错误", $"类别 {categoryNames[newCategoryIndex]} 的ID范围已满！\n范围: {categoryStartIds[newCategoryIndex]}-{categoryEndIds[newCategoryIndex]}", "确定");
             return;
         }
 
         var newComponent = new FishingComponentConfig
         {
-            id = newId,
+            id = autoId,
             name = newName,
             category = (FishingComponentCategory)newCategoryIndex,
-            maxLevel = newMaxLevel,
+            maxLevel = newDefaultLevel,
             levelDataList = new List<FishingComponentLevelData>()
         };
 
-        for (int i = 1; i <= newMaxLevel; i++)
+        for (int i = 1; i <= newDefaultLevel; i++)
         {
             newComponent.levelDataList.Add(new FishingComponentLevelData
             {
@@ -820,17 +1081,20 @@ public class FishingComponentJsonEditor : EditorWindow
             });
         }
 
-        componentList.Add(newComponent);
+        int insertIndex = componentList.FindIndex(c => c.id > autoId);
+        if (insertIndex == -1)
+            componentList.Add(newComponent);
+        else
+            componentList.Insert(insertIndex, newComponent);
+
+        newItemIds.Add(autoId);
+
         SaveData();
 
-        newId = newId + 1;
-        while (IsIdExists(newId) && newId <= categoryEndIds[newCategoryIndex]) newId++;
-        if (newId > categoryEndIds[newCategoryIndex])
-        {
-            newId = categoryStartIds[newCategoryIndex];
-        }
+        selectedComponentId = autoId;
+        EnterEditMode(autoId);
 
-        EditorUtility.DisplayDialog("成功", $"已创建 [{newComponent.id}] {newComponent.name}", "确定");
+        Debug.Log($"已创建新技能: [{autoId}] {newName} (新增标记已添加)");
         Repaint();
     }
 
@@ -868,213 +1132,36 @@ public class FishingComponentJsonEditor : EditorWindow
             newComponent.levelDataList.Add(newLevelData);
         }
 
-        componentList.Add(newComponent);
+        int insertIndex = componentList.FindIndex(c => c.id > newId);
+        if (insertIndex == -1)
+            componentList.Add(newComponent);
+        else
+            componentList.Insert(insertIndex, newComponent);
+
+        newItemIds.Add(newId);
         SaveData();
 
         EditorUtility.DisplayDialog("成功", $"已复制为 [{newComponent.id}] {newComponent.name}", "确定");
         Repaint();
     }
 
-    private void ShowPresetMenu()
-    {
-        GenericMenu menu = new GenericMenu();
-        menu.AddItem(new GUIContent("🎣 钓竿 - 基础钓竿"), false, () => AddPreset("rod_basic"));
-        menu.AddItem(new GUIContent("🎣 钓竿 - 高级钓竿"), false, () => AddPreset("rod_advanced"));
-        menu.AddSeparator("");
-        menu.AddItem(new GUIContent("🧵 钓线 - 基础钓线"), false, () => AddPreset("line_basic"));
-        menu.AddItem(new GUIContent("🧵 钓线 - 高级钓线"), false, () => AddPreset("line_advanced"));
-        menu.AddSeparator("");
-        menu.AddItem(new GUIContent("🪝 钓钩 - 基础钓钩"), false, () => AddPreset("hook_basic"));
-        menu.AddItem(new GUIContent("🪝 钓钩 - 高级钓钩"), false, () => AddPreset("hook_advanced"));
-        menu.AddSeparator("");
-        menu.AddItem(new GUIContent("✨ 技能 - 咬钩概率"), false, () => AddPreset("skill_bite"));
-        menu.AddItem(new GUIContent("✨ 技能 - 稀有鱼加成"), false, () => AddPreset("skill_rare"));
-        menu.ShowAsContext();
-    }
-
-    private void AddPreset(string presetType)
-    {
-        int newId = 3001;
-        FishingComponentCategory category = FishingComponentCategory.Skill;
-        int maxLevel = 10;
-        int paramId = 709;
-        string name = "";
-
-        switch (presetType)
-        {
-            case "rod_basic":
-                category = FishingComponentCategory.Rod;
-                newId = GetNextAvailableIdInCategory(category, 3001);
-                name = "基础钓竿";
-                paramId = 709;
-                break;
-            case "rod_advanced":
-                category = FishingComponentCategory.Rod;
-                newId = GetNextAvailableIdInCategory(category, 3001);
-                name = "高级钓竿";
-                paramId = 709;
-                break;
-            case "line_basic":
-                category = FishingComponentCategory.Line;
-                newId = GetNextAvailableIdInCategory(category, 3101);
-                name = "基础钓线";
-                paramId = 710;
-                break;
-            case "line_advanced":
-                category = FishingComponentCategory.Line;
-                newId = GetNextAvailableIdInCategory(category, 3101);
-                name = "高级钓线";
-                paramId = 710;
-                break;
-            case "hook_basic":
-                category = FishingComponentCategory.Hook;
-                newId = GetNextAvailableIdInCategory(category, 3201);
-                name = "基础钓钩";
-                paramId = 711;
-                break;
-            case "hook_advanced":
-                category = FishingComponentCategory.Hook;
-                newId = GetNextAvailableIdInCategory(category, 3201);
-                name = "高级钓钩";
-                paramId = 711;
-                break;
-            case "skill_bite":
-                category = FishingComponentCategory.Skill;
-                newId = GetNextAvailableIdInCategory(category, 3301);
-                name = "咬钩技巧";
-                paramId = 709;
-                break;
-            case "skill_rare":
-                category = FishingComponentCategory.Skill;
-                newId = GetNextAvailableIdInCategory(category, 3301);
-                name = "稀有鱼专精";
-                paramId = 703;
-                break;
-            default:
-                name = "示例技能";
-                paramId = 709;
-                break;
-        }
-
-        if (newId == -1)
-        {
-            EditorUtility.DisplayDialog("错误", "该类别的ID范围已满！", "确定");
-            return;
-        }
-
-        var preset = new FishingComponentConfig
-        {
-            id = newId,
-            name = name,
-            category = category,
-            maxLevel = maxLevel,
-            levelDataList = new List<FishingComponentLevelData>()
-        };
-
-        for (int i = 1; i <= maxLevel; i++)
-        {
-            preset.levelDataList.Add(new FishingComponentLevelData
-            {
-                level = i,
-                paramsList = new List<FishingComponentParam>
-                {
-                    new FishingComponentParam { paramId = paramId, value = 0.05f * i },
-                    new FishingComponentParam { paramId = 0, value = 0f },
-                    new FishingComponentParam { paramId = 0, value = 0f }
-                }
-            });
-        }
-
-        componentList.Add(preset);
-        SaveData();
-
-        EditorUtility.DisplayDialog("成功", $"已添加预设: [{preset.id}] {preset.name}", "确定");
-        Repaint();
-    }
-
-    private int GetNextAvailableIdInCategory(FishingComponentCategory category, int startId)
+    private int GetNextAvailableIdInCategory(FishingComponentCategory category)
     {
         int catIdx = (int)category;
-        for (int id = startId; id <= categoryEndIds[catIdx]; id++)
+        int startId = categoryStartIds[catIdx];
+        int endId = categoryEndIds[catIdx];
+
+        var usedIds = componentList
+            .Where(c => (int)c.category == catIdx)
+            .Select(c => c.id)
+            .ToHashSet();
+
+        for (int id = startId; id <= endId; id++)
         {
-            if (!IsIdExists(id))
+            if (!usedIds.Contains(id))
                 return id;
         }
         return -1;
-    }
-
-    private void AddHardcodedDefaults()
-    {
-        var rod = new FishingComponentConfig
-        {
-            id = 3001,
-            name = "基础钓竿",
-            category = FishingComponentCategory.Rod,
-            maxLevel = 10,
-            levelDataList = new List<FishingComponentLevelData>()
-        };
-        for (int i = 1; i <= 10; i++)
-        {
-            rod.levelDataList.Add(new FishingComponentLevelData
-            {
-                level = i,
-                paramsList = new List<FishingComponentParam>
-                {
-                    new FishingComponentParam { paramId = 709, value = 0.03f * i },
-                    new FishingComponentParam { paramId = 708, value = 0.02f * i },
-                    new FishingComponentParam { paramId = 0, value = 0f }
-                }
-            });
-        }
-        componentList.Add(rod);
-
-        var line = new FishingComponentConfig
-        {
-            id = 3101,
-            name = "基础钓线",
-            category = FishingComponentCategory.Line,
-            maxLevel = 10,
-            levelDataList = new List<FishingComponentLevelData>()
-        };
-        for (int i = 1; i <= 10; i++)
-        {
-            line.levelDataList.Add(new FishingComponentLevelData
-            {
-                level = i,
-                paramsList = new List<FishingComponentParam>
-                {
-                    new FishingComponentParam { paramId = 710, value = 0.03f * i },
-                    new FishingComponentParam { paramId = 703, value = 0.02f * i },
-                    new FishingComponentParam { paramId = 0, value = 0f }
-                }
-            });
-        }
-        componentList.Add(line);
-
-        var hook = new FishingComponentConfig
-        {
-            id = 3201,
-            name = "基础钓钩",
-            category = FishingComponentCategory.Hook,
-            maxLevel = 10,
-            levelDataList = new List<FishingComponentLevelData>()
-        };
-        for (int i = 1; i <= 10; i++)
-        {
-            hook.levelDataList.Add(new FishingComponentLevelData
-            {
-                level = i,
-                paramsList = new List<FishingComponentParam>
-                {
-                    new FishingComponentParam { paramId = 711, value = 0.02f * i },
-                    new FishingComponentParam { paramId = 707, value = 0.01f * i },
-                    new FishingComponentParam { paramId = 0, value = 0f }
-                }
-            });
-        }
-        componentList.Add(hook);
-
-        SaveData();
     }
 
     #endregion
@@ -1083,13 +1170,12 @@ public class FishingComponentJsonEditor : EditorWindow
 
     private int batchStartLevel = 1;
     private int batchEndLevel = 10;
-    private int batchParam1Id = 709;
-    private float batchParam1Value = 0.05f;
-    private int batchParam2Id = 0;
-    private float batchParam2Value = 0f;
+    private int batchParam1Id = 0;
+    private float batchParam1Value = 0f;
 
     private void ApplyBatchSettings(FishingComponentConfig component)
     {
+        // 确保范围在有效范围内
         batchStartLevel = Mathf.Clamp(batchStartLevel, 1, component.maxLevel);
         batchEndLevel = Mathf.Clamp(batchEndLevel, batchStartLevel, component.maxLevel);
 
@@ -1101,16 +1187,13 @@ public class FishingComponentJsonEditor : EditorWindow
 
             if (batchParam1Id != 0)
             {
-                levelData.paramsList[0].paramId = batchParam1Id;
-                levelData.paramsList[0].value = batchParam1Value;
-                appliedCount++;
-            }
-
-            if (batchParam2Id != 0)
-            {
-                levelData.paramsList[1].paramId = batchParam2Id;
-                levelData.paramsList[1].value = batchParam2Value;
-                appliedCount++;
+                if (levelData.paramsList[0].paramId != batchParam1Id || Math.Abs(levelData.paramsList[0].value - batchParam1Value) > 0.0001f)
+                {
+                    levelData.paramsList[0].paramId = batchParam1Id;
+                    levelData.paramsList[0].value = batchParam1Value;
+                    appliedCount++;
+                    hasUnsavedChanges = true;
+                }
             }
         }
 
@@ -1120,11 +1203,8 @@ public class FishingComponentJsonEditor : EditorWindow
     #endregion
 }
 
-// ==================== 编辑器内部使用的数据结构（避免与外部冲突）====================
+// ==================== 编辑器内部使用的数据结构 ====================
 
-/// <summary>
-/// 能力配置项（编辑器内部使用）
-/// </summary>
 [System.Serializable]
 public class AbilityItem
 {
@@ -1135,9 +1215,6 @@ public class AbilityItem
     public int targetRarityId;
 }
 
-/// <summary>
-/// 能力列表包装器（编辑器内部使用）
-/// </summary>
 [System.Serializable]
 public class AbilityItemListWrapper
 {

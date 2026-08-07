@@ -129,7 +129,16 @@ public class ItemCategoryDataEditor : EditorWindow
     private void DrawSubCategory(SubCategoryData subCat)
     {
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField($"  └─ {subCat.name}（{subCat.id}）【{subCat.startId} - {subCat.endId}】", GUILayout.Height(20));
+
+        // 根据ID显示不同的图标
+        string icon = subCat.id switch
+        {
+            71 => "📖",  // 图鉴情报
+            72 => "🏝️",  // 岛屿情报
+            _ => "📄"
+        };
+
+        EditorGUILayout.LabelField($"  {icon} {subCat.name}（{subCat.id}）【{subCat.startId} - {subCat.endId}】", GUILayout.Height(20));
         EditorGUILayout.EndHorizontal();
 
         if (!string.IsNullOrEmpty(subCat.description))
@@ -150,8 +159,9 @@ public class ItemCategoryDataEditor : EditorWindow
 （3）C.装备      钓竿（31）【3001-3099】- 钓线（32）【3101-3199】- 钓钩（33）【3201-3299】- 技能一（34）【3301-3399】- 技能二（35）【3401-3499】- 人物（36）【3501-3599】
 （4）D.室外装饰皮肤  鱼篓装饰（41）【4001-4099】- 帐篷装饰（42）【4101-4199】- 提示器装饰（43）【4201-4299】
 （5）E.室内装饰皮肤  墙壁（51）【5000-5049】- 地板（52）【5050-5099】- 楼梯（53）【5100-5149】- 灯带（54）【5150-5199】- 挂饰（55）【5200-5249】- 望远镜（56）【5250-5299】- 昆虫房（57）【5300-5349】- 宠物屋（58）【5350-5399】- 鱼缸（59）【5400-5449】- 熊猫（60）【5450-5499】- 鹦鹉（61）【5500-5549】- 桌子（62）【5550-5599】
-（6）I.垃圾      【9001 - 9020】
-（7）S.特殊      不在其他分类范围内的物品（分类ID: 99）";
+（6）G.情报      岛屿情报（70）【7001-7099】- 图鉴情报（71）【7101-7199】
+（7）I.垃圾      【9001 - 9020】
+（8）S.特殊      不在其他分类范围内的物品（分类ID: 99）";
 
         EditorGUILayout.HelpBox(helpText, MessageType.Info);
         EditorGUILayout.EndVertical();

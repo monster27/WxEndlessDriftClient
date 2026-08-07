@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using SharedModels;
 using Logger = Utils.Logger;
+using System;
 
 public partial class NetServerManager 
 {
@@ -160,9 +161,9 @@ public partial class NetServerManager
 
         long clientTime = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var requestData = new Dictionary<string, object>
-        {
-            { "clientTime", clientTime }
-        };
+    {
+        { "clientTime", clientTime }
+    };
 
         yield return SendRequest<HeartbeatResponse>(ServerUrls.Heartbeat.HeartbeatApi, requestData,
             (response) =>
@@ -174,10 +175,13 @@ public partial class NetServerManager
                     isConnected = true;
                     missedHeartbeats = 0;
                     networkState = NetUtils.NetworkState.Connected;
-                    NetUtils.LogResponse("HeartbeatResponse", new Dictionary<string, object>
+
+                    // ✅ 检测商城数据刷新标记
+                    if (response.mallDataRefreshed)
                     {
-                        { "serverTime", lastServerTime }
-                    });
+                        Logger.Log("[NetServerManager] 服务器通知商城数据已刷新，立即同步");
+                        SyncMallItemsFromServer();
+                    }
                 }
             },
             (error) =>
@@ -186,4 +190,6 @@ public partial class NetServerManager
                 isConnected = false;
             });
     }
+
+
 }

@@ -21,8 +21,9 @@
             "fishSpeciesId": 602,
             "struggleTime": 5,
             "flashProbability": 0.5,
-            "baseWeight": 0.8,
-            "baseExp": 10,
+            "baseWeight": 0.800000011920929,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -45,9 +46,10 @@
             ],
             "fishSpeciesId": 602,
             "struggleTime": 4,
-            "flashProbability": 0.4,
-            "baseWeight": 0.15,
-            "baseExp": 10,
+            "flashProbability": 0.4000000059604645,
+            "baseWeight": 0.15000000596046449,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -71,8 +73,9 @@
             "fishSpeciesId": 602,
             "struggleTime": 7,
             "flashProbability": 0.5,
-            "baseWeight": 0.3,
-            "baseExp": 10,
+            "baseWeight": 0.30000001192092898,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -97,7 +100,8 @@
             "struggleTime": 8,
             "flashProbability": 0.5,
             "baseWeight": 1.5,
-            "baseExp": 10,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -120,15 +124,16 @@
             ],
             "fishSpeciesId": 602,
             "struggleTime": 6,
-            "flashProbability": 0.4,
+            "flashProbability": 0.4000000059604645,
             "baseWeight": 0.5,
-            "baseExp": 10,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
             "id": 1006,
             "name": "鲯鳅",
-            "description": "请添加描述",
+            "description": "这是一条鲯鳅。",
             "islandId": 101,
             "rarityId": 202,
             "preferredIslandIds": [
@@ -146,8 +151,9 @@
             "fishSpeciesId": 602,
             "struggleTime": 18,
             "flashProbability": 0.5,
-            "baseWeight": 12,
-            "baseExp": 10,
+            "baseWeight": 12.0,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -171,8 +177,9 @@
             "fishSpeciesId": 602,
             "struggleTime": 15,
             "flashProbability": 0.5,
-            "baseWeight": 0.6,
-            "baseExp": 10,
+            "baseWeight": 0.6000000238418579,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -196,8 +203,9 @@
             "fishSpeciesId": 602,
             "struggleTime": 10,
             "flashProbability": 0.5,
-            "baseWeight": 0.2,
-            "baseExp": 10,
+            "baseWeight": 0.20000000298023225,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -221,8 +229,9 @@
             "fishSpeciesId": 602,
             "struggleTime": 25,
             "flashProbability": 0.5,
-            "baseWeight": 8,
-            "baseExp": 10,
+            "baseWeight": 8.0,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -246,8 +255,9 @@
             "fishSpeciesId": 602,
             "struggleTime": 30,
             "flashProbability": 0.5,
-            "baseWeight": 15,
-            "baseExp": 10,
+            "baseWeight": 15.0,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -271,8 +281,9 @@
             "fishSpeciesId": 602,
             "struggleTime": 30,
             "flashProbability": 0.5,
-            "baseWeight": 20,
-            "baseExp": 10,
+            "baseWeight": 20.0,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -296,8 +307,9 @@
             "fishSpeciesId": 602,
             "struggleTime": 31,
             "flashProbability": 0.5,
-            "baseWeight": 24,
-            "baseExp": 10,
+            "baseWeight": 24.0,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -321,8 +333,9 @@
             "fishSpeciesId": 602,
             "struggleTime": 32,
             "flashProbability": 0.5,
-            "baseWeight": 26,
-            "baseExp": 10,
+            "baseWeight": 26.0,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -346,8 +359,9 @@
             "fishSpeciesId": 602,
             "struggleTime": 33,
             "flashProbability": 0.5,
-            "baseWeight": 28,
-            "baseExp": 10,
+            "baseWeight": 28.0,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -371,8 +385,9 @@
             "fishSpeciesId": 602,
             "struggleTime": 40,
             "flashProbability": 0.5,
-            "baseWeight": 30,
-            "baseExp": 10,
+            "baseWeight": 30.0,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -398,7 +413,8 @@
             "struggleTime": 5,
             "flashProbability": 0.5,
             "baseWeight": 2.5,
-            "baseExp": 10,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -425,7 +441,8 @@
             "struggleTime": 7,
             "flashProbability": 0.5,
             "baseWeight": 5.0,
-            "baseExp": 25,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -453,7 +470,8 @@
             "struggleTime": 8,
             "flashProbability": 0.5,
             "baseWeight": 15.0,
-            "baseExp": 80,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         },
         {
@@ -481,7 +499,8 @@
             "struggleTime": 6,
             "flashProbability": 0.5,
             "baseWeight": 8.0,
-            "baseExp": 50,
+            "maxWeight": 0.0,
+            "baseExp": 0,
             "scale": 1.0
         }
     ]

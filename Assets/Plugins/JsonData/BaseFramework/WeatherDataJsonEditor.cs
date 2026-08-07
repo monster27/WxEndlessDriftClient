@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using System.Linq;
 
 public class WeatherDataEditor : EditorWindow
 {
@@ -13,8 +14,11 @@ public class WeatherDataEditor : EditorWindow
     private int editId = 301;
     private string editName = "";
     private string editDescription = "";
-    private int editPercentage = 6;
+    private int editPercentage = 6;   // 自动计算，不可编辑
     private int editWeight = 60;
+
+    // ✅ 新增：自动计算概率的开关
+    private bool autoCalculatePercentage = true;
 
     [MenuItem("Tools/基础框架/301_天气")]
     public static void ShowWindow()
@@ -37,11 +41,30 @@ public class WeatherDataEditor : EditorWindow
     private void DrawToolbar()
     {
         EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-        if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60))) LoadData();
+        if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60)))
+        {
+            LoadData();
+            // ✅ 刷新时自动计算概率
+            if (autoCalculatePercentage)
+            {
+                AutoCalculatePercentages();
+            }
+        }
         if (GUILayout.Button("新增", EditorStyles.toolbarButton, GUILayout.Width(60))) AddNewItem();
+        if (GUILayout.Button("自动计算概率", EditorStyles.toolbarButton, GUILayout.Width(100)))
+        {
+            AutoCalculatePercentages();
+            EditorUtility.DisplayDialog("完成", "所有天气概率已根据权重重新计算", "确定");
+        }
         GUILayout.FlexibleSpace();
         EditorGUILayout.LabelField($"共 {weathers.Count} 条数据", GUILayout.Width(100));
         EditorGUILayout.EndHorizontal();
+        GUILayout.Space(5);
+
+        // ✅ 显示总权重信息
+        int totalWeight = 0;
+        foreach (var w in weathers) totalWeight += w.weight;
+        EditorGUILayout.LabelField($"总权重: {totalWeight}  |  自动计算: {(autoCalculatePercentage ? "✅ 开启" : "❌ 关闭")}", EditorStyles.miniLabel);
         GUILayout.Space(5);
     }
 
@@ -51,7 +74,14 @@ public class WeatherDataEditor : EditorWindow
         EditorGUILayout.BeginVertical("box");
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Height(250));
 
-        for (int i = 0; i < weathers.Count; i++) DrawListItem(i);
+        // ✅ 计算总权重用于显示概率
+        int totalWeight = 0;
+        foreach (var w in weathers) totalWeight += w.weight;
+
+        for (int i = 0; i < weathers.Count; i++)
+        {
+            DrawListItem(i, totalWeight);
+        }
         if (weathers.Count == 0) EditorGUILayout.LabelField("暂无数据，点击\"新增\"添加", EditorStyles.centeredGreyMiniLabel);
 
         EditorGUILayout.EndScrollView();
@@ -59,7 +89,7 @@ public class WeatherDataEditor : EditorWindow
         GUILayout.Space(10);
     }
 
-    private void DrawListItem(int index)
+    private void DrawListItem(int index, int totalWeight)
     {
         WeatherData item = weathers[index];
         EditorGUILayout.BeginHorizontal();
@@ -67,7 +97,10 @@ public class WeatherDataEditor : EditorWindow
         if (selectedIndex == index) GUI.backgroundColor = Color.cyan;
         EditorGUILayout.LabelField($"[{item.id}]", GUILayout.Width(50));
         EditorGUILayout.LabelField(item.name, GUILayout.Width(80));
-        EditorGUILayout.LabelField($"概率:{item.percentage}%", GUILayout.Width(70));
+
+        // ✅ 显示实际概率（基于权重计算）
+        float actualProbability = totalWeight > 0 ? (float)item.weight / totalWeight * 100f : 0f;
+        EditorGUILayout.LabelField($"概率:{actualProbability:F2}%", GUILayout.Width(80));
         EditorGUILayout.LabelField($"权重:{item.weight}", GUILayout.Width(70));
         GUI.backgroundColor = Color.white;
         GUILayout.FlexibleSpace();
@@ -81,6 +114,7 @@ public class WeatherDataEditor : EditorWindow
             if (selectedIndex >= weathers.Count) selectedIndex = -1;
             SaveData();
             LoadData();
+            if (autoCalculatePercentage) AutoCalculatePercentages();
         }
         GUI.backgroundColor = Color.white;
 
@@ -96,7 +130,14 @@ public class WeatherDataEditor : EditorWindow
         if (selectedIndex >= 0 && selectedIndex < weathers.Count)
         {
             WeatherData item = weathers[selectedIndex];
+
+            // ✅ 计算总权重
+            int totalWeight = 0;
+            foreach (var w in weathers) totalWeight += w.weight;
+            float actualProbability = totalWeight > 0 ? (float)item.weight / totalWeight * 100f : 0f;
+
             EditorGUILayout.LabelField($"正在编辑: [{item.id}] {item.name}");
+            EditorGUILayout.LabelField($"实际概率: {actualProbability:F2}%  (基于权重计算)", EditorStyles.miniLabel);
             GUILayout.Space(5);
 
             EditorGUILayout.BeginHorizontal();
@@ -116,14 +157,42 @@ public class WeatherDataEditor : EditorWindow
             item.description = EditorGUILayout.TextField(item.description);
             EditorGUILayout.EndHorizontal();
 
+            // ✅ 概率字段设置为只读（不可编辑）
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("概率(%):", GUILayout.Width(50));
-            item.percentage = EditorGUILayout.IntField(item.percentage);
+            EditorGUILayout.LabelField("大概为(概率%):", GUILayout.Width(80));
+            EditorGUI.BeginDisabledGroup(true);  // ✅ 禁用编辑
+            float displayPercentage = totalWeight > 0 ? (float)item.weight / totalWeight * 100f : 0f;
+            EditorGUILayout.FloatField(displayPercentage, GUILayout.Width(80));
+            EditorGUI.EndDisabledGroup();
+            EditorGUILayout.LabelField($"  (自动计算，基于权重 {item.weight}/{totalWeight})", EditorStyles.miniLabel);
             EditorGUILayout.EndHorizontal();
 
+            // ✅ 权重字段可编辑
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("权重:", GUILayout.Width(40));
-            item.weight = EditorGUILayout.IntField(item.weight);
+            int newWeight = EditorGUILayout.IntField(item.weight);
+            if (newWeight != item.weight && newWeight > 0)
+            {
+                item.weight = newWeight;
+                // ✅ 权重改变后自动重新计算所有概率
+                if (autoCalculatePercentage)
+                {
+                    AutoCalculatePercentages();
+                }
+            }
+            if (newWeight <= 0)
+            {
+                EditorGUILayout.LabelField("  ⚠️ 权重必须大于0", EditorStyles.miniLabel);
+            }
+            EditorGUILayout.EndHorizontal();
+
+            // ✅ 显示权重排序建议
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("排序:", GUILayout.Width(40));
+            var sorted = new List<WeatherData>(weathers);
+            sorted.Sort((a, b) => b.weight.CompareTo(a.weight));
+            int rank = sorted.FindIndex(w => w.id == item.id) + 1;
+            EditorGUILayout.LabelField($"权重排名: #{rank}/{weathers.Count}", EditorStyles.miniLabel);
             EditorGUILayout.EndHorizontal();
 
             GUILayout.Space(10);
@@ -134,6 +203,7 @@ public class WeatherDataEditor : EditorWindow
             {
                 SaveData();
                 LoadData();
+                if (autoCalculatePercentage) AutoCalculatePercentages();
                 EditorUtility.DisplayDialog("成功", "数据已保存", "确定");
             }
             GUI.backgroundColor = Color.white;
@@ -153,20 +223,34 @@ public class WeatherDataEditor : EditorWindow
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.LabelField("快速新增", EditorStyles.boldLabel);
 
+        // ✅ 显示当前总权重
+        int totalWeight = 0;
+        foreach (var w in weathers) totalWeight += w.weight;
+
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("ID:", GUILayout.Width(30));
         editId = EditorGUILayout.IntField(editId, GUILayout.Width(60));
         EditorGUILayout.LabelField("名称:", GUILayout.Width(30));
         editName = EditorGUILayout.TextField(editName, GUILayout.Width(100));
-        EditorGUILayout.LabelField("概率(%):", GUILayout.Width(50));
-        editPercentage = EditorGUILayout.IntField(editPercentage, GUILayout.Width(60));
         EditorGUILayout.LabelField("权重:", GUILayout.Width(30));
         editWeight = EditorGUILayout.IntField(editWeight, GUILayout.Width(60));
+        EditorGUILayout.LabelField("", GUILayout.Width(20));
+        // ✅ 显示新增后的概率预览
+        if (editWeight > 0 && totalWeight > 0)
+        {
+            float previewProb = (float)editWeight / (totalWeight + editWeight) * 100f;
+            EditorGUILayout.LabelField($"新增后概率约: {previewProb:F1}%", EditorStyles.miniLabel);
+        }
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("描述:", GUILayout.Width(30));
         editDescription = EditorGUILayout.TextField(editDescription, GUILayout.Width(300));
+        EditorGUILayout.EndHorizontal();
+
+        // ✅ 新增时自动设置概率的选项
+        EditorGUILayout.BeginHorizontal();
+        autoCalculatePercentage = EditorGUILayout.Toggle("自动计算所有概率", autoCalculatePercentage);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
@@ -178,7 +262,50 @@ public class WeatherDataEditor : EditorWindow
 
         EditorGUILayout.EndVertical();
         GUILayout.Space(10);
-        EditorGUILayout.HelpBox("提示：修改后记得点击\"保存修改\"或使用快速新增区域添加数据", MessageType.Info);
+        EditorGUILayout.HelpBox("提示：概率由权重自动计算，修改权重后会自动更新所有概率", MessageType.Info);
+    }
+
+    // ==================== 核心方法 ====================
+
+    /// <summary>
+    /// ✅ 自动计算所有天气的概率（基于权重）
+    /// </summary>
+    private void AutoCalculatePercentages()
+    {
+        if (weathers == null || weathers.Count == 0) return;
+
+        int totalWeight = 0;
+        foreach (var w in weathers)
+        {
+            totalWeight += w.weight;
+        }
+
+        if (totalWeight <= 0)
+        {
+            Debug.LogWarning("[WeatherDataEditor] 总权重为0，无法计算概率");
+            return;
+        }
+
+        foreach (var weather in weathers)
+        {
+            // 概率 = (该天气权重 / 总权重) * 100
+            float calculatedPercentage = (float)weather.weight / totalWeight * 100f;
+            weather.percentage = Mathf.RoundToInt(calculatedPercentage);  // 四舍五入取整
+        }
+
+        // 自动保存
+        SaveData();
+        LoadData();
+
+        Debug.Log($"[WeatherDataEditor] 已自动计算 {weathers.Count} 个天气的概率，总权重={totalWeight}");
+
+        // 验证概率总和
+        int sum = 0;
+        foreach (var w in weathers) sum += w.percentage;
+        if (sum != 100)
+        {
+            Debug.LogWarning($"[WeatherDataEditor] 概率总和为 {sum}%，可能因四舍五入导致不精确");
+        }
     }
 
     private void LoadData()
@@ -204,9 +331,10 @@ public class WeatherDataEditor : EditorWindow
 
     private void SaveData()
     {
-        string directory = Path.Combine(Application.dataPath, "Resources/JsonData/Base");
+        string fullPath = Path.Combine(Application.dataPath, "Resources/JsonData/BaseFramework/weathers.json");
+        string directory = Path.GetDirectoryName(fullPath);
         if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
-        File.WriteAllText(Path.Combine(Application.dataPath, "Resources/JsonData/BaseFramework/weathers.json"), JsonUtility.ToJson(new WeatherListWrapper { weathers = weathers }, true));
+        File.WriteAllText(fullPath, JsonUtility.ToJson(new WeatherListWrapper { weathers = weathers }, true));
         AssetDatabase.Refresh();
         Debug.Log("保存成功");
     }
@@ -224,6 +352,7 @@ public class WeatherDataEditor : EditorWindow
         selectedIndex = weathers.Count - 1;
         SaveData();
         LoadData();
+        if (autoCalculatePercentage) AutoCalculatePercentages();
     }
 
     private void AddQuickItem()
@@ -238,21 +367,34 @@ public class WeatherDataEditor : EditorWindow
             EditorUtility.DisplayDialog("错误", $"ID {editId} 已存在", "确定");
             return;
         }
-        weathers.Add(new WeatherData { id = editId, name = editName, description = editDescription, percentage = editPercentage, weight = editWeight });
-        for (int i = 0; i < weathers.Count - 1; i++)
+        if (editWeight <= 0)
         {
-            for (int j = i + 1; j < weathers.Count; j++)
-            {
-                if (weathers[i].id > weathers[j].id)
-                {
-                    WeatherData temp = weathers[i];
-                    weathers[i] = weathers[j];
-                    weathers[j] = temp;
-                }
-            }
+            EditorUtility.DisplayDialog("错误", "权重必须大于0", "确定");
+            return;
         }
+
+        weathers.Add(new WeatherData
+        {
+            id = editId,
+            name = editName,
+            description = editDescription,
+            percentage = 0,  // 将由自动计算填充
+            weight = editWeight
+        });
+
+        // 排序
+        weathers.Sort((a, b) => a.id.CompareTo(b.id));
+
         SaveData();
         LoadData();
+
+        // ✅ 新增后自动计算概率
+        if (autoCalculatePercentage)
+        {
+            AutoCalculatePercentages();
+        }
+
+        // 重置输入
         int nextId = 301;
         if (weathers.Count > 0)
         {
@@ -263,8 +405,8 @@ public class WeatherDataEditor : EditorWindow
         editId = nextId;
         editName = "";
         editDescription = "";
-        editPercentage = 6;
         editWeight = 60;
+
         EditorUtility.DisplayDialog("成功", "新增成功", "确定");
     }
 
@@ -283,7 +425,7 @@ public class WeatherDataEditor : EditorWindow
         public int id;
         public string name;
         public string description;
-        public int percentage;
+        public int percentage;   // ✅ 由权重自动计算，不可手动编辑
         public int weight;
     }
 

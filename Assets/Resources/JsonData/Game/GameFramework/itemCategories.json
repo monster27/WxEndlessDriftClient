@@ -74,13 +74,14 @@
         },
         {
             "id": 7,
-            "name": "图鉴情报",
+            "name": "情报",
             "code": "G",
-            "description": "G.图鉴情报",
-            "startId": 800,
-            "endId": 899,
+            "description": "G.情报",
+            "startId": 7000,
+            "endId": 7199,
             "subCategories": [
-                { "id": 71, "name": "图鉴情报", "description": "各场景图鉴情报", "startId": 801, "endId": 899 }
+                { "id": 70, "name": "岛屿情报", "description": "各岛屿图鉴情报", "startId": 7001, "endId": 7099 },
+                { "id": 71, "name": "图鉴情报", "description": "各场景图鉴情报", "startId": 7101, "endId": 7199 }
             ]
         },
         {

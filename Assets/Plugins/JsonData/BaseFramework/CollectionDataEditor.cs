@@ -26,13 +26,13 @@ public class CollectionDataEditor : EditorWindow
     private string newCategoryIcon = "";
 
     // 新增页面字段
-    private int newPageId = 801;
+    private int newPageId = 7101;
     private string newPageName = "";
 
     // 批量添加条目
     private string batchEntryInput = "";
 
-    [MenuItem("Tools/基础框架/302_图鉴")]
+    [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/7100_图鉴情报")]
     public static void ShowWindow()
     {
         CollectionDataEditor window = GetWindow<CollectionDataEditor>("图鉴数据编辑器");
@@ -181,7 +181,7 @@ public class CollectionDataEditor : EditorWindow
         GUI.backgroundColor = Color.white;
         EditorGUILayout.EndHorizontal();
 
-        // ✅ 新增：按岛屿自动添加鱼类按钮（仅鱼类图鉴）
+        // 按岛屿自动添加鱼类按钮（仅鱼类图鉴）
         if (cat.id == 1)
         {
             EditorGUILayout.BeginHorizontal();
@@ -606,8 +606,8 @@ public class CollectionDataEditor : EditorWindow
                 icon = "icon_fish",
                 pages = new List<CollectionPage>
                 {
-                    new CollectionPage { id = 801, pageName = "近海鱼类", rewards = CreateDefaultRewards(), entries = new List<int>{ 1001, 1002, 1003, 1004, 1005 } },
-                    new CollectionPage { id = 802, pageName = "深海鱼类", rewards = CreateDefaultRewards(), entries = new List<int>{ 1011, 1012, 1013, 1014, 1015 } }
+                    new CollectionPage { id = 7101, pageName = "融冠群岛", rewards = CreateDefaultRewards(), entries = new List<int>{ 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015 } },
+                    new CollectionPage { id = 7102, pageName = "珊瑚环心岛", rewards = CreateDefaultRewards(), entries = new List<int>{ 1021, 1022, 1023, 1024 } }
                 }
             },
             new CollectionCategory
@@ -615,53 +615,35 @@ public class CollectionDataEditor : EditorWindow
                 id = 2,
                 name = "幻鱼图鉴",
                 icon = "icon_mythical",
-                pages = new List<CollectionPage>
-                {
-                    new CollectionPage { id = 831, pageName = "传说幻鱼", rewards = CreateDefaultRewards(), entries = new List<int>{ 2001, 2002, 2003, 2004, 2005 } }
-                }
+                pages = new List<CollectionPage>()
             },
             new CollectionCategory
             {
                 id = 3,
                 name = "昆虫图鉴",
                 icon = "icon_insect",
-                pages = new List<CollectionPage>
-                {
-                    new CollectionPage { id = 841, pageName = "陆地昆虫", rewards = CreateDefaultRewards(), entries = new List<int>{ 3001, 3002, 3003, 3004, 3005 } },
-                    new CollectionPage { id = 842, pageName = "水生昆虫", rewards = CreateDefaultRewards(), entries = new List<int>{ 3006, 3007, 3008 } }
-                }
+                pages = new List<CollectionPage>()
             },
             new CollectionCategory
             {
                 id = 4,
                 name = "人物图鉴",
                 icon = "icon_character",
-                pages = new List<CollectionPage>
-                {
-                    new CollectionPage { id = 851, pageName = "渔夫", rewards = CreateDefaultRewards(), entries = new List<int>{ 4001, 4002, 4003, 4004, 4005 } }
-                }
+                pages = new List<CollectionPage>()
             },
             new CollectionCategory
             {
                 id = 5,
                 name = "宠物图鉴",
                 icon = "icon_pet",
-                pages = new List<CollectionPage>
-                {
-                    new CollectionPage { id = 861, pageName = "陆地宠物", rewards = CreateDefaultRewards(), entries = new List<int>{ 5001, 5002, 5003, 5004, 5005 } },
-                    new CollectionPage { id = 862, pageName = "水生宠物", rewards = CreateDefaultRewards(), entries = new List<int>{ 5006, 5007 } }
-                }
+                pages = new List<CollectionPage>()
             },
             new CollectionCategory
             {
                 id = 6,
-                name = "装饰图鉴",
-                icon = "icon_decoration",
-                pages = new List<CollectionPage>
-                {
-                    new CollectionPage { id = 871, pageName = "室内装饰", rewards = CreateDefaultRewards(), entries = new List<int>{ 6001, 6002, 6003, 6004, 6005 } },
-                    new CollectionPage { id = 872, pageName = "室外装饰", rewards = CreateDefaultRewards(), entries = new List<int>{ 6006, 6007, 6008, 6009, 6010 } }
-                }
+                name = "皮肤图鉴",
+                icon = "icon_Skin",
+                pages = new List<CollectionPage>()
             }
         };
 
@@ -792,11 +774,10 @@ public class CollectionDataEditor : EditorWindow
         }
     }
 
-    // ✅ 新增：按岛屿自动添加鱼类
     private void AddFishesByIsland(int categoryIndex)
     {
         string fishesPath = Path.Combine(Application.dataPath, "Resources/JsonData/Game/BagItem/fishes.json");
-        
+
         if (!File.Exists(fishesPath))
         {
             EditorUtility.DisplayDialog("错误", $"未找到鱼类数据文件: {fishesPath}", "确定");
@@ -807,7 +788,7 @@ public class CollectionDataEditor : EditorWindow
         {
             string json = File.ReadAllText(fishesPath);
             var wrapper = JsonUtility.FromJson<FishWrapper>(json);
-            
+
             if (wrapper == null || wrapper.fishes == null || wrapper.fishes.Count == 0)
             {
                 EditorUtility.DisplayDialog("错误", "鱼类数据为空", "确定");
@@ -825,14 +806,14 @@ public class CollectionDataEditor : EditorWindow
             }
 
             var cat = categories[categoryIndex];
-            int newPageId = cat.pages.Count > 0 ? cat.pages.Max(p => p.id) + 1 : 801;
+            int newPageId = cat.pages.Count > 0 ? cat.pages.Max(p => p.id) + 1 : 7101;
             int totalAdded = 0;
 
             foreach (var islandGroup in fishesByIsland)
             {
                 int islandId = islandGroup.Key;
                 var fishIds = islandGroup.Select(f => f.id).OrderBy(id => id).ToList();
-                
+
                 string pageName = $"岛屿{islandId}鱼类";
                 var existingPage = cat.pages.FirstOrDefault(p => p.pageName == pageName);
 
@@ -959,7 +940,6 @@ public class CollectionDataEditor : EditorWindow
         public CollectionRoot collection;
     }
 
-    // ✅ 新增：鱼类数据解析类
     [System.Serializable]
     public class FishWrapper
     {

@@ -41,6 +41,22 @@
             "isUnique": false
         },
         {
+            "itemId": 2006,
+            "price": 6,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 21,
+            "isUnique": false
+        },
+        {
+            "itemId": 2007,
+            "price": 7,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 21,
+            "isUnique": false
+        },
+        {
             "itemId": 4001,
             "price": 1,
             "stock": 99,
@@ -311,6 +327,22 @@
             "isOnSale": true,
             "categoryId": 22,
             "isUnique": false
+        },
+        {
+            "itemId": 7101,
+            "price": 10,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 71,
+            "isUnique": true
+        },
+        {
+            "itemId": 7102,
+            "price": 20,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 71,
+            "isUnique": true
         }
     ]
 }
