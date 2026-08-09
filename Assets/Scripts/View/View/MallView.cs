@@ -17,6 +17,7 @@ public class MallView : MonoBehaviour
     private List<int> currentMallItemIds = new List<int>();
     private Dictionary<int, MallItemData> mallData;
     private Dictionary<int, ItemData> itemDataMap;
+    private bool isMallOpen = false;
 
     void Start()
     {
@@ -86,6 +87,7 @@ public class MallView : MonoBehaviour
 
     public void OpenMall()
     {
+        isMallOpen = true;
         gameObject.SetActive(true);
         RefreshMallData();
         CommunicateEvent.Modify("Mall_Open");
@@ -94,6 +96,7 @@ public class MallView : MonoBehaviour
     public void CloseMall()
     {
         Debug.Log("[MallView] CloseMall - 关闭商城");
+        isMallOpen = false;
         gameObject.SetActive(false);
         CommunicateEvent.Modify("Mall_Close");
     }
@@ -113,20 +116,45 @@ public class MallView : MonoBehaviour
         if (newMallData == null || newMallData.Count == 0)
         {
             Debug.LogWarning("[MallView] OnMallDataChanged - 收到的数据为空");
+            mallData = newMallData;
+            if (isMallOpen)
+            {
+                ClearAllItems();
+            }
             return;
         }
 
-        // ✅ 打印每个商品的库存，便于调试
-        foreach (var kvp in newMallData)
+        // ✅ 检测上架状态变化
+        if (mallData != null)
         {
-            Debug.Log($"[MallView] 收到商品数据: itemId={kvp.Key}, stock={kvp.Value.stock}");
+            foreach (var kvp in newMallData)
+            {
+                int itemId = kvp.Key;
+                MallItemData newItem = kvp.Value;
+
+                if (mallData.TryGetValue(itemId, out var oldItem))
+                {
+                    // ✅ 如果商品从下架变为上架，需要显示
+                    if (!oldItem.isOnSale && newItem.isOnSale)
+                    {
+                        Debug.Log($"[MallView] 商品 {itemId} 已上架，将显示");
+                    }
+                    // ✅ 如果商品从上架变为下架，需要隐藏
+                    else if (oldItem.isOnSale && !newItem.isOnSale)
+                    {
+                        Debug.Log($"[MallView] 商品 {itemId} 已下架，将隐藏");
+                        if (mallItemPrefabs.TryGetValue(itemId, out var prefab))
+                        {
+                            prefab.gameObject.SetActive(false);
+                        }
+                    }
+                }
+            }
         }
 
-        // ✅ 直接使用传入的新数据
         mallData = newMallData;
 
-        // ✅ 如果商城打开，立即刷新UI
-        if (gameObject.activeSelf)
+        if (isMallOpen)
         {
             Debug.Log("[MallView] 商城已打开，立即刷新UI");
             UpdateMallItems();
@@ -150,6 +178,7 @@ public class MallView : MonoBehaviour
         else
         {
             Debug.LogWarning("[MallView] 从服务器获取商城数据失败或为空");
+            ClearAllItems();
         }
     }
 
@@ -162,11 +191,28 @@ public class MallView : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// ✅ 清空所有商品（用于数据为空时）
+    /// </summary>
+    private void ClearAllItems()
+    {
+        foreach (var kvp in mallItemPrefabs)
+        {
+            if (kvp.Value != null)
+            {
+                Destroy(kvp.Value.gameObject);
+            }
+        }
+        mallItemPrefabs.Clear();
+        currentMallItemIds.Clear();
+    }
+
     private void UpdateMallItems()
     {
         if (mallData == null || mallData.Count == 0)
         {
             Debug.LogWarning("[MallView] UpdateMallItems - mallData 为空");
+            ClearAllItems();
             return;
         }
 
@@ -185,9 +231,31 @@ public class MallView : MonoBehaviour
         }
 
         currentMallItemIds.Clear();
-        ReturnUnusedToPool();
 
         int updatedCount = 0;
+        int hiddenCount = 0;
+        int removedCount = 0;
+
+        // ✅ 先检查需要移除的商品（已下架且不在新数据中）
+        List<int> toRemove = new List<int>();
+        foreach (var kvp in mallItemPrefabs)
+        {
+            int itemId = kvp.Key;
+            if (!mallData.ContainsKey(itemId))
+            {
+                toRemove.Add(itemId);
+                removedCount++;
+            }
+        }
+        foreach (var id in toRemove)
+        {
+            if (mallItemPrefabs.TryGetValue(id, out var prefab))
+            {
+                Destroy(prefab.gameObject);
+                mallItemPrefabs.Remove(id);
+            }
+        }
+
         foreach (var kvp in mallData)
         {
             int itemId = kvp.Key;
@@ -195,6 +263,18 @@ public class MallView : MonoBehaviour
 
             if (mallItem == null)
                 continue;
+
+            // ✅ 检查是否上架，未上架的商品跳过显示
+            if (!mallItem.isOnSale)
+            {
+                hiddenCount++;
+                // 如果已存在则隐藏
+                if (mallItemPrefabs.ContainsKey(itemId))
+                {
+                    mallItemPrefabs[itemId].gameObject.SetActive(false);
+                }
+                continue;
+            }
 
             if (!itemDataMap.TryGetValue(itemId, out ItemData itemData))
             {
@@ -206,13 +286,11 @@ public class MallView : MonoBehaviour
 
             if (mallItemPrefabs.ContainsKey(itemId))
             {
-                // ✅ 强制更新显示
                 var prefab = mallItemPrefabs[itemId];
                 prefab.UpdateDisplay(itemData, mallItem);
                 prefab.gameObject.SetActive(true);
                 updatedCount++;
-
-                Debug.Log($"[MallView] 更新商品: itemId={itemId}, stock={mallItem.stock}");
+                Debug.Log($"[MallView] 更新商品: itemId={itemId}, stock={mallItem.stock}, isOnSale={mallItem.isOnSale}");
             }
             else
             {
@@ -221,7 +299,10 @@ public class MallView : MonoBehaviour
             }
         }
 
-        Debug.Log($"[MallView] UpdateMallItems 完成，更新了 {updatedCount} 个商品");
+        // ✅ 清理不在当前列表中的预制体（已隐藏的）
+        ReturnUnusedToPool();
+
+        Debug.Log($"[MallView] UpdateMallItems 完成，更新了 {updatedCount} 个商品，隐藏了 {hiddenCount} 个未上架商品，移除了 {removedCount} 个已下架商品");
     }
 
     private void CreateMallItemPrefab(int itemId, ItemData itemData, MallItemData mallItem)
@@ -246,7 +327,7 @@ public class MallView : MonoBehaviour
         mallPrefab.gameObject.SetActive(true);
         mallItemPrefabs[itemId] = mallPrefab;
 
-        Debug.Log($"[MallView] 创建商品预制体: itemId={itemId}, stock={mallItem.stock}");
+        Debug.Log($"[MallView] 创建商品预制体: itemId={itemId}, stock={mallItem.stock}, isOnSale={mallItem.isOnSale}");
     }
 
     private void ReturnUnusedToPool()
@@ -256,8 +337,16 @@ public class MallView : MonoBehaviour
         {
             if (!currentMallItemIds.Contains(kvp.Key))
             {
-                kvp.Value.gameObject.SetActive(false);
-                toRemove.Add(kvp.Key);
+                // ✅ 如果在当前数据中不存在，则删除（而不是隐藏）
+                if (mallData != null && !mallData.ContainsKey(kvp.Key))
+                {
+                    Destroy(kvp.Value.gameObject);
+                    toRemove.Add(kvp.Key);
+                }
+                else
+                {
+                    kvp.Value.gameObject.SetActive(false);
+                }
             }
         }
         foreach (var id in toRemove)
@@ -285,5 +374,17 @@ public class MallView : MonoBehaviour
     {
         UpdateGoldDisplay();
         UpdateMallItemStock(itemId);
+    }
+
+    /// <summary>
+    /// ✅ 强制刷新商城（外部调用）
+    /// </summary>
+    public void ForceRefresh()
+    {
+        Debug.Log("[MallView] ForceRefresh - 强制刷新商城");
+        if (isMallOpen)
+        {
+            RefreshMallData();
+        }
     }
 }

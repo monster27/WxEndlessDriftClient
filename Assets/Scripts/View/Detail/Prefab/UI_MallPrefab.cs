@@ -11,7 +11,9 @@ public class UI_MallPrefab : MonoBehaviour
     public Text priceText;
     public Text stockText;
     public Button itemButton;
-    public GameObject ownedObj;  // "已拥有"标识Obj，唯一物品且玩家已拥有时显示
+    public GameObject ownedObj;
+    public GameObject soldOutObj;  // ✅ 新增：售罄标识
+    public GameObject offSaleObj;  // ✅ 新增：已下架标识
 
     private int itemId;
     private ItemData itemData;
@@ -70,9 +72,9 @@ public class UI_MallPrefab : MonoBehaviour
             priceText.text = mallItemData.price.ToString();
         }
 
+        // ✅ 库存显示
         if (stockText != null && mallItemData != null)
         {
-            // 唯一物品不显示库存数量（库存对唯一物品无意义）
             if (itemData.isUnique)
             {
                 stockText.text = "";
@@ -85,7 +87,7 @@ public class UI_MallPrefab : MonoBehaviour
             }
         }
 
-        // 唯一物品且玩家已拥有时显示"已拥有"标识，非唯一或不拥有时隐藏
+        // ✅ 已拥有标识
         if (ownedObj != null)
         {
             bool alreadyOwned = false;
@@ -94,6 +96,39 @@ public class UI_MallPrefab : MonoBehaviour
                 alreadyOwned = PlayerDataManager.Instance.GetItemQuantity(itemId) > 0;
             }
             ownedObj.SetActive(alreadyOwned);
+        }
+
+        // ✅ 售罄标识
+        if (soldOutObj != null)
+        {
+            bool isSoldOut = mallItemData != null && mallItemData.stock <= 0 && !itemData.isUnique;
+            soldOutObj.SetActive(isSoldOut);
+        }
+
+        // ✅ 下架标识
+        if (offSaleObj != null)
+        {
+            bool isOffSale = mallItemData != null && !mallItemData.isOnSale;
+            offSaleObj.SetActive(isOffSale);
+        }
+
+        // ✅ 按钮交互状态
+        if (itemButton != null)
+        {
+            bool interactable = mallItemData != null &&
+                                mallItemData.isOnSale &&
+                                mallItemData.stock > 0;
+
+            // 唯一物品已拥有时不可购买
+            if (itemData.isUnique && PlayerDataManager.Instance != null)
+            {
+                if (PlayerDataManager.Instance.GetItemQuantity(itemId) > 0)
+                {
+                    interactable = false;
+                }
+            }
+
+            itemButton.interactable = interactable;
         }
     }
 

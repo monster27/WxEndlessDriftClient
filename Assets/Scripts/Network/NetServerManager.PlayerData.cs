@@ -1503,6 +1503,46 @@ public partial class NetServerManager
         
         onComplete?.Invoke(success);
     }
+    // ========== 岛屿情报 ==========
+
+    /// <summary>
+    /// 获取玩家岛屿情报
+    /// </summary>
+    public void FetchPlayerIslandInfo(Action<List<int>> onComplete = null)
+    {
+        StartCoroutine(FetchPlayerIslandInfoCoroutine(onComplete));
+    }
+
+    private IEnumerator FetchPlayerIslandInfoCoroutine(Action<List<int>> onComplete = null)
+    {
+        string url = $"/api/Player/island-info/{_currentPlayerId}";
+        yield return FetchGetJson<IslandInfoResponse>(url, data =>
+        {
+            if (data != null && data.success)
+            {
+                var islandIds = data.islandIds ?? new List<int>();
+                if (!islandIds.Contains(101))
+                {
+                    islandIds.Add(101);
+                }
+                Logger.Log($"[NetServerManager] 获取岛屿情报成功: {islandIds.Count} 个岛屿");
+                onComplete?.Invoke(islandIds);
+            }
+            else
+            {
+                Logger.LogWarning("[NetServerManager] 获取岛屿情报失败，使用默认");
+                onComplete?.Invoke(new List<int> { 101 });
+            }
+        }, "岛屿情报");
+    }
+
+    [System.Serializable]
+    private class IslandInfoResponse
+    {
+        public bool success;
+        public List<int> islandIds;
+    }
+
     // 在 NetServerManager.PlayerData.cs 中添加
 
     // ========== 辅助方法 ==========

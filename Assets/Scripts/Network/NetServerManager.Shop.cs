@@ -20,8 +20,6 @@ public partial class NetServerManager
             {
                 Logger.Log($"[NetServerManager] 购买成功: {message}");
 
-                // ✅ 修改：从配置读取，判断是否为情报类型（itemType == 7）
-                // 岛屿情报和图鉴情报都属于情报类型
                 global::ItemData itemData = LoadDataManager.Instance?.GetItemById(itemId);
                 if (itemData != null && itemData.itemType == 7)
                 {
@@ -51,9 +49,13 @@ public partial class NetServerManager
         StartCoroutine(SyncMallItemsCoroutine());
     }
 
+    /// <summary>
+    /// 从服务器同步商城物品列表
+    /// </summary>
     private IEnumerator SyncMallItemsCoroutine()
     {
-        string url = serverUrl + ServerUrls.Player.MallItems;
+        // ✅ 添加 playerId 参数
+        string url = serverUrl + ServerUrls.Player.MallItems + $"?playerId={_currentPlayerId}";
         Logger.Log($"[NetServerManager] 同步商城物品列表: {url}");
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))
@@ -72,20 +74,42 @@ public partial class NetServerManager
                     if (response != null && response.success && response.items != null)
                     {
                         mallItems.Clear();
+
                         foreach (var item in response.items)
                         {
                             mallItems[item.itemId] = new MallItemData
                             {
                                 id = item.itemId,
+                                itemId = item.itemId,
                                 price = item.price,
                                 stock = item.stock,
-                                isUnique = item.isUnique
+                                isUnique = item.isUnique,
+                                isOnSale = item.isOnSale,
+                                name = item.name ?? GetItemNameById(item.itemId),
+                                description = item.description ?? "",
+                                type = item.type ?? 0,
+                                count = item.count ?? 1,
+                                iconId = item.iconId ?? 0,
+                                isHot = item.isHot ?? false,
+                                isNew = item.isNew ?? false
                             };
-                            Logger.Log($"[NetServerManager] 商城物品: ID={item.itemId}, 价格={item.price}, 库存={item.stock}");
+
+                            Logger.Log($"[NetServerManager] 商城物品: ID={item.itemId}, 价格={item.price}, 库存={item.stock}, 上架={item.isOnSale}");
                         }
 
-                        Logger.Log($"[NetServerManager] 同步商城物品列表完成，共 {mallItems.Count} 个商品");
+                        int onSaleCount = 0;
+                        foreach (var kvp in mallItems)
+                        {
+                            if (kvp.Value.isOnSale) onSaleCount++;
+                        }
+                        Logger.Log($"[NetServerManager] 同步商城物品列表完成，共 {mallItems.Count} 个商品（已上架 {onSaleCount} 个）");
 
+                        CommunicateEvent.Modify<Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_MALL_DATA_CHANGED, mallItems);
+                    }
+                    else
+                    {
+                        Logger.LogWarning("[NetServerManager] 商城物品列表响应失败或为空");
+                        mallItems.Clear();
                         CommunicateEvent.Modify<Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_MALL_DATA_CHANGED, mallItems);
                     }
                 }
@@ -145,10 +169,8 @@ public partial class NetServerManager
                     {
                         Logger.Log($"[NetServerManager] 成功购买物品 {itemId}, 数量 {quantity}, 总价 {response.totalPrice}, 剩余金币 {response.remainingGold}");
 
-                        // ✅ 1. 更新本地金币
                         playerGold = response.remainingGold;
 
-                        // ✅ 2. 触发金币变更事件
                         CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, new Dictionary<string, object>
                         {
                             { "gold", playerGold },
@@ -159,7 +181,6 @@ public partial class NetServerManager
 
                         callback?.Invoke(true, response.message);
 
-                        // ✅ 3. 更新本地背包
                         if (playerInventory.ContainsKey(itemId))
                         {
                             playerInventory[itemId] += quantity;
@@ -171,15 +192,12 @@ public partial class NetServerManager
                             Logger.Log($"[NetServerManager] 本地背包数据新增: ItemId={itemId}, 数量={quantity}");
                         }
 
-                        // ✅ 4. 同步背包数据到 PlayerDataManager
                         PlayerDataManager.Instance?.SyncInventoryFromServer();
 
-                        // ✅ 5. 触发各种刷新事件
                         CommunicateEvent.Modify("Mall_PurchaseSuccess", itemId);
                         CommunicateEvent.Modify("Bag_RefreshItems");
                         CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_ITEM_QUANTITY_CHANGED, (itemId, playerInventory[itemId]));
 
-                        // ✅ 6. 窝料特殊处理
                         bool isNestBait = LoadDataManager.Instance.nestBaitDict.ContainsKey(itemId);
                         if (isNestBait)
                         {
@@ -188,7 +206,6 @@ public partial class NetServerManager
                             StartCoroutine(SyncContinuousModeStatusCoroutine());
                         }
 
-                        // ✅ 7. 鱼饵特殊处理
                         if (itemId >= 2001 && itemId <= 2007)
                         {
                             CommunicateEvent.Modify("BaitCountChanged");
@@ -196,10 +213,8 @@ public partial class NetServerManager
                             Logger.Log($"[NetServerManager] 发送鱼饵数量更新事件: itemId={itemId}");
                         }
 
-                        // ✅ 8. 同步商城数据（更新库存）
                         SyncMallItemsFromServer();
 
-                        // ✅ 9. 显示购买成功Tip
                         string itemName = GetItemNameById(itemId);
                         string tipMessage = $"🎣 购买成功！\n{itemName} x{quantity}\n花费 {response.totalPrice} 金币";
                         GameUIManager.Instance?.ShowTip(tipMessage);
@@ -227,7 +242,18 @@ public partial class NetServerManager
         }
     }
 
-    // ========== 辅助数据类 ==========
+    //private string GetItemNameById(int itemId)
+    //{
+    //    if (LoadDataManager.Instance != null)
+    //    {
+    //        var itemData = LoadDataManager.Instance.GetItemById(itemId);
+    //        if (itemData != null)
+    //        {
+    //            return itemData.name;
+    //        }
+    //    }
+    //    return $"物品#{itemId}";
+    //}
 
     [System.Serializable]
     private class MallItemsResponse
@@ -243,6 +269,14 @@ public partial class NetServerManager
         public int price;
         public int stock;
         public bool isUnique;
+        public bool isOnSale;
+        public string? name;
+        public string? description;
+        public int? type;
+        public int? count;
+        public int? iconId;
+        public bool? isHot;
+        public bool? isNew;
     }
 
     [System.Serializable]
@@ -252,5 +286,7 @@ public partial class NetServerManager
         public string message;
         public int totalPrice;
         public int remainingGold;
+        public bool isIslandInfo;
+        public bool isCollectionInfo;
     }
 }

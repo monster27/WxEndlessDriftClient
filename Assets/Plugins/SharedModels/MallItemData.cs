@@ -9,7 +9,9 @@ namespace SharedModels
         public int itemId;         // 物品ID（备用命名）
         public int price;          // 物品价格
         public int stock;          // 库存数量
-        
+        public bool isUnique;      // 是否唯一
+        public bool isOnSale;      // ✅ 是否上架（新增）
+
         // 扩展字段（用于商城详情显示）
         public string name;        // 物品名称
         public string description; // 物品描述
@@ -18,6 +20,5 @@ namespace SharedModels
         public int iconId;         // 图标ID
         public bool isHot;         // 是否热门
         public bool isNew;         // 是否新品
-        public bool isUnique;      // 是否唯一（唯一物品购买上限为1，已拥有则不可再购买）
     }
 }

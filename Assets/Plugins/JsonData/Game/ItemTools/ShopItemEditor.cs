@@ -339,7 +339,7 @@ public class ShopItemEditor : EditorWindow
         if (GUILayout.Button("💾 保存", EditorStyles.toolbarButton, GUILayout.Width(60)))
         {
             SaveShopItems();
-            EditorUtility.DisplayDialog("成功", $"商场数据已保存！\n共 {shopItems.Count} 件商品", "确定");
+            EditorUtility.DisplayDialog("成功", $"商场数据已保存！\n共 {shopItems.Count} 件商品\n上架逻辑其他部分也有", "确定");
         }
         GUI.backgroundColor = Color.white;
 
