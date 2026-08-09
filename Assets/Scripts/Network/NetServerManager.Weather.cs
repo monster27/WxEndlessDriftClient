@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
-using SharedModels;
+//using SharedModels;
 using Logger = Utils.Logger;
 
 public partial class NetServerManager 

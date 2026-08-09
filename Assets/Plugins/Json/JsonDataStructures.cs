@@ -1,5 +1,72 @@
 using System.Collections.Generic;
 
+
+#region 图鉴数据结构（客户端应用，服务器的另有）
+
+/// <summary>
+/// 图鉴奖励数据
+/// </summary>
+[System.Serializable]
+public class Reward
+{
+    public int percent;        // 完成度百分比要求
+    public int rewardId;       // 奖励物品ID
+    public int rewardAmount;   // 奖励数量
+}
+
+/// <summary>
+/// 图鉴页面数据
+/// </summary>
+[System.Serializable]
+public class CollectionPage
+{
+    public int id;                      // 页面ID
+    public string pageName;             // 页面名称
+    public List<Reward> rewards;        // 奖励列表
+    public List<int> entries;           // 条目ID列表（鱼类ID等）
+}
+
+/// <summary>
+/// 图鉴分类数据
+/// </summary>
+[System.Serializable]
+public class CollectionCategory
+{
+    public int id;                      // 分类ID
+    public string name;                 // 分类名称
+    public string icon;                 // 图标名称
+    public List<CollectionPage> pages;  // 页面列表
+}
+
+/// <summary>
+/// 图鉴根数据
+/// </summary>
+[System.Serializable]
+public class CollectionRoot
+{
+    public List<CollectionCategory> categories;
+}
+
+/// <summary>
+/// 图鉴数据包装器
+/// </summary>
+[System.Serializable]
+public class CollectionWrapper
+{
+    public CollectionRoot collection;
+}
+
+/// <summary>
+/// 鱼类数据包装器（用于JSON反序列化）
+/// </summary>
+[System.Serializable]
+public class FishWrapper
+{
+    public List<FishData> fishes;
+}
+
+#endregion
+
 #region 物品数据结构
 
 /// <summary>
@@ -31,33 +98,112 @@ public class ItemListWrapper
 
 #endregion
 
-#region 基础框架框架
+#region 基础框架数据
 
 // 岛屿
-[System.Serializable] public class IslandData { public int id; public string name; }
-[System.Serializable] public class IslandListWrapper { public List<IslandData> islands; }
+[System.Serializable]
+public class IslandData
+{
+    public int id;
+    public string name;
+}
+
+[System.Serializable]
+public class IslandListWrapper
+{
+    public List<IslandData> islands;
+}
 
 // 稀有度
-[System.Serializable] public class RarityData { public int id; public string name; public string color; public string colorCode; public int weight; public int exp; }
-[System.Serializable] public class RarityListWrapper { public List<RarityData> rarities; }
+[System.Serializable]
+public class RarityData
+{
+    public int id;
+    public string name;
+    public string color;
+    public string colorCode;
+    public int weight;
+    public int exp;
+}
+
+[System.Serializable]
+public class RarityListWrapper
+{
+    public List<RarityData> rarities;
+}
 
 // 时段
-[System.Serializable] public class TimeSlotData { public int id; public string name; public string description; public int durationMinutes; }
-[System.Serializable] public class TimeSlotListWrapper { public List<TimeSlotData> timeSlots; }
+[System.Serializable]
+public class TimeSlotData
+{
+    public int id;
+    public string name;
+    public string description;
+    public int durationMinutes;
+}
+
+[System.Serializable]
+public class TimeSlotListWrapper
+{
+    public List<TimeSlotData> timeSlots;
+}
 
 // 天气
-[System.Serializable] public class WeatherData { public int id; public string name; public string description; public int percentage; public int weight; }
-[System.Serializable] public class WeatherListWrapper { public List<WeatherData> weathers; }
+[System.Serializable]
+public class WeatherData
+{
+    public int id;
+    public string name;
+    public string description;
+    public int percentage;
+    public int weight;
+}
+
+[System.Serializable]
+public class WeatherListWrapper
+{
+    public List<WeatherData> weathers;
+}
 
 // 重量星级
-[System.Serializable] public class StarRatingData { public int id; public string name; public string description; public float multiplier; public float weight; public string color; public int sortOrder; }
-[System.Serializable] public class StarRatingListWrapper { public List<StarRatingData> starRatings; }
+[System.Serializable]
+public class StarRatingData
+{
+    public int id;
+    public string name;
+    public string description;
+    public float multiplier;
+    public float weight;
+    public string color;
+    public int sortOrder;
+}
+
+[System.Serializable]
+public class StarRatingListWrapper
+{
+    public List<StarRatingData> starRatings;
+}
 
 // 鱼类品种(浴缸中移动)
-[System.Serializable] public class FishSpeciesData { public int id; public string name; public string description; public string movementType; public string positionType; }
-[System.Serializable] public class FishSpeciesListWrapper { public List<FishSpeciesData> fishSpecies; }
+[System.Serializable]
+public class FishSpeciesData
+{
+    public int id;
+    public string name;
+    public string description;
+    public string movementType;
+    public string positionType;
+}
 
-// ==================== 场景数据（新增 - 使用通用数据类型） ====================
+[System.Serializable]
+public class FishSpeciesListWrapper
+{
+    public List<FishSpeciesData> fishSpecies;
+}
+
+#endregion
+
+#region 场景数据
 
 /// <summary>
 /// 可序列化的三维向量（使用float字段，兼容其他C#引擎）
@@ -88,16 +234,8 @@ public class SerializableVector3
     /// </summary>
     public static SerializableVector3 FromUnityVector(float x, float y, float z)
     {
-        return new SerializableVector3(x,y,z);
+        return new SerializableVector3(x, y, z);
     }
-
-    /// <summary>
-    /// 转换为Unity Vector3
-    /// </summary>
-    //public UnityEngine.Vector3 ToUnityVector(float x, float y, float z)
-    //{
-    //    return new UnityEngine.Vector3(x, y, z);
-    //}
 }
 
 /// <summary>
@@ -168,7 +306,9 @@ public class SceneDataWrapper
     }
 }
 
-// ==================== 钓鱼能力系统 ====================
+#endregion
+
+#region 钓鱼能力系统
 
 /// <summary>
 /// 基础技能数据（ID范围：701-799）
@@ -185,7 +325,10 @@ public class AbilityData
 
 /// <summary>基础技能列表包装器</summary>
 [System.Serializable]
-public class AbilityListWrapper { public List<AbilityData> abilities; }
+public class AbilityListWrapper
+{
+    public List<AbilityData> abilities;
+}
 
 /// <summary>
 /// 挂载技能数据（ID范围：801-899）
@@ -201,7 +344,10 @@ public class SkillData
 
 /// <summary>挂载技能列表包装器</summary>
 [System.Serializable]
-public class SkillListWrapper { public List<SkillData> skills; }
+public class SkillListWrapper
+{
+    public List<SkillData> skills;
+}
 
 #endregion
 
@@ -218,8 +364,12 @@ public class OutdoorSkinData
     public string description = string.Empty;
     public int categoryId;
 }
+
 [System.Serializable]
-public class OutdoorSkinListWrapper { public List<OutdoorSkinData> decorations; }
+public class OutdoorSkinListWrapper
+{
+    public List<OutdoorSkinData> decorations;
+}
 
 // 室内装饰皮肤
 [System.Serializable]
@@ -230,19 +380,62 @@ public class IndoorSkinData
     public string description = string.Empty;
     public int categoryId;
 }
+
 [System.Serializable]
-public class IndoorSkinListWrapper { public List<IndoorSkinData> decorations; }
+public class IndoorSkinListWrapper
+{
+    public List<IndoorSkinData> decorations;
+}
 
 // 鱼饵
-[System.Serializable] public class BaitData { public int id; public string name; public string description; public int baseWeight; public int unlockScene; }
-[System.Serializable] public class BaitListWrapper { public BaitData[] baits; }
+[System.Serializable]
+public class BaitData
+{
+    public int id;
+    public string name;
+    public string description;
+    public int baseWeight;
+    public int unlockScene;
+}
+
+[System.Serializable]
+public class BaitListWrapper
+{
+    public BaitData[] baits;
+}
 
 // 窝料
-[System.Serializable] public class NestBaitData { public int id; public string name; public string description; public int applicableScene; }
-[System.Serializable] public class NestBaitConstants { public int defaultBaitItemId; public float continuousModeAddTime; public float continuousModeMaxTime; }
-[System.Serializable] public class NestBaitListWrapper { public NestBaitConstants constants; public NestBaitData[] nestBaits; }
+[System.Serializable]
+public class NestBaitData
+{
+    public int id;
+    public string name;
+    public string description;
+    public int applicableScene;
+}
 
-// 鱼类参数
+[System.Serializable]
+public class NestBaitConstants
+{
+    public int defaultBaitItemId;
+    public float continuousModeAddTime;
+    public float continuousModeMaxTime;
+}
+
+[System.Serializable]
+public class NestBaitListWrapper
+{
+    public NestBaitConstants constants;
+    public NestBaitData[] nestBaits;
+}
+
+#endregion
+
+#region 鱼类数据
+
+/// <summary>
+/// 鱼类参数
+/// </summary>
 [System.Serializable]
 public class FishData
 {
@@ -261,9 +454,12 @@ public class FishData
     public float baseWeight;
     public float maxWeight;  // 最大重量
     public int baseExp;
-    public float scale = 1.0f;  // 新增 Scale 参数
+    public float scale = 1.0f;  // Scale 参数
 }
 
+/// <summary>
+/// 鱼类列表包装器
+/// </summary>
 [System.Serializable]
 public class FishListWrapper
 {

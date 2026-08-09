@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Text;
 using System.Linq;
-using SharedModels;
+//using SharedModels;
 
 namespace View.Detail
 {

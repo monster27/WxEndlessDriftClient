@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using SharedModels;
+//using SharedModels;
 
 public class MainEquipmentView : MonoBehaviour
 {

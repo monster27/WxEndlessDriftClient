@@ -17,7 +17,17 @@ public class ExportTool : EditorWindow
         Server
     }
 
+    // 清除模式枚举
+    private enum CleanMode
+    {
+        [InspectorName("仅列出文件")]
+        ListOnly,
+        [InspectorName("删除已有文件")]
+        DeleteRedundant
+    }
+
     private ExportMode currentMode = ExportMode.Client;
+    private CleanMode cleanMode = CleanMode.ListOnly;
     private string exportPath = "";
     private string exportToPath = "";
     private Vector2 scrollPosition;
@@ -26,9 +36,15 @@ public class ExportTool : EditorWindow
     private bool showFileList = false;
     private bool showExportToFileList = false;
 
+    // 扫描结果缓存
+    private List<FileScanResult> scanResults = new List<FileScanResult>();
+    private bool showScanResults = false;
+    private bool hasScanned = false;
+
     private const string PREFS_KEY_EXPORT_PATH = "ExportTool_LastExportPath";
     private const string PREFS_KEY_EXPORT_TO_PATH = "ExportTool_LastExportToPath";
     private const string PREFS_KEY_EXPORT_MODE = "ExportTool_LastExportMode";
+    private const string PREFS_KEY_CLEAN_MODE = "ExportTool_LastCleanMode";
 
     [MenuItem("Tools/一键导出工具")]
     public static void ShowWindow()
@@ -43,6 +59,7 @@ public class ExportTool : EditorWindow
             LoadLastExportPath();
             LoadLastExportToPath();
             LoadLastExportMode();
+            LoadLastCleanMode();
             RefreshExportFileList();
             RefreshExportToFileList();
         }
@@ -66,6 +83,7 @@ public class ExportTool : EditorWindow
             SaveLastExportPath();
             SaveLastExportToPath();
             SaveLastExportMode();
+            SaveLastCleanMode();
         }
         catch (System.NullReferenceException ex)
         {
@@ -111,6 +129,18 @@ public class ExportTool : EditorWindow
         EditorPrefs.SetInt(PREFS_KEY_EXPORT_MODE, (int)currentMode);
     }
 
+    private void LoadLastCleanMode()
+    {
+        // 默认值为 0 (ListOnly)，因为枚举中 ListOnly 是第一个
+        int mode = EditorPrefs.GetInt(PREFS_KEY_CLEAN_MODE, 0);
+        cleanMode = (CleanMode)mode;
+    }
+
+    private void SaveLastCleanMode()
+    {
+        EditorPrefs.SetInt(PREFS_KEY_CLEAN_MODE, (int)cleanMode);
+    }
+
     private string GetDesktopPath()
     {
         return System.Environment.GetFolderPath(System.Environment.SpecialFolder.DesktopDirectory);
@@ -139,7 +169,9 @@ public class ExportTool : EditorWindow
                 exportFiles.Add(new ExportFileInfo
                 {
                     sourcePath = file,
+                    fileName = Path.GetFileName(file),
                     destinationPath = Path.Combine(serverSharedPath, "Data", relativePath),
+                    relativePath = Path.Combine("Data", relativePath),
                     fileType = "JSON数据",
                     color = new Color(0.2f, 0.6f, 1f)
                 });
@@ -152,10 +184,13 @@ public class ExportTool : EditorWindow
         {
             foreach (string file in Directory.GetFiles(structSourcePath, "*.cs"))
             {
+                string fileName = Path.GetFileName(file);
                 exportFiles.Add(new ExportFileInfo
                 {
                     sourcePath = file,
-                    destinationPath = Path.Combine(serverSharedPath, "Structures", Path.GetFileName(file)),
+                    fileName = fileName,
+                    destinationPath = Path.Combine(serverSharedPath, "Structures", fileName),
+                    relativePath = Path.Combine("Structures", fileName),
                     fileType = "数据结构",
                     color = new Color(0.2f, 0.8f, 0.2f)
                 });
@@ -168,10 +203,13 @@ public class ExportTool : EditorWindow
         {
             foreach (string file in Directory.GetFiles(clientSharedModelsPath, "*.cs"))
             {
+                string fileName = Path.GetFileName(file);
                 exportFiles.Add(new ExportFileInfo
                 {
                     sourcePath = file,
-                    destinationPath = Path.Combine(serverSharedPath, "SharedModels", Path.GetFileName(file)),
+                    fileName = fileName,
+                    destinationPath = Path.Combine(serverSharedPath, "SharedModels", fileName),
+                    relativePath = Path.Combine("SharedModels", fileName),
                     fileType = "共享模型",
                     color = new Color(1f, 0.6f, 0.2f)
                 });
@@ -182,10 +220,13 @@ public class ExportTool : EditorWindow
         string gameEventConstantsPath = Path.Combine(Application.dataPath, "Scripts", "BaseTool", "GameEventConstants.cs");
         if (File.Exists(gameEventConstantsPath))
         {
+            string fileName = Path.GetFileName(gameEventConstantsPath);
             exportFiles.Add(new ExportFileInfo
             {
                 sourcePath = gameEventConstantsPath,
-                destinationPath = Path.Combine(serverSharedPath, "Events", "GameEventConstants.cs"),
+                fileName = fileName,
+                destinationPath = Path.Combine(serverSharedPath, "Events", fileName),
+                relativePath = Path.Combine("Events", fileName),
                 fileType = "事件常量",
                 color = new Color(1f, 0.4f, 0.7f)
             });
@@ -202,7 +243,6 @@ public class ExportTool : EditorWindow
         if (string.IsNullOrEmpty(exportToPath))
             return;
 
-        // ✅ 只获取 Resources 目录下的 JSON 文件
         string resourcesPath = Path.Combine(Application.dataPath, "Resources");
         if (Directory.Exists(resourcesPath))
         {
@@ -215,7 +255,9 @@ public class ExportTool : EditorWindow
                 exportToFiles.Add(new ExportFileInfo
                 {
                     sourcePath = file,
+                    fileName = Path.GetFileName(file),
                     destinationPath = relativePath,
+                    relativePath = relativePath,
                     fileType = "JSON文件",
                     color = new Color(0.2f, 0.8f, 0.6f)
                 });
@@ -233,7 +275,6 @@ public class ExportTool : EditorWindow
         EditorGUILayout.LabelField("🔧 导出模式", EditorStyles.boldLabel);
         GUILayout.Space(5);
 
-        // 自定义中文显示
         string[] modeNames = { "客户端导出", "服务器导出" };
         int selectedIndex = (int)currentMode;
         int newIndex = EditorGUILayout.Popup("选择模式", selectedIndex, modeNames);
@@ -250,6 +291,9 @@ public class ExportTool : EditorWindow
             {
                 RefreshExportFileList();
             }
+            // 清空扫描结果
+            scanResults.Clear();
+            hasScanned = false;
         }
 
         GUILayout.Space(10);
@@ -264,8 +308,13 @@ public class ExportTool : EditorWindow
             DrawServerMode();
         }
 
+        GUILayout.Space(15);
+
+        // ==================== 清除已有文件区域 ====================
+        DrawCleanRedundantSection();
+
         // ==================== 数据一致性验证按钮（通用） ====================
-        GUILayout.Space(20);
+        GUILayout.Space(10);
         GUILayout.Box("", GUILayout.Height(2), GUILayout.ExpandWidth(true));
         GUILayout.Space(10);
 
@@ -277,6 +326,468 @@ public class ExportTool : EditorWindow
         GUI.backgroundColor = Color.white;
 
         EditorGUILayout.EndScrollView();
+    }
+
+    /// <summary>
+    /// 绘制清除已有文件区域
+    /// </summary>
+    private void DrawCleanRedundantSection()
+    {
+        GUILayout.Box("", GUILayout.Height(2), GUILayout.ExpandWidth(true));
+        GUILayout.Space(8);
+
+        EditorGUILayout.LabelField("🧹 清除已有文件", EditorStyles.boldLabel);
+        GUILayout.Space(3);
+
+        EditorGUILayout.HelpBox(
+            "扫描目标目录，按文件名对比：\n" +
+            "• 已有文件：与源目录文件名相同的文件（可删除）\n" +
+            "• 其他文件：目标目录中多出的其他文件（仅显示）",
+            MessageType.Info
+        );
+
+        GUILayout.Space(5);
+
+        // 清除模式选择
+        string[] cleanModeNames = { "仅列出文件", "删除已有文件" };
+        int cleanSelected = (int)cleanMode;
+        int cleanNew = EditorGUILayout.Popup("清除模式", cleanSelected, cleanModeNames);
+        cleanMode = (CleanMode)cleanNew;
+
+        GUILayout.Space(5);
+
+        string basePath = currentMode == ExportMode.Client ? exportToPath : exportPath;
+
+        // 扫描按钮
+        GUI.backgroundColor = new Color(0.3f, 0.6f, 1f);
+        if (GUILayout.Button("🔍 扫描目标目录", GUILayout.Height(30)))
+        {
+            ScanTargetDirectory(basePath);
+        }
+        GUI.backgroundColor = Color.white;
+
+        GUILayout.Space(5);
+
+        // 显示扫描结果
+        if (hasScanned)
+        {
+            showScanResults = EditorGUILayout.Foldout(showScanResults, $"📋 扫描结果 ({scanResults.Count} 个文件)", EditorStyles.foldoutHeader);
+            if (showScanResults)
+            {
+                DrawScanResults();
+            }
+
+            GUILayout.Space(5);
+
+            // 统计
+            int redundantCount = scanResults.Count(r => r.status == FileStatus.Redundant);
+            int otherCount = scanResults.Count(r => r.status == FileStatus.Other);
+
+            EditorGUILayout.LabelField($"📊 已有文件: {redundantCount} 个  其他文件: {otherCount} 个", EditorStyles.miniLabel);
+
+            GUILayout.Space(5);
+
+            // 执行清除按钮
+            if (cleanMode == CleanMode.DeleteRedundant)
+            {
+                if (redundantCount > 0)
+                {
+                    GUI.backgroundColor = new Color(1f, 0.5f, 0.3f);
+                    if (GUILayout.Button($"🗑️ 删除 {redundantCount} 个已有文件", GUILayout.Height(30)))
+                    {
+                        bool confirm = EditorUtility.DisplayDialog(
+                            "⚠️ 确认删除已有文件",
+                            $"将删除 {redundantCount} 个已有文件。\n\n" +
+                            $"这些文件与源目录文件名相同，可能是旧版本遗留。\n\n" +
+                            $"⚠️ 此操作不可恢复！",
+                            "确定删除",
+                            "取消"
+                        );
+                        if (confirm)
+                        {
+                            DeleteRedundantFiles(basePath);
+                        }
+                    }
+                    GUI.backgroundColor = Color.white;
+                }
+                else
+                {
+                    EditorGUILayout.LabelField("✅ 没有已有文件需要删除", EditorStyles.miniLabel);
+                }
+            }
+            else
+            {
+                // 仅列出模式 - 打印所有信息
+                GUI.backgroundColor = new Color(0.5f, 0.8f, 0.5f);
+                if (GUILayout.Button($"📋 打印完整报告到控制台", GUILayout.Height(25)))
+                {
+                    PrintFullReport(basePath);
+                }
+                GUI.backgroundColor = Color.white;
+            }
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(basePath) && Directory.Exists(basePath))
+            {
+                EditorGUILayout.LabelField("💡 点击「扫描目标目录」查看文件状态", EditorStyles.miniLabel);
+            }
+        }
+
+        if (string.IsNullOrEmpty(basePath) || !Directory.Exists(basePath))
+        {
+            EditorGUILayout.HelpBox("⚠️ 请先设置有效路径！", MessageType.Warning);
+        }
+    }
+
+    /// <summary>
+    /// 绘制扫描结果
+    /// </summary>
+    private void DrawScanResults()
+    {
+        GUILayout.BeginVertical("Box");
+
+        if (scanResults.Count == 0)
+        {
+            GUILayout.Label("  没有找到文件", EditorStyles.miniLabel);
+        }
+        else
+        {
+            // 按状态分组显示
+            var grouped = scanResults.GroupBy(r => r.status);
+
+            foreach (var group in grouped)
+            {
+                string statusName = group.Key == FileStatus.Redundant ? "🔄 已有文件 (可删除)" : "📄 其他文件 (仅显示)";
+                Color statusColor = group.Key == FileStatus.Redundant ? new Color(1f, 0.4f, 0.3f) : new Color(0.3f, 0.6f, 1f);
+
+                GUILayout.Space(3);
+                GUI.color = statusColor;
+                EditorGUILayout.LabelField($"━━━━ {statusName} ({group.Count()} 个) ━━━━", EditorStyles.boldLabel);
+                GUI.color = Color.white;
+
+                foreach (var result in group)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Space(20);
+
+                    string icon = result.status == FileStatus.Redundant ? "🗑️" : "📄";
+                    string displayPath = result.relativePath.Replace(Path.GetFileName(result.relativePath), "");
+
+                    GUILayout.Label($"{icon} {result.fileName}", EditorStyles.miniLabel);
+                    if (result.status == FileStatus.Other)
+                    {
+                        GUILayout.Label($"  (路径: {result.relativePath})", EditorStyles.miniLabel);
+                    }
+                    GUILayout.EndHorizontal();
+                }
+            }
+        }
+
+        GUILayout.EndVertical();
+    }
+
+    /// <summary>
+    /// 扫描目标目录 - 按文件名对比
+    /// </summary>
+    private void ScanTargetDirectory(string basePath)
+    {
+        scanResults.Clear();
+        hasScanned = false;
+
+        if (string.IsNullOrEmpty(basePath) || !Directory.Exists(basePath))
+        {
+            EditorUtility.DisplayDialog("提示", "请先设置有效的目标路径！", "确定");
+            return;
+        }
+
+        try
+        {
+            // 获取源文件名称列表（用于对比）
+            HashSet<string> sourceFileNames = new HashSet<string>();
+
+            if (currentMode == ExportMode.Client)
+            {
+                // 客户端模式：源是 Resources 目录
+                string resourcesPath = Path.Combine(Application.dataPath, "Resources");
+                if (Directory.Exists(resourcesPath))
+                {
+                    foreach (string file in Directory.GetFiles(resourcesPath, "*", SearchOption.AllDirectories))
+                    {
+                        if (file.Contains("ProjectSettings") || file.Contains("Packages"))
+                            continue;
+                        string fileName = Path.GetFileName(file);
+                        sourceFileNames.Add(fileName);
+                    }
+                }
+                // 添加导出列表中的文件名
+                foreach (var fileInfo in exportToFiles)
+                {
+                    sourceFileNames.Add(fileInfo.fileName);
+                }
+            }
+            else
+            {
+                // 服务器模式：源是导出列表
+                foreach (var fileInfo in exportFiles)
+                {
+                    sourceFileNames.Add(fileInfo.fileName);
+                }
+            }
+
+            // 获取目标目录所有文件
+            string[] targetExtensions = { "*.json", "*.cs" };
+            List<string> targetFiles = new List<string>();
+
+            foreach (string ext in targetExtensions)
+            {
+                foreach (string file in Directory.GetFiles(basePath, ext, SearchOption.AllDirectories))
+                {
+                    if (file.Contains("ProjectSettings") || file.Contains("Packages"))
+                        continue;
+
+                    string relativePath = file.Replace(basePath, "").TrimStart('/', '\\');
+
+                    // 只检查导出相关的目录
+                    bool isExportDir = false;
+                    string[] exportDirs = { "Data", "Structures", "SharedModels", "Events" };
+                    foreach (string dir in exportDirs)
+                    {
+                        if (relativePath.StartsWith(dir))
+                        {
+                            isExportDir = true;
+                            break;
+                        }
+                    }
+
+                    if (isExportDir)
+                    {
+                        targetFiles.Add(relativePath);
+                    }
+                }
+            }
+
+            // 对比文件名
+            foreach (string targetFile in targetFiles)
+            {
+                string fileName = Path.GetFileName(targetFile);
+
+                if (sourceFileNames.Contains(fileName))
+                {
+                    // 文件名相同 -> 已有文件
+                    scanResults.Add(new FileScanResult
+                    {
+                        fileName = fileName,
+                        relativePath = targetFile,
+                        status = FileStatus.Redundant,
+                        fullPath = Path.Combine(basePath, targetFile)
+                    });
+                }
+                else
+                {
+                    // 文件名不同 -> 其他文件
+                    scanResults.Add(new FileScanResult
+                    {
+                        fileName = fileName,
+                        relativePath = targetFile,
+                        status = FileStatus.Other,
+                        fullPath = Path.Combine(basePath, targetFile)
+                    });
+                }
+            }
+
+            // 按状态排序：先显示已有文件
+            scanResults = scanResults.OrderByDescending(r => r.status).ToList();
+
+            hasScanned = true;
+            int redundantCount = scanResults.Count(r => r.status == FileStatus.Redundant);
+            int otherCount = scanResults.Count(r => r.status == FileStatus.Other);
+
+            Debug.Log($"🔍 扫描完成！找到 {redundantCount} 个已有文件，{otherCount} 个其他文件");
+            EditorUtility.DisplayDialog("扫描完成", $"扫描完成！\n\n🔄 已有文件: {redundantCount} 个\n📄 其他文件: {otherCount} 个", "确定");
+        }
+        catch (System.Exception ex)
+        {
+            EditorUtility.DisplayDialog("扫描失败", $"扫描过程中发生错误：\n{ex.Message}", "确定");
+            Debug.LogError($"扫描文件错误: {ex}");
+        }
+    }
+
+    /// <summary>
+    /// 删除已有文件（只删除文件名相同的）
+    /// </summary>
+    private void DeleteRedundantFiles(string basePath)
+    {
+        var redundantFiles = scanResults.Where(r => r.status == FileStatus.Redundant).ToList();
+
+        if (redundantFiles.Count == 0)
+        {
+            EditorUtility.DisplayDialog("提示", "没有已有文件需要删除！", "确定");
+            return;
+        }
+
+        int deletedCount = 0;
+        int failCount = 0;
+        List<string> deletedList = new List<string>();
+
+        try
+        {
+            foreach (var result in redundantFiles)
+            {
+                string fullPath = result.fullPath;
+                if (File.Exists(fullPath))
+                {
+                    try
+                    {
+                        // 删除备份文件
+                        string backupPath = fullPath + ".backup";
+                        if (File.Exists(backupPath))
+                        {
+                            File.Delete(backupPath);
+                        }
+
+                        File.Delete(fullPath);
+                        deletedCount++;
+                        deletedList.Add(result.fileName);
+                        Debug.Log($"🗑️ 已删除已有文件: {result.relativePath}");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        failCount++;
+                        Debug.LogError($"删除失败 {result.relativePath}: {ex.Message}");
+                    }
+                }
+            }
+
+            // 删除空目录
+            int deletedDirs = DeleteEmptyExportDirectories(basePath);
+
+            string resultMsg = $"🧹 清除已有文件完成！\n\n";
+            resultMsg += $"✅ 已删除: {deletedCount} 个文件\n";
+            resultMsg += $"📁 已删除空目录: {deletedDirs} 个\n";
+            if (failCount > 0)
+            {
+                resultMsg += $"❌ 删除失败: {failCount} 个\n\n";
+            }
+            if (deletedList.Count > 0)
+            {
+                resultMsg += $"已删除文件:\n{string.Join("\n", deletedList.Take(20))}";
+                if (deletedList.Count > 20)
+                {
+                    resultMsg += $"\n... 共 {deletedList.Count} 个";
+                }
+            }
+
+            EditorUtility.DisplayDialog("清除完成", resultMsg, "确定");
+            Debug.Log($"清除已有完成：删除 {deletedCount} 个文件，{deletedDirs} 个空目录");
+
+            // 重新扫描
+            ScanTargetDirectory(basePath);
+        }
+        catch (System.Exception ex)
+        {
+            EditorUtility.DisplayDialog("清除失败", $"清除过程中发生错误：\n{ex.Message}", "确定");
+            Debug.LogError($"清除已有文件错误: {ex}");
+        }
+    }
+
+    /// <summary>
+    /// 删除空的导出目录
+    /// </summary>
+    private int DeleteEmptyExportDirectories(string rootPath)
+    {
+        int deletedCount = 0;
+
+        try
+        {
+            if (!Directory.Exists(rootPath))
+                return 0;
+
+            string[] allDirs = Directory.GetDirectories(rootPath, "*", SearchOption.AllDirectories);
+            var sortedDirs = allDirs.OrderByDescending(d => d.Length);
+
+            foreach (string dir in sortedDirs)
+            {
+                try
+                {
+                    if (Directory.GetFiles(dir).Length == 0 && Directory.GetDirectories(dir).Length == 0)
+                    {
+                        string dirName = Path.GetFileName(dir);
+                        string[] exportDirs = { "Data", "Structures", "SharedModels", "Events" };
+                        if (exportDirs.Contains(dirName))
+                        {
+                            Directory.Delete(dir);
+                            deletedCount++;
+                            Debug.Log($"🗑️ 已删除空导出目录: {dir}");
+                        }
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogWarning($"删除目录失败 {dir}: {ex.Message}");
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"删除空目录时发生错误: {ex.Message}");
+        }
+
+        return deletedCount;
+    }
+
+    /// <summary>
+    /// 打印完整报告到控制台
+    /// </summary>
+    private void PrintFullReport(string basePath)
+    {
+        if (scanResults.Count == 0)
+        {
+            Debug.Log("📋 没有文件");
+            return;
+        }
+
+        var redundantFiles = scanResults.Where(r => r.status == FileStatus.Redundant).ToList();
+        var otherFiles = scanResults.Where(r => r.status == FileStatus.Other).ToList();
+
+        Debug.Log($"========== 📊 完整扫描报告 ==========");
+        Debug.Log($"📁 目标目录: {basePath}");
+        Debug.Log($"📅 扫描时间: {System.DateTime.Now}");
+        Debug.Log("");
+        Debug.Log($"🔄 已有文件 ({redundantFiles.Count} 个) - 文件名与源目录相同，建议删除");
+        Debug.Log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        foreach (var file in redundantFiles)
+        {
+            Debug.Log($"   🗑️ {file.relativePath}");
+        }
+
+        if (otherFiles.Count > 0)
+        {
+            Debug.Log("");
+            Debug.Log($"📄 其他文件 ({otherFiles.Count} 个) - 文件名不在源目录中，可能是手动创建");
+            Debug.Log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            foreach (var file in otherFiles)
+            {
+                Debug.Log($"   📄 {file.relativePath}");
+            }
+        }
+
+        Debug.Log("");
+        Debug.Log($"========== 📊 统计 ==========");
+        Debug.Log($"总文件数: {scanResults.Count}");
+        Debug.Log($"🔄 已有文件: {redundantFiles.Count}");
+        Debug.Log($"📄 其他文件: {otherFiles.Count}");
+        Debug.Log($"==============================");
+
+        EditorUtility.DisplayDialog(
+            "报告已输出",
+            $"完整报告已输出到控制台！\n\n" +
+            $"📊 统计:\n" +
+            $"总文件数: {scanResults.Count}\n" +
+            $"🔄 已有文件: {redundantFiles.Count}\n" +
+            $"📄 其他文件: {otherFiles.Count}",
+            "确定"
+        );
     }
 
     /// <summary>
@@ -295,7 +806,6 @@ public class ExportTool : EditorWindow
 
         GUILayout.Space(10);
 
-        // 目标路径
         exportToPath = EditorGUILayout.TextField("目标项目根目录", exportToPath);
 
         GUILayout.BeginHorizontal();
@@ -314,7 +824,6 @@ public class ExportTool : EditorWindow
 
         GUILayout.Space(10);
 
-        // 显示统计信息
         EditorGUILayout.LabelField($"📋 找到 {exportToFiles.Count} 个JSON文件", EditorStyles.miniLabel);
 
         if (!string.IsNullOrEmpty(exportToPath))
@@ -368,7 +877,6 @@ public class ExportTool : EditorWindow
 
         GUILayout.Space(10);
 
-        // 导出路径
         exportPath = EditorGUILayout.TextField("服务器Shared目录", exportPath);
 
         GUILayout.BeginHorizontal();
@@ -380,16 +888,15 @@ public class ExportTool : EditorWindow
             {
                 exportPath = selectedPath;
                 SaveLastExportPath();
+                RefreshExportFileList();
             }
         }
         GUILayout.EndHorizontal();
 
         GUILayout.Space(10);
 
-        // 显示导出文件统计
         EditorGUILayout.LabelField($"📋 待导出文件 ({exportFiles.Count} 个)", EditorStyles.boldLabel);
 
-        // 检索文件夹路径显示
         GUILayout.BeginVertical("Box");
         EditorGUILayout.LabelField("🔍 检索文件夹路径", EditorStyles.boldLabel);
         EditorGUILayout.LabelField($"• JSON数据: Assets/Resources", EditorStyles.miniLabel);
@@ -474,7 +981,6 @@ public class ExportTool : EditorWindow
         }
         else
         {
-            // 按目录分组显示
             var grouped = jsonFiles.GroupBy(f => Path.GetDirectoryName(f.destinationPath));
 
             foreach (var group in grouped)
@@ -520,7 +1026,6 @@ public class ExportTool : EditorWindow
             }
         }
 
-        // 刷新文件列表
         RefreshExportToFileList();
 
         if (exportToFiles.Count == 0)
@@ -529,7 +1034,6 @@ public class ExportTool : EditorWindow
             return;
         }
 
-        // 确认导出
         string confirmMsg = $"将导出 {exportToFiles.Count} 个JSON文件到目标项目：\n\n" +
                            $"源项目: {Application.dataPath}\n" +
                            $"目标项目: {exportToPath}\n\n" +
@@ -547,7 +1051,6 @@ public class ExportTool : EditorWindow
             {
                 try
                 {
-                    // 构建目标路径（保持相同的相对路径）
                     string targetFilePath = Path.Combine(exportToPath, fileInfo.destinationPath);
                     string targetDir = Path.GetDirectoryName(targetFilePath);
 
@@ -556,7 +1059,6 @@ public class ExportTool : EditorWindow
                         Directory.CreateDirectory(targetDir);
                     }
 
-                    // 检查目标文件是否已存在且内容相同
                     if (File.Exists(targetFilePath))
                     {
                         string sourceContent = File.ReadAllText(fileInfo.sourcePath);
@@ -568,7 +1070,6 @@ public class ExportTool : EditorWindow
                             continue;
                         }
 
-                        // 备份旧文件
                         string backupPath = targetFilePath + ".backup";
                         if (!File.Exists(backupPath))
                         {
@@ -576,7 +1077,6 @@ public class ExportTool : EditorWindow
                         }
                     }
 
-                    // 复制文件
                     File.Copy(fileInfo.sourcePath, targetFilePath, true);
                     successCount++;
                 }
@@ -597,6 +1097,10 @@ public class ExportTool : EditorWindow
 
             EditorUtility.DisplayDialog("导出完成", resultMsg, "确定");
             Debug.Log($"导出JSON完成: 成功{successCount}, 跳过{skipCount}, 失败{failCount}");
+
+            // 清除扫描缓存
+            scanResults.Clear();
+            hasScanned = false;
         }
         catch (System.Exception ex)
         {
@@ -687,6 +1191,10 @@ public class ExportTool : EditorWindow
             message += $"\n导出目录:\n{exportPath}";
 
             EditorUtility.DisplayDialog("导出完成", message, "确定");
+
+            // 清除扫描缓存
+            scanResults.Clear();
+            hasScanned = false;
         }
         catch (System.Exception e)
         {
@@ -737,7 +1245,6 @@ public class ExportTool : EditorWindow
 
         string serverSharedPath = Path.Combine(Application.dataPath.Replace("/Assets", ""), "..", "WxEndlessDriftServer", "Shared");
 
-        // ✅ 只检查 Resources 目录下的 JSON 数据
         string resourcesPath = Path.Combine(Application.dataPath, "Resources");
         if (Directory.Exists(resourcesPath))
         {
@@ -897,12 +1404,30 @@ public class ExportTool : EditorWindow
         return isConsistent;
     }
 
+    // ==================== 内部类 ====================
+
     private class ExportFileInfo
     {
         public string sourcePath;
+        public string fileName;
         public string destinationPath;
+        public string relativePath;
         public string fileType;
         public Color color;
+    }
+
+    private enum FileStatus
+    {
+        Redundant,  // 已有文件（文件名相同）
+        Other       // 其他文件（文件名不同）
+    }
+
+    private class FileScanResult
+    {
+        public string fileName;
+        public string relativePath;
+        public string fullPath;
+        public FileStatus status;
     }
 }
 #endif

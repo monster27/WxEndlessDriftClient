@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Text;
-using SharedModels;
+//using SharedModels;
 
 public class GameDataManager : SingletonMono<GameDataManager>
 {

@@ -1,7 +1,6 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
-using SharedModels;
 
 /// <summary>
 /// FishingComponentConfig 的 Unity 扩展方法类

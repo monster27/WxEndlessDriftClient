@@ -1,12 +1,9 @@
 using System;
 
-namespace SharedModels
+[Serializable]
+public class PlayerFishingComponent
 {
-    [Serializable]
-    public class PlayerFishingComponent
-    {
-        public int id;
-        public int level = 1;
-        public FishingComponentConfig config;
-    }
+    public int id;
+    public int level = 1;
+    public FishingComponentConfig config;
 }

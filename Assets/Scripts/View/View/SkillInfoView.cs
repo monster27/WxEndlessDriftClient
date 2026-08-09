@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
-using SharedModels;
+//using SharedModels;
 
 public class SkillInfoView : MonoBehaviour
 {

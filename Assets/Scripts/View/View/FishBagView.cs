@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using View.Detail;
-using SharedModels;
+//using SharedModels;
 
 public class FishBagView : BaseView
 {

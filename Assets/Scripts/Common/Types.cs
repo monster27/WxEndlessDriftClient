@@ -6,11 +6,10 @@
 
 using UnityEngine;
 using System.Collections.Generic;
-using SharedModels;
 
 // ========================================================
 // 以下类型已迁移到 SharedModels 命名空间
-// 请使用 using SharedModels; 来引用这些类型
+// 请使用 //using SharedModels; 来引用这些类型
 // - EquipmentSlotType (SharedModels/EquipmentSlotType.cs)
 // - MallItemData (SharedModels/MallItemData.cs)
 // - MallCategoryData (SharedModels/MallData.cs)

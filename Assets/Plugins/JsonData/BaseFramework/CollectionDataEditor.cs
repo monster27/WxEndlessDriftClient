@@ -900,84 +900,65 @@ public class CollectionDataEditor : EditorWindow
 
     #endregion
 
-    #region Data Classes
+    //#region Data Classes
 
-    [System.Serializable]
-    public class Reward
-    {
-        public int percent;
-        public int rewardId;
-        public int rewardAmount;
-    }
+    //[System.Serializable]
+    //public class Reward
+    //{
+    //    public int percent;
+    //    public int rewardId;
+    //    public int rewardAmount;
+    //}
 
-    [System.Serializable]
-    public class CollectionPage
-    {
-        public int id;
-        public string pageName;
-        public List<Reward> rewards;
-        public List<int> entries;
-    }
+    //[System.Serializable]
+    //public class CollectionPage
+    //{
+    //    public int id;
+    //    public string pageName;
+    //    public List<Reward> rewards;
+    //    public List<int> entries;
+    //}
 
-    [System.Serializable]
-    public class CollectionCategory
-    {
-        public int id;
-        public string name;
-        public string icon;
-        public List<CollectionPage> pages;
-    }
+    //[System.Serializable]
+    //public class CollectionCategory
+    //{
+    //    public int id;
+    //    public string name;
+    //    public string icon;
+    //    public List<CollectionPage> pages;
+    //}
 
-    [System.Serializable]
-    public class CollectionRoot
-    {
-        public List<CollectionCategory> categories;
-    }
+    //[System.Serializable]
+    //public class CollectionRoot
+    //{
+    //    public List<CollectionCategory> categories;
+    //}
 
-    [System.Serializable]
-    public class CollectionWrapper
-    {
-        public CollectionRoot collection;
-    }
+    //[System.Serializable]
+    //public class CollectionWrapper
+    //{
+    //    public CollectionRoot collection;
+    //}
 
-    [System.Serializable]
-    public class FishWrapper
-    {
-        public List<FishData> fishes;
-    }
+    //[System.Serializable]
+    //public class FishWrapper
+    //{
+    //    public List<FishData> fishes;
+    //}
 
-    [System.Serializable]
-    public class FishData
-    {
-        public int id;
-        public string name;
-        public int islandId;
-        public int rarityId;
-        public List<int> preferredIslandIds;
-        public List<int> preferredTimeIds;
-        public List<int> preferredBaitIds;
-        public List<int> preferredWeatherIds;
-        public int fishSpeciesId;
-        public int struggleTime;
-        public float flashProbability;
-        public float baseWeight;
-        public int baseExp;
-        public float scale;
-    }
-
-    #endregion
+    //#endregion
 }
 
 // ==================== PageEntryEditorWindow.cs ====================
 public class PageEntryEditorWindow : EditorWindow
 {
-    private CollectionDataEditor.CollectionPage targetPage;
+    private CollectionPage targetPage;
     private System.Action onSaveCallback;
     private string entryInput = "";
     private Vector2 scrollPosition;
     private int newEntryId = 0;
 
-    public static void Open(CollectionDataEditor.CollectionPage page, System.Action onSave)
+    public static void Open(CollectionPage page, System.Action onSave)
     {
         PageEntryEditorWindow window = GetWindow<PageEntryEditorWindow>("编辑条目");
         window.targetPage = page;
@@ -1103,11 +1084,11 @@ public class PageEntryEditorWindow : EditorWindow
 // ==================== RewardEditorWindow.cs ====================
 public class RewardEditorWindow : EditorWindow
 {
-    private CollectionDataEditor.CollectionPage targetPage;
+    private CollectionPage targetPage;
     private System.Action onSaveCallback;
     private Vector2 scrollPosition;
 
-    public static void Open(CollectionDataEditor.CollectionPage page, System.Action onSave)
+    public static void Open(CollectionPage page, System.Action onSave)
     {
         RewardEditorWindow window = GetWindow<RewardEditorWindow>("编辑奖励");
         window.targetPage = page;

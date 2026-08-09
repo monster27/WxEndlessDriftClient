@@ -3,7 +3,7 @@ using UnityEngine.Networking;
 using System.Collections;
 using System;
 using System.Collections.Generic;
-using SharedModels;
+//using SharedModels;
 using Logger = Utils.Logger;
 
 public partial class NetServerManager
