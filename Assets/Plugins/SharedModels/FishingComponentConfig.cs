@@ -1,97 +1,40 @@
 using System;
 using System.Collections.Generic;
 
-
 /// <summary>
 /// 钓鱼组件类型枚举
-/// 定义钓鱼系统中的装备/技能类别
 /// </summary>
 public enum FishingComponentCategory
 {
     None = 0,
-    /// <summary>
-    /// 钓竿 - 影响钓鱼范围、力度等
-    /// </summary>
     Rod = 1,
-
-    /// <summary>
-    /// 钓线 - 影响灵敏度、拉力等
-    /// </summary>
     Line = 2,
-
-    /// <summary>
-    /// 钓钩 - 影响上钩率、脱钩率等
-    /// </summary>
     Hook = 3,
-
-    /// <summary>
-    /// 技能 - 特殊能力，如增加稀有度、减少垃圾等
-    /// </summary>
     Skill = 4,
-
-    /// <summary>
-    /// 人物 - 角色技能
-    /// </summary>
     Character = 5,
-
-    /// <summary>
-    /// 鱼饵
-    /// </summary>
     Bait = 6
 }
 
 /// <summary>
 /// 钓鱼组件参数数据
-/// 存储单个参数的ID和对应的值
 /// </summary>
 [Serializable]
 public class FishingComponentParam
 {
-    /// <summary>
-    /// 参数ID
-    /// </summary>
     public int paramId;
-
-    /// <summary>
-    /// 参数值
-    /// </summary>
     public float value;
 }
 
 /// <summary>
 /// 钓鱼组件等级数据
-/// 定义单个等级的参数配置
 /// </summary>
 [Serializable]
 public class FishingComponentLevelData
 {
-    /// <summary>
-    /// 等级（从1开始）
-    /// </summary>
     public int level;
-
-    /// <summary>
-    /// 参数列表（最多3个参数，每个参数包含ID和值）
-    /// </summary>
     public List<FishingComponentParam> paramsList;
-
-    /// <summary>
-    /// 技能等级描述
-    /// 该等级技能的详细介绍
-    /// </summary>
     public string levelDescription;
-
-    /// <summary>
-    /// 升级效果描述
-    /// 从低等级升级到当前等级时显示的效果文本
-    /// 例如："增加0.3s冷却"、"增加钓到稀有的500权重"
-    /// </summary>
     public string upgradeDescription;
-
-    /// <summary>
-    /// 升级所需金币数量
-    /// 默认值为-1，表示未配置或无法升级
-    /// </summary>
     public int upgradeCost = -1;
 }
 
@@ -100,14 +43,7 @@ public class FishingComponentLevelData
 /// </summary>
 public enum FishingComponentObtainStatus
 {
-    /// <summary>
-    /// 未获取
-    /// </summary>
     Unobtained = 0,
-
-    /// <summary>
-    /// 已获取
-    /// </summary>
     Obtained = 1
 }
 
@@ -116,86 +52,30 @@ public enum FishingComponentObtainStatus
 /// </summary>
 public enum FishingComponentEquipStatus
 {
-    /// <summary>
-    /// 未装备
-    /// </summary>
     Unequipped = 0,
-
-    /// <summary>
-    /// 装备中
-    /// </summary>
     Equipped = 1
 }
 
 /// <summary>
 /// 钓鱼组件配置类
-/// 定义一个钓鱼组件的完整配置，包含所有等级数据和服务器属性
 /// </summary>
 [Serializable]
 public class FishingComponentConfig
 {
-    /// <summary>
-    /// 组件唯一ID
-    /// </summary>
     public int id;
-
-    /// <summary>
-    /// 组件名称
-    /// </summary>
     public string name = string.Empty;
-
-    /// <summary>
-    /// 组件描述
-    /// </summary>
     public string description = string.Empty;
-
-    /// <summary>
-    /// 组件类别
-    /// </summary>
     public FishingComponentCategory category;
-
-    /// <summary>
-    /// 组件图标路径
-    /// </summary>
     public string iconPath;
-
-    /// <summary>
-    /// 最大等级
-    /// </summary>
     public int maxLevel;
-
-    /// <summary>
-    /// 是否为被动技能（装备后自动生效）
-    /// </summary>
     public bool isPassive;
-
-    /// <summary>
-    /// 主动技能冷却时间（秒），0表示无冷却
-    /// </summary>
     public float cooldownTime;
-
-    /// <summary>
-    /// 主动技能持续时间（秒），0表示瞬发
-    /// </summary>
     public float duration;
-
-    /// <summary>
-    /// 各等级数据（按等级顺序排列）
-    /// </summary>
     public List<FishingComponentLevelData> levelDataList;
-
-    /// <summary>
-    /// 获取状态（已获取/未获取）
-    /// </summary>
     public FishingComponentObtainStatus obtainStatus = FishingComponentObtainStatus.Unobtained;
-
-    /// <summary>
-    /// 装备状态（装备中/未装备）
-    /// 仅当obtainStatus为Obtained时有效
-    /// </summary>
     public FishingComponentEquipStatus equipStatus = FishingComponentEquipStatus.Unequipped;
 
-    // ========== 服务器用属性 ==========
+    // ===== 服务器用属性 =====
     public int rarityId;
     public int slotTypeId;
     public float trashProbability;
@@ -209,52 +89,41 @@ public class FishingComponentConfig
     public int continuousPauseDuration;
     public int normalPauseDuration;
     public int fishBagCapacity;
+
+    // ===== 新增：重量倾向加成 =====
+    public float weightBiasBonus = 0f;
+
+    // ===== 新增：挣扎时间减少 =====
+    public float struggleTimeReduction = 0f;
+
+    // ===== 新增：咬钩率加成 =====
+    public float catchRateBonus = 0f;
+
+    // ===== 新增：保底加成值 =====
+    public float trashProtectionBonus = 0f;
 }
 
 /// <summary>
 /// 完整钓鱼技能配置
-/// 包含所有钓鱼组件的配置集合
 /// </summary>
 [Serializable]
 public class CompleteFishingSkillConfig
 {
-    /// <summary>
-    /// 配置版本号
-    /// </summary>
     public string version;
-
-    /// <summary>
-    /// 所有钓鱼组件配置列表
-    /// </summary>
     public List<FishingComponentConfig> items;
 
-    /// <summary>
-    /// 根据ID获取组件配置
-    /// </summary>
-    /// <param name="id">组件ID</param>
-    /// <returns>组件配置，如果未找到返回null</returns>
     public FishingComponentConfig GetComponentById(int id)
     {
         if (items == null) return null;
         return items.Find(c => c.id == id);
     }
 
-    /// <summary>
-    /// 根据类别获取组件配置列表
-    /// </summary>
-    /// <param name="category">组件类别</param>
-    /// <returns>该类别的所有组件配置</returns>
     public List<FishingComponentConfig> GetComponentsByCategory(FishingComponentCategory category)
     {
         if (items == null) return new List<FishingComponentConfig>();
         return items.FindAll(c => c.category == category);
     }
 
-    /// <summary>
-    /// 根据名称获取组件配置
-    /// </summary>
-    /// <param name="name">组件名称</param>
-    /// <returns>组件配置，如果未找到返回null</returns>
     public FishingComponentConfig GetComponentByName(string name)
     {
         if (items == null) return null;
@@ -264,7 +133,6 @@ public class CompleteFishingSkillConfig
 
 /// <summary>
 /// 钓鱼组件配置列表包装器
-/// 用于JsonUtility序列化/反序列化组件配置列表
 /// </summary>
 [Serializable]
 public class FishingComponentListWrapper

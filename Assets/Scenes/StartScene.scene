@@ -239,7 +239,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -167.2025, y: 41.9268}
+  m_AnchoredPosition: {x: -167.20251, y: 41.926758}
   m_SizeDelta: {x: 334.4049, y: 83.8534}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &94156081
@@ -541,7 +541,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1514549124}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1712628884}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1485,51 +1485,6 @@ MonoBehaviour:
   m_CaretWidth: 1
   m_ReadOnly: 0
   m_ShouldActivateOnSelect: 1
---- !u!1 &512724063
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
-  m_Component:
-  - component: {fileID: 512724065}
-  - component: {fileID: 512724064}
-  m_Layer: 0
-  m_HasEditorInfo: 1
-  m_Name: SSLBypass
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &512724064
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 512724063}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d55a44e9306268e4b8f14d2a415dca8d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &512724065
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 512724063}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 586.99243, y: 1168.3553, z: -2.9351358}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &696726910
 GameObject:
   m_ObjectHideFlags: 0
@@ -2862,7 +2817,8 @@ Transform:
   m_LocalPosition: {x: 1.0092237, y: 0.014188889, z: 34.44538}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 231484849}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1712628885
@@ -3393,6 +3349,4 @@ SceneRoots:
   - {fileID: 794886713}
   - {fileID: 1693082726}
   - {fileID: 1712628884}
-  - {fileID: 231484849}
   - {fileID: 1354323832}
-  - {fileID: 512724065}
