@@ -18,7 +18,7 @@
             "preferredWeatherIds": [
                 301
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 5,
             "flashProbability": 0.5,
             "baseWeight": 0.800000011920929,
@@ -44,7 +44,7 @@
             "preferredWeatherIds": [
                 312
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 4,
             "flashProbability": 0.4000000059604645,
             "baseWeight": 0.15000000596046449,
@@ -70,7 +70,7 @@
             "preferredWeatherIds": [
                 403
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 7,
             "flashProbability": 0.5,
             "baseWeight": 0.30000001192092898,
@@ -96,7 +96,7 @@
             "preferredWeatherIds": [
                 303
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 8,
             "flashProbability": 0.5,
             "baseWeight": 1.5,
@@ -122,7 +122,7 @@
             "preferredWeatherIds": [
                 307
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 6,
             "flashProbability": 0.4000000059604645,
             "baseWeight": 0.5,
@@ -148,7 +148,7 @@
             "preferredWeatherIds": [
                 304
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 18,
             "flashProbability": 0.5,
             "baseWeight": 12.0,
@@ -174,7 +174,7 @@
             "preferredWeatherIds": [
                 313
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 15,
             "flashProbability": 0.5,
             "baseWeight": 0.6000000238418579,
@@ -200,7 +200,7 @@
             "preferredWeatherIds": [
                 306
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 10,
             "flashProbability": 0.5,
             "baseWeight": 0.20000000298023225,
@@ -226,7 +226,7 @@
             "preferredWeatherIds": [
                 303
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 25,
             "flashProbability": 0.5,
             "baseWeight": 8.0,
@@ -252,7 +252,7 @@
             "preferredWeatherIds": [
                 304
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 30,
             "flashProbability": 0.5,
             "baseWeight": 15.0,
@@ -278,7 +278,7 @@
             "preferredWeatherIds": [
                 309
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 30,
             "flashProbability": 0.5,
             "baseWeight": 20.0,
@@ -304,7 +304,7 @@
             "preferredWeatherIds": [
                 404
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 31,
             "flashProbability": 0.5,
             "baseWeight": 24.0,
@@ -330,7 +330,7 @@
             "preferredWeatherIds": [
                 315
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 32,
             "flashProbability": 0.5,
             "baseWeight": 26.0,
@@ -356,7 +356,7 @@
             "preferredWeatherIds": [
                 315
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 33,
             "flashProbability": 0.5,
             "baseWeight": 28.0,
@@ -382,7 +382,7 @@
             "preferredWeatherIds": [
                 316
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 40,
             "flashProbability": 0.5,
             "baseWeight": 30.0,
@@ -409,7 +409,7 @@
             "preferredWeatherIds": [
                 301
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 5,
             "flashProbability": 0.5,
             "baseWeight": 2.5,
@@ -437,7 +437,7 @@
                 302,
                 303
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 7,
             "flashProbability": 0.5,
             "baseWeight": 5.0,
@@ -466,7 +466,7 @@
                 305,
                 308
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 8,
             "flashProbability": 0.5,
             "baseWeight": 15.0,
@@ -495,7 +495,7 @@
                 304,
                 306
             ],
-            "fishSpeciesId": 602,
+            "fishSpeciesId": 601,
             "struggleTime": 6,
             "flashProbability": 0.5,
             "baseWeight": 8.0,

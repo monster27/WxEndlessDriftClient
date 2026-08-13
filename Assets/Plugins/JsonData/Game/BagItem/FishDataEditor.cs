@@ -5,6 +5,15 @@ using UnityEditor;
 using System.IO;
 using System.Linq;
 
+// 鱼类品种枚举（仅用于编辑器下拉选择）
+public enum FishSpeciesTypeForEditor
+{
+    全屏游动类 = 601,
+    全屏静止类 = 602,
+    底沙游动类 = 603,
+    底沙静止类 = 604
+}
+
 public class FishDataEditor : BaseDataEditor<FishData>
 {
     // 编辑变量
@@ -39,7 +48,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
     private float col12 = 80;  // 闪光概率
     private float col13 = 80;  // 品种ID
     private float col14 = 200; // 描述
-    private float col15 = 60;  // Scale
+    private float col15 = 60;  //  Scale
 
     // ===== 新增：筛选相关 =====
     private int selectedIslandFilter = -1;
@@ -164,7 +173,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
         DrawResizableColumn("天气偏向", ref col10, "col10");
         DrawResizableColumn("挣扎时间", ref col11, "col11");
         DrawResizableColumn("闪光概率", ref col12, "col12");
-        DrawResizableColumn("品种ID", ref col13, "col13");
+        DrawResizableColumn("品种", ref col13, "col13");
         DrawResizableColumn("Scale", ref col15, "col15");
         DrawResizableColumn("描述", ref col14, "col14");
 
@@ -230,7 +239,11 @@ public class FishDataEditor : BaseDataEditor<FishData>
 
         EditorGUILayout.LabelField($"{item.struggleTime}秒", GUILayout.Width(col11));
         EditorGUILayout.LabelField($"{item.flashProbability}", GUILayout.Width(col12));
-        EditorGUILayout.LabelField(item.fishSpeciesId.ToString(), GUILayout.Width(col13));
+
+        // 显示品种名称
+        string speciesName = GetSpeciesName(item.fishSpeciesId);
+        EditorGUILayout.LabelField(speciesName, GUILayout.Width(col13));
+
         EditorGUILayout.LabelField($"{item.scale:F2}", GUILayout.Width(col15));
 
         string descStr = item.description.Length > 15 ? item.description.Substring(0, 15) + "..." : item.description;
@@ -257,6 +270,15 @@ public class FishDataEditor : BaseDataEditor<FishData>
         EditorGUILayout.EndHorizontal();
 
         GUI.backgroundColor = Color.white;
+    }
+
+    private string GetSpeciesName(int speciesId)
+    {
+        if (System.Enum.IsDefined(typeof(FishSpeciesTypeForEditor), speciesId))
+        {
+            return ((FishSpeciesTypeForEditor)speciesId).ToString();
+        }
+        return speciesId.ToString();
     }
 
     private void LoadItemToEdit(FishData item)
@@ -329,8 +351,8 @@ public class FishDataEditor : BaseDataEditor<FishData>
             EditorGUILayout.LabelField("稀有度ID:", GUILayout.Width(70));
             editRarityId = EditorGUILayout.IntField(editRarityId, GUILayout.Width(60));
 
-            EditorGUILayout.LabelField("鱼类品种ID:", GUILayout.Width(80));
-            editFishSpeciesId = EditorGUILayout.IntField(editFishSpeciesId, GUILayout.Width(60));
+            EditorGUILayout.LabelField("品种:", GUILayout.Width(50));
+            DrawFishSpeciesSelector();
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.EndVertical();
@@ -402,6 +424,26 @@ public class FishDataEditor : BaseDataEditor<FishData>
 
         EditorGUILayout.EndVertical();
         GUILayout.Space(10);
+    }
+
+    private void DrawFishSpeciesSelector()
+    {
+        // 获取当前选中的枚举值
+        FishSpeciesTypeForEditor currentType;
+        if (System.Enum.IsDefined(typeof(FishSpeciesTypeForEditor), editFishSpeciesId))
+        {
+            currentType = (FishSpeciesTypeForEditor)editFishSpeciesId;
+        }
+        else
+        {
+            currentType = FishSpeciesTypeForEditor.全屏游动类;
+        }
+
+        // 下拉选择
+        FishSpeciesTypeForEditor newType = (FishSpeciesTypeForEditor)EditorGUILayout.EnumPopup(currentType, GUILayout.Width(150));
+
+        // 将枚举值转换为ID存储
+        editFishSpeciesId = (int)newType;
     }
 
     private void SaveCurrentEdit()
@@ -496,8 +538,8 @@ public class FishDataEditor : BaseDataEditor<FishData>
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("品种ID:", GUILayout.Width(50));
-        editFishSpeciesId = EditorGUILayout.IntField(editFishSpeciesId, GUILayout.Width(60));
+        EditorGUILayout.LabelField("品种:", GUILayout.Width(40));
+        DrawFishSpeciesSelectorQuick();
         EditorGUILayout.LabelField("挣扎时间:", GUILayout.Width(60));
         editStruggleTime = EditorGUILayout.IntField(editStruggleTime, GUILayout.Width(60));
         EditorGUILayout.LabelField("闪光概率:", GUILayout.Width(60));
@@ -527,6 +569,22 @@ public class FishDataEditor : BaseDataEditor<FishData>
             "• 筛选：可通过工具栏下拉菜单按存在岛屿筛选数据",
             MessageType.Info
         );
+    }
+
+    private void DrawFishSpeciesSelectorQuick()
+    {
+        FishSpeciesTypeForEditor currentType;
+        if (System.Enum.IsDefined(typeof(FishSpeciesTypeForEditor), editFishSpeciesId))
+        {
+            currentType = (FishSpeciesTypeForEditor)editFishSpeciesId;
+        }
+        else
+        {
+            currentType = FishSpeciesTypeForEditor.全屏游动类;
+        }
+
+        FishSpeciesTypeForEditor newType = (FishSpeciesTypeForEditor)EditorGUILayout.EnumPopup(currentType, GUILayout.Width(120));
+        editFishSpeciesId = (int)newType;
     }
 
     private void LoadData()

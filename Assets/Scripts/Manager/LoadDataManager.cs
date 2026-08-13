@@ -373,7 +373,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
             dataLog.AppendLine($"✓ 鱼类品种数据: 成功加载 {fishSpecies.Count} 个品种");
             foreach (var item in fishSpecies)
             {
-                dataLog.AppendLine($"    - ID: {item.id}, 名称: {item.name}, 移动类型: {item.movementType}, 位置类型: {item.positionType}");
+                dataLog.AppendLine($"    - ID: {item.id}, 名称: {item.name}, 类型: {item.type}");
             }
         }
         else
@@ -663,6 +663,9 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
 
     // ==================== 鱼类品种查询方法区域 ====================
 
+    /// <summary>
+    /// 根据ID获取鱼类品种数据
+    /// </summary>
     public FishSpeciesData GetFishSpeciesById(int id)
     {
         foreach (var item in fishSpecies)
@@ -672,22 +675,52 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         return null;
     }
 
+    /// <summary>
+    /// 根据类型字符串获取鱼类品种数据
+    /// </summary>
+    public FishSpeciesData GetFishSpeciesByType(string type)
+    {
+        foreach (var item in fishSpecies)
+        {
+            if (item.type == type) return item;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 获取鱼类品种名称
+    /// </summary>
     public string GetFishSpeciesName(int id)
     {
         FishSpeciesData item = GetFishSpeciesById(id);
         return item != null ? item.name : "未知品种";
     }
 
-    public string GetFishSpeciesMovementType(int id)
+    /// <summary>
+    /// 获取鱼类品种类型枚举（通过ID直接转换）
+    /// </summary>
+    public FishSpeciesType GetFishSpeciesType(int id)
     {
-        FishSpeciesData item = GetFishSpeciesById(id);
-        return item != null ? item.movementType : "free";
+        if (System.Enum.IsDefined(typeof(FishSpeciesType), id))
+        {
+            return (FishSpeciesType)id;
+        }
+        return FishSpeciesType.FullScreenSwim;
     }
 
-    public string GetFishSpeciesPositionType(int id)
+    /// <summary>
+    /// 获取鱼类品种类型枚举（通过type字符串转换）
+    /// </summary>
+    public FishSpeciesType GetFishSpeciesType(string type)
     {
-        FishSpeciesData item = GetFishSpeciesById(id);
-        return item != null ? item.positionType : "water";
+        switch (type)
+        {
+            case "FullScreenSwim": return FishSpeciesType.FullScreenSwim;
+            case "FullScreenStatic": return FishSpeciesType.FullScreenStatic;
+            case "BottomSwim": return FishSpeciesType.BottomSwim;
+            case "BottomStatic": return FishSpeciesType.BottomStatic;
+            default: return FishSpeciesType.FullScreenSwim;
+        }
     }
 
     // ==================== 鱼类查询方法区域 ====================

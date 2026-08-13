@@ -2,24 +2,27 @@
     "fishSpecies": [
         {
             "id": 601,
-            "name": "贝壳类",
-            "description": "贝类生物，放置于鱼缸底沙，不可移动",
-            "movementType": "static",
-            "positionType": "bottom"
+            "name": "全屏游动类",
+            "description": "该类生物活跃于鱼缸的各个水层与区域，会持续在屏幕可见范围内自由穿梭游动，不会固定于某一位置，为鱼缸带来灵动与生机。",
+            "type": "FullScreenSwim"
         },
         {
             "id": 602,
-            "name": "鱼类",
-            "description": "普通鱼类，在鱼缸中可以自由移动",
-            "movementType": "free",
-            "positionType": "water"
+            "name": "全屏静止类",
+            "description": "该类生物在打开鱼缸时，会随机选取屏幕内的一处位置进行固定摆放，此后保持静止不动，如同精美的装饰或摆件，为鱼缸增添静态的观赏元素。",
+            "type": "FullScreenStatic"
         },
         {
             "id": 603,
-            "name": "蟹类",
-            "description": "蟹类生物，放置于鱼缸底沙，可移动",
-            "movementType": "walk",
-            "positionType": "bottom"
+            "name": "底沙游动类",
+            "description": "该类生物紧贴鱼缸底部的沙层或基质表面活动，以爬行或缓慢游动的方式在底沙区域来回移动，不会离开底部区域，适合作为底层景观的活跃点缀。",
+            "type": "BottomSwim"
+        },
+        {
+            "id": 604,
+            "name": "底沙静止类",
+            "description": "该类生物在鱼缸开启时，会随机选择底沙区域的一个固定点进行安置，随后保持静止，如同沉入沙中的化石或静卧的底栖生物，为底层景观提供稳定的视觉焦点。",
+            "type": "BottomStatic"
         }
     ]
 }

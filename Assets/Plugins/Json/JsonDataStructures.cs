@@ -191,14 +191,25 @@ public class FishSpeciesData
     public int id;
     public string name;
     public string description;
-    public string movementType;
-    public string positionType;
+    public string type;  // 英文类型标识，如 "FullScreenSwim"
 }
 
 [System.Serializable]
 public class FishSpeciesListWrapper
 {
     public List<FishSpeciesData> fishSpecies;
+}
+
+/// <summary>
+/// 鱼类品种枚举（对应fishSpecies.json中的type字段）
+/// ID与枚举值对应，可用于直接转换
+/// </summary>
+public enum FishSpeciesType
+{
+    FullScreenSwim = 601,
+    FullScreenStatic = 602,
+    BottomSwim = 603,
+    BottomStatic = 604
 }
 
 #endregion

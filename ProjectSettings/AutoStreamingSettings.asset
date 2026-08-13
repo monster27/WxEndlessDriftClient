@@ -214,6 +214,19 @@ AutoStreamingSettings:
     abSize: 44440
   - serializedVersion: 2
     onDemandDownload: 1
+    assetPath: Assets/Atlases/Assets/TextMesh Pro/Sprites/Sprites.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 56779
+  - serializedVersion: 2
+    onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/fish basket/fish basket.spriteatlas
     assetName: 
     localFileId: 4343727234628468602
@@ -241,26 +254,13 @@ AutoStreamingSettings:
     abSize: 379833
   - serializedVersion: 2
     onDemandDownload: 1
-    assetPath: Assets/Atlases/Assets/Textures/UI/Common/Common.spriteatlas
-    assetName: 
-    localFileId: 4343727234628468602
-    rtMem: 0
-    warningFlag: 0
-    refs:
-    - 2
-    - res
-    maxPlaceholderSize: 1114112
-    width: 0
-    height: 0
-    abSize: 93800
-  - serializedVersion: 2
-    onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/Common/Common.spriteatlas
     assetName: 
     localFileId: 4343727234628468602
     rtMem: 0
     warningFlag: 0
     refs:
+    - 2
     - res
     maxPlaceholderSize: 1114112
     width: 0
@@ -389,19 +389,6 @@ AutoStreamingSettings:
     abSize: 404743
   - serializedVersion: 2
     onDemandDownload: 1
-    assetPath: Assets/Atlases/Assets/Resources/UI/Icon/SpecialIcon/SpecialIcon.spriteatlas
-    assetName: 
-    localFileId: 4343727234628468602
-    rtMem: 0
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 1114112
-    width: 0
-    height: 0
-    abSize: 12251
-  - serializedVersion: 2
-    onDemandDownload: 1
     assetPath: "Assets/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA.spriteatlas"
     assetName: 
     localFileId: 4343727234628468602
@@ -497,6 +484,19 @@ AutoStreamingSettings:
     abSize: 459790
   - serializedVersion: 2
     onDemandDownload: 1
+    assetPath: Assets/Atlases/Assets/TextMesh Pro/Examples & Extras/Sprites/Sprites.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 82047
+  - serializedVersion: 2
+    onDemandDownload: 1
     assetPath: "Assets/Atlases/Assets/Textures/0712/fish basket/\u5347\u7EA7\u793A\u610F\u56FE/\u5347\u7EA7\u793A\u610F\u56FE.spriteatlas"
     assetName: 
     localFileId: 4343727234628468602
@@ -511,6 +511,19 @@ AutoStreamingSettings:
     abSize: 241158
   - serializedVersion: 2
     onDemandDownload: 1
+    assetPath: Assets/Atlases/Assets/Resources/GameScene/Player/Ani/3402/3402.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 44827
+  - serializedVersion: 2
+    onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0605/backpack/backpack.spriteatlas
     assetName: 
     localFileId: 4343727234628468602
@@ -523,19 +536,6 @@ AutoStreamingSettings:
     width: 0
     height: 0
     abSize: 496782
-  - serializedVersion: 2
-    onDemandDownload: 1
-    assetPath: Assets/Atlases/Assets/Resources/GameScene/Player/Ani/3402/3402.spriteatlas
-    assetName: 
-    localFileId: 4343727234628468602
-    rtMem: 0
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 1114112
-    width: 0
-    height: 0
-    abSize: 44827
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/Equipment/Level/Level.spriteatlas
@@ -739,6 +739,19 @@ AutoStreamingSettings:
     abSize: 483981
   - serializedVersion: 2
     onDemandDownload: 1
+    assetPath: Assets/Atlases/Assets/TextMesh Pro/Examples & Extras/Textures/Textures.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 757025
+  - serializedVersion: 2
+    onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/GameScene/Scene/101/101.spriteatlas
     assetName: 
     localFileId: 4343727234628468602
@@ -779,7 +792,7 @@ AutoStreamingSettings:
     abSize: 335478
   - serializedVersion: 2
     onDemandDownload: 1
-    assetPath: Assets/Atlases/Assets/TextMesh Pro/Examples & Extras/Sprites/Sprites.spriteatlas
+    assetPath: Assets/Atlases/Assets/Resources/UI/Icon/CollectionIcons/CollectionIcons.spriteatlas
     assetName: 
     localFileId: 4343727234628468602
     rtMem: 0
@@ -789,10 +802,10 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 82047
+    abSize: 3910
   - serializedVersion: 2
     onDemandDownload: 1
-    assetPath: Assets/Atlases/Assets/TextMesh Pro/Examples & Extras/Textures/Textures.spriteatlas
+    assetPath: Assets/Atlases/Assets/Resources/UI/Icon/IslandInfoIcons/IslandInfoIcons.spriteatlas
     assetName: 
     localFileId: 4343727234628468602
     rtMem: 0
@@ -802,20 +815,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 757025
-  - serializedVersion: 2
-    onDemandDownload: 1
-    assetPath: Assets/Atlases/Assets/TextMesh Pro/Sprites/Sprites.spriteatlas
-    assetName: 
-    localFileId: 4343727234628468602
-    rtMem: 0
-    warningFlag: 0
-    refs:
-    - res
-    maxPlaceholderSize: 1114112
-    width: 0
-    height: 0
-    abSize: 56779
+    abSize: 6371
   mAudios: []
   mMeshes: []
   mAnimations: []
@@ -832,14 +832,14 @@ AutoStreamingSettings:
     assetPath: Assets/Scenes/LoadingScene.scene
     assetName: 
     localFileId: -1
-    rtMem: 78926
+    rtMem: 79036
     warningFlag: 0
     refs: []
   - onDemandDownload: 1
     assetPath: Assets/Scenes/GameScene.scene
     assetName: 
     localFileId: -1
-    rtMem: 19766585
+    rtMem: 19093519
     warningFlag: 0
     refs: []
   - onDemandDownload: 0
