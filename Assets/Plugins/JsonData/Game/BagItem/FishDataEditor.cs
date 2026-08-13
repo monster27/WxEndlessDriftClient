@@ -174,7 +174,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
         DrawResizableColumn("挣扎时间", ref col11, "col11");
         DrawResizableColumn("闪光概率", ref col12, "col12");
         DrawResizableColumn("品种", ref col13, "col13");
-        DrawResizableColumn("Scale", ref col15, "col15");
+        DrawResizableColumn("大小", ref col15, "col15");
         DrawResizableColumn("描述", ref col14, "col14");
 
         EditorGUILayout.LabelField("操作", GUILayout.Width(100));
