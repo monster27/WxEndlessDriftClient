@@ -18,13 +18,27 @@ if %errorlevel% neq 0 (
     goto end
 )
 
+:: ===== 确认提示 =====
+echo ⚠️  警告：此操作将丢弃所有未提交的修改！
+echo.
+set /p confirm="确认执行？(输入 Y/y 确认，其他任意键取消): "
+
+if /i not "%confirm%"=="y" (
+    echo.
+    echo ❌ 操作已取消
+    goto end
+)
+
 :: 执行 checkout
+echo.
 echo 正在恢复文件...
 git checkout . --verbose
 
 if %errorlevel% equ 0 (
+    echo.
     echo ✅ 撤销成功！
 ) else (
+    echo.
     echo ⚠️  撤销完成（可能有警告，但文件已恢复）
 )
 
