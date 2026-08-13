@@ -25,6 +25,7 @@ public class IslandDataJsonEditor : EditorWindow
     // ========== UI 状态 ==========
     private Vector2 scrollPosition;
     private Vector2 elementScrollPosition;
+    private Vector2 mainScrollPosition;  // 主滚动条
     private string operationLog = "";
     private string searchFilter = "";
     private bool showHelp = true;
@@ -134,6 +135,9 @@ public class IslandDataJsonEditor : EditorWindow
     // ========== GUI 绘制 ==========
     private void OnGUI()
     {
+        // ===== 主滚动条：包裹所有内容，解决分辨率不够拉不到下面的问题 =====
+        mainScrollPosition = EditorGUILayout.BeginScrollView(mainScrollPosition);
+
         DrawHelpSection();
         DrawToolbar();
         DrawSceneList();
@@ -142,6 +146,9 @@ public class IslandDataJsonEditor : EditorWindow
         DrawActionButtons();
         DrawSaveButtons();
         DrawOperationLog();
+
+        // ===== 结束主滚动条 =====
+        EditorGUILayout.EndScrollView();
     }
 
     // ========== 帮助文档 ==========
@@ -373,9 +380,12 @@ public class IslandDataJsonEditor : EditorWindow
         EditorGUILayout.LabelField("大小 (X, Y, Z)", GUILayout.Width(180));
         EditorGUILayout.EndHorizontal();
 
-        // 数据行
+        // 数据行 ———— 这里用 ExpandHeight(true) 让滚动区域自适应填满剩余空间
         EditorGUILayout.BeginVertical("box");
-        elementScrollPosition = EditorGUILayout.BeginScrollView(elementScrollPosition, GUILayout.Height(200));
+        elementScrollPosition = EditorGUILayout.BeginScrollView(
+            elementScrollPosition,
+            GUILayout.ExpandHeight(true)   // 关键改动：自动扩展高度
+        );
 
         for (int i = 0; i < selectedScene.elements.Count; i++)
         {
