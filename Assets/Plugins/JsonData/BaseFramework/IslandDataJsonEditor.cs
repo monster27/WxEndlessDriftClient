@@ -25,10 +25,10 @@ public class IslandDataJsonEditor : EditorWindow
     // ========== UI 状态 ==========
     private Vector2 scrollPosition;
     private Vector2 elementScrollPosition;
-    private Vector2 mainScrollPosition;  // 主滚动条
+    private Vector2 mainScrollPosition;
     private string operationLog = "";
     private string searchFilter = "";
-    private bool showHelp = true;
+    private bool showHelp = false;  // 默认收起
 
     // ========== 编辑器偏好 ==========
     private float col1 = 60;
@@ -88,7 +88,6 @@ public class IslandDataJsonEditor : EditorWindow
 
     private string GetFullPath()
     {
-        // 尝试多个可能的路径
         string[] possiblePaths = new string[]
         {
             Path.Combine(Application.dataPath, "Resources", "JsonData", "Game", "SceneTransData", "mainTransData.json"),
@@ -105,7 +104,6 @@ public class IslandDataJsonEditor : EditorWindow
             }
         }
 
-        // 如果都不存在，返回默认路径
         return Path.Combine(Application.dataPath, "Resources", "JsonData", "Game", "SceneTransData", "mainTransData.json");
     }
 
@@ -135,7 +133,6 @@ public class IslandDataJsonEditor : EditorWindow
     // ========== GUI 绘制 ==========
     private void OnGUI()
     {
-        // ===== 主滚动条：包裹所有内容，解决分辨率不够拉不到下面的问题 =====
         mainScrollPosition = EditorGUILayout.BeginScrollView(mainScrollPosition);
 
         DrawHelpSection();
@@ -147,24 +144,37 @@ public class IslandDataJsonEditor : EditorWindow
         DrawSaveButtons();
         DrawOperationLog();
 
-        // ===== 结束主滚动条 =====
         EditorGUILayout.EndScrollView();
     }
 
-    // ========== 帮助文档 ==========
+    // ========== 帮助文档（可折叠） ==========
     private void DrawHelpSection()
     {
         EditorGUILayout.BeginVertical("box");
 
-        // 标题
+        // 标题行 ———— 点击按钮切换展开/收起
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("📖 场景数据编辑器使用说明", EditorStyles.boldLabel);
-        showHelp = EditorGUILayout.Toggle("显示帮助", showHelp, GUILayout.Width(100));
+
+        // 左侧：标题 + 状态指示
+        string helpIcon = showHelp ? "▼" : "▶";
+        EditorGUILayout.LabelField($"{helpIcon} 📖 使用帮助", EditorStyles.boldLabel);
+
+        GUILayout.FlexibleSpace();
+
+        // 右侧：切换按钮
+        string buttonText = showHelp ? "收起帮助 ▲" : "展开帮助 ▼";
+        if (GUILayout.Button(buttonText, GUILayout.Width(120)))
+        {
+            showHelp = !showHelp;
+        }
+
         EditorGUILayout.EndHorizontal();
 
+        // ===== 帮助内容（仅在展开时显示） =====
         if (showHelp)
         {
             EditorGUILayout.Space(5);
+
             EditorGUILayout.LabelField("【功能说明】", EditorStyles.boldLabel);
             EditorGUILayout.LabelField("  此编辑器用于管理游戏场景中各个元素（背景、NPC、玩家等）的位置和大小数据。", EditorStyles.wordWrappedLabel);
 
@@ -238,7 +248,6 @@ public class IslandDataJsonEditor : EditorWindow
 
         EditorGUILayout.LabelField("📋 场景列表", EditorStyles.boldLabel);
 
-        // 表头
         EditorGUILayout.BeginHorizontal("box");
         DrawResizableColumn("ID", ref col1);
         DrawResizableColumn("名称", ref col2);
@@ -247,7 +256,6 @@ public class IslandDataJsonEditor : EditorWindow
         EditorGUILayout.LabelField("操作", GUILayout.Width(80));
         EditorGUILayout.EndHorizontal();
 
-        // 数据行
         EditorGUILayout.BeginVertical("box");
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Height(120));
 
@@ -327,13 +335,11 @@ public class IslandDataJsonEditor : EditorWindow
         EditorGUILayout.LabelField($"正在编辑: [{selectedScene.sceneId}] {selectedScene.sceneName}", EditorStyles.boldLabel);
         GUILayout.Space(5);
 
-        // 场景ID（只读）
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("场景ID:", GUILayout.Width(60));
         EditorGUILayout.LabelField(selectedScene.sceneId, GUILayout.Width(100));
         EditorGUILayout.EndHorizontal();
 
-        // 场景名称（可编辑）
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("场景名称:", GUILayout.Width(60));
         string newName = EditorGUILayout.TextField(selectedScene.sceneName);
@@ -345,7 +351,6 @@ public class IslandDataJsonEditor : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
-        // 镜像开关
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("镜像:", GUILayout.Width(60));
         bool newFlip = EditorGUILayout.Toggle(selectedScene.isFlipped);
@@ -371,7 +376,6 @@ public class IslandDataJsonEditor : EditorWindow
 
         EditorGUILayout.LabelField($"📦 元素列表 ({selectedScene.elements.Count} 个)", EditorStyles.boldLabel);
 
-        // 表头
         EditorGUILayout.BeginHorizontal("box");
         EditorGUILayout.LabelField("序号", GUILayout.Width(40));
         EditorGUILayout.LabelField("元素ID", GUILayout.Width(100));
@@ -380,11 +384,10 @@ public class IslandDataJsonEditor : EditorWindow
         EditorGUILayout.LabelField("大小 (X, Y, Z)", GUILayout.Width(180));
         EditorGUILayout.EndHorizontal();
 
-        // 数据行 ———— 这里用 ExpandHeight(true) 让滚动区域自适应填满剩余空间
         EditorGUILayout.BeginVertical("box");
         elementScrollPosition = EditorGUILayout.BeginScrollView(
             elementScrollPosition,
-            GUILayout.ExpandHeight(true)   // 关键改动：自动扩展高度
+            GUILayout.ExpandHeight(true)
         );
 
         for (int i = 0; i < selectedScene.elements.Count; i++)
@@ -560,7 +563,6 @@ public class IslandDataJsonEditor : EditorWindow
 
     private void SaveData()
     {
-        // 数据已经在内存中更新，保存到文件
         SaveDataToFile();
         UpdateSceneOptions();
         Repaint();
