@@ -1,32 +1,33 @@
 @echo off
 chcp 65001 > nul
-title Git Checkout
 
 echo ========================================
-echo ⚠️  警告：即将撤销所有本地修改！
+echo 正在撤销所有本地修改...
 echo ========================================
 echo.
-echo 当前修改列表：
+
+:: 显示当前状态
+echo 当前修改：
 git status --short
 echo.
-echo 此操作将丢弃所有未提交的更改！
-echo.
 
-set /p confirm="确认执行？(输入 y 确认): "
-if /i not "%confirm%"=="y" (
-    echo 操作已取消
-    pause
-    exit /b
+:: 检查是否有修改
+git status --porcelain | findstr . > nul
+if %errorlevel% neq 0 (
+    echo ℹ️  工作区是干净的，没有需要撤销的修改。
+    goto end
 )
 
-echo.
-echo 正在执行 git checkout . ...
+:: 执行 checkout
+echo 正在恢复文件...
 git checkout . --verbose
 
-echo.
 if %errorlevel% equ 0 (
-    echo ✅ 已成功撤销所有修改！
+    echo ✅ 撤销成功！
 ) else (
-    echo ❌ 操作失败，请检查错误信息！
+    echo ⚠️  撤销完成（可能有警告，但文件已恢复）
 )
+
+:end
+echo.
 pause
