@@ -6,9 +6,9 @@ echo 正在撤销所有本地修改...
 echo ========================================
 echo.
 
-:: 显示当前状态
-echo 当前修改：
-git status --short
+:: 显示当前修改列表（详细）
+echo 【修改列表】
+git status
 echo.
 
 :: 检查是否有修改
@@ -29,17 +29,26 @@ if /i not "%confirm%"=="y" (
     goto end
 )
 
-:: 执行 checkout
+:: 执行前再次显示详细状态
 echo.
+echo 【执行前状态】
+git status
+echo.
+
+:: 执行 checkout
 echo 正在恢复文件...
-git checkout . --verbose
+git checkout .
+echo.
+
+:: 显示操作后的状态
+echo 【执行后状态】
+git status
+echo.
 
 if %errorlevel% equ 0 (
-    echo.
     echo ✅ 撤销成功！
 ) else (
-    echo.
-    echo ⚠️  撤销完成（可能有警告，但文件已恢复）
+    echo ⚠️  撤销完成
 )
 
 :end
