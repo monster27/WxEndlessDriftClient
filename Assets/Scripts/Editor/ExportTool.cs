@@ -14,7 +14,9 @@ public class ExportTool : EditorWindow
         [InspectorName("客户端导出")]
         Client,
         [InspectorName("服务器导出")]
-        Server
+        Server,
+        [InspectorName("一键导出(带时间戳)")]
+        ClientWithTimestamp
     }
 
     // 清除模式枚举
@@ -316,11 +318,11 @@ public class ExportTool : EditorWindow
 
         GUILayout.Space(10);
 
-        // ==================== 模式选择下拉框（中文） ====================
+        // ==================== 模式选择下拉框 ====================
         EditorGUILayout.LabelField("🔧 导出模式", EditorStyles.boldLabel);
         GUILayout.Space(5);
 
-        string[] modeNames = { "客户端导出", "服务器导出" };
+        string[] modeNames = { "客户端导出", "服务器导出", "📁 一键导出(带时间戳)" };
         int selectedIndex = (int)currentMode;
         int newIndex = EditorGUILayout.Popup("选择模式", selectedIndex, modeNames);
 
@@ -328,7 +330,7 @@ public class ExportTool : EditorWindow
         {
             currentMode = (ExportMode)newIndex;
             SaveLastExportMode();
-            if (currentMode == ExportMode.Client)
+            if (currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp)
             {
                 RefreshExportToFileList();
             }
@@ -347,9 +349,13 @@ public class ExportTool : EditorWindow
         {
             DrawClientMode();
         }
-        else
+        else if (currentMode == ExportMode.Server)
         {
             DrawServerMode();
+        }
+        else // ClientWithTimestamp
+        {
+            DrawClientWithTimestampMode();
         }
 
         GUILayout.Space(15);
@@ -370,6 +376,226 @@ public class ExportTool : EditorWindow
         GUI.backgroundColor = Color.white;
 
         EditorGUILayout.EndScrollView();
+    }
+
+    // ==================== 新增：带时间戳的导出模式 ====================
+    private void DrawClientWithTimestampMode()
+    {
+        EditorGUILayout.LabelField("📁 一键导出(带时间戳)", EditorStyles.boldLabel);
+        GUILayout.Space(5);
+
+        EditorGUILayout.HelpBox(
+            "一键将 Resources 目录中的 JSON 文件导出到带时间戳的文件夹。\n" +
+            "文件夹格式: json资源(2026-08-13_14-30-25)\n" +
+            "包含完整的 Assets/Resources/ 目录结构。",
+            MessageType.Info
+        );
+
+        GUILayout.Space(10);
+
+        // 目标根目录（用户选择）
+        exportToPath = EditorGUILayout.TextField("目标根目录", exportToPath);
+
+        GUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("浏览", GUILayout.Width(100)))
+        {
+            string selectedPath = EditorUtility.OpenFolderPanel("选择导出根目录", exportToPath, "");
+            if (!string.IsNullOrEmpty(selectedPath))
+            {
+                exportToPath = selectedPath;
+                SaveLastExportToPath();
+                RefreshExportToFileList();
+            }
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.Space(5);
+
+        // 显示当前时间戳预览
+        string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+        string folderName = $"json资源({timestamp})";
+        string fullExportPath = string.IsNullOrEmpty(exportToPath) ? "" : Path.Combine(exportToPath, folderName);
+
+        EditorGUILayout.LabelField($"📁 将创建文件夹: {folderName}", EditorStyles.miniLabel);
+
+        if (!string.IsNullOrEmpty(exportToPath))
+        {
+            EditorGUILayout.LabelField($"📂 完整路径: {fullExportPath}", EditorStyles.miniLabel);
+            if (Directory.Exists(fullExportPath))
+            {
+                EditorGUILayout.LabelField($"⚠️ 该文件夹已存在，将覆盖其中的文件", EditorStyles.miniLabel);
+            }
+        }
+
+        GUILayout.Space(10);
+
+        // 刷新文件列表
+        RefreshExportToFileList();
+        EditorGUILayout.LabelField($"📋 找到 {exportToFiles.Count} 个JSON文件", EditorStyles.miniLabel);
+
+        showExportToFileList = EditorGUILayout.Foldout(showExportToFileList, "展开查看JSON文件列表", EditorStyles.foldoutHeader);
+        if (showExportToFileList)
+        {
+            DrawJsonFileList(exportToFiles);
+        }
+
+        GUILayout.Space(10);
+
+        // ===== 一键导出按钮 =====
+        GUI.backgroundColor = new Color(0.2f, 0.6f, 0.9f);
+        GUI.enabled = !string.IsNullOrEmpty(exportToPath) && exportToFiles.Count > 0;
+        if (GUILayout.Button($"📦 一键导出 (带时间戳)", GUILayout.Height(45)))
+        {
+            ExportJsonWithTimestamp();
+        }
+        GUI.enabled = true;
+        GUI.backgroundColor = Color.white;
+
+        if (string.IsNullOrEmpty(exportToPath))
+        {
+            EditorGUILayout.HelpBox("⚠️ 请选择导出根目录！", MessageType.Warning);
+        }
+        else if (exportToFiles.Count == 0)
+        {
+            EditorGUILayout.HelpBox("⚠️ 未找到JSON文件！请检查 Resources 目录。", MessageType.Warning);
+        }
+        else
+        {
+            EditorGUILayout.HelpBox(
+                $"✅ 准备就绪！将导出 {exportToFiles.Count} 个文件到时间戳文件夹。",
+                MessageType.Info
+            );
+        }
+    }
+
+    // ==================== 新增：带时间戳的导出方法 ====================
+    private void ExportJsonWithTimestamp()
+    {
+        if (string.IsNullOrEmpty(exportToPath))
+        {
+            EditorUtility.DisplayDialog("提示", "请选择导出根目录！", "确定");
+            return;
+        }
+
+        if (!Directory.Exists(exportToPath))
+        {
+            bool create = EditorUtility.DisplayDialog("目录不存在", $"根目录不存在，是否创建？\n{exportToPath}", "创建", "取消");
+            if (create)
+            {
+                Directory.CreateDirectory(exportToPath);
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        // 生成时间戳文件夹名：json资源(2026-08-13_14-30-25)
+        string timestamp = System.DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+        string folderName = $"json资源({timestamp})";
+        string fullExportPath = Path.Combine(exportToPath, folderName);
+
+        // 刷新文件列表
+        RefreshExportToFileList();
+
+        if (exportToFiles.Count == 0)
+        {
+            EditorUtility.DisplayDialog("提示", "当前项目 Resources 目录中没有找到JSON文件！", "确定");
+            return;
+        }
+
+        string confirmMsg = $"将导出 {exportToFiles.Count} 个JSON文件到：\n\n" +
+                           $"📁 {fullExportPath}\n\n" +
+                           $"⚠️ 如果文件夹已存在，其中的同名文件将被覆盖。\n\n" +
+                           $"是否继续？";
+
+        if (!EditorUtility.DisplayDialog("确认导出", confirmMsg, "导出", "取消"))
+            return;
+
+        Debug.Log($"[ExportTool] ========== 开始带时间戳导出 ==========");
+        Debug.Log($"[ExportTool] 导出根目录: {exportToPath}");
+        Debug.Log($"[ExportTool] 时间戳文件夹: {folderName}");
+        Debug.Log($"[ExportTool] 完整路径: {fullExportPath}");
+        Debug.Log($"[ExportTool] 待导出文件数: {exportToFiles.Count}");
+
+        try
+        {
+            // 创建目标文件夹
+            if (!Directory.Exists(fullExportPath))
+            {
+                Directory.CreateDirectory(fullExportPath);
+                Debug.Log($"[ExportTool] 📁 创建导出目录: {fullExportPath}");
+            }
+            else
+            {
+                Debug.Log($"[ExportTool] 📁 使用已存在的目录: {fullExportPath}");
+            }
+
+            int successCount = 0;
+            int failCount = 0;
+            List<string> exportedFiles = new List<string>();
+
+            foreach (var fileInfo in exportToFiles)
+            {
+                try
+                {
+                    // 目标路径：根目录/时间戳文件夹/Assets/Resources/...
+                    string targetFilePath = Path.Combine(fullExportPath, fileInfo.destinationPath);
+                    string targetDir = Path.GetDirectoryName(targetFilePath);
+
+                    if (!Directory.Exists(targetDir))
+                    {
+                        Directory.CreateDirectory(targetDir);
+                    }
+
+                    // 直接覆盖导出
+                    File.Copy(fileInfo.sourcePath, targetFilePath, true);
+                    successCount++;
+                    exportedFiles.Add(fileInfo.destinationPath);
+                    Debug.Log($"[ExportTool]   ✅ 导出成功: {fileInfo.destinationPath}");
+                }
+                catch (System.Exception ex)
+                {
+                    failCount++;
+                    Debug.LogError($"[ExportTool]   ❌ 导出失败 {fileInfo.destinationPath}: {ex.Message}");
+                }
+            }
+
+            SaveLastExportToPath();
+
+            string resultMsg = $"✅ 导出完成！\n\n" +
+                              $"📁 导出位置:\n{fullExportPath}\n\n" +
+                              $"📊 统计:\n" +
+                              $"✅ 成功: {successCount} 个文件\n" +
+                              (failCount > 0 ? $"❌ 失败: {failCount} 个文件\n" : "") +
+                              $"\n📂 文件夹名: {folderName}";
+
+            Debug.Log($"[ExportTool] 导出完成: 成功{successCount}, 失败{failCount}");
+            Debug.Log($"[ExportTool] 导出目录: {fullExportPath}");
+            Debug.Log($"[ExportTool] =============================================");
+
+            // 导出完成后自动打开文件夹
+            bool openFolder = EditorUtility.DisplayDialog(
+                "导出完成",
+                resultMsg + "\n\n是否打开导出文件夹？",
+                "打开文件夹",
+                "关闭"
+            );
+
+            if (openFolder)
+            {
+                System.Diagnostics.Process.Start(fullExportPath);
+            }
+
+            scanResults.Clear();
+            hasScanned = false;
+        }
+        catch (System.Exception ex)
+        {
+            EditorUtility.DisplayDialog("导出失败", $"导出过程中发生错误：\n{ex.Message}", "确定");
+            Debug.LogError($"[ExportTool] 导出错误: {ex}");
+        }
     }
 
     /// <summary>
@@ -399,7 +625,8 @@ public class ExportTool : EditorWindow
 
         GUILayout.Space(5);
 
-        string basePath = currentMode == ExportMode.Client ? exportToPath : exportPath;
+        string basePath = currentMode == ExportMode.Client ? exportToPath :
+                          (currentMode == ExportMode.ClientWithTimestamp ? exportToPath : exportPath);
 
         GUI.backgroundColor = new Color(0.3f, 0.6f, 1f);
         if (GUILayout.Button("🔍 扫描目标目录", GUILayout.Height(30)))
@@ -535,17 +762,13 @@ public class ExportTool : EditorWindow
 
         Debug.Log($"[ExportTool] ========== 开始扫描目标目录 ==========");
         Debug.Log($"[ExportTool] 目标目录根路径: {basePath}");
-        Debug.Log($"[ExportTool] 当前模式: {(currentMode == ExportMode.Client ? "客户端导出" : "服务器导出")}");
+        Debug.Log($"[ExportTool] 当前模式: {(currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp ? "客户端导出" : "服务器导出")}");
 
         try
         {
-            // ============================================================
-            // ✅ 客户端模式：目标路径自动指向 Assets 目录
-            // ============================================================
             string actualBasePath = basePath;
-            if (currentMode == ExportMode.Client)
+            if (currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp)
             {
-                // 客户端导出模式下，目标路径应该是项目根目录，但我们要扫描的是 Assets 目录
                 string assetsPath = Path.Combine(basePath, "Assets");
                 if (Directory.Exists(assetsPath))
                 {
@@ -554,16 +777,14 @@ public class ExportTool : EditorWindow
                 }
                 else
                 {
-                    // 如果 Assets 目录不存在，尝试直接使用用户输入的路径
                     Debug.LogWarning($"[ExportTool] Assets 目录不存在，使用原始路径: {actualBasePath}");
                 }
             }
 
             HashSet<string> sourceFileNames = new HashSet<string>();
 
-            if (currentMode == ExportMode.Client)
+            if (currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp)
             {
-                // ===== 客户端模式 =====
                 string resourcesPath = Path.Combine(Application.dataPath, "Resources");
                 Debug.Log($"[ExportTool] 源目录(客户端Resources): {resourcesPath}");
 
@@ -594,7 +815,6 @@ public class ExportTool : EditorWindow
             }
             else
             {
-                // ===== 服务器模式 =====
                 if (exportFiles != null && exportFiles.Count > 0)
                 {
                     Debug.Log($"[ExportTool] 从导出列表获取 {exportFiles.Count} 个文件名");
@@ -608,11 +828,11 @@ public class ExportTool : EditorWindow
                     Debug.Log($"[ExportTool] 导出列表为空，尝试从源目录读取");
 
                     string[] sourceDirs = {
-                    Path.Combine(Application.dataPath, "Resources"),
-                    Path.Combine(Application.dataPath, "Plugins", "Json"),
-                    Path.Combine(Application.dataPath, "Plugins", "SharedModels"),
-                    Path.Combine(Application.dataPath, "Scripts", "BaseTool")
-                };
+                        Path.Combine(Application.dataPath, "Resources"),
+                        Path.Combine(Application.dataPath, "Plugins", "Json"),
+                        Path.Combine(Application.dataPath, "Plugins", "SharedModels"),
+                        Path.Combine(Application.dataPath, "Scripts", "BaseTool")
+                    };
 
                     foreach (string dir in sourceDirs)
                     {
@@ -638,19 +858,15 @@ public class ExportTool : EditorWindow
 
             Debug.Log($"[ExportTool] 源文件名称列表: 共 {sourceFileNames.Count} 个");
 
-            // ===== 扫描目标目录 =====
             string[] targetExtensions = { "*.json", "*.cs" };
             List<string> targetFiles = new List<string>();
 
             Debug.Log($"[ExportTool] 扫描目标目录: {actualBasePath}");
             Debug.Log($"[ExportTool] 扫描文件扩展名: {string.Join(", ", targetExtensions)}");
 
-            // ✅ 客户端模式：扫描 Assets/Resources 目录
-            // 服务器模式：扫描 Data, Structures, SharedModels, Events 目录
             string[] scanDirs;
-            if (currentMode == ExportMode.Client)
+            if (currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp)
             {
-                // 客户端模式：只扫描 Resources 目录
                 string resourcesDir = Path.Combine(actualBasePath, "Resources");
                 if (Directory.Exists(resourcesDir))
                 {
@@ -665,7 +881,6 @@ public class ExportTool : EditorWindow
             }
             else
             {
-                // 服务器模式：扫描 Data, Structures, SharedModels, Events
                 string[] exportDirs = { "Data", "Structures", "SharedModels", "Events" };
                 scanDirs = exportDirs
                     .Select(d => Path.Combine(actualBasePath, d))
@@ -697,7 +912,6 @@ public class ExportTool : EditorWindow
 
             Debug.Log($"[ExportTool] 目标目录相关文件总数: {targetFiles.Count}");
 
-            // ===== 对比文件名 =====
             foreach (string targetFile in targetFiles)
             {
                 string fileName = Path.GetFileName(targetFile);
@@ -878,7 +1092,7 @@ public class ExportTool : EditorWindow
         Debug.Log($"[ExportTool] ========== 📊 完整扫描报告 ==========");
         Debug.Log($"[ExportTool] 📁 目标目录根路径: {basePath}");
         Debug.Log($"[ExportTool] 📅 扫描时间: {System.DateTime.Now}");
-        Debug.Log($"[ExportTool] 当前模式: {(currentMode == ExportMode.Client ? "客户端导出" : "服务器导出")}");
+        Debug.Log($"[ExportTool] 当前模式: {(currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp ? "客户端导出" : "服务器导出")}");
         Debug.Log($"[ExportTool] ");
         Debug.Log($"[ExportTool] 🔄 已有文件 ({redundantFiles.Count} 个) - 文件名与源目录相同，建议删除");
         Debug.Log($"[ExportTool] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
@@ -1337,7 +1551,7 @@ public class ExportTool : EditorWindow
     private void ValidateData()
     {
         Debug.Log($"[ExportTool] ========== 开始数据一致性验证 ==========");
-        Debug.Log($"[ExportTool] 当前模式: {(currentMode == ExportMode.Client ? "客户端导出" : "服务器导出")}");
+        Debug.Log($"[ExportTool] 当前模式: {(currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp ? "客户端导出" : "服务器导出")}");
 
         string report;
         bool isConsistent = ValidateDataConsistency(out report);
@@ -1355,7 +1569,7 @@ public class ExportTool : EditorWindow
             bool syncNow = EditorUtility.DisplayDialog("数据一致性验证", report + "\n\n是否立即同步数据？", "同步", "取消");
             if (syncNow)
             {
-                if (currentMode == ExportMode.Client && !string.IsNullOrEmpty(exportToPath))
+                if ((currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp) && !string.IsNullOrEmpty(exportToPath))
                 {
                     ExportJsonToAnotherProject();
                 }
