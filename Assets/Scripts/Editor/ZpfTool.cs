@@ -6,7 +6,6 @@ using System.IO;
 using System.Text;
 using System.Linq;
 
-
 public class ZpfTool : Editor
 {
     // 服务器路径存储Key
@@ -969,5 +968,164 @@ public class ZpfTool : Editor
         return $"{len:0.##} {sizes[order]}";
     }
 
+    // ============================================
+    // 🆕 新增：获取所有 Resources 引用的脚本
+    // ============================================
+
+    // ============================================
+    // 🆕 查找所有使用 Resources.Load 的脚本
+    // ============================================
+
+    /// <summary>
+    /// 查找所有使用 Resources.Load 相关方法的脚本并合并到粘贴板
+    /// </summary>
+    [MenuItem("Tools/获取脚本/查找Resources引用的脚本")]
+    public static void FindResourcesLoadScripts()
+    {
+        string[] allCsFiles = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
+
+        if (allCsFiles.Length == 0)
+        {
+            EditorUtility.DisplayDialog("提示", "未找到任何 C# 脚本文件！", "确定");
+            return;
+        }
+
+        // 需要查找的关键词
+        string[] keywords = new string[]
+        {
+            "Resources.Load",
+            "Resources.LoadAsync",
+            "Resources.LoadAll",
+            "Resources.FindObjectsOfTypeAll",
+            "Resources.GetBuiltinResource",
+            "Resources.UnloadAsset",
+            "Resources.UnloadUnusedAssets"
+        };
+
+        List<string> matchedFiles = new List<string>();
+        Dictionary<string, List<string>> fileMatches = new Dictionary<string, List<string>>();
+
+        foreach (string filePath in allCsFiles)
+        {
+            try
+            {
+                string content = File.ReadAllText(filePath, Encoding.UTF8);
+                bool hasMatch = false;
+                List<string> foundKeywords = new List<string>();
+
+                foreach (string keyword in keywords)
+                {
+                    if (content.Contains(keyword))
+                    {
+                        hasMatch = true;
+                        foundKeywords.Add(keyword);
+                    }
+                }
+
+                if (hasMatch)
+                {
+                    matchedFiles.Add(filePath);
+                    fileMatches[filePath] = foundKeywords;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
+            }
+        }
+
+        if (matchedFiles.Count == 0)
+        {
+            EditorUtility.DisplayDialog("提示", "未找到任何使用 Resources.Load 相关方法的脚本！", "确定");
+            return;
+        }
+
+        StringBuilder mergedContent = new StringBuilder();
+
+        mergedContent.AppendLine("// ============================================");
+        mergedContent.AppendLine($"// 使用 Resources.Load 相关方法的脚本列表");
+        mergedContent.AppendLine($"// 合并时间: {System.DateTime.Now}");
+        mergedContent.AppendLine($"// 找到文件数: {matchedFiles.Count}");
+        mergedContent.AppendLine("// ============================================");
+        mergedContent.AppendLine();
+
+        mergedContent.AppendLine("// 📁 文件列表及匹配的关键词：");
+        foreach (var kvp in fileMatches.OrderBy(x => x.Key))
+        {
+            string relativePath = kvp.Key.Replace(Application.dataPath, "Assets");
+            string keywordsStr = string.Join(", ", kvp.Value);
+            mergedContent.AppendLine($"//   {relativePath} -> [{keywordsStr}]");
+        }
+        mergedContent.AppendLine();
+        mergedContent.AppendLine("// ============================================");
+        mergedContent.AppendLine("// 📄 完整文件内容");
+        mergedContent.AppendLine("// ============================================");
+        mergedContent.AppendLine();
+
+        long totalSize = 0;
+        List<string> sortedFiles = new List<string>(matchedFiles);
+        sortedFiles.Sort();
+
+        foreach (string filePath in sortedFiles)
+        {
+            try
+            {
+                string content = File.ReadAllText(filePath, Encoding.UTF8);
+                string relativePath = filePath.Replace(Application.dataPath, "Assets");
+                string fileName = Path.GetFileName(filePath);
+                long fileSize = new FileInfo(filePath).Length;
+                totalSize += fileSize;
+
+                string keywordsStr = string.Join(", ", fileMatches[filePath]);
+
+                mergedContent.AppendLine("// ============================================");
+                mergedContent.AppendLine($"// 📄 文件: {fileName}");
+                mergedContent.AppendLine($"// 📂 路径: {relativePath}");
+                mergedContent.AppendLine($"// 🔑 匹配关键词: {keywordsStr}");
+                mergedContent.AppendLine($"// 📊 大小: {FormatFileSize(fileSize)}");
+                mergedContent.AppendLine("// ============================================");
+                mergedContent.AppendLine(content);
+                mergedContent.AppendLine();
+                mergedContent.AppendLine();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
+            }
+        }
+
+        mergedContent.AppendLine("// ============================================");
+        mergedContent.AppendLine($"// 📊 统计信息");
+        mergedContent.AppendLine($"// ============================================");
+        mergedContent.AppendLine($"// 总文件数: {sortedFiles.Count}");
+        mergedContent.AppendLine($"// 总大小: {FormatFileSize(totalSize)}");
+        mergedContent.AppendLine("// ============================================");
+
+        GUIUtility.systemCopyBuffer = mergedContent.ToString();
+
+        // 构建匹配关键词统计
+        Dictionary<string, int> keywordStats = new Dictionary<string, int>();
+        foreach (var matches in fileMatches.Values)
+        {
+            foreach (string keyword in matches)
+            {
+                if (!keywordStats.ContainsKey(keyword))
+                    keywordStats[keyword] = 0;
+                keywordStats[keyword]++;
+            }
+        }
+
+        string message = $"✅ 找到 {sortedFiles.Count} 个使用 Resources.Load 相关方法的脚本！\n\n";
+        message += $"📊 关键词统计:\n";
+        foreach (var kvp in keywordStats.OrderByDescending(x => x.Value))
+        {
+            message += $"  - {kvp.Key}: {kvp.Value} 个文件\n";
+        }
+        message += $"\n📋 内容已复制到粘贴板！";
+
+        EditorUtility.DisplayDialog("查找完成", message, "确定");
+
+        Debug.Log($"✅ 找到 {sortedFiles.Count} 个使用 Resources.Load 相关方法的脚本，总大小 {FormatFileSize(totalSize)}，内容已复制到粘贴板。");
+    }
 }
 #endif
