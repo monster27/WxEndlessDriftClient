@@ -85,7 +85,7 @@ public class CollectionView : BaseView
     private void LoadCollectionData()
     {
         string path = "JsonData/BaseFramework/collection";
-        TextAsset jsonAsset = Resources.Load<TextAsset>(path);
+        TextAsset jsonAsset = AssetManager.LoadFromResources<TextAsset>(path);
 
         if (jsonAsset != null)
         {
@@ -441,7 +441,7 @@ public class CollectionView : BaseView
         }
         else
         {
-            prefab = Resources.Load<GameObject>("Prefabs/UI_CollectionBtn");
+            prefab = AssetManager.LoadFromResources<GameObject>("Prefabs/UI_CollectionBtn");
         }
         
         if (prefab != null && collectionPrefabParent != null)

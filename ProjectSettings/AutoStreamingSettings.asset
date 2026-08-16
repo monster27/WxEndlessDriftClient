@@ -4,7 +4,7 @@
 AutoStreamingSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  mSearchMode: 7
+  mSearchMode: 15
   mCustomSearchFile: 
   mTextureSearchString: 
   mMeshSearchString: 
@@ -120,6 +120,19 @@ AutoStreamingSettings:
     abSize: 509431
   - serializedVersion: 2
     onDemandDownload: 1
+    assetPath: Assets/Atlases/Assets/Resources/UI/Icon/CollectionIcons/CollectionIcons.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 3034
+  - serializedVersion: 2
+    onDemandDownload: 1
     assetPath: "Assets/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/MainViewUI.spriteatlas"
     assetName: 
     localFileId: 4343727234628468602
@@ -144,7 +157,7 @@ AutoStreamingSettings:
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 1286109
+    abSize: 3056198
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/NestBaitIcons/NestBaitIcons.spriteatlas
@@ -606,19 +619,6 @@ AutoStreamingSettings:
     abSize: 524456
   - serializedVersion: 2
     onDemandDownload: 1
-    assetPath: Assets/Atlases/Assets/Textures/0605/Common/Common.spriteatlas
-    assetName: 
-    localFileId: 4343727234628468602
-    rtMem: 0
-    warningFlag: 0
-    refs:
-    - 2
-    maxPlaceholderSize: 1114112
-    width: 0
-    height: 0
-    abSize: 15106
-  - serializedVersion: 2
-    onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/BaitIcons/BaitIcons.spriteatlas
     assetName: 
     localFileId: 4343727234628468602
@@ -630,6 +630,19 @@ AutoStreamingSettings:
     width: 0
     height: 0
     abSize: 45651
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Atlases/Assets/Textures/0605/Common/Common.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
+    warningFlag: 0
+    refs:
+    - 2
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 15106
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Textures/0712/0712.spriteatlas
@@ -669,6 +682,19 @@ AutoStreamingSettings:
     width: 0
     height: 0
     abSize: 353783
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Atlases/Assets/Resources/UI/Icon/IslandInfoIcons/IslandInfoIcons.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
+    warningFlag: 0
+    refs:
+    - res
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 3278
   - serializedVersion: 2
     onDemandDownload: 1
     assetPath: Assets/Atlases/Assets/Resources/UI/Icon/Equipment/Character/Character.spriteatlas
@@ -792,30 +818,70 @@ AutoStreamingSettings:
     abSize: 335478
   - serializedVersion: 2
     onDemandDownload: 1
-    assetPath: Assets/Atlases/Assets/Resources/UI/Icon/CollectionIcons/CollectionIcons.spriteatlas
+    assetPath: Assets/Atlases/Assets/Addressables/UI/Icon/Collection/Collection.spriteatlas
     assetName: 
     localFileId: 4343727234628468602
     rtMem: 0
     warningFlag: 0
     refs:
-    - res
+    - aa
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 3910
+    abSize: 29256
   - serializedVersion: 2
     onDemandDownload: 1
-    assetPath: Assets/Atlases/Assets/Resources/UI/Icon/IslandInfoIcons/IslandInfoIcons.spriteatlas
+    assetPath: Assets/Atlases/Assets/Addressables/UI/Icon/Common/Common.spriteatlas
     assetName: 
     localFileId: 4343727234628468602
     rtMem: 0
     warningFlag: 0
     refs:
-    - res
+    - aa
     maxPlaceholderSize: 1114112
     width: 0
     height: 0
-    abSize: 6371
+    abSize: 13678
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Atlases/Assets/Addressables/UI/Icon/FishIcons/102/102.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
+    warningFlag: 0
+    refs:
+    - 2
+    - aa
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 2517319
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Atlases/Assets/Addressables/UI/Icon/FishIcons/FishIcons.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
+    warningFlag: 0
+    refs:
+    - aa
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 3059193
+  - serializedVersion: 2
+    onDemandDownload: 1
+    assetPath: Assets/Atlases/Assets/Addressables/UI/Icon/RarityBackground/RarityBackground.spriteatlas
+    assetName: 
+    localFileId: 4343727234628468602
+    rtMem: 0
+    warningFlag: 0
+    refs:
+    - aa
+    maxPlaceholderSize: 1114112
+    width: 0
+    height: 0
+    abSize: 101502
   mAudios: []
   mMeshes: []
   mAnimations: []
@@ -832,14 +898,14 @@ AutoStreamingSettings:
     assetPath: Assets/Scenes/LoadingScene.scene
     assetName: 
     localFileId: -1
-    rtMem: 79036
+    rtMem: 78994
     warningFlag: 0
     refs: []
   - onDemandDownload: 1
     assetPath: Assets/Scenes/GameScene.scene
     assetName: 
     localFileId: -1
-    rtMem: 19093519
+    rtMem: 24318308
     warningFlag: 0
     refs: []
   - onDemandDownload: 0
@@ -855,6 +921,6 @@ AutoStreamingSettings:
     uosAppid: e48320ff-4620-4ad7-972f-a4e49500e50b
     bucketUuid: ecd936fa-2414-4570-bcf4-1ae5caa7e824
     bucketName: Bucket1
-    badgeName: EndlessDrift
+    badgeName: Dev
     ttAppid: 
     targetPlatfrom: 

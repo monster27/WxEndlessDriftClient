@@ -48,7 +48,7 @@ public class FishingEquipItem : MonoBehaviour
         for (int i = 1; i <= 10; i++)
         {
             string path = $"UI/Icon/Equipment/Level/{i}";
-            Sprite sprite = Resources.Load<Sprite>(path);
+            Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
             if (sprite != null)
             {
                 levelIconCache[i] = sprite;

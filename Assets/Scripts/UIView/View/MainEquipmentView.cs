@@ -226,7 +226,7 @@ public class MainEquipmentView : MonoBehaviour
             foreach (var kvp in iconPaths)
             {
                 string path = kvp.Value;
-                Sprite sprite = Resources.Load<Sprite>(path);
+                Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
                 if (sprite != null)
                 {
                     iconCache[kvp.Key] = sprite;
@@ -241,7 +241,7 @@ public class MainEquipmentView : MonoBehaviour
             foreach (var id in characterIds)
             {
                 string path = $"UI/Icon/Equipment/Character/{id}";
-                Sprite sprite = Resources.Load<Sprite>(path);
+                Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
                 if (sprite != null)
                 {
                     iconCache[id] = sprite;
@@ -252,7 +252,7 @@ public class MainEquipmentView : MonoBehaviour
         for (int i = 1; i <= 10; i++)
         {
             string path = $"UI/Icon/Equipment/Level/{i}";
-            Sprite sprite = Resources.Load<Sprite>(path);
+            Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
             if (sprite != null)
             {
                 levelIconCache[i] = sprite;

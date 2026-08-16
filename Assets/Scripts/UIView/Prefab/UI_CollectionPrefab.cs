@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-//using SharedModels;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public enum CollectionInfoState
 {
@@ -28,7 +29,14 @@ public class UI_CollectionPrefab : MonoBehaviour
     private bool hasShiny = false;
     private ItemData itemData;
     private CollectionInfoState infoState = CollectionInfoState.Unknown;
-    private string pageName = "";  // 页面名称
+    private string pageName = "";
+
+    // ===== AA 加载句柄（用于释放资源） =====
+    private AsyncOperationHandle<Sprite> _iconHandle;
+    private AsyncOperationHandle<Sprite> _outlineHandle;
+    private AsyncOperationHandle<Sprite> _levelHandle;
+    private AsyncOperationHandle<Sprite> _rarityHandle;
+    private AsyncOperationHandle<Sprite> _unknownHandle;
 
     public int EntryId => entryId;
     public CollectionInfoState InfoState => infoState;
@@ -48,6 +56,25 @@ public class UI_CollectionPrefab : MonoBehaviour
         }
     }
 
+    void OnDestroy()
+    {
+        // 释放所有 AA 资源
+        ReleaseHandle(ref _iconHandle);
+        ReleaseHandle(ref _outlineHandle);
+        ReleaseHandle(ref _levelHandle);
+        ReleaseHandle(ref _rarityHandle);
+        ReleaseHandle(ref _unknownHandle);
+    }
+
+    private void ReleaseHandle(ref AsyncOperationHandle<Sprite> handle)
+    {
+        if (handle.IsValid())
+        {
+            Addressables.Release(handle);
+            handle = default;
+        }
+    }
+
     public void Init(int id, bool fishFlag, CollectionInfoState state = CollectionInfoState.Unknown, string pageName = "")
     {
         entryId = id;
@@ -55,7 +82,7 @@ public class UI_CollectionPrefab : MonoBehaviour
         infoState = state;
         this.pageName = pageName ?? "";
 
-        UpdateDisplayByState();
+        StartCoroutine(UpdateDisplayByStateCoroutine());
 
         if (!isFish && shinyToggleButton != null)
         {
@@ -64,30 +91,48 @@ public class UI_CollectionPrefab : MonoBehaviour
     }
 
     /// <summary>
-    /// 根据情报状态更新显示
+    /// 根据情报状态更新显示（协程版）
     /// </summary>
-    private void UpdateDisplayByState()
+    private IEnumerator UpdateDisplayByStateCoroutine()
     {
         switch (infoState)
         {
             case CollectionInfoState.Unknown:
-                ShowUnknownState();
+                yield return StartCoroutine(ShowUnknownStateCoroutine());
                 break;
             case CollectionInfoState.InfoObtained:
-                ShowInfoObtainedState();
+                yield return StartCoroutine(ShowInfoObtainedStateCoroutine());
                 break;
             case CollectionInfoState.Obtained:
-                ShowObtainedState();
+                yield return StartCoroutine(ShowObtainedStateCoroutine());
                 break;
         }
     }
 
     /// <summary>
-    /// 显示未获取情报状态（显示unKnown图标）
+    /// 通用 AA 加载 Sprite 协程（修正版：返回 handle）
     /// </summary>
-    private void ShowUnknownState()
+    private IEnumerator LoadSpriteCoroutine(string key, System.Action<Sprite, AsyncOperationHandle<Sprite>> onLoaded)
     {
-        Sprite unknownSprite = Resources.Load<Sprite>("UI/Icon/Common/unKnown");
+        if (string.IsNullOrEmpty(key))
+        {
+            onLoaded?.Invoke(null, default);
+            yield break;
+        }
+        yield return StartCoroutine(AssetManager.LoadFromAddressablesCoroutine<Sprite>(key, onLoaded));
+    }
+
+    /// <summary>
+    /// 显示未获取情报状态
+    /// </summary>
+    private IEnumerator ShowUnknownStateCoroutine()
+    {
+        Sprite unknownSprite = null;
+        yield return StartCoroutine(LoadSpriteCoroutine("UI/Icon/Common/unKnown", (sprite, handle) =>
+        {
+            unknownSprite = sprite;
+            _unknownHandle = handle;
+        }));
         if (unknownSprite != null)
         {
             SetIcon(unknownSprite);
@@ -99,7 +144,7 @@ public class UI_CollectionPrefab : MonoBehaviour
         if (shinyImage != null) shinyImage.gameObject.SetActive(false);
         if (levelHightLightMask != null) levelHightLightMask.gameObject.SetActive(false);
 
-        UpdateRarityBackground();
+        yield return StartCoroutine(UpdateRarityBackgroundCoroutine());
 
         Button button = GetComponent<Button>();
         if (button != null)
@@ -109,16 +154,25 @@ public class UI_CollectionPrefab : MonoBehaviour
     }
 
     /// <summary>
-    /// 显示已获取情报状态（显示Outline图标）
+    /// 显示已获取情报状态
     /// </summary>
-    private void ShowInfoObtainedState()
+    private IEnumerator ShowInfoObtainedStateCoroutine()
     {
         if (isFish)
         {
-            Sprite outlineSprite = Resources.Load<Sprite>($"UI/Icon/FishIcons/{entryId}_Outline");
+            Sprite outlineSprite = null;
+            yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/FishIcons/{entryId}_Outline", (sprite, handle) =>
+            {
+                outlineSprite = sprite;
+                _outlineHandle = handle;
+            }));
             if (outlineSprite == null)
             {
-                outlineSprite = Resources.Load<Sprite>($"UI/Icon/FishIcons/{entryId}");
+                yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/FishIcons/{entryId}", (sprite, handle) =>
+                {
+                    outlineSprite = sprite;
+                    _outlineHandle = handle;
+                }));
             }
             if (outlineSprite != null)
             {
@@ -131,7 +185,7 @@ public class UI_CollectionPrefab : MonoBehaviour
                 nameText.text = fishData.name;
             }
 
-            UpdateRarityBackground();
+            yield return StartCoroutine(UpdateRarityBackgroundCoroutine());
         }
         else
         {
@@ -139,10 +193,19 @@ public class UI_CollectionPrefab : MonoBehaviour
             if (itemData != null)
             {
                 nameText.text = itemData.name;
-                Sprite outlineSprite = Resources.Load<Sprite>($"UI/Icon/ItemIcons/{entryId}_Outline");
+                Sprite outlineSprite = null;
+                yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/ItemIcons/{entryId}_Outline", (sprite, handle) =>
+                {
+                    outlineSprite = sprite;
+                    _outlineHandle = handle;
+                }));
                 if (outlineSprite == null)
                 {
-                    outlineSprite = Resources.Load<Sprite>($"UI/Icon/ItemIcons/{entryId}");
+                    yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/ItemIcons/{entryId}", (sprite, handle) =>
+                    {
+                        outlineSprite = sprite;
+                        _outlineHandle = handle;
+                    }));
                 }
                 if (outlineSprite != null)
                 {
@@ -150,7 +213,7 @@ public class UI_CollectionPrefab : MonoBehaviour
                 }
             }
 
-            UpdateRarityBackground();
+            yield return StartCoroutine(UpdateRarityBackgroundCoroutine());
         }
 
         if (levelImage != null) levelImage.gameObject.SetActive(false);
@@ -165,20 +228,20 @@ public class UI_CollectionPrefab : MonoBehaviour
     }
 
     /// <summary>
-    /// 显示已获取物品状态（正常显示）
+    /// 显示已获取物品状态
     /// </summary>
-    private void ShowObtainedState()
+    private IEnumerator ShowObtainedStateCoroutine()
     {
         if (isFish)
         {
-            LoadFishData();
+            yield return StartCoroutine(LoadFishDataCoroutine());
         }
         else
         {
-            LoadNonFishData();
+            yield return StartCoroutine(LoadNonFishDataCoroutine());
         }
 
-        UpdateLevelDisplay();
+        yield return StartCoroutine(UpdateLevelDisplayCoroutine());
         UpdateShinyDisplay();
 
         if (levelHightLightMask != null) levelHightLightMask.gameObject.SetActive(true);
@@ -190,11 +253,16 @@ public class UI_CollectionPrefab : MonoBehaviour
         }
     }
 
-    private void LoadFishData()
+    private IEnumerator LoadFishDataCoroutine()
     {
         itemData = LoadDataManager.Instance?.GetItemById(entryId);
 
-        Sprite fishSprite = Resources.Load<Sprite>($"UI/Icon/FishIcons/{entryId}");
+        Sprite fishSprite = null;
+        yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/FishIcons/{entryId}", (sprite, handle) =>
+        {
+            fishSprite = sprite;
+            _iconHandle = handle;
+        }));
         if (fishSprite != null)
         {
             SetIcon(fishSprite);
@@ -206,32 +274,42 @@ public class UI_CollectionPrefab : MonoBehaviour
             nameText.text = fishData.name;
         }
 
-        UpdateRarityBackground();
+        yield return StartCoroutine(UpdateRarityBackgroundCoroutine());
     }
 
-    private void LoadNonFishData()
+    private IEnumerator LoadNonFishDataCoroutine()
     {
         itemData = LoadDataManager.Instance?.GetItemById(entryId);
         if (itemData != null)
         {
             nameText.text = itemData.name;
-            Sprite itemSprite = Resources.Load<Sprite>($"UI/Icon/ItemIcons/{entryId}");
+            Sprite itemSprite = null;
+            yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/ItemIcons/{entryId}", (sprite, handle) =>
+            {
+                itemSprite = sprite;
+                _iconHandle = handle;
+            }));
             if (itemSprite != null)
             {
                 SetIcon(itemSprite);
             }
         }
 
-        UpdateRarityBackground();
+        yield return StartCoroutine(UpdateRarityBackgroundCoroutine());
     }
 
-    private void UpdateLevelDisplay()
+    private IEnumerator UpdateLevelDisplayCoroutine()
     {
         if (levelImage != null)
         {
             if (collectionLevel > 0)
             {
-                Sprite levelSprite = Resources.Load<Sprite>($"UI/Icon/Collection/{collectionLevel}");
+                Sprite levelSprite = null;
+                yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/Collection/{collectionLevel}", (sprite, handle) =>
+                {
+                    levelSprite = sprite;
+                    _levelHandle = handle;
+                }));
                 if (levelSprite != null)
                 {
                     levelImage.sprite = levelSprite;
@@ -257,14 +335,14 @@ public class UI_CollectionPrefab : MonoBehaviour
     {
         isShiny = !isShiny;
         UpdateShinyDisplay();
-        LoadIcon(isShiny);
+        StartCoroutine(LoadIconCoroutine(isShiny));
     }
 
-    private void LoadIcon(bool isShiny)
+    private IEnumerator LoadIconCoroutine(bool isShiny)
     {
         if (string.IsNullOrEmpty(itemData?.iconPath))
         {
-            return;
+            yield break;
         }
 
         string basePath = itemData.iconPath;
@@ -273,12 +351,20 @@ public class UI_CollectionPrefab : MonoBehaviour
         if (isShiny)
         {
             string shinyPath = basePath + "_s";
-            loadedSprite = Resources.Load<Sprite>(shinyPath);
+            yield return StartCoroutine(LoadSpriteCoroutine(shinyPath, (sprite, handle) =>
+            {
+                loadedSprite = sprite;
+                _iconHandle = handle;
+            }));
         }
 
         if (loadedSprite == null)
         {
-            loadedSprite = Resources.Load<Sprite>(basePath);
+            yield return StartCoroutine(LoadSpriteCoroutine(basePath, (sprite, handle) =>
+            {
+                loadedSprite = sprite;
+                _iconHandle = handle;
+            }));
         }
 
         if (loadedSprite != null)
@@ -288,7 +374,7 @@ public class UI_CollectionPrefab : MonoBehaviour
     }
 
     /// <summary>
-    /// 设置图标（同时设置icon和iconHightLightMask）
+    /// 设置图标
     /// </summary>
     private void SetIcon(Sprite sprite)
     {
@@ -305,11 +391,11 @@ public class UI_CollectionPrefab : MonoBehaviour
         }
     }
 
-    private void UpdateRarityBackground()
+    private IEnumerator UpdateRarityBackgroundCoroutine()
     {
         if (rarityBackgroundImage == null)
         {
-            return;
+            yield break;
         }
 
         int rarityId = 0;
@@ -324,7 +410,13 @@ public class UI_CollectionPrefab : MonoBehaviour
             rarityId = 0;
         }
 
-        Sprite raritySprite = Resources.Load<Sprite>($"UI/Icon/RarityBackground/{rarityId}");
+        Sprite raritySprite = null;
+        yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/RarityBackground/{rarityId}", (sprite, handle) =>
+        {
+            raritySprite = sprite;
+            _rarityHandle = handle;
+        }));
+
         if (raritySprite != null)
         {
             rarityBackgroundImage.sprite = raritySprite;
@@ -335,13 +427,18 @@ public class UI_CollectionPrefab : MonoBehaviour
         {
             if (rarityId != 0)
             {
-                Sprite defaultSprite = Resources.Load<Sprite>("UI/Icon/RarityBackground/0");
+                Sprite defaultSprite = null;
+                yield return StartCoroutine(LoadSpriteCoroutine("UI/Icon/RarityBackground/0", (sprite, handle) =>
+                {
+                    defaultSprite = sprite;
+                    _rarityHandle = handle;
+                }));
                 if (defaultSprite != null)
                 {
                     rarityBackgroundImage.sprite = defaultSprite;
                     rarityBackgroundImage.gameObject.SetActive(true);
                     rarityBackgroundImage.color = Color.white;
-                    return;
+                    yield break;
                 }
             }
             rarityBackgroundImage.gameObject.SetActive(false);
@@ -351,7 +448,7 @@ public class UI_CollectionPrefab : MonoBehaviour
     public void SetCollectionLevel(int level)
     {
         collectionLevel = Mathf.Clamp(level, 0, 3);
-        UpdateLevelDisplay();
+        StartCoroutine(UpdateLevelDisplayCoroutine());
     }
 
     public void SetHasShiny(bool value)

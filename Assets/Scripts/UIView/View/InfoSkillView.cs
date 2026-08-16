@@ -117,7 +117,7 @@ public class InfoSkillView : MonoBehaviour
         foreach (int skillId in skillIds)
         {
             string path = $"UI/Icon/Equipment/Skill/{skillId}";
-            Sprite sprite = Resources.Load<Sprite>(path);
+            Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
             if (sprite != null)
             {
                 iconCache[skillId] = sprite;

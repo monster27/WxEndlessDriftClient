@@ -6,7 +6,7 @@ public static class RWJsonData
 {
     public static string LoadJsonFromResources(string filePath)
     {
-        TextAsset jsonFile = Resources.Load<TextAsset>(filePath);
+        TextAsset jsonFile = AssetManager.LoadFromResources<TextAsset>(filePath);
         if (jsonFile == null) { Debug.LogError($"未找到JSON文件: {filePath}"); return null; }
         return jsonFile.text;
     }

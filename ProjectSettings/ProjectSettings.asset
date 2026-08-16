@@ -104,7 +104,7 @@ PlayerSettings:
   cacheASTextureAB: 0
   maxCacheSize: 0
   maxConcurrentLoad: 0
-  autoStreamingId: /v1/buckets/ecd936fa-2414-4570-bcf4-1ae5caa7e824/release_by_badge/EndlessDrift/content
+  autoStreamingId: /v1/buckets/ecd936fa-2414-4570-bcf4-1ae5caa7e824/release_by_badge/Dev/content
   instantGameAppId: e48320ff-4620-4ad7-972f-a4e49500e50b
   dedicatedServerOptimizations: 0
   bakeCollisionMeshes: 0
@@ -963,7 +963,7 @@ PlayerSettings:
     -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s TOTAL_MEMORY=256MB -s EXPORTED_RUNTIME_METHODS=''["ccall","cwrap","stackTrace","addRunDependency","removeRunDependency","FS_createPath","FS_createDataFile","stackTrace","writeStackCookie","checkStackCookie","lengthBytesUTF8","stringToUTF8"]''
     --profiling-funcs '
   weixinMiniGameModulesDirectory: 
-  weixinMiniGameTemplate: PATH:E:\TuanjieProject\WxEndlessDriftClient\Library\PackageCache\com.qq.weixin.minigame@ed4ad28f43\WebGLTemplates\WXTemplate2022TJ
+  weixinMiniGameTemplate: PATH:E:\TuanjieProject\WxEndlessDriftClient\Library\PackageCache\com.qq.weixin.minigame@352684073f\WebGLTemplates\WXTemplate2022TJ
   weixinMiniGameAnalyzeBuildSize: 0
   weixinMiniGameUseEmbeddedResources: 0
   weixinMiniGameCompressionFormat: 2

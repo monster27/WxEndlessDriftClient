@@ -14,7 +14,7 @@ public static class CharacterConfigListExtensions
     /// </summary>
     public static CharacterConfigList LoadFromResources(string path = "JsonData/BaseFramework/characters")
     {
-        TextAsset textAsset = Resources.Load<TextAsset>(path);
+        TextAsset textAsset = AssetManager.LoadFromResources<TextAsset>(path);
         if (textAsset == null)
         {
             Debug.LogError($"[CharacterConfigList] 加载失败: {path}");
@@ -66,7 +66,7 @@ public static class CharacterConfigExtensions
             return null;
         }
         
-        Sprite sprite = Resources.Load<Sprite>(config.iconPath);
+        Sprite sprite = AssetManager.LoadFromResources<Sprite>(config.iconPath);
         if (sprite == null)
         {
             Debug.LogWarning($"[CharacterConfig] 加载图标失败: {config.iconPath}");
@@ -105,7 +105,7 @@ public static class CharacterConfigExtensions
             return null;
         }
         
-        Texture2D texture = Resources.Load<Texture2D>(path);
+        Texture2D texture = AssetManager.LoadFromResources<Texture2D>(path);
         if (texture == null)
         {
             Debug.LogWarning($"[CharacterConfig] 加载纹理失败: {path}");

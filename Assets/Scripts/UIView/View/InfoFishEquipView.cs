@@ -137,7 +137,7 @@ public class InfoFishEquipView : MonoBehaviour
         for (int i = 1; i <= 10; i++)
         {
             string path = $"UI/Icon/Equipment/Level/{i}";
-            Sprite sprite = Resources.Load<Sprite>(path);
+            Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
             if (sprite != null)
             {
                 levelIconCache[i] = sprite;
@@ -203,7 +203,7 @@ public class InfoFishEquipView : MonoBehaviour
         if (currentEquipId <= 0) return;
 
         string iconPath = GetIconPath(currentType, currentEquipId);
-        Sprite icon = Resources.Load<Sprite>(iconPath);
+        Sprite icon = AssetManager.LoadFromResources<Sprite>(iconPath);
 
         bool useLongIcon = currentType == FishingEquipType.Rod;
 

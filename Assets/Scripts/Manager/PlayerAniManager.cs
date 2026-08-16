@@ -302,9 +302,9 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         string lazyPath = !string.IsNullOrEmpty(config.lazyTexturePath) ? config.lazyTexturePath : basePath + "/Lazy";
 
         // 使用 Resources.Load 加载纹理
-        aniData.idleTexture = Resources.Load<Texture2D>(idlePath);
-        aniData.reelTexture = Resources.Load<Texture2D>(reelPath);
-        aniData.lazyTexture = Resources.Load<Texture2D>(lazyPath);
+        aniData.idleTexture = AssetManager.LoadFromResources<Texture2D>(idlePath);
+        aniData.reelTexture = AssetManager.LoadFromResources<Texture2D>(reelPath);
+        aniData.lazyTexture = AssetManager.LoadFromResources<Texture2D>(lazyPath);
 
         // 如果加载失败，尝试备用路径
         if (aniData.reelTexture == null)
@@ -318,7 +318,7 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
 
             foreach (string altPath in altPaths)
             {
-                aniData.reelTexture = Resources.Load<Texture2D>(altPath);
+                aniData.reelTexture = AssetManager.LoadFromResources<Texture2D>(altPath);
                 if (aniData.reelTexture != null) break;
             }
         }

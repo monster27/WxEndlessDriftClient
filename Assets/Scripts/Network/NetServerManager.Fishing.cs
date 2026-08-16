@@ -662,7 +662,7 @@ public partial class NetServerManager
         if (LoadDataManager.Instance?.items == null) return null;
         foreach (var item in LoadDataManager.Instance.items)
             if (item.id == itemId && !string.IsNullOrEmpty(item.iconPath))
-                return Resources.Load<Sprite>(item.iconPath);
+                return AssetManager.LoadFromResources<Sprite>(item.iconPath);
         return null;
     }
 

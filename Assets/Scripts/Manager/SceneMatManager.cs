@@ -191,7 +191,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         // 编辑器模式：直接从文件加载
         try
         {
-            TextAsset jsonFile = Resources.Load<TextAsset>(sceneDataPath);
+            TextAsset jsonFile = AssetManager.LoadFromResources<TextAsset>(sceneDataPath);
             if (jsonFile == null)
             {
                 Debug.LogWarning($"[SceneMatManager] 无法加载场景数据文件: {sceneDataPath}，创建新数据");

@@ -135,7 +135,7 @@ public class SkillInfoView : MonoBehaviour
         if (skillIcon != null && currentSkillId > 0)
         {
             string iconPath = $"UI/Icon/Equipment/Skill/{currentSkillId}";
-            Sprite icon = Resources.Load<Sprite>(iconPath);
+            Sprite icon = AssetManager.LoadFromResources<Sprite>(iconPath);
             if (icon != null)
             {
                 skillIcon.sprite = icon;

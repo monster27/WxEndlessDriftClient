@@ -55,7 +55,7 @@ public class UI_MallPrefab : MonoBehaviour
 
         if (iconImage != null && !string.IsNullOrEmpty(itemData.iconPath))
         {
-            Sprite icon = Resources.Load<Sprite>(itemData.iconPath);
+            Sprite icon = AssetManager.LoadFromResources<Sprite>(itemData.iconPath);
             if (icon != null)
             {
                 iconImage.sprite = icon;

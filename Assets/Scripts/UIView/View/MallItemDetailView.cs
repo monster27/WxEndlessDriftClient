@@ -110,7 +110,7 @@ public class MallItemDetailView : MonoBehaviour
     {
         if (itemIconImage != null && itemData != null && !string.IsNullOrEmpty(itemData.iconPath))
         {
-            Sprite icon = Resources.Load<Sprite>(itemData.iconPath);
+            Sprite icon = AssetManager.LoadFromResources<Sprite>(itemData.iconPath);
             if (icon != null)
             {
                 itemIconImage.sprite = icon;

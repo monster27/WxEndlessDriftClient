@@ -274,7 +274,7 @@ public class SceneMatCtrl : MonoBehaviour
 
         Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - 📂 加载纹理: {path}");
 
-        Texture2D texture = Resources.Load<Texture2D>(path);
+        Texture2D texture = AssetManager.LoadFromResources<Texture2D>(path);
         if (texture == null)
         {
             Debug.LogError($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - ❌ 无法加载纹理: {path}");

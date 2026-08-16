@@ -815,7 +815,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
 
     private void LoadTrashData()
     {
-        TextAsset jsonFile = Resources.Load<TextAsset>(trashJsonPath);
+        TextAsset jsonFile = AssetManager.LoadFromResources<TextAsset>(trashJsonPath);
         if (jsonFile != null)
         {
             TrashListWrapper wrapper = JsonUtility.FromJson<TrashListWrapper>(jsonFile.text);
@@ -870,7 +870,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
 
     private void LoadFishingComponentsData()
     {
-        TextAsset textAsset = Resources.Load<TextAsset>(fishingComponentsJsonPath);
+        TextAsset textAsset = AssetManager.LoadFromResources<TextAsset>(fishingComponentsJsonPath);
         if (textAsset != null)
         {
             FishingComponentConfigArray arrayWrapper = JsonUtility.FromJson<FishingComponentConfigArray>(textAsset.text);
@@ -904,7 +904,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
 
     private void LoadCharactersData()
     {
-        TextAsset textAsset = Resources.Load<TextAsset>(charactersJsonPath);
+        TextAsset textAsset = AssetManager.LoadFromResources<TextAsset>(charactersJsonPath);
         if (textAsset != null)
         {
             CharacterConfigList listWrapper = JsonUtility.FromJson<CharacterConfigList>(textAsset.text);
@@ -938,7 +938,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
 
     private void LoadUITextsData()
     {
-        TextAsset textAsset = Resources.Load<TextAsset>(uiTextsJsonPath);
+        TextAsset textAsset = AssetManager.LoadFromResources<TextAsset>(uiTextsJsonPath);
         if (textAsset != null)
         {
             uiTextsConfig = JsonUtility.FromJson<UITextsConfig>(textAsset.text);

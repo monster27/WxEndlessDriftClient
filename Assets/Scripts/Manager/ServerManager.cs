@@ -318,7 +318,7 @@ public class ServerManager : SingletonMono<ServerManager>
                 Sprite icon = null;
                 if (!string.IsNullOrEmpty(itemData.iconPath))
                 {
-                    icon = Resources.Load<Sprite>(itemData.iconPath);
+                    icon = AssetManager.LoadFromResources<Sprite>(itemData.iconPath);
                 }
 
                 GameUIManager.Instance.ShowCatchResult(itemName, weight, icon);

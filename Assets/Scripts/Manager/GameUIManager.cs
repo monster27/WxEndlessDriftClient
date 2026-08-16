@@ -283,7 +283,7 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     {
         if (advertisingView == null)
         {
-            GameObject prefab = Resources.Load<GameObject>("Prefabs/UI/AdvertisingView");
+            GameObject prefab = AssetManager.LoadFromResources<GameObject>("Prefabs/UI/AdvertisingView");
             if (prefab != null)
             {
                 GameObject obj = Instantiate(prefab, transform);
@@ -301,7 +301,7 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     {
         if (advertisingView == null)
         {
-            GameObject prefab = Resources.Load<GameObject>("Prefabs/UI/AdvertisingView");
+            GameObject prefab = AssetManager.LoadFromResources<GameObject>("Prefabs/UI/AdvertisingView");
             if (prefab != null)
             {
                 GameObject obj = Instantiate(prefab, transform);

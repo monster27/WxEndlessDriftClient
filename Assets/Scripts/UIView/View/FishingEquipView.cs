@@ -111,7 +111,7 @@ public class FishingEquipView : MonoBehaviour
             foreach (var kvp in iconPaths)
             {
                 string path = kvp.Value;
-                Sprite sprite = Resources.Load<Sprite>(path);
+                Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
                 if (sprite != null)
                 {
                     iconCache[kvp.Key] = sprite;

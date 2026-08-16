@@ -15,7 +15,7 @@ namespace JsonData
         /// </summary>
         public static CharacterLevelUpConfig LoadFromResources(string path = "JsonData/BaseFramework/levelup_exp")
         {
-            TextAsset textAsset = Resources.Load<TextAsset>(path);
+            TextAsset textAsset = AssetManager.LoadFromResources<TextAsset>(path);
             if (textAsset == null)
             {
                 Debug.LogError($"[CharacterLevelUpConfig] 加载失败: {path}");

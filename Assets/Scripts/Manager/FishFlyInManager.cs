@@ -83,7 +83,7 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
         {
             if (item.id == itemId && !string.IsNullOrEmpty(item.iconPath))
             {
-                Sprite sprite = Resources.Load<Sprite>(item.iconPath);
+                Sprite sprite = AssetManager.LoadFromResources<Sprite>(item.iconPath);
                 return sprite != null ? sprite.texture : null;
             }
         }

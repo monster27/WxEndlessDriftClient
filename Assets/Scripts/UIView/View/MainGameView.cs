@@ -219,7 +219,7 @@ public class MainGameView : BaseView
     {
         if (weatherIcon == null) return;
         string path = $"UI/Icon/WeatherIcon/{weatherId}";
-        Sprite sprite = Resources.Load<Sprite>(path);
+        Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
         if (sprite != null)
         {
             weatherIcon.sprite = sprite;
@@ -235,7 +235,7 @@ public class MainGameView : BaseView
         if (timeIcon == null) return;
 
         string path = $"UI/Icon/TimeIcon/{timeSlotId}";
-        Sprite sprite = Resources.Load<Sprite>(path);
+        Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
 
         if (sprite != null)
         {

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 
@@ -36,8 +36,8 @@ namespace TMPro.Examples
             m_frameCounter_transform.SetParent(this.transform, false);
 
             m_TextMeshPro = frameCounter.AddComponent<TextMeshProUGUI>();
-            m_TextMeshPro.font = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
-            m_TextMeshPro.fontSharedMaterial = Resources.Load<Material>("Fonts & Materials/LiberationSans SDF - Overlay");
+            m_TextMeshPro.font = AssetManager.LoadFromResources<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
+            m_TextMeshPro.fontSharedMaterial = AssetManager.LoadFromResources<Material>("Fonts & Materials/LiberationSans SDF - Overlay");
 
             m_TextMeshPro.enableWordWrapping = false;
             m_TextMeshPro.fontSize = 36;

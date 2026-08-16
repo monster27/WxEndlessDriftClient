@@ -102,7 +102,7 @@ public class EquipmentView : MonoBehaviour
             foreach (var kvp in iconPaths)
             {
                 string path = kvp.Value;
-                Sprite sprite = Resources.Load<Sprite>(path);
+                Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
                 if (sprite != null)
                 {
                     iconCache[kvp.Key] = sprite;
@@ -117,7 +117,7 @@ public class EquipmentView : MonoBehaviour
             foreach (var id in characterIds)
             {
                 string path = $"UI/Icon/Equipment/Character/{id}";
-                Sprite sprite = Resources.Load<Sprite>(path);
+                Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
                 if (sprite != null)
                 {
                     iconCache[id] = sprite;

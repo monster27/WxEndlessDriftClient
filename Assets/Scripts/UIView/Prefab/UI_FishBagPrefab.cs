@@ -226,7 +226,7 @@ namespace View.Detail
         private Sprite LoadRarityBackgroundSprite(int rarityId)
         {
             string path = $"UI/Icon/RarityBackground/{rarityId}";
-            Sprite icon = Resources.Load<Sprite>(path);
+            Sprite icon = AssetManager.LoadFromResources<Sprite>(path);
 
             if (icon != null)
             {
@@ -244,7 +244,7 @@ namespace View.Detail
 
             foreach (string fallbackPath in fallbackPaths)
             {
-                icon = Resources.Load<Sprite>(fallbackPath);
+                icon = AssetManager.LoadFromResources<Sprite>(fallbackPath);
                 if (icon != null)
                 {
                     Debug.Log($"[UI_FishBagPrefab] 稀有度背景图片加载成功(备选路径): ID={rarityId}, 路径={fallbackPath}");
@@ -367,7 +367,7 @@ namespace View.Detail
         private Sprite LoadStarRatingIcon(int starRatingId)
         {
             string path = $"UI/Icon/StarRating/star_{starRatingId}";
-            Sprite icon = Resources.Load<Sprite>(path);
+            Sprite icon = AssetManager.LoadFromResources<Sprite>(path);
 
             if (icon != null)
             {
@@ -386,7 +386,7 @@ namespace View.Detail
 
             foreach (string fallbackPath in fallbackPaths)
             {
-                icon = Resources.Load<Sprite>(fallbackPath);
+                icon = AssetManager.LoadFromResources<Sprite>(fallbackPath);
                 if (icon != null)
                 {
                     Debug.Log($"[UI_FishBagPrefab] 星级图标加载成功(备选路径): ID={starRatingId}, 路径={fallbackPath}");
@@ -497,7 +497,7 @@ namespace View.Detail
                 string shinyPath = basePath + "_s";
 
                 // ✅ 先尝试加载 Texture2D 来诊断文件是否存在
-                Texture2D tex = Resources.Load<Texture2D>(shinyPath);
+                Texture2D tex = AssetManager.LoadFromResources<Texture2D>(shinyPath);
                 if (tex != null)
                 {
                     Debug.Log($"[UI_FishBagPrefab] 闪光鱼纹理存在: {shinyPath}, 尺寸: {tex.width}x{tex.height}");
@@ -507,7 +507,7 @@ namespace View.Detail
                     Debug.Log($"[UI_FishBagPrefab] 闪光鱼纹理不存在: {shinyPath}");
                 }
 
-                loadedSprite = Resources.Load<Sprite>(shinyPath);
+                loadedSprite = AssetManager.LoadFromResources<Sprite>(shinyPath);
 
                 if (loadedSprite != null)
                 {
@@ -523,7 +523,7 @@ namespace View.Detail
             // 如果闪光图标加载失败或不是闪光鱼，加载普通图标
             if (loadedSprite == null)
             {
-                loadedSprite = Resources.Load<Sprite>(basePath);
+                loadedSprite = AssetManager.LoadFromResources<Sprite>(basePath);
                 if (loadedSprite != null)
                 {
                     Debug.Log($"[UI_FishBagPrefab] 普通图标加载成功: {basePath}");

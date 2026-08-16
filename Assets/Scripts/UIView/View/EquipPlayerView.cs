@@ -202,7 +202,7 @@ public class EquipPlayerView : MonoBehaviour
     private void LoadCharacterIcon(int characterId)
     {
         string path = $"UI/Icon/Equipment/Character/{characterId}";
-        Sprite sprite = Resources.Load<Sprite>(path);
+        Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
         if (sprite != null)
             iconCache[characterId] = sprite;
     }
@@ -210,7 +210,7 @@ public class EquipPlayerView : MonoBehaviour
     private void LoadSkillIcon(int skillId)
     {
         string path = $"UI/Icon/Equipment/Skill/{skillId}";
-        Sprite sprite = Resources.Load<Sprite>(path);
+        Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
         if (sprite != null)
             iconCache[skillId] = sprite;
     }

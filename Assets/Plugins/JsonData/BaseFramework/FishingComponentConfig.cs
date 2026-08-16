@@ -131,7 +131,7 @@ public static class CompleteFishingSkillConfigExtensions
     /// <returns>配置实例，失败返回null</returns>
     public static CompleteFishingSkillConfig LoadFromResources(string path)
     {
-        TextAsset textAsset = Resources.Load<TextAsset>(path);
+        TextAsset textAsset = AssetManager.LoadFromResources<TextAsset>(path);
         if (textAsset == null)
         {
             Debug.LogError($"[CompleteFishingSkillConfig] 加载失败: {path}");

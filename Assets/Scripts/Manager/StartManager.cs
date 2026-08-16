@@ -200,7 +200,7 @@ public class StartManager : MonoBehaviour
 
     public Font LoadFont700w()
     {
-        Font font = Resources.Load<Font>("TTF/700w");
+        Font font = AssetManager.LoadFromResources<Font>("TTF/700w");
         if (font == null)
         {
             Debug.LogError("加载字体 700w 失败 failed！请检查路径: Assets/Resources/TTF/700w.ttf");
