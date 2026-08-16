@@ -1,91 +1,171 @@
-using System.Collections.Generic;
+//using UnityEngine;
+//using System;
+//using System.Collections.Generic;
+//using System.Threading.Tasks;
 
-namespace ServerModels
-{
-    public enum FishingComponentCategory
-    {
-        None = 0,
-        Rod = 1,
-        Line = 2,
-        Hook = 3,
-        Skill = 4,
-        Character = 5,
-        Bait = 6
-    }
+///// <summary>
+///// FishingComponentConfig 的 Unity 扩展方法类
+///// 提供 Unity 相关的加载和资源管理功能
+///// </summary>
+//public static class FishingComponentConfigExtensions
+//{
+//    ///// <summary>
+//    ///// 获取指定等级的数据
+//    ///// </summary>
+//    //public static FishingComponentLevelData GetLevelData(this FishingComponentConfig config, int level)
+//    //{
+//    //    if (config.levelDataList == null) return null;
+//    //    return config.levelDataList.Find(data => data.level == level);
+//    //}
 
-    [System.Serializable]
-    public class FishingComponentLevel
-    {
-        public int level;
-        public int upgradeCost;
-        public string upgradeDescription;
-        public string levelDescription;
-    }
+//    /// <summary>
+//    /// 获取指定等级中指定参数ID的值
+//    /// </summary>
+//    public static float GetParamValue(this FishingComponentConfig config, int level, int paramId)
+//    {
+//        var levelData = config.GetLevelData(level);
+//        if (levelData == null || levelData.paramsList == null) return 0f;
 
-    [System.Serializable]
-    public class FishingComponentConfig
-    {
-        public int id;
-        public string name = string.Empty;
-        public string description = string.Empty;
-        public int rarityId;
-        public int slotTypeId;
-        public FishingComponentCategory category;
-        public float trashProbability;
-        public int maxTrashStreak;
-        public float fishWeightMultiplier;
-        public float shinyRateBonus;
-        public int minFishingInterval;
-        public int maxFishingInterval;
-        public Dictionary<int, int> rarityBonus = new Dictionary<int, int>();
-        public Dictionary<int, int> rarityWeights = new Dictionary<int, int>();
-        public int continuousPauseDuration;
-        public int normalPauseDuration;
-        public int fishBagCapacity;
-        public int maxLevel;
-        public List<FishingComponentLevel> levels;
-    }
+//        var param = levelData.paramsList.Find(p => p.paramId == paramId);
+//        return param != null ? param.value : 0f;
+//    }
 
-    [System.Serializable]
-    public class FishingComponentListWrapper
-    {
-        public List<FishingComponentConfig> fishingComponents = new List<FishingComponentConfig>();
-    }
+//    /// <summary>
+//    /// 获取指定等级的第index个参数（从0开始）
+//    /// </summary>
+//    public static FishingComponentParam GetParamByIndex(this FishingComponentConfig config, int level, int index)
+//    {
+//        var levelData = config.GetLevelData(level);
+//        if (levelData == null || levelData.paramsList == null || index >= levelData.paramsList.Count) return null;
+//        return levelData.paramsList[index];
+//    }
 
-    [System.Serializable]
-    public class FishingComponentConfigArray
-    {
-        public FishingComponentConfig[] items;
-    }
+//    /// <summary>
+//    /// 获取指定等级的参数数量
+//    /// </summary>
+//    public static int GetParamCount(this FishingComponentConfig config, int level)
+//    {
+//        var levelData = config.GetLevelData(level);
+//        return levelData != null && levelData.paramsList != null ? levelData.paramsList.Count : 0;
+//    }
+//}
 
-    public enum FishingComponentObtainStatus
-    {
-        Unobtained = 0,
-        Obtained = 1
-    }
+///// <summary>
+///// CompleteFishingSkillConfig 的 Unity 扩展方法类
+///// 提供 Unity 相关的加载和资源管理功能
+///// </summary>
+//public static class CompleteFishingSkillConfigExtensions
+//{
+//    /// <summary>
+//    /// 根据ID获取组件配置
+//    /// </summary>
+//    public static FishingComponentConfig GetComponentById(this CompleteFishingSkillConfig config, int id)
+//    {
+//        if (config.items == null) return null;
+//        return config.items.Find(c => c.id == id);
+//    }
 
-    public enum FishingComponentEquipStatus
-    {
-        Unequipped = 0,
-        Equipped = 1
-    }
+//    /// <summary>
+//    /// 根据类别获取组件配置列表
+//    /// </summary>
+//    public static List<FishingComponentConfig> GetComponentsByCategory(this CompleteFishingSkillConfig config, FishingComponentCategory category)
+//    {
+//        if (config.items == null) return new List<FishingComponentConfig>();
+//        return config.items.FindAll(c => c.category == category);
+//    }
 
-    [System.Serializable]
-    public class PlayerEquipmentInfo
-    {
-        public int rodId;
-        public int rodLevel;
-        public int lineId;
-        public int lineLevel;
-        public int hookId;
-        public int hookLevel;
-        public int skill1Id;
-        public int skill1Level;
-        public int skill2Id;
-        public int skill2Level;
-        public int characterId;
-        public int characterLevel;
-        public int baitId;
-        public int baitLevel;
-    }
-}
+//    /// <summary>
+//    /// 根据名称获取组件配置
+//    /// </summary>
+//    public static FishingComponentConfig GetComponentByName(this CompleteFishingSkillConfig config, string name)
+//    {
+//        if (config.items == null) return null;
+//        return config.items.Find(c => c.name == name);
+//    }
+
+//    /// <summary>
+//    /// 获取所有组件的图标路径字典
+//    /// 如果JSON中iconPath为空，则根据ID规则生成路径
+//    /// 规则：3001-3099=Rod, 3101-3199=Line, 3201-3299=Hook, 3301-3399=Skill
+//    /// </summary>
+//    public static Dictionary<int, string> GetAllIconPaths(this CompleteFishingSkillConfig config)
+//    {
+//        var iconPaths = new Dictionary<int, string>();
+//        if (config.items == null) return iconPaths;
+
+//        foreach (var item in config.items)
+//        {
+//            string iconPath;
+//            if (!string.IsNullOrEmpty(item.iconPath))
+//            {
+//                iconPath = item.iconPath;
+//            }
+//            else
+//            {
+//                iconPath = GenerateIconPath(item.id);
+//            }
+//            iconPaths[item.id] = iconPath;
+//        }
+//        return iconPaths;
+//    }
+
+//    /// <summary>
+//    /// 根据ID生成图标路径
+//    /// </summary>
+//    private static string GenerateIconPath(int id)
+//    {
+//        if (id >= 3001 && id <= 3099)
+//            return $"UI/Icon/Equipment/Rod/{id}";
+//        if (id >= 3101 && id <= 3199)
+//            return $"UI/Icon/Equipment/Line/{id}";
+//        if (id >= 3201 && id <= 3299)
+//            return $"UI/Icon/Equipment/Hook/{id}";
+//        if (id >= 3301 && id <= 3399)
+//            return $"UI/Icon/Equipment/Skill/{id}";
+//        return $"UI/Icon/Equipment/Unknown/{id}";
+//    }
+
+//    /// <summary>
+//    /// 从 Addressables 异步加载配置
+//    /// </summary>
+//    public static async Task<CompleteFishingSkillConfig> LoadFromResourcesAsync(string path)
+//    {
+//        var (textAsset, handle) = await AssetManager.LoadFromAddressablesAsync<TextAsset>(path);
+//        if (textAsset == null)
+//        {
+//            Debug.LogError($"[CompleteFishingSkillConfig] 加载失败: {path}");
+//            return null;
+//        }
+
+//        var config = JsonUtility.FromJson<CompleteFishingSkillConfig>(textAsset.text);
+//        if (config == null)
+//        {
+//            Debug.LogError($"[CompleteFishingSkillConfig] 解析失败: {path}");
+//            return null;
+//        }
+
+//        Debug.Log($"[CompleteFishingSkillConfig] 加载成功，路径: {path}");
+//        return config;
+//    }
+
+//    // ===== 同步版本（仅编辑器工具使用） =====
+//    public static CompleteFishingSkillConfig LoadFromResourcesSync(string path)
+//    {
+//        TextAsset textAsset = Resources.Load<TextAsset>(path);
+//        if (textAsset == null)
+//        {
+//            Debug.LogError($"[CompleteFishingSkillConfig] 加载失败: {path}");
+//            return null;
+//        }
+
+//        var config = JsonUtility.FromJson<CompleteFishingSkillConfig>(textAsset.text);
+//        if (config == null)
+//        {
+//            Debug.LogError($"[CompleteFishingSkillConfig] 解析失败: {path}");
+//            return null;
+//        }
+
+//        Debug.Log($"[CompleteFishingSkillConfig] 加载成功，路径: {path}");
+//        return config;
+//    }
+//}

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 
 /// <summary>
 /// 场景材质控制 - 纯渲染控制器
@@ -264,7 +265,7 @@ public class SceneMatCtrl : MonoBehaviour
         OnMainTextureChanged?.Invoke(texture);
     }
 
-    public virtual void SetMainTextureByPath(string path)
+    public virtual async void SetMainTextureByPath(string path)
     {
         if (string.IsNullOrEmpty(path))
         {
@@ -274,7 +275,14 @@ public class SceneMatCtrl : MonoBehaviour
 
         Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - 📂 加载纹理: {path}");
 
-        Texture2D texture = AssetManager.LoadFromResources<Texture2D>(path);
+        var (texture, handle) = await AssetManager.LoadFromAddressablesAsync<Texture2D>(path);
+
+        // 异步回调回来时对象可能已销毁
+        if (this == null || gameObject == null)
+        {
+            return;
+        }
+
         if (texture == null)
         {
             Debug.LogError($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - ❌ 无法加载纹理: {path}");

@@ -1,4 +1,4 @@
-// ==================== TrashDataEditor.cs ====================
+﻿// ==================== TrashDataEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,12 +17,12 @@ public class TrashDataEditor : BaseDataEditor<TrashData>
     {
         TrashDataEditor window = GetWindow<TrashDataEditor>("垃圾数据编辑器");
         window.minSize = new Vector2(400, 300);
-        window.relativePath = "Resources/JsonData/Game/BagItem/trash.json";
+        window.relativePath = "Addressables/JsonData/Game/BagItem/trash.json";
         window.LoadData();
         window.Show();
     }
 
-    public TrashDataEditor() : base("Resources/JsonData/Game/BagItem/trash.json") { }
+    public TrashDataEditor() : base("Addressables/JsonData/Game/BagItem/trash.json") { }
 
     protected override void LoadData()
     {

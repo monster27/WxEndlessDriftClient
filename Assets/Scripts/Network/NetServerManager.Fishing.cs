@@ -6,6 +6,8 @@ using System.Linq;
 using System;
 //using SharedModels;
 using Logger = Utils.Logger;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public partial class NetServerManager
 {
@@ -29,10 +31,14 @@ public partial class NetServerManager
     private LastCatchInfo pendingCatchInfo = null;
     private readonly Queue<LastCatchInfo> pendingCatchQueue = new Queue<LastCatchInfo>();
 
+    // AA 句柄
+    private AsyncOperationHandle<Sprite> _iconHandle;
+
     public bool IsPaused => isPaused;
     public bool IsPlayingReelAnimation => isPlayingReelAnimation;
 
     private int GetCurrentSceneId() => EnvManager.Instance?.currentSceneId ?? 1;
+
 
     // ========== 钓鱼操作 ==========
 
@@ -611,21 +617,51 @@ public partial class NetServerManager
     private void ShowCatchResultFromServer(LastCatchInfo catchInfo)
     {
         if (catchInfo == null) return;
-        Sprite icon = GetItemIcon(catchInfo.fishId);
 
-        bool isFish = IsFishItem(catchInfo.fishId);
+        // ✅ 异步加载图标
+        LoadItemIcon(catchInfo.fishId, (icon) =>
+        {
+            bool isFish = IsFishItem(catchInfo.fishId);
 
-        // ✅ 直接传递 catchInfo.isFirstCatch，不再依赖全局变量 PendingIsFirstCatch
-        GameUIManager.Instance?.ShowCatchResult(
-            catchInfo.fishName,
-            catchInfo.weight,
-            icon,
-            catchInfo.starRatingId,
-            catchInfo.fishId,
-            isFish,
-            catchInfo.isFirstCatch  // ✅ 新增参数：是否首次钓获
-        );
+            GameUIManager.Instance?.ShowCatchResult(
+                catchInfo.fishName,
+                catchInfo.weight,
+                icon,
+                catchInfo.starRatingId,
+                catchInfo.fishId,
+                isFish,
+                catchInfo.isFirstCatch
+            );
+        });
+
         SyncCharacterDataFromServer();
+    }
+
+    /// <summary>
+    /// 异步加载物品图标
+    /// </summary>
+    private void LoadItemIcon(int itemId, Action<Sprite> onLoaded)
+    {
+        if (LoadDataManager.Instance?.items == null)
+        {
+            onLoaded?.Invoke(null);
+            return;
+        }
+
+        foreach (var item in LoadDataManager.Instance.items)
+        {
+            if (item.id == itemId && !string.IsNullOrEmpty(item.iconPath))
+            {
+                AssetManager.LoadFromAddressables<Sprite>(item.iconPath, (sprite, handle) =>
+                {
+                    _iconHandle = handle;
+                    onLoaded?.Invoke(sprite);
+                });
+                return;
+            }
+        }
+
+        onLoaded?.Invoke(null);
     }
 
     private bool IsFishItem(int itemId)
@@ -655,15 +691,6 @@ public partial class NetServerManager
             return true;
 
         return false;
-    }
-
-    private Sprite GetItemIcon(int itemId)
-    {
-        if (LoadDataManager.Instance?.items == null) return null;
-        foreach (var item in LoadDataManager.Instance.items)
-            if (item.id == itemId && !string.IsNullOrEmpty(item.iconPath))
-                return AssetManager.LoadFromResources<Sprite>(item.iconPath);
-        return null;
     }
 
     public void OnServerFishingResult(FishingResult result) { }

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
 {
@@ -19,6 +21,7 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
 
     private Queue<FishFlyInCtrl> _pool = new Queue<FishFlyInCtrl>();
     private bool _isInitialized = false;
+    private AsyncOperationHandle<Sprite> _spriteHandle;
 
     void Update()
     {
@@ -26,6 +29,11 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
         {
             FlyTest();
         }
+    }
+
+    void OnDestroy()
+    {
+        AssetManager.ReleaseAddressable(_spriteHandle);
     }
 
     public void Init(int renderQueue)
@@ -62,32 +70,42 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
 
     public void Fly(int itemId, float weight = 0f, bool isFish = true)
     {
-        Texture2D texture = GetItemTexture(itemId);
-        if (texture == null)
+        AssetManager.LoadFromAddressables<Sprite>(GetIconPath(itemId), (sprite, handle) =>
         {
-            Debug.LogError($"[FishFlyInManager] 无法获取物品纹理: itemId={itemId}");
-            return;
-        }
+            _spriteHandle = handle;
+            if (sprite != null)
+            {
+                Texture2D texture = sprite.texture;
+                if (texture == null)
+                {
+                    Debug.LogError($"[FishFlyInManager] 无法获取物品纹理: itemId={itemId}");
+                    return;
+                }
 
-        float flip = SceneMatManager.Instance != null && SceneMatManager.Instance.CurrentSceneFlip ? 1f : 0f;
-        float scale = isFish ? CalculateFishScale(weight) : _defaultScale;
+                float flip = SceneMatManager.Instance != null && SceneMatManager.Instance.CurrentSceneFlip ? 1f : 0f;
+                float scale = isFish ? CalculateFishScale(weight) : _defaultScale;
 
-        Fly(texture, flip, scale);
+                Fly(texture, flip, scale);
+            }
+            else
+            {
+                Debug.LogError($"[FishFlyInManager] 无法加载物品图标: itemId={itemId}");
+            }
+        });
     }
 
-    private Texture2D GetItemTexture(int itemId)
+    private string GetIconPath(int itemId)
     {
-        if (LoadDataManager.Instance?.items == null) return null;
+        if (LoadDataManager.Instance?.items == null) return "";
 
         foreach (var item in LoadDataManager.Instance.items)
         {
             if (item.id == itemId && !string.IsNullOrEmpty(item.iconPath))
             {
-                Sprite sprite = AssetManager.LoadFromResources<Sprite>(item.iconPath);
-                return sprite != null ? sprite.texture : null;
+                return item.iconPath;
             }
         }
-        return null;
+        return "";
     }
 
     private float CalculateFishScale(float weight)

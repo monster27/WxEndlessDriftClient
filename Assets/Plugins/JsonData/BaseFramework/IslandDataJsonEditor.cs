@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -13,7 +13,7 @@ using System.Linq;
 public class IslandDataJsonEditor : EditorWindow
 {
     // ========== 数据路径 ==========
-    private const string RELATIVE_PATH = "Resources/JsonData/Game/SceneTransData/mainTransData.json";
+    private const string RELATIVE_PATH = "Addressables/JsonData/Game/SceneTransData/mainTransData.json";
     private const string FULL_PATH = "Assets/Resources/JsonData/Game/SceneTransData/mainTransData.json";
 
     // ========== 数据引用 ==========

@@ -1,4 +1,4 @@
-// ==================== WeatherDataEditor.cs ====================
+﻿// ==================== WeatherDataEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -310,7 +310,7 @@ public class WeatherDataEditor : EditorWindow
 
     private void LoadData()
     {
-        string fullPath = Path.Combine(Application.dataPath, "Resources/JsonData/BaseFramework/weathers.json");
+        string fullPath = Path.Combine(Application.dataPath, "Addressables/JsonData/BaseFramework/weathers.json");
         if (File.Exists(fullPath))
         {
             try
@@ -331,7 +331,7 @@ public class WeatherDataEditor : EditorWindow
 
     private void SaveData()
     {
-        string fullPath = Path.Combine(Application.dataPath, "Resources/JsonData/BaseFramework/weathers.json");
+        string fullPath = Path.Combine(Application.dataPath, "Addressables/JsonData/BaseFramework/weathers.json");
         string directory = Path.GetDirectoryName(fullPath);
         if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
         File.WriteAllText(fullPath, JsonUtility.ToJson(new WeatherListWrapper { weathers = weathers }, true));

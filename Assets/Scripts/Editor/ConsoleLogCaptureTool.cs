@@ -14,12 +14,14 @@ public class ConsoleLogCaptureTool : EditorWindow
         public string groupName;
         public List<string> keywords;
         public bool isSelected;
+        public bool isReadOnly;
 
         public KeywordGroup(string name)
         {
             groupName = name;
             keywords = new List<string>();
             isSelected = false;
+            isReadOnly = false;
         }
 
         public KeywordGroup(string name, List<string> initialKeywords)
@@ -27,6 +29,15 @@ public class ConsoleLogCaptureTool : EditorWindow
             groupName = name;
             keywords = new List<string>(initialKeywords);
             isSelected = false;
+            isReadOnly = false;
+        }
+
+        public KeywordGroup(string name, List<string> initialKeywords, bool readOnly)
+        {
+            groupName = name;
+            keywords = new List<string>(initialKeywords);
+            isSelected = false;
+            isReadOnly = readOnly;
         }
     }
 
@@ -40,11 +51,12 @@ public class ConsoleLogCaptureTool : EditorWindow
     private bool autoCaptureOnPlay = true;
     private int maxLogCount = 99999;
 
-    // 重命名相关
     private bool isRenaming = false;
     private string renameTempName = "";
 
-    // 当前激活的关键字列表（从选中的组获取）
+    private const string ALL_LOG_GROUP_NAME = "【所有日志】";
+    private const string ERROR_GROUP_NAME = "【错误日志】";
+
     private List<string> ActiveKeywords
     {
         get
@@ -57,6 +69,42 @@ public class ConsoleLogCaptureTool : EditorWindow
         }
     }
 
+    private bool IsCurrentGroupReadOnly
+    {
+        get
+        {
+            if (selectedGroupIndex >= 0 && selectedGroupIndex < keywordGroups.Count)
+            {
+                return keywordGroups[selectedGroupIndex].isReadOnly;
+            }
+            return false;
+        }
+    }
+
+    private bool IsCurrentGroupAllLog
+    {
+        get
+        {
+            if (selectedGroupIndex >= 0 && selectedGroupIndex < keywordGroups.Count)
+            {
+                return keywordGroups[selectedGroupIndex].groupName == ALL_LOG_GROUP_NAME;
+            }
+            return false;
+        }
+    }
+
+    private bool IsCurrentGroupErrorLog
+    {
+        get
+        {
+            if (selectedGroupIndex >= 0 && selectedGroupIndex < keywordGroups.Count)
+            {
+                return keywordGroups[selectedGroupIndex].groupName == ERROR_GROUP_NAME;
+            }
+            return false;
+        }
+    }
+
     [MenuItem("Tools/日志捕获工具")]
     public static void ShowWindow()
     {
@@ -66,40 +114,7 @@ public class ConsoleLogCaptureTool : EditorWindow
     private void OnEnable()
     {
         LoadAllData();
-
-        // 如果没有分组，创建默认分组
-        if (keywordGroups.Count == 0)
-        {
-            var defaultGroup = new KeywordGroup("默认", new List<string>
-            {
-                "[BagDetail]",
-                "[NetServerManager]",
-                "[BagView]",
-                "[SkinManager]"
-            });
-            defaultGroup.isSelected = true;
-            keywordGroups.Add(defaultGroup);
-            selectedGroupIndex = 0;
-            SaveAllData();
-        }
-        else
-        {
-            // 恢复选中的分组
-            for (int i = 0; i < keywordGroups.Count; i++)
-            {
-                if (keywordGroups[i].isSelected)
-                {
-                    selectedGroupIndex = i;
-                    break;
-                }
-            }
-            if (selectedGroupIndex == -1 && keywordGroups.Count > 0)
-            {
-                keywordGroups[0].isSelected = true;
-                selectedGroupIndex = 0;
-            }
-        }
-
+        EnsureFixedGroupsExist();
         LoadSettingsFromPrefs();
 
         EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
@@ -114,6 +129,76 @@ public class ConsoleLogCaptureTool : EditorWindow
     private void OnDisable()
     {
         EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+    }
+
+    private void EnsureFixedGroupsExist()
+    {
+        // 检查固定分组是否存在
+        bool hasAllLog = keywordGroups.Any(g => g.groupName == ALL_LOG_GROUP_NAME);
+        bool hasError = keywordGroups.Any(g => g.groupName == ERROR_GROUP_NAME);
+
+        // 如果没有固定分组，重新构建列表
+        if (!hasAllLog || !hasError)
+        {
+            // 保存现有的自定义分组（非固定分组）
+            var customGroups = keywordGroups.Where(g => !g.isReadOnly).ToList();
+
+            keywordGroups.Clear();
+
+            // 【所有日志】分组
+            var allLogGroup = new KeywordGroup(ALL_LOG_GROUP_NAME, new List<string>(), true);
+            allLogGroup.isSelected = !hasAllLog && !hasError; // 如果两个都没有，选中这个
+            keywordGroups.Add(allLogGroup);
+
+            // 【错误日志】分组
+            var errorGroup = new KeywordGroup(ERROR_GROUP_NAME, new List<string>(), true);
+            errorGroup.isSelected = false;
+            keywordGroups.Add(errorGroup);
+
+            // 恢复自定义分组
+            foreach (var group in customGroups)
+            {
+                // 排除可能残留的固定分组
+                if (group.groupName != ALL_LOG_GROUP_NAME && group.groupName != ERROR_GROUP_NAME)
+                {
+                    keywordGroups.Add(group);
+                }
+            }
+
+            // 如果没有自定义分组，添加一个默认分组
+            if (keywordGroups.Count == 2)
+            {
+                var defaultGroup = new KeywordGroup("默认", new List<string>
+                {
+                    "[BagDetail]",
+                    "[NetServerManager]",
+                    "[BagView]",
+                    "[SkinManager]"
+                });
+                defaultGroup.isSelected = false;
+                keywordGroups.Add(defaultGroup);
+            }
+
+            SaveAllData();
+        }
+
+        // 确保有一个分组被选中
+        if (selectedGroupIndex == -1 || selectedGroupIndex >= keywordGroups.Count)
+        {
+            for (int i = 0; i < keywordGroups.Count; i++)
+            {
+                if (keywordGroups[i].isSelected)
+                {
+                    selectedGroupIndex = i;
+                    break;
+                }
+            }
+            if (selectedGroupIndex == -1 && keywordGroups.Count > 0)
+            {
+                keywordGroups[0].isSelected = true;
+                selectedGroupIndex = 0;
+            }
+        }
     }
 
     private void OnPlayModeStateChanged(PlayModeStateChange state)
@@ -144,16 +229,23 @@ public class ConsoleLogCaptureTool : EditorWindow
         // ========== 关键字组管理 ==========
         EditorGUILayout.LabelField("关键字组管理", EditorStyles.boldLabel);
 
-        // 新建组
         EditorGUILayout.BeginHorizontal();
         newGroupName = EditorGUILayout.TextField("新建分组:", newGroupName);
         if (GUILayout.Button("创建分组", GUILayout.Width(80)))
         {
             if (!string.IsNullOrEmpty(newGroupName) && !keywordGroups.Any(g => g.groupName == newGroupName))
             {
-                keywordGroups.Add(new KeywordGroup(newGroupName));
-                SaveAllData();
-                newGroupName = "";
+                if (newGroupName == ALL_LOG_GROUP_NAME || newGroupName == ERROR_GROUP_NAME)
+                {
+                    EditorUtility.DisplayDialog("提示", $"\"{newGroupName}\" 是保留名称，不能创建", "确定");
+                }
+                else
+                {
+                    int insertIndex = Math.Min(2, keywordGroups.Count);
+                    keywordGroups.Insert(insertIndex, new KeywordGroup(newGroupName));
+                    SaveAllData();
+                    newGroupName = "";
+                }
             }
             else if (keywordGroups.Any(g => g.groupName == newGroupName))
             {
@@ -168,7 +260,6 @@ public class ConsoleLogCaptureTool : EditorWindow
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("切换分组:", GUILayout.Width(70));
 
-        // 显示所有分组为按钮
         for (int i = 0; i < keywordGroups.Count; i++)
         {
             Color originalColor = GUI.backgroundColor;
@@ -177,9 +268,21 @@ public class ConsoleLogCaptureTool : EditorWindow
                 GUI.backgroundColor = Color.green;
             }
 
-            if (GUILayout.Button(keywordGroups[i].groupName, GUILayout.Width(80)))
+            bool isFixedGroup = keywordGroups[i].isReadOnly;
+            if (isFixedGroup)
             {
-                // 取消所有分组的选中状态
+                if (keywordGroups[i].groupName == ALL_LOG_GROUP_NAME)
+                {
+                    GUI.backgroundColor = new Color(0.3f, 0.6f, 1f);
+                }
+                else if (keywordGroups[i].groupName == ERROR_GROUP_NAME)
+                {
+                    GUI.backgroundColor = new Color(1f, 0.5f, 0.3f);
+                }
+            }
+
+            if (GUILayout.Button(keywordGroups[i].groupName, GUILayout.Width(90)))
+            {
                 foreach (var group in keywordGroups)
                 {
                     group.isSelected = false;
@@ -187,8 +290,6 @@ public class ConsoleLogCaptureTool : EditorWindow
                 keywordGroups[i].isSelected = true;
                 selectedGroupIndex = i;
                 SaveAllData();
-
-                // 退出重命名模式
                 isRenaming = false;
 
                 if (isCapturing)
@@ -199,8 +300,7 @@ public class ConsoleLogCaptureTool : EditorWindow
             GUI.backgroundColor = originalColor;
         }
 
-        // 删除分组按钮（不能删除最后一个分组）
-        if (keywordGroups.Count > 1 && selectedGroupIndex >= 0)
+        if (keywordGroups.Count > 3 && selectedGroupIndex >= 2 && !IsCurrentGroupReadOnly)
         {
             if (GUILayout.Button("✕", GUILayout.Width(25)))
             {
@@ -226,22 +326,44 @@ public class ConsoleLogCaptureTool : EditorWindow
                 }
             }
         }
+        else if (selectedGroupIndex >= 0 && IsCurrentGroupReadOnly)
+        {
+            GUI.color = Color.gray;
+            GUILayout.Label("(固定)", GUILayout.Width(40));
+            GUI.color = Color.white;
+        }
         EditorGUILayout.EndHorizontal();
 
         // ========== 当前分组操作 ==========
         if (selectedGroupIndex >= 0 && selectedGroupIndex < keywordGroups.Count)
         {
             var currentGroup = keywordGroups[selectedGroupIndex];
+            bool isReadOnly = currentGroup.isReadOnly;
+            bool isAllLog = currentGroup.groupName == ALL_LOG_GROUP_NAME;
+            bool isErrorLog = currentGroup.groupName == ERROR_GROUP_NAME;
 
             EditorGUILayout.Space();
 
-            // 分组名称显示 + 重命名
             EditorGUILayout.BeginHorizontal();
 
             if (!isRenaming)
             {
-                EditorGUILayout.LabelField($"当前分组: {currentGroup.groupName} (共 {currentGroup.keywords.Count} 个关键字)", EditorStyles.boldLabel);
-                if (GUILayout.Button("重命名", GUILayout.Width(60)))
+                string labelText;
+                if (isAllLog)
+                {
+                    labelText = $"当前分组: {currentGroup.groupName} (📋 固定分组，捕获所有日志)";
+                }
+                else if (isErrorLog)
+                {
+                    labelText = $"当前分组: {currentGroup.groupName} (🔒 固定分组，自动捕获错误)";
+                }
+                else
+                {
+                    labelText = $"当前分组: {currentGroup.groupName} (共 {currentGroup.keywords.Count} 个关键字)";
+                }
+                EditorGUILayout.LabelField(labelText, EditorStyles.boldLabel);
+
+                if (!isReadOnly && GUILayout.Button("重命名", GUILayout.Width(60)))
                 {
                     isRenaming = true;
                     renameTempName = currentGroup.groupName;
@@ -253,7 +375,11 @@ public class ConsoleLogCaptureTool : EditorWindow
                 renameTempName = EditorGUILayout.TextField(renameTempName, GUILayout.Width(150));
                 if (GUILayout.Button("确认", GUILayout.Width(50)))
                 {
-                    if (!string.IsNullOrEmpty(renameTempName) && !keywordGroups.Any(g => g.groupName == renameTempName && g != currentGroup))
+                    if (renameTempName == ALL_LOG_GROUP_NAME || renameTempName == ERROR_GROUP_NAME)
+                    {
+                        EditorUtility.DisplayDialog("提示", $"\"{renameTempName}\" 是保留名称，不能使用", "确定");
+                    }
+                    else if (!string.IsNullOrEmpty(renameTempName) && !keywordGroups.Any(g => g.groupName == renameTempName && g != currentGroup))
                     {
                         currentGroup.groupName = renameTempName;
                         isRenaming = false;
@@ -276,13 +402,29 @@ public class ConsoleLogCaptureTool : EditorWindow
             }
             EditorGUILayout.EndHorizontal();
 
+            if (isAllLog)
+            {
+                EditorGUILayout.HelpBox(
+                    "此分组为固定分组，会自动捕获所有类型的日志（包括普通日志、警告、错误、异常等）。\n" +
+                    "无需手动添加关键字，不可删除或重命名。",
+                    MessageType.Info
+                );
+            }
+            else if (isErrorLog)
+            {
+                EditorGUILayout.HelpBox(
+                    "此分组为固定分组，会自动捕获所有 Error、Exception 和 Assert 类型的日志。\n" +
+                    "无需手动添加关键字，不可删除或重命名。",
+                    MessageType.Info
+                );
+            }
+
             EditorGUILayout.Space();
 
-            // ========== 关键字管理 ==========
             EditorGUILayout.LabelField("关键字管理", EditorStyles.boldLabel);
 
-            // 添加关键字到当前分组
             EditorGUILayout.BeginHorizontal();
+            GUI.enabled = !isReadOnly;
             newKeyword = EditorGUILayout.TextField("添加关键字:", newKeyword);
             if (GUILayout.Button("添加", GUILayout.Width(60)))
             {
@@ -298,30 +440,44 @@ public class ConsoleLogCaptureTool : EditorWindow
                     }
                 }
             }
+            GUI.enabled = true;
             EditorGUILayout.EndHorizontal();
 
-            // 显示当前分组的关键字列表
             EditorGUILayout.BeginVertical("box");
-            for (int i = 0; i < currentGroup.keywords.Count; i++)
+            if (isAllLog)
             {
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"● {currentGroup.keywords[i]}", GUILayout.Width(200));
-                if (GUILayout.Button("移除", GUILayout.Width(50)))
-                {
-                    currentGroup.keywords.RemoveAt(i);
-                    SaveAllData();
-                    i--;
-
-                    if (isCapturing)
-                    {
-                        RefreshFilteredLogs();
-                    }
-                }
-                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.LabelField("● 自动捕获: 所有日志类型", EditorStyles.miniLabel);
+                EditorGUILayout.LabelField("● 包括: Log, Warning, Error, Exception, Assert", EditorStyles.miniLabel);
+                EditorGUILayout.LabelField("● 不过滤任何日志", EditorStyles.miniLabel);
             }
-            if (currentGroup.keywords.Count == 0)
+            else if (isErrorLog)
             {
-                EditorGUILayout.LabelField("(此分组暂无关键字)", EditorStyles.centeredGreyMiniLabel);
+                EditorGUILayout.LabelField("● 自动捕获: Error, Exception, Assert", EditorStyles.miniLabel);
+                EditorGUILayout.LabelField("● 自动捕获: 所有 LogType.Error 和 LogType.Exception", EditorStyles.miniLabel);
+            }
+            else
+            {
+                for (int i = 0; i < currentGroup.keywords.Count; i++)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField($"● {currentGroup.keywords[i]}", GUILayout.Width(200));
+                    if (GUILayout.Button("移除", GUILayout.Width(50)))
+                    {
+                        currentGroup.keywords.RemoveAt(i);
+                        SaveAllData();
+                        i--;
+
+                        if (isCapturing)
+                        {
+                            RefreshFilteredLogs();
+                        }
+                    }
+                    EditorGUILayout.EndHorizontal();
+                }
+                if (currentGroup.keywords.Count == 0)
+                {
+                    EditorGUILayout.LabelField("(此分组暂无关键字)", EditorStyles.centeredGreyMiniLabel);
+                }
             }
             EditorGUILayout.EndVertical();
         }
@@ -444,7 +600,12 @@ public class ConsoleLogCaptureTool : EditorWindow
 
         if (selectedGroupIndex >= 0 && selectedGroupIndex < keywordGroups.Count)
         {
-            EditorGUILayout.LabelField($"| 分组: {keywordGroups[selectedGroupIndex].groupName}", GUILayout.Width(150));
+            string groupDisplay = keywordGroups[selectedGroupIndex].groupName;
+            if (keywordGroups[selectedGroupIndex].isReadOnly)
+            {
+                groupDisplay += " 🔒";
+            }
+            EditorGUILayout.LabelField($"| 分组: {groupDisplay}", GUILayout.Width(150));
         }
 
         EditorGUILayout.LabelField($"| 当前: {filteredLogs.Count}/{maxLogCount}", GUILayout.Width(150));
@@ -461,7 +622,22 @@ public class ConsoleLogCaptureTool : EditorWindow
         {
             EditorGUILayout.BeginVertical("box");
 
-            EditorGUILayout.LabelField($"日志: {log.SimpleMessage}", EditorStyles.wordWrappedLabel);
+            if (log.LogType == LogType.Error || log.LogType == LogType.Exception || log.LogType == LogType.Assert)
+            {
+                GUI.color = Color.red;
+                EditorGUILayout.LabelField($"【错误】{log.SimpleMessage}", EditorStyles.wordWrappedLabel);
+                GUI.color = Color.white;
+            }
+            else if (log.LogType == LogType.Warning)
+            {
+                GUI.color = new Color(1f, 0.8f, 0f);
+                EditorGUILayout.LabelField($"【警告】{log.SimpleMessage}", EditorStyles.wordWrappedLabel);
+                GUI.color = Color.white;
+            }
+            else
+            {
+                EditorGUILayout.LabelField($"日志: {log.SimpleMessage}", EditorStyles.wordWrappedLabel);
+            }
 
             if (!string.IsNullOrEmpty(log.FilePath))
             {
@@ -492,7 +668,9 @@ public class ConsoleLogCaptureTool : EditorWindow
 
     private void StartCapture()
     {
-        if (ActiveKeywords.Count == 0)
+        var currentGroup = keywordGroups[selectedGroupIndex];
+
+        if (!currentGroup.isReadOnly && ActiveKeywords.Count == 0)
         {
             EditorUtility.DisplayDialog("提示", "当前分组没有关键字，请先添加关键字", "确定");
             return;
@@ -501,7 +679,8 @@ public class ConsoleLogCaptureTool : EditorWindow
         isCapturing = true;
         filteredLogs.Clear();
         Application.logMessageReceived += OnLogMessageReceived;
-        Debug.Log($"日志捕获已开始... (分组: {keywordGroups[selectedGroupIndex].groupName})");
+        string groupName = currentGroup.isReadOnly ? $"{currentGroup.groupName} (固定捕获)" : currentGroup.groupName;
+        Debug.Log($"日志捕获已开始... (分组: {groupName})");
     }
 
     private void StopCapture()
@@ -526,20 +705,36 @@ public class ConsoleLogCaptureTool : EditorWindow
     {
         if (!isCapturing) return;
 
-        var activeKeywords = ActiveKeywords;
-        if (activeKeywords.Count == 0) return;
+        var currentGroup = keywordGroups[selectedGroupIndex];
+        bool isAllLog = currentGroup.groupName == ALL_LOG_GROUP_NAME;
+        bool isErrorLog = currentGroup.groupName == ERROR_GROUP_NAME;
 
-        bool containsKeyword = false;
-        foreach (var keyword in activeKeywords)
+        bool shouldCapture = false;
+
+        if (isAllLog)
         {
-            if (condition.Contains(keyword) || stackTrace.Contains(keyword))
+            shouldCapture = true;
+        }
+        else if (isErrorLog)
+        {
+            shouldCapture = (type == LogType.Error || type == LogType.Exception || type == LogType.Assert);
+        }
+        else
+        {
+            var activeKeywords = ActiveKeywords;
+            if (activeKeywords.Count == 0) return;
+
+            foreach (var keyword in activeKeywords)
             {
-                containsKeyword = true;
-                break;
+                if (condition.Contains(keyword) || stackTrace.Contains(keyword))
+                {
+                    shouldCapture = true;
+                    break;
+                }
             }
         }
 
-        if (!containsKeyword) return;
+        if (!shouldCapture) return;
 
         LogEntry entry = new LogEntry();
         entry.RawMessage = condition;
@@ -621,7 +816,19 @@ public class ConsoleLogCaptureTool : EditorWindow
 
         string result = "";
         string groupName = selectedGroupIndex >= 0 ? keywordGroups[selectedGroupIndex].groupName : "未知";
-        string keywordsStr = string.Join(", ", ActiveKeywords);
+        string keywordsStr;
+        if (IsCurrentGroupAllLog)
+        {
+            keywordsStr = "捕获所有日志";
+        }
+        else if (IsCurrentGroupErrorLog)
+        {
+            keywordsStr = "自动捕获错误日志";
+        }
+        else
+        {
+            keywordsStr = string.Join(", ", ActiveKeywords);
+        }
 
         if (includePath)
         {
@@ -673,7 +880,19 @@ public class ConsoleLogCaptureTool : EditorWindow
         }
 
         string groupName = selectedGroupIndex >= 0 ? keywordGroups[selectedGroupIndex].groupName : "未知";
-        string keywordsStr = string.Join(", ", ActiveKeywords);
+        string keywordsStr;
+        if (IsCurrentGroupAllLog)
+        {
+            keywordsStr = "捕获所有日志";
+        }
+        else if (IsCurrentGroupErrorLog)
+        {
+            keywordsStr = "自动捕获错误日志";
+        }
+        else
+        {
+            keywordsStr = string.Join(", ", ActiveKeywords);
+        }
 
         string result = $"=== 详细日志 ({DateTime.Now:yyyy-MM-dd HH:mm:ss}) ===\n";
         result += $"分组: {groupName}\n";
@@ -714,7 +933,8 @@ public class ConsoleLogCaptureTool : EditorWindow
             {
                 groupName = group.groupName,
                 keywords = group.keywords,
-                isSelected = group.isSelected
+                isSelected = group.isSelected,
+                isReadOnly = group.isReadOnly
             });
         }
         string json = JsonUtility.ToJson(new GroupListWrapper { groups = groupData });
@@ -736,6 +956,7 @@ public class ConsoleLogCaptureTool : EditorWindow
                     {
                         var group = new KeywordGroup(data.groupName, data.keywords ?? new List<string>());
                         group.isSelected = data.isSelected;
+                        group.isReadOnly = data.isReadOnly;
                         keywordGroups.Add(group);
                     }
                 }
@@ -767,6 +988,7 @@ public class ConsoleLogCaptureTool : EditorWindow
         public string groupName;
         public List<string> keywords;
         public bool isSelected;
+        public bool isReadOnly;
     }
 
     [Serializable]

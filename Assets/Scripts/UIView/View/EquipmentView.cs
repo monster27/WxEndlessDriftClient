@@ -91,39 +91,45 @@ public class EquipmentView : MonoBehaviour
         }
     }
 
-    private void LoadAllIcons()
+    private async void LoadAllIcons()
     {
         iconCache.Clear();
 
-        var fishingConfig = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
+        // ✅ 从 Addressables 异步加载钓鱼组件配置
+        var fishingConfig = await CompleteFishingSkillConfigExtensions.LoadFromAddressablesAsync("JsonData/Ability/fishing_components");
         if (fishingConfig != null)
         {
             var iconPaths = fishingConfig.GetAllIconPaths();
             foreach (var kvp in iconPaths)
             {
                 string path = kvp.Value;
-                Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
+                var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(path);
                 if (sprite != null)
                 {
                     iconCache[kvp.Key] = sprite;
                 }
+                AssetManager.ReleaseAddressable(handle);
             }
         }
 
-        var characterConfig = CharacterConfigListExtensions.LoadFromResources();
+        // ✅ 从 Addressables 异步加载人物配置
+        var characterConfig = await CharacterConfigListExtensions.LoadFromAddressablesAsync("JsonData/BaseFramework/characters");
         if (characterConfig != null)
         {
             var characterIds = characterConfig.GetAllCharacterIds();
             foreach (var id in characterIds)
             {
                 string path = $"UI/Icon/Equipment/Character/{id}";
-                Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
+                var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(path);
                 if (sprite != null)
                 {
                     iconCache[id] = sprite;
                 }
+                AssetManager.ReleaseAddressable(handle);
             }
         }
+
+        Debug.Log($"[EquipmentView] 图标加载完成，共 {iconCache.Count} 个");
     }
 
     public Sprite GetIcon(int id)

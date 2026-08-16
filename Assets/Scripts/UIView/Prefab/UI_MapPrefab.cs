@@ -1,19 +1,20 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
-/// <summary>
-/// 地图岛屿按钮预制体脚本
-/// </summary>
 public class UI_MapPrefab : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private Text islandNameText;
     [SerializeField] private Button clickButton;
     [SerializeField] private Image islandIcon;
+    [SerializeField] private string iconAddressPrefix = "UI/Icon/IslandInfoIcons/";
 
     private int islandId;
     private string islandName;
     private System.Action onClickCallback;
+    private AsyncOperationHandle<Sprite> _iconHandle;
 
     void Awake()
     {
@@ -29,9 +30,11 @@ public class UI_MapPrefab : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 设置岛屿信息
-    /// </summary>
+    void OnDestroy()
+    {
+        AssetManager.ReleaseAddressable(_iconHandle);
+    }
+
     public void SetIslandInfo(int id, string name)
     {
         islandId = id;
@@ -41,11 +44,20 @@ public class UI_MapPrefab : MonoBehaviour
         {
             islandNameText.text = name;
         }
+
+        // ✅ 异步加载岛屿图标
+        string iconPath = $"{iconAddressPrefix}{id}";
+        AssetManager.LoadFromAddressables<Sprite>(iconPath, (sprite, handle) =>
+        {
+            _iconHandle = handle;
+            if (islandIcon != null && sprite != null)
+            {
+                islandIcon.sprite = sprite;
+                islandIcon.color = Color.white;
+            }
+        });
     }
 
-    /// <summary>
-    /// 设置岛屿名称
-    /// </summary>
     public void SetIslandName(string name)
     {
         islandName = name;
@@ -55,17 +67,11 @@ public class UI_MapPrefab : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 设置岛屿ID
-    /// </summary>
     public void SetIslandId(int id)
     {
         islandId = id;
     }
 
-    /// <summary>
-    /// 设置点击回调
-    /// </summary>
     public void SetOnClickCallback(System.Action callback)
     {
         onClickCallback = callback;

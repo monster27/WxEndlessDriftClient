@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 //using SharedModels;
 
 public class UI_InfoSkillPrefab : MonoBehaviour
@@ -23,6 +25,7 @@ public class UI_InfoSkillPrefab : MonoBehaviour
     private System.Action<int> onUpgradeClick;
     private System.Action<int> onWatchAdClick;
     private System.Action<int> onEquipClick;
+    private AsyncOperationHandle<Sprite> _iconHandle;
 
     public void Init()
     {
@@ -44,6 +47,11 @@ public class UI_InfoSkillPrefab : MonoBehaviour
         }
     }
 
+    void OnDestroy()
+    {
+        AssetManager.ReleaseAddressable(_iconHandle);
+    }
+
     public void SetData(int id, Sprite icon, string name, int level, string description, EquipState state,
                         string unlockCondition,
                         System.Action<int> detailCallback,
@@ -60,8 +68,7 @@ public class UI_InfoSkillPrefab : MonoBehaviour
         SetIcon(icon);
         SetName(name);
         SetLevel(level);
-        
-        // 如果技能未获取，显示获取方式
+
         if (state == EquipState.Locked && !string.IsNullOrEmpty(unlockCondition))
         {
             SetDescription(unlockCondition);
@@ -70,7 +77,7 @@ public class UI_InfoSkillPrefab : MonoBehaviour
         {
             SetDescription(description);
         }
-        
+
         SetState(state);
 
         bool isUnlocked = state != EquipState.Locked;
@@ -98,10 +105,27 @@ public class UI_InfoSkillPrefab : MonoBehaviour
 
     private void SetIcon(Sprite icon)
     {
-        if (iconImg != null && icon != null)
+        if (iconImg != null)
         {
-            iconImg.sprite = icon;
-            iconImg.color = Color.white;
+            if (icon != null)
+            {
+                iconImg.sprite = icon;
+                iconImg.color = Color.white;
+            }
+            else
+            {
+                // 如果传进来的 icon 是 null，从 Addressables 加载
+                string path = $"UI/Icon/Equipment/Skill/{skillId}";
+                AssetManager.LoadFromAddressables<Sprite>(path, (sprite, handle) =>
+                {
+                    _iconHandle = handle;
+                    if (sprite != null)
+                    {
+                        iconImg.sprite = sprite;
+                        iconImg.color = Color.white;
+                    }
+                });
+            }
         }
     }
 
@@ -147,7 +171,6 @@ public class UI_InfoSkillPrefab : MonoBehaviour
 
     public void RefreshDisplay()
     {
-        // 获取当前技能状态
         EquipState state = EquipState.Locked;
 
         if (CommunicateEvent.Request<int, bool>(CommunicateEvent.EVENT_IS_SKILL_OBTAINED, skillId))
@@ -165,14 +188,10 @@ public class UI_InfoSkillPrefab : MonoBehaviour
             }
         }
 
-        // 更新等级
         int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, skillId);
         SetLevel(level);
-
-        // 更新状态显示
         SetState(state);
-        
-        // 更新按钮状态
+
         bool isUnlocked = state != EquipState.Locked;
         bool isMaxLevel = level >= 10;
         bool isOwnerUnUse = state == EquipState.OwnerUnUse;
@@ -199,18 +218,15 @@ public class UI_InfoSkillPrefab : MonoBehaviour
     private void OnDetailBtnClick()
     {
         Debug.Log($"[UI_InfoSkillPrefab] OnDetailBtnClick - skillId={skillId}");
-        
-        // 检查技能是否已解锁
+
         bool isObtained = CommunicateEvent.Request<int, bool>(CommunicateEvent.EVENT_IS_SKILL_OBTAINED, skillId);
-        
+
         if (!isObtained)
         {
-            // 未解锁，播放看广告获取界面
             OnWatchAdBtnClick();
         }
         else
         {
-            // 已解锁，打开信息界面
             if (onDetailClick != null)
             {
                 onDetailClick(skillId);

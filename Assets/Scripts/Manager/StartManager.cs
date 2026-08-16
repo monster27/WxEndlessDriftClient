@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Threading.Tasks;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class StartManager : MonoBehaviour
 {
@@ -14,9 +17,15 @@ public class StartManager : MonoBehaviour
     public Text modeText;
     public Button loginButton;
 
+    private AsyncOperationHandle<Font> _fontHandle;
+
+    private void OnDestroy()
+    {
+        AssetManager.ReleaseAddressable(_fontHandle);
+    }
+
     private void Start()
     {
-        //Screen.SetResolution(750, 1334, true);
         LoadFont700w();
 
         UpdateModeButton();
@@ -44,7 +53,6 @@ public class StartManager : MonoBehaviour
         }
 
 #if UNITY_EDITOR
-
         bool currentMode = ServerUrls.IsLocalMode;
         if (!currentMode)
         {
@@ -93,7 +101,6 @@ public class StartManager : MonoBehaviour
 
     private IEnumerator LoginCoroutine(string username, string password)
     {
-        // 构建登录请求
         var loginData = new LoginRequest
         {
             Username = username,
@@ -126,16 +133,13 @@ public class StartManager : MonoBehaviour
 
                     if (response != null && response.success)
                     {
-                        // 设置玩家ID
                         NetServerManager.Instance.SetCurrentPlayerId(response.playerId);
                         NetServerManager.Instance.ResetInitialization();
 
                         Debug.Log($"[StartManager] 登录成功，设置玩家ID为: {response.playerId}");
 
-                        // ✅ 从响应中获取场景ID
                         if (response.sceneId > 0)
                         {
-                            // 确保EnvManager存在
                             if (EnvManager.Instance != null)
                             {
                                 EnvManager.Instance.currentSceneId = response.sceneId;
@@ -144,12 +148,10 @@ public class StartManager : MonoBehaviour
                             else
                             {
                                 Debug.LogWarning("[StartManager] EnvManager 不存在，延迟设置场景ID");
-                                // 延迟设置，等待EnvManager初始化
                                 StartCoroutine(DelayedSetSceneId(response.sceneId));
                             }
                         }
 
-                        // 跳转到加载场景
                         LoadLoadingScene();
                     }
                     else
@@ -169,10 +171,9 @@ public class StartManager : MonoBehaviour
         }
     }
 
-    // ✅ 新增：延迟设置场景ID（等待EnvManager初始化）
     private IEnumerator DelayedSetSceneId(int sceneId)
     {
-        int maxAttempts = 30; // 最多等待3秒
+        int maxAttempts = 30;
         int attempts = 0;
 
         while (EnvManager.Instance == null && attempts < maxAttempts)
@@ -198,21 +199,20 @@ public class StartManager : MonoBehaviour
         SceneManager.LoadScene("LoadingScene");
     }
 
-    public Font LoadFont700w()
+    public async void LoadFont700w()
     {
-        Font font = AssetManager.LoadFromResources<Font>("TTF/700w");
+        // ✅ 使用完整路径
+        var (font, handle) = await AssetManager.LoadFromAddressablesAsync<Font>("Assets/Addressables/TTF/700w.ttf");
+        _fontHandle = handle;
         if (font == null)
         {
-            Debug.LogError("加载字体 700w 失败 failed！请检查路径: Assets/Resources/TTF/700w.ttf");
+            Debug.LogError("加载字体 700w 失败！请检查路径: Assets/Addressables/TTF/700w.ttf");
         }
         else
         {
-            Debug.Log("加载字体 江城园体700w 成功 succeed ！");
+            Debug.Log("加载字体 江城园体700w 成功！");
         }
-            return font;
     }
-
-    // ========== 数据类 ==========
 
     [System.Serializable]
     public class LoginRequest
@@ -221,7 +221,6 @@ public class StartManager : MonoBehaviour
         public string Password;
     }
 
-    // ✅ 修改：添加 sceneId 字段
     [System.Serializable]
     public class LoginResponse
     {
@@ -231,6 +230,6 @@ public class StartManager : MonoBehaviour
         public bool isNewUser;
         public bool autoFishingStarted;
         public string autoFishingMessage;
-        public int sceneId;  // ✅ 新增
+        public int sceneId;
     }
 }

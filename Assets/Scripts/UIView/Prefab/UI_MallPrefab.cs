@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 //using SharedModels;
 
 public class UI_MallPrefab : MonoBehaviour
@@ -12,12 +14,13 @@ public class UI_MallPrefab : MonoBehaviour
     public Text stockText;
     public Button itemButton;
     public GameObject ownedObj;
-    public GameObject soldOutObj;  // ✅ 新增：售罄标识
-    public GameObject offSaleObj;  // ✅ 新增：已下架标识
+    public GameObject soldOutObj;
+    public GameObject offSaleObj;
 
     private int itemId;
     private ItemData itemData;
     private MallItemData mallItemData;
+    private AsyncOperationHandle<Sprite> _iconHandle;
 
     void Start()
     {
@@ -25,6 +28,11 @@ public class UI_MallPrefab : MonoBehaviour
         {
             itemButton.onClick.AddListener(OnItemClick);
         }
+    }
+
+    void OnDestroy()
+    {
+        AssetManager.ReleaseAddressable(_iconHandle);
     }
 
     private void OnItemClick()
@@ -50,16 +58,18 @@ public class UI_MallPrefab : MonoBehaviour
 
     private void UpdateDisplay()
     {
-        if (itemData == null)
-            return;
+        if (itemData == null) return;
 
         if (iconImage != null && !string.IsNullOrEmpty(itemData.iconPath))
         {
-            Sprite icon = AssetManager.LoadFromResources<Sprite>(itemData.iconPath);
-            if (icon != null)
+            AssetManager.LoadFromAddressables<Sprite>(itemData.iconPath, (sprite, handle) =>
             {
-                iconImage.sprite = icon;
-            }
+                _iconHandle = handle;
+                if (sprite != null)
+                {
+                    iconImage.sprite = sprite;
+                }
+            });
         }
 
         if (nameText != null)
@@ -72,7 +82,6 @@ public class UI_MallPrefab : MonoBehaviour
             priceText.text = mallItemData.price.ToString();
         }
 
-        // ✅ 库存显示
         if (stockText != null && mallItemData != null)
         {
             if (itemData.isUnique)
@@ -87,7 +96,6 @@ public class UI_MallPrefab : MonoBehaviour
             }
         }
 
-        // ✅ 已拥有标识
         if (ownedObj != null)
         {
             bool alreadyOwned = false;
@@ -98,28 +106,24 @@ public class UI_MallPrefab : MonoBehaviour
             ownedObj.SetActive(alreadyOwned);
         }
 
-        // ✅ 售罄标识
         if (soldOutObj != null)
         {
             bool isSoldOut = mallItemData != null && mallItemData.stock <= 0 && !itemData.isUnique;
             soldOutObj.SetActive(isSoldOut);
         }
 
-        // ✅ 下架标识
         if (offSaleObj != null)
         {
             bool isOffSale = mallItemData != null && !mallItemData.isOnSale;
             offSaleObj.SetActive(isOffSale);
         }
 
-        // ✅ 按钮交互状态
         if (itemButton != null)
         {
             bool interactable = mallItemData != null &&
                                 mallItemData.isOnSale &&
                                 mallItemData.stock > 0;
 
-            // 唯一物品已拥有时不可购买
             if (itemData.isUnique && PlayerDataManager.Instance != null)
             {
                 if (PlayerDataManager.Instance.GetItemQuantity(itemId) > 0)

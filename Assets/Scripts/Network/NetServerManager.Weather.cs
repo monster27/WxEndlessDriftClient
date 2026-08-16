@@ -1,9 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
-//using SharedModels;
+using System.Threading.Tasks;
 using Logger = Utils.Logger;
 
-public partial class NetServerManager 
+public partial class NetServerManager
 {
     private int currentWeatherId = 0;
     private string currentWeatherName = "";
@@ -11,15 +11,13 @@ public partial class NetServerManager
     private string currentTimeSlotName = "";
     private TimeStatus currentTimeStatus = TimeStatus.Daytime;
 
-    // 本地缓存：LoadDataManager 不可用时自行从 Resources 加载
     private Dictionary<int, WeatherData> _weatherCache;
     private Dictionary<int, TimeSlotData> _timeSlotCache;
     private bool _weatherDataReady = false;
 
-    // ========== 数据加载 ==========
+    // ========== 数据加载（异步，全部从 Addressables） ==========
 
-    /// <summary>确保天气和时段数据已加载（优先使用 LoadDataManager，否则自行从 Resources 读取）</summary>
-    private void EnsureWeatherDataLoaded()
+    private async void EnsureWeatherDataLoaded()
     {
         if (_weatherDataReady) return;
         _weatherDataReady = true;
@@ -41,16 +39,16 @@ public partial class NetServerManager
             }
         }
 
-        // 降级：自行从 Resources 加载
+        // 降级：自行从 Addressables 加载
         if (_weatherCache == null || _weatherCache.Count == 0)
-            LoadWeathersFromResources();
+            await LoadWeathersFromAddressables();
         if (_timeSlotCache == null || _timeSlotCache.Count == 0)
-            LoadTimeSlotsFromResources();
+            await LoadTimeSlotsFromAddressables();
     }
 
-    private void LoadWeathersFromResources()
+    private async Task LoadWeathersFromAddressables()
     {
-        string json = RWJsonData.LoadJsonFromResources("JsonData/BaseFramework/weathers");
+        string json = await RWJsonData.LoadJson("JsonData/BaseFramework/weathers");
         if (string.IsNullOrEmpty(json)) return;
         var wrapper = RWJsonData.ParseJson<WeatherListWrapper>(json);
         if (wrapper?.weathers == null) return;
@@ -58,12 +56,12 @@ public partial class NetServerManager
         _weatherCache = new Dictionary<int, WeatherData>();
         foreach (var w in wrapper.weathers)
             _weatherCache[w.id] = w;
-        Logger.Log($"[NetServerManager] 从 Resources 加载天气数据: {_weatherCache.Count} 条");
+        Logger.Log($"[NetServerManager] 从 Addressables 加载天气数据: {_weatherCache.Count} 条");
     }
 
-    private void LoadTimeSlotsFromResources()
+    private async Task LoadTimeSlotsFromAddressables()
     {
-        string json = RWJsonData.LoadJsonFromResources("JsonData/BaseFramework/timeSlots");
+        string json = await RWJsonData.LoadJson("JsonData/BaseFramework/timeSlots");
         if (string.IsNullOrEmpty(json)) return;
         var wrapper = RWJsonData.ParseJson<TimeSlotListWrapper>(json);
         if (wrapper?.timeSlots == null) return;
@@ -71,7 +69,7 @@ public partial class NetServerManager
         _timeSlotCache = new Dictionary<int, TimeSlotData>();
         foreach (var t in wrapper.timeSlots)
             _timeSlotCache[t.id] = t;
-        Logger.Log($"[NetServerManager] 从 Resources 加载时段数据: {_timeSlotCache.Count} 条");
+        Logger.Log($"[NetServerManager] 从 Addressables 加载时段数据: {_timeSlotCache.Count} 条");
     }
 
     // ========== 查询接口 ==========
@@ -124,21 +122,18 @@ public partial class NetServerManager
         return 10;
     }
 
-    /// <summary>获取所有天气配置列表</summary>
     public List<WeatherData> GetAllWeathers()
     {
         EnsureWeatherDataLoaded();
         return _weatherCache != null ? new List<WeatherData>(_weatherCache.Values) : new List<WeatherData>();
     }
 
-    /// <summary>获取所有时段配置列表</summary>
     public List<TimeSlotData> GetAllTimeSlots()
     {
         EnsureWeatherDataLoaded();
         return _timeSlotCache != null ? new List<TimeSlotData>(_timeSlotCache.Values) : new List<TimeSlotData>();
     }
 
-    /// <summary>从服务器获取当前天气状态</summary>
     public void FetchCurrentWeather()
     {
         StartCoroutine(FetchGetJson<WeatherResponse>("/api/scene/weather", (response) =>
@@ -148,7 +143,7 @@ public partial class NetServerManager
                 currentWeatherId = response.weatherId;
                 currentWeatherName = GetWeatherNameById(response.weatherId);
                 Debug.Log($"[NetServerManager] 获取当前天气: ID={currentWeatherId}, 名称={currentWeatherName}");
-                
+
                 CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_CLIENT_WEATHER_CHANGED, new Dictionary<string, object>
                 {
                     { "weatherId", currentWeatherId },

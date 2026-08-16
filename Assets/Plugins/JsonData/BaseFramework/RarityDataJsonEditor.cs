@@ -218,7 +218,7 @@ public class RarityDataJsonEditor : EditorWindow
 
     private void LoadData()
     {
-        string fullPath = Path.Combine(Application.dataPath, "Resources/JsonData/BaseFramework/rarities.json");
+        string fullPath = Path.Combine(Application.dataPath, "Addressables/JsonData/BaseFramework/rarities.json");
         if (File.Exists(fullPath))
         {
             try
@@ -239,10 +239,10 @@ public class RarityDataJsonEditor : EditorWindow
 
     private void SaveData()
     {
-        string directory = Path.Combine(Application.dataPath, "Resources/JsonData/Base");
+        string directory = Path.Combine(Application.dataPath, "Addressables/JsonData/Base");
         if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
 
-        File.WriteAllText(Path.Combine(Application.dataPath, "Resources/JsonData/BaseFramework/rarities.json"), JsonUtility.ToJson(new RarityListWrapper { rarities = rarities }, true));
+        File.WriteAllText(Path.Combine(Application.dataPath, "Addressables/JsonData/BaseFramework/rarities.json"), JsonUtility.ToJson(new RarityListWrapper { rarities = rarities }, true));
         AssetDatabase.Refresh();
         Debug.Log("保存成功");
     }

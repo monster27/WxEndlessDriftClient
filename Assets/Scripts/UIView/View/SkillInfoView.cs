@@ -1,5 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using System.Threading.Tasks;
 //using SharedModels;
 
 public class SkillInfoView : MonoBehaviour
@@ -24,14 +27,14 @@ public class SkillInfoView : MonoBehaviour
     public GameObject lockedObj;
 
     public GameObject upgradeCostObj;
-
     public GameObject skillInfoObj;
     public GameObject unLockObj;
 
     private int currentSkillId = 0;
-    private int currentSkillSlot = 1; // 记录当前是技能1还是技能2槽
+    private int currentSkillSlot = 1;
     private System.Action<string, object[]> callback;
     private int currentGold = 0;
+    private AsyncOperationHandle<Sprite> _iconHandle;
 
     void Start()
     {
@@ -40,6 +43,12 @@ public class SkillInfoView : MonoBehaviour
         if (upgradeBtn != null) upgradeBtn.onClick.AddListener(OnUpgradeClick);
         if (unlockBtn != null) unlockBtn.onClick.AddListener(OnUnlockClick);
         if (equipBtn != null) equipBtn.onClick.AddListener(OnEquipClick);
+    }
+
+    void OnDestroy()
+    {
+        AssetManager.ReleaseAddressable(_iconHandle);
+        UnregisterDataEvents();
     }
 
     void OnEnable()
@@ -52,10 +61,6 @@ public class SkillInfoView : MonoBehaviour
         UnregisterDataEvents();
     }
 
-    void OnDestroy()
-    {
-        UnregisterDataEvents();
-    }
 
     private void RegisterDataEvents()
     {
@@ -83,7 +88,7 @@ public class SkillInfoView : MonoBehaviour
         {
             UpdateStateDisplay();
         }
-    } 
+    }
 
     public void SetCallback(System.Action<string, object[]> cb)
     {
@@ -135,16 +140,19 @@ public class SkillInfoView : MonoBehaviour
         if (skillIcon != null && currentSkillId > 0)
         {
             string iconPath = $"UI/Icon/Equipment/Skill/{currentSkillId}";
-            Sprite icon = AssetManager.LoadFromResources<Sprite>(iconPath);
-            if (icon != null)
+            AssetManager.LoadFromAddressables<Sprite>(iconPath, (sprite, handle) =>
             {
-                skillIcon.sprite = icon;
-                skillIcon.color = Color.white;
-            }
+                _iconHandle = handle;
+                if (sprite != null)
+                {
+                    skillIcon.sprite = sprite;
+                    skillIcon.color = Color.white;
+                }
+            });
         }
     }
 
-    private void UpdateTextInfo()
+    private async void UpdateTextInfo()
     {
         if (currentSkillId <= 0) return;
 
@@ -169,22 +177,23 @@ public class SkillInfoView : MonoBehaviour
             }
             else
             {
-                string nextLevelDesc = GetNextLevelDescription();
+                string nextLevelDesc = await GetNextLevelDescriptionAsync();
                 nextLevelDescText.text = nextLevelDesc;
             }
         }
     }
 
-    private string GetNextLevelDescription()
+    private async Task<string> GetNextLevelDescriptionAsync()
     {
-        var config = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
+        var config = await CompleteFishingSkillConfigExtensions.LoadFromAddressablesAsync("JsonData/Ability/fishing_components");
         if (config == null || config.items == null) return "升级后效果提升";
 
         var component = config.GetComponentById(currentSkillId);
         if (component == null) return "升级后效果提升";
 
         int currentLevel = GetSkillLevel();
-        var levelData = component.GetLevelData(currentLevel + 1);
+        // ✅ 使用静态调用避免歧义
+        var levelData = FishingComponentConfigExtensions.GetLevelData(component, currentLevel + 1);
         if (levelData != null && !string.IsNullOrEmpty(levelData.levelDescription))
         {
             return levelData.levelDescription;
@@ -283,14 +292,12 @@ public class SkillInfoView : MonoBehaviour
     private void OnMaskClick()
     {
         Debug.Log("[SkillInfoView] OnMaskClick - 点击遮罩关闭");
-        //callback?.Invoke("Back", null);
         gameObject.SetActive(false);
     }
 
     private void OnCloseClick()
     {
         Debug.Log("[SkillInfoView] OnCloseClick - 点击关闭按钮");
-        //callback?.Invoke("Back", null);
         gameObject.SetActive(false);
     }
 
@@ -309,7 +316,7 @@ public class SkillInfoView : MonoBehaviour
         if (currentGold >= cost)
         {
             Debug.Log($"[SkillInfoView] OnUpgradeClick - 执行金币升级");
-            
+
             if (NetServerManager.Instance != null)
             {
                 NetServerManager.Instance.UpgradeSkill(currentSkillId, level + 1, (success) =>
@@ -348,7 +355,7 @@ public class SkillInfoView : MonoBehaviour
         callback?.Invoke("OpenAd", new object[] { info, currentSkillId, "看广告升级", (System.Action)(() =>
         {
             Debug.Log($"[SkillInfoView] OnAdUpgradeClick 广告回调执行 - skillId={currentSkillId}");
-            
+
             if (NetServerManager.Instance != null)
             {
                 int level = GetSkillLevel();
@@ -374,7 +381,6 @@ public class SkillInfoView : MonoBehaviour
     {
         Debug.Log($"[SkillInfoView] OnEquipClick - skillId={currentSkillId}, currentSkillSlot={currentSkillSlot}");
 
-        // 检查技能槽位是否已解锁
         bool isSlotUnlocked = CommunicateEvent.Request<int, bool>("EVENT_IS_SKILL_SLOT_UNLOCKED", currentSkillSlot);
         if (!isSlotUnlocked)
         {

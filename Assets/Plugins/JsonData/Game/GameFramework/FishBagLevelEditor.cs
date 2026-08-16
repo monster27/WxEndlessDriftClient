@@ -1,4 +1,4 @@
-// ==================== FishBagLevelEditor.cs ====================
+﻿// ==================== FishBagLevelEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -51,7 +51,7 @@ public class FishBagLevelEditor : EditorWindow
     private float col4 = 200;  // 升级描述
     private float col5 = 80;   // 升级费用
 
-    private const string RELATIVE_PATH = "Resources/JsonData/Game/GameFramework/fishBagLevels.json";
+    private const string RELATIVE_PATH = "Addressables/JsonData/Game/GameFramework/fishBagLevels.json";
 
     private string FullPath => Path.Combine(Application.dataPath, RELATIVE_PATH);
 

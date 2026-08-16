@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 //using SharedModels;
 
 public class MallItemDetailView : MonoBehaviour
@@ -24,10 +26,10 @@ public class MallItemDetailView : MonoBehaviour
     private MallItemData mallItemData;
     private int quantity = 0;
     private int maxQuantity = 0;
+    private AsyncOperationHandle<Sprite> _iconHandle;
 
     void Awake()
     {
-        // 初始化时默认隐藏二级界面
         gameObject.SetActive(false);
     }
 
@@ -64,6 +66,11 @@ public class MallItemDetailView : MonoBehaviour
         }
     }
 
+    void OnDestroy()
+    {
+        AssetManager.ReleaseAddressable(_iconHandle);
+    }
+
     public void ShowItem(int id, ItemData data, MallItemData mallData)
     {
         itemId = id;
@@ -72,7 +79,6 @@ public class MallItemDetailView : MonoBehaviour
 
         CalculateMaxQuantity();
 
-        // 唯一物品且玩家已拥有时，禁止购买（最大可购买数量置0）
         if (itemData != null && itemData.isUnique && PlayerDataManager.Instance != null
             && PlayerDataManager.Instance.GetItemQuantity(itemId) > 0)
         {
@@ -110,11 +116,14 @@ public class MallItemDetailView : MonoBehaviour
     {
         if (itemIconImage != null && itemData != null && !string.IsNullOrEmpty(itemData.iconPath))
         {
-            Sprite icon = AssetManager.LoadFromResources<Sprite>(itemData.iconPath);
-            if (icon != null)
+            AssetManager.LoadFromAddressables<Sprite>(itemData.iconPath, (sprite, handle) =>
             {
-                itemIconImage.sprite = icon;
-            }
+                _iconHandle = handle;
+                if (sprite != null)
+                {
+                    itemIconImage.sprite = sprite;
+                }
+            });
         }
 
         if (itemNameText != null && itemData != null)
@@ -133,7 +142,7 @@ public class MallItemDetailView : MonoBehaviour
             quantitySlider.maxValue = maxQuantity;
             quantitySlider.wholeNumbers = true;
             quantitySlider.value = quantity;
-            
+
             Debug.Log($"[MallItemDetailView] Slider设置: min=0, max={maxQuantity}, value={quantity}");
         }
     }
@@ -190,7 +199,6 @@ public class MallItemDetailView : MonoBehaviour
     {
         Debug.Log("[MallItemDetailView] OnConfirmClick - 点击确认购买");
 
-        // 客户端预检查：唯一物品且玩家已拥有时，直接拦截并提示
         if (itemData != null && itemData.isUnique && PlayerDataManager.Instance != null
             && PlayerDataManager.Instance.GetItemQuantity(itemId) > 0)
         {
@@ -225,7 +233,6 @@ public class MallItemDetailView : MonoBehaviour
 
     private void CloseDetailView()
     {
-        // 重置数量和Slider
         quantity = 0;
         if (quantitySlider != null)
         {

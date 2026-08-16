@@ -1,4 +1,4 @@
-// ==================== NestBaitDataJsonEditor.cs ====================
+﻿// ==================== NestBaitDataJsonEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,7 +22,7 @@ public class NestBaitDataJsonEditor : EditorWindow
     private float col3 = 100;
     private float col4 = 350;
 
-    private const string RELATIVE_PATH = "Resources/JsonData/Game/BagItem/nestBaits.json";
+    private const string RELATIVE_PATH = "Addressables/JsonData/Game/BagItem/nestBaits.json";
 
     private string FullPath => Path.Combine(Application.dataPath, RELATIVE_PATH);
 
@@ -257,7 +257,7 @@ public class NestBaitDataJsonEditor : EditorWindow
 
     private void SaveData()
     {
-        string directory = Path.Combine(Application.dataPath, "Resources/JsonData/Game");
+        string directory = Path.Combine(Application.dataPath, "Addressables/JsonData/Game");
         if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
         File.WriteAllText(FullPath, JsonUtility.ToJson(new NestBaitListWrapper { constants = constants, nestBaits = dataList.ToArray() }, true));
         AssetDatabase.Refresh();

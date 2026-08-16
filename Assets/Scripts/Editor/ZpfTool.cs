@@ -8,22 +8,11 @@ using System.Linq;
 
 public class ZpfTool : Editor
 {
-    // 服务器路径存储Key
     private const string SERVER_PATH_KEY = "ZpfTool_ServerPath";
-
-    // ============================================
-    // 🆕 场景相关工具 - 使用文件存储场景路径
-    // ============================================
-
-    // 存储场景路径的文件名
     private const string SCENE_CACHE_FILE = "LastScenePath.cache";
 
-    /// <summary>
-    /// 获取缓存文件路径
-    /// </summary>
     private static string GetCacheFilePath()
     {
-        // 存储在项目的Temp文件夹中，这样不会污染版本控制
         string tempPath = Path.Combine(Application.dataPath, "..", "Temp");
         if (!Directory.Exists(tempPath))
         {
@@ -32,9 +21,6 @@ public class ZpfTool : Editor
         return Path.Combine(tempPath, SCENE_CACHE_FILE);
     }
 
-    /// <summary>
-    /// 保存场景路径到文件
-    /// </summary>
     private static void SaveScenePathToCache(string scenePath)
     {
         try
@@ -49,9 +35,6 @@ public class ZpfTool : Editor
         }
     }
 
-    /// <summary>
-    /// 从文件读取场景路径
-    /// </summary>
     private static string LoadScenePathFromCache()
     {
         try
@@ -79,9 +62,6 @@ public class ZpfTool : Editor
         return "";
     }
 
-    /// <summary>
-    /// 清除缓存文件
-    /// </summary>
     private static void ClearScenePathCache()
     {
         try
@@ -99,15 +79,11 @@ public class ZpfTool : Editor
         }
     }
 
-    /// <summary>
-    /// 场景相关场景（Build Index 0）- 运行结束后切换到GameScene
-    /// </summary>
     [MenuItem("Tools/场景相关/切换到第一个场景", priority = 1)]
     public static void RunScene0()
     {
         Debug.Log("🔵 [RunScene0] 开始执行...");
 
-        // 获取Build Settings中的场景列表
         EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
 
         if (scenes.Length == 0)
@@ -116,11 +92,9 @@ public class ZpfTool : Editor
             return;
         }
 
-        // 显示切换确认对话框
         bool confirm = EditorUtility.DisplayDialog(
             "切换场景",
-            "即将切换到第一个场景，请确保当前场景数据已保存！\n\n" +
-            "当前场景的修改建议先保存。",
+            "即将切换到第一个场景，请确保当前场景数据已保存！\n\n当前场景的修改建议先保存。",
             "确认切换",
             "取消"
         );
@@ -131,7 +105,6 @@ public class ZpfTool : Editor
             return;
         }
 
-        // 保存当前场景
         if (UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
         {
             Debug.Log("🔵 [RunScene0] 当前场景已保存");
@@ -146,12 +119,8 @@ public class ZpfTool : Editor
         Debug.Log($"✅ 已切换到场景: {Path.GetFileNameWithoutExtension(scenes[0].path)}");
     }
 
-    /// <summary>
-    /// 🆕 获取GameScene的路径
-    /// </summary>
     private static string GetGameScenePath()
     {
-        // 方法1：从Build Settings中查找
         EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
         foreach (var scene in scenes)
         {
@@ -163,7 +132,6 @@ public class ZpfTool : Editor
             }
         }
 
-        // 方法2：如果Build Settings中没有，尝试在Assets中查找
         string[] guids = AssetDatabase.FindAssets("GameScene t:Scene");
         if (guids.Length > 0)
         {
@@ -176,30 +144,21 @@ public class ZpfTool : Editor
         return "";
     }
 
-
-    /// <summary>
-    /// 检测Play模式是否结束，结束后切换到GameScene
-    /// </summary>
     private static void CheckPlayModeEnd()
     {
-        // 检测Play模式是否刚结束（从true变为false）
         if (!EditorApplication.isPlaying && EditorApplication.isPlayingOrWillChangePlaymode == false)
         {
-            // 取消注册回调，避免重复执行
             EditorApplication.update -= CheckPlayModeEnd;
 
-            // 从文件读取GameScene路径
             string gameScenePath = LoadScenePathFromCache();
 
             Debug.Log($"🔵 [CheckPlayModeEnd] 从缓存读取到场景路径: '{gameScenePath}'");
 
-            // 切换到GameScene
             if (!string.IsNullOrEmpty(gameScenePath) && File.Exists(gameScenePath))
             {
                 Debug.Log($"📌 正在切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}");
                 UnityEditor.SceneManagement.EditorSceneManager.OpenScene(gameScenePath);
                 Debug.Log("✅ 已切换到GameScene！");
-                // 清除缓存
                 ClearScenePathCache();
             }
             else
@@ -209,9 +168,6 @@ public class ZpfTool : Editor
         }
     }
 
-    /// <summary>
-    /// 🆕 手动切换到GameScene按钮
-    /// </summary>
     [MenuItem("Tools/场景相关/切换到GameScene")]
     public static void SwitchToGameScene()
     {
@@ -219,11 +175,9 @@ public class ZpfTool : Editor
 
         if (!string.IsNullOrEmpty(gameScenePath) && File.Exists(gameScenePath))
         {
-            // 显示切换确认对话框
             bool confirm = EditorUtility.DisplayDialog(
                 "切换场景",
-                "即将切换到 GameScene，请确保当前场景数据已保存！\n\n" +
-                "当前场景的修改建议先保存。",
+                "即将切换到 GameScene，请确保当前场景数据已保存！\n\n当前场景的修改建议先保存。",
                 "确认切换",
                 "取消"
             );
@@ -234,7 +188,6 @@ public class ZpfTool : Editor
                 return;
             }
 
-            // 保存当前场景
             if (UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
             {
                 Debug.Log("🔵 [SwitchToGameScene] 当前场景已保存");
@@ -252,19 +205,13 @@ public class ZpfTool : Editor
         {
             Debug.Log("ℹ️ 未找到GameScene。");
             EditorUtility.DisplayDialog("提示",
-                "未找到GameScene！\n\n" +
-                "请确保场景文件名为 'GameScene' 或已添加到Build Settings中。",
+                "未找到GameScene！\n\n请确保场景文件名为 'GameScene' 或已添加到Build Settings中。",
                 "确定");
         }
     }
 
-    // ============================================
-    // 原有的其他工具方法
-    // ============================================
+    // ===== 通用工具方法（保持同步加载，编辑器使用） =====
 
-    /// <summary>
-    /// 切换物体显隐状态
-    /// </summary>
     [MenuItem("Tools/通用/显隐 &1")]
     public static void SetObjActive()
     {
@@ -277,15 +224,10 @@ public class ZpfTool : Editor
         }
     }
 
-
-    /// <summary>
-    /// 设置名称
-    /// </summary>
     [MenuItem("Tools/通用/名称 &2")]
     public static void SetObjName()
     {
         GameObject[] selectObjs = Selection.gameObjects;
-
         int objCtn = selectObjs.Length;
 
         for (int i = 0; i < objCtn; i++)
@@ -294,9 +236,6 @@ public class ZpfTool : Editor
         }
     }
 
-    /// <summary>
-    ///
-    /// </summary>
     [MenuItem("Tools/通用/排序 &3")]
     public static void SetObjWH()
     {
@@ -309,14 +248,11 @@ public class ZpfTool : Editor
             selectObjs[i].GetComponent<Transform>().position = new Vector3(firstPos.x + i, firstPos.y, firstPos.z);
         }
     }
-    /// <summary>
-    /// 设置比例宽高
-    /// </summary>
+
     [MenuItem("Tools/通用/宽高 &4")]
     public static void SetObjWH2()
     {
         GameObject[] selectObjs = Selection.gameObjects;
-
         int objCtn = selectObjs.Length;
 
         float proportion = 1.5f;
@@ -324,24 +260,219 @@ public class ZpfTool : Editor
         for (int i = 0; i < objCtn; i++)
         {
             float width = selectObjs[i].GetComponent<RectTransform>().sizeDelta.x;
-
             float height = selectObjs[i].GetComponent<RectTransform>().sizeDelta.y;
 
             width *= proportion;
-
             height *= proportion;
 
             selectObjs[i].GetComponent<RectTransform>().sizeDelta = new Vector2(width, height);
         }
     }
 
-    /// <summary>
-    /// 检索所有NetServerManager partial脚本并合并内容到粘贴板
-    /// </summary>
+    // ============================================================
+    //  🛠️ 获取所有编辑器工具脚本
+    // ============================================================
+
+    [MenuItem("Tools/获取脚本/获取所有编辑器工具脚本")]
+    public static void GetAllEditorScripts()
+    {
+        string[] allCsFiles = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
+
+        if (allCsFiles.Length == 0)
+        {
+            EditorUtility.DisplayDialog("提示", "未找到任何 C# 脚本文件！", "确定");
+            return;
+        }
+
+        // 编辑器工具的关键词
+        string[] editorKeywords = new string[]
+        {
+            "UnityEditor",
+            "[MenuItem",
+            "[InitializeOnLoad",
+            "EditorWindow",
+            "EditorGUILayout",
+            "EditorGUI",
+            "GUILayout",
+            "EditorApplication",
+            "AssetDatabase",
+            "Selection.",
+            "EditorUtility",
+            "EditorGUIUtility",
+            "EditorStyles",
+            "HandleUtility",
+            "SceneView",
+            "EditorSceneManager",
+            "PrefabUtility",
+            "Undo",
+            "SerializedProperty",
+            "SerializedObject",
+            "CustomEditor",
+            "CanEditMultipleObjects",
+            "InitializeOnLoadMethod",
+            "ContextMenu",
+            "ContextMenuItem",
+            "Toolbar",
+            "PopupWindow",
+            "DropdownMenu",
+            "GenericMenu",
+            "EditorSettings",
+            "BuildPipeline",
+            "EditorUserBuildSettings",
+            "PlayerSettings",
+            "BuildPlayerOptions"
+        };
+
+        List<string> matchedFiles = new List<string>();
+        Dictionary<string, List<string>> fileMatches = new Dictionary<string, List<string>>();
+
+        foreach (string filePath in allCsFiles)
+        {
+            try
+            {
+                // 跳过 Assets/Plugins/ 目录下的第三方插件
+                if (filePath.Contains("/Plugins/") || filePath.Contains("\\Plugins\\"))
+                    continue;
+
+                // 跳过 PackageCache 目录
+                if (filePath.Contains("PackageCache") || filePath.Contains("BuiltInPackages"))
+                    continue;
+
+                string content = File.ReadAllText(filePath, Encoding.UTF8);
+                bool hasMatch = false;
+                List<string> foundKeywords = new List<string>();
+
+                // 优先检查是否在 Editor 目录下
+                bool isInEditorFolder = filePath.Contains("/Editor/") || filePath.Contains("\\Editor\\");
+
+                foreach (string keyword in editorKeywords)
+                {
+                    if (content.Contains(keyword))
+                    {
+                        hasMatch = true;
+                        foundKeywords.Add(keyword);
+                    }
+                }
+
+                // 如果包含 using UnityEditor; 也认为是编辑器脚本
+                if (content.Contains("using UnityEditor;"))
+                {
+                    hasMatch = true;
+                    if (!foundKeywords.Contains("using UnityEditor;"))
+                        foundKeywords.Add("using UnityEditor;");
+                }
+
+                if (hasMatch || isInEditorFolder)
+                {
+                    matchedFiles.Add(filePath);
+                    fileMatches[filePath] = foundKeywords;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
+            }
+        }
+
+        if (matchedFiles.Count == 0)
+        {
+            EditorUtility.DisplayDialog("提示", "未找到任何编辑器工具脚本！", "确定");
+            return;
+        }
+
+        StringBuilder mergedContent = new StringBuilder();
+
+        mergedContent.AppendLine("// ============================================");
+        mergedContent.AppendLine($"// 编辑器工具脚本列表");
+        mergedContent.AppendLine($"// 合并时间: {System.DateTime.Now}");
+        mergedContent.AppendLine($"// 找到文件数: {matchedFiles.Count}");
+        mergedContent.AppendLine("// ============================================");
+        mergedContent.AppendLine();
+
+        // 按目录分组统计
+        var groupedFiles = matchedFiles
+            .Select(f => new { Path = f, RelativePath = f.Replace(Application.dataPath, "Assets") })
+            .GroupBy(f => Path.GetDirectoryName(f.RelativePath))
+            .OrderBy(g => g.Key);
+
+        mergedContent.AppendLine("// 📁 按目录分组统计：");
+        foreach (var group in groupedFiles)
+        {
+            string dirName = string.IsNullOrEmpty(group.Key) ? "(根目录)" : group.Key;
+            mergedContent.AppendLine($"//   📁 {dirName}: {group.Count()} 个文件");
+        }
+        mergedContent.AppendLine();
+        mergedContent.AppendLine("// ============================================");
+        mergedContent.AppendLine("// 📄 完整文件内容");
+        mergedContent.AppendLine("// ============================================");
+        mergedContent.AppendLine();
+
+        long totalSize = 0;
+        List<string> sortedFiles = new List<string>(matchedFiles);
+        sortedFiles.Sort();
+
+        foreach (string filePath in sortedFiles)
+        {
+            try
+            {
+                string content = File.ReadAllText(filePath, Encoding.UTF8);
+                string relativePath = filePath.Replace(Application.dataPath, "Assets");
+                string fileName = Path.GetFileName(filePath);
+                long fileSize = new FileInfo(filePath).Length;
+                totalSize += fileSize;
+
+                string keywordsStr = fileMatches.ContainsKey(filePath) ? string.Join(", ", fileMatches[filePath]) : "(在Editor目录下)";
+
+                bool isInEditorFolder = filePath.Contains("/Editor/") || filePath.Contains("\\Editor\\");
+                string folderLabel = isInEditorFolder ? "📁 [Editor目录]" : "📁 [含编辑器代码]";
+
+                mergedContent.AppendLine("// ============================================");
+                mergedContent.AppendLine($"// 📄 文件: {fileName}");
+                mergedContent.AppendLine($"// 📂 路径: {relativePath}");
+                mergedContent.AppendLine($"// 🔑 匹配关键词: {keywordsStr}");
+                mergedContent.AppendLine($"// 📂 类型: {folderLabel}");
+                mergedContent.AppendLine($"// 📊 大小: {FormatFileSize(fileSize)}");
+                mergedContent.AppendLine("// ============================================");
+                mergedContent.AppendLine(content);
+                mergedContent.AppendLine();
+                mergedContent.AppendLine();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
+            }
+        }
+
+        mergedContent.AppendLine("// ============================================");
+        mergedContent.AppendLine($"// 📊 统计信息");
+        mergedContent.AppendLine($"// ============================================");
+        mergedContent.AppendLine($"// 总文件数: {sortedFiles.Count}");
+        mergedContent.AppendLine($"// 总大小: {FormatFileSize(totalSize)}");
+        mergedContent.AppendLine("// ============================================");
+
+        GUIUtility.systemCopyBuffer = mergedContent.ToString();
+
+        string message = $"✅ 找到 {sortedFiles.Count} 个编辑器工具脚本！\n\n";
+        message += $"📊 文件已按目录分组，内容已复制到粘贴板！\n\n";
+        message += $"📁 目录分布:\n";
+        foreach (var group in groupedFiles)
+        {
+            string dirName = string.IsNullOrEmpty(group.Key) ? "(根目录)" : group.Key;
+            message += $"  - {dirName}: {group.Count()} 个\n";
+        }
+
+        EditorUtility.DisplayDialog("获取完成", message, "确定");
+
+        Debug.Log($"✅ 找到 {sortedFiles.Count} 个编辑器工具脚本，总大小 {FormatFileSize(totalSize)}，内容已复制到粘贴板。");
+    }
+
+    // ============================================================
+    //  📦 获取脚本方法
+    // ============================================================
+
     [MenuItem("Tools/获取脚本/获取合并客户端网络脚本")]
     public static void MergeNetServerManagerScripts()
     {
-        // 查找所有NetServerManager相关的脚本文件
         string[] guids = AssetDatabase.FindAssets("NetServerManager t:Script");
 
         if (guids.Length == 0)
@@ -354,7 +485,6 @@ public class ZpfTool : Editor
         StringBuilder mergedContent = new StringBuilder();
         int fileCount = 0;
 
-        // 添加文件头信息
         mergedContent.AppendLine("// ============================================");
         mergedContent.AppendLine($"// NetServerManager 合并脚本 - 共找到 {guids.Length} 个partial文件");
         mergedContent.AppendLine($"// 合并时间: {System.DateTime.Now}");
@@ -365,22 +495,18 @@ public class ZpfTool : Editor
         {
             string assetPath = AssetDatabase.GUIDToAssetPath(guid);
 
-            // 只处理.cs文件
             if (!assetPath.EndsWith(".cs"))
                 continue;
 
             string fileName = Path.GetFileName(assetPath);
 
-            // 检查文件内容是否包含partial关键字（进一步过滤）
             string content = File.ReadAllText(assetPath, Encoding.UTF8);
 
-            // 检查是否包含NetServerManager和partial
             if (content.Contains("partial") && content.Contains("NetServerManager"))
             {
                 fileCount++;
                 scriptContents[fileName] = content;
 
-                // 添加文件分隔标记和内容
                 mergedContent.AppendLine($"// ============================================");
                 mergedContent.AppendLine($"// 文件: {fileName}");
                 mergedContent.AppendLine($"// 路径: {assetPath}");
@@ -397,15 +523,12 @@ public class ZpfTool : Editor
             return;
         }
 
-        // 添加文件统计信息
         mergedContent.AppendLine("// ============================================");
         mergedContent.AppendLine($"// 总计合并 {fileCount} 个partial文件");
         mergedContent.AppendLine("// ============================================");
 
-        // 复制到粘贴板
         GUIUtility.systemCopyBuffer = mergedContent.ToString();
 
-        // 显示成功信息
         string message = $"成功合并 {fileCount} 个NetServerManager partial文件！\n\n";
         message += "文件列表：\n";
         foreach (string fileName in scriptContents.Keys)
@@ -416,17 +539,12 @@ public class ZpfTool : Editor
 
         EditorUtility.DisplayDialog("合并完成", message, "确定");
 
-        // 输出到控制台
         Debug.Log($"已合并 {fileCount} 个NetServerManager partial文件，内容已复制到粘贴板。");
     }
 
-    /// <summary>
-    /// 获取服务器工程所有C#代码和JSON文件并合并到粘贴板
-    /// </summary>
     [MenuItem("Tools/获取脚本/获取合并服务器代码")]
     public static void MergeServerCodes()
     {
-        // 从EditorPrefs获取保存的路径
         string serverProjectPath = EditorPrefs.GetString(SERVER_PATH_KEY, "");
         bool pathValid = !string.IsNullOrEmpty(serverProjectPath) && Directory.Exists(serverProjectPath);
 
@@ -526,45 +644,19 @@ public class ZpfTool : Editor
         DoMergeServerCodes(serverProjectPath);
     }
 
-    /// <summary>
-    /// 执行合并服务器代码的实际操作
-    /// </summary>
     private static void DoMergeServerCodes(string serverProjectPath)
     {
         string[] excludeFolders = new string[]
         {
-            "bin",
-            "obj",
-            ".vs",
-            "Properties",
-            "Migrations",
-            "wwwroot",
-            "node_modules",
-            ".git",
-            "packages",
-            "TestResults"
+            "bin", "obj", ".vs", "Properties", "Migrations", "wwwroot",
+            "node_modules", ".git", "packages", "TestResults"
         };
 
         string[] excludeExtensions = new string[]
         {
-            ".meta",
-            ".xml",
-            ".config",
-            ".csproj",
-            ".sln",
-            ".user",
-            ".suo",
-            ".pidb",
-            ".db",
-            ".sqlite",
-            ".log",
-            ".dll",
-            ".exe",
-            ".pdb",
-            ".cache",
-            ".editorconfig",
-            ".gitignore",
-            ".gitattributes"
+            ".meta", ".xml", ".config", ".csproj", ".sln", ".user", ".suo",
+            ".pidb", ".db", ".sqlite", ".log", ".dll", ".exe", ".pdb",
+            ".cache", ".editorconfig", ".gitignore", ".gitattributes"
         };
 
         List<string> allCsFiles = new List<string>();
@@ -703,9 +795,6 @@ public class ZpfTool : Editor
         Debug.Log($"📁 服务器路径: {serverProjectPath}");
     }
 
-    /// <summary>
-    /// 递归获取所有.cs和.json文件
-    /// </summary>
     private static void GetAllFiles(string directory, List<string> csFiles, List<string> jsonFiles, string[] excludeFolders, string[] excludeExtensions)
     {
         try
@@ -749,9 +838,6 @@ public class ZpfTool : Editor
         }
     }
 
-    /// <summary>
-    /// 获取目录结构树
-    /// </summary>
     private static string GetDirectoryStructure(string basePath, List<string> csFiles, List<string> jsonFiles)
     {
         StringBuilder sb = new StringBuilder();
@@ -802,9 +888,6 @@ public class ZpfTool : Editor
         return sb.ToString();
     }
 
-    /// <summary>
-    /// 获取相对路径（修复了边界情况）
-    /// </summary>
     private static string GetRelativePath(string basePath, string fullPath)
     {
         if (string.IsNullOrEmpty(basePath) || string.IsNullOrEmpty(fullPath))
@@ -843,9 +926,6 @@ public class ZpfTool : Editor
         }
     }
 
-    /// <summary>
-    /// 清除保存的服务器路径
-    /// </summary>
     [MenuItem("Tools/通用/清除服务器路径")]
     public static void ClearServerPath()
     {
@@ -861,13 +941,6 @@ public class ZpfTool : Editor
         }
     }
 
-    // ============================================
-    // 🆕 新增：获取 Asset 下所有 C# 脚本
-    // ============================================
-
-    /// <summary>
-    /// 获取 Assets 目录下所有 C# 脚本文件并合并到粘贴板
-    /// </summary>
     [MenuItem("Tools/获取脚本/获取所有客户端C#脚本")]
     public static void GetAllCSharpScripts()
     {
@@ -952,9 +1025,6 @@ public class ZpfTool : Editor
         Debug.Log($"✅ 已获取 {sortedFiles.Count} 个 C# 脚本，总大小 {FormatFileSize(totalSize)}，内容已复制到粘贴板。");
     }
 
-    /// <summary>
-    /// 格式化文件大小
-    /// </summary>
     private static string FormatFileSize(long bytes)
     {
         string[] sizes = { "B", "KB", "MB", "GB" };
@@ -968,18 +1038,7 @@ public class ZpfTool : Editor
         return $"{len:0.##} {sizes[order]}";
     }
 
-    // ============================================
-    // 🆕 新增：获取所有 Resources 引用的脚本
-    // ============================================
-
-    // ============================================
-    // 🆕 查找所有使用 Resources.Load 的脚本
-    // ============================================
-
-    /// <summary>
-    /// 查找所有使用 Resources.Load 相关方法的脚本并合并到粘贴板
-    /// </summary>
-    [MenuItem("Tools/获取脚本/查找Resources引用的脚本")]
+    [MenuItem("Tools/获取脚本/获取Resources引用的脚本")]
     public static void FindResourcesLoadScripts()
     {
         string[] allCsFiles = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
@@ -990,16 +1049,11 @@ public class ZpfTool : Editor
             return;
         }
 
-        // 需要查找的关键词
         string[] keywords = new string[]
         {
-            "Resources.Load",
-            "Resources.LoadAsync",
-            "Resources.LoadAll",
-            "Resources.FindObjectsOfTypeAll",
-            "Resources.GetBuiltinResource",
-            "Resources.UnloadAsset",
-            "Resources.UnloadUnusedAssets"
+            "Resources.Load", "Resources.LoadAsync", "Resources.LoadAll",
+            "Resources.FindObjectsOfTypeAll", "Resources.GetBuiltinResource",
+            "Resources.UnloadAsset", "Resources.UnloadUnusedAssets"
         };
 
         List<string> matchedFiles = new List<string>();
@@ -1103,7 +1157,6 @@ public class ZpfTool : Editor
 
         GUIUtility.systemCopyBuffer = mergedContent.ToString();
 
-        // 构建匹配关键词统计
         Dictionary<string, int> keywordStats = new Dictionary<string, int>();
         foreach (var matches in fileMatches.Values)
         {

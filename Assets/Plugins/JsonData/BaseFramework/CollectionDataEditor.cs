@@ -1,4 +1,4 @@
-// ==================== CollectionDataEditor.cs ====================
+﻿// ==================== CollectionDataEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,7 +8,7 @@ using System.Linq;
 
 public class CollectionDataEditor : EditorWindow
 {
-    private const string RELATIVE_PATH = "Resources/JsonData/BaseFramework/collection.json";
+    private const string RELATIVE_PATH = "Addressables/JsonData/BaseFramework/collection.json";
 
     private List<CollectionCategory> categories = new List<CollectionCategory>();
     private Vector2 listScrollPosition = Vector2.zero;
@@ -776,7 +776,7 @@ public class CollectionDataEditor : EditorWindow
 
     private void AddFishesByIsland(int categoryIndex)
     {
-        string fishesPath = Path.Combine(Application.dataPath, "Resources/JsonData/Game/BagItem/fishes.json");
+        string fishesPath = Path.Combine(Application.dataPath, "Addressables/JsonData/Game/BagItem/fishes.json");
 
         if (!File.Exists(fishesPath))
         {

@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 //using SharedModels;
 
 /// <summary>
@@ -74,7 +75,7 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
     public bool IsNestPlaying => isNestPlaying;
 
     // ========== 初始化 ==========
-    public void Init()
+    public async void Init()
     {
         if (isInitialized || isInitializing) return;
 
@@ -112,8 +113,8 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
             // 4. 查找 fishTipAniCtrl
             FindFishTipAniCtrl();
 
-            // 5. 加载人物动画
-            PreloadAllCharacterAnimations();
+            // 5. 加载人物动画（异步等待完成）
+            await PreloadAllCharacterAnimations();
 
             // 6. 初始化窝料
             InitializeNestHidden();
@@ -259,7 +260,7 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
     }
 
     // ========== 人物动画加载 ==========
-    private void PreloadAllCharacterAnimations()
+    private async Task PreloadAllCharacterAnimations()
     {
         if (LoadDataManager.Instance == null)
         {
@@ -276,11 +277,11 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
 
         foreach (var config in characterConfigs)
         {
-            LoadCharacterAnimation(config);
+            await LoadCharacterAnimation(config);
         }
     }
 
-    private void LoadCharacterAnimation(CharacterConfig config)
+    private async Task LoadCharacterAnimation(CharacterConfig config)
     {
         if (config == null) return;
         if (characterAniDict.ContainsKey(config.id)) return;
@@ -301,12 +302,17 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         string reelPath = !string.IsNullOrEmpty(config.reelTexturePath) ? config.reelTexturePath : basePath + "/Reel";
         string lazyPath = !string.IsNullOrEmpty(config.lazyTexturePath) ? config.lazyTexturePath : basePath + "/Lazy";
 
-        // 使用 Resources.Load 加载纹理
-        aniData.idleTexture = AssetManager.LoadFromResources<Texture2D>(idlePath);
-        aniData.reelTexture = AssetManager.LoadFromResources<Texture2D>(reelPath);
-        aniData.lazyTexture = AssetManager.LoadFromResources<Texture2D>(lazyPath);
+        // 使用 Addressables 异步加载纹理
+        var (idleTex, idleHandle) = await AssetManager.LoadFromAddressablesAsync<Texture2D>(idlePath);
+        aniData.idleTexture = idleTex;
 
-        // 如果加载失败，尝试备用路径
+        var (reelTex, reelHandle) = await AssetManager.LoadFromAddressablesAsync<Texture2D>(reelPath);
+        aniData.reelTexture = reelTex;
+
+        var (lazyTex, lazyHandle) = await AssetManager.LoadFromAddressablesAsync<Texture2D>(lazyPath);
+        aniData.lazyTexture = lazyTex;
+
+        // 如果 reel 加载失败，尝试备用路径
         if (aniData.reelTexture == null)
         {
             string[] altPaths = new string[]
@@ -318,7 +324,8 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
 
             foreach (string altPath in altPaths)
             {
-                aniData.reelTexture = AssetManager.LoadFromResources<Texture2D>(altPath);
+                var (altTex, altHandle) = await AssetManager.LoadFromAddressablesAsync<Texture2D>(altPath);
+                aniData.reelTexture = altTex;
                 if (aniData.reelTexture != null) break;
             }
         }

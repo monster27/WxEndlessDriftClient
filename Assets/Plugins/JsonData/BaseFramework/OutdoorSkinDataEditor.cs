@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System;
@@ -11,7 +11,7 @@ using System.Linq;
 /// </summary>
 public class OutdoorSkinDataEditor : EditorWindow
 {
-    private const string RELATIVE_PATH = "Resources/JsonData/Game/BagItem/outdoorSkin.json";
+    private const string RELATIVE_PATH = "Addressables/JsonData/Game/BagItem/outdoorSkin.json";
 
     private List<OutdoorSkinData> decorationList = new List<OutdoorSkinData>();
     private int selectedDecorationId = -1;

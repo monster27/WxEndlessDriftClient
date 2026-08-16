@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Text;
+using UnityEngine.ResourceManagement.AsyncOperations;
 //using SharedModels;
 
 namespace View.Detail
@@ -13,32 +14,18 @@ namespace View.Detail
         public Text quantityText;
         public Text nameText;
         public Button itemButton;
-        public Image equippedMarker;  // 已装备标记图标
+        public Image equippedMarker;
 
         private int itemId;
         private int quantity;
         private ItemData itemData;
         private bool isEquipped;
-
-        //void Start()
-        //{
-        //    if (itemButton != null)
-        //    {
-        //        itemButton.onClick.AddListener(OnItemClick);
-        //    }
-            
-        //    // 默认隐藏已装备标记
-        //    if (equippedMarker != null)
-        //    {
-        //        equippedMarker.gameObject.SetActive(false);
-        //    }
-        //}
+        private AsyncOperationHandle<Sprite> _iconHandle;
 
         public void Init(int id, int qty, ItemData data, bool equipped = false)
         {
             if (itemButton != null)
             {
-                // ✅ 先移除所有旧监听器，再添加新的，防止池化复用时叠加重复监听器
                 itemButton.onClick.RemoveAllListeners();
                 itemButton.onClick.AddListener(OnItemClick);
             }
@@ -50,9 +37,13 @@ namespace View.Detail
             UpdateDisplay();
         }
 
+        private void OnDestroy()
+        {
+            AssetManager.ReleaseAddressable(_iconHandle);
+        }
+
         private void UpdateDisplay()
         {
-            // 【修复】添加null检查，防止物品数据为null时崩溃
             if (itemData == null)
             {
                 Debug.LogWarning($"[UI_BagPrefab] UpdateDisplay - itemData为null，itemId={itemId}");
@@ -62,7 +53,7 @@ namespace View.Detail
                 if (equippedMarker != null) equippedMarker.gameObject.SetActive(false);
                 return;
             }
-            
+
             if (nameText != null)
             {
                 nameText.text = itemData.name;
@@ -70,7 +61,6 @@ namespace View.Detail
 
             if (quantityText != null)
             {
-                // 无鱼饵（itemId=0）、鱼类（categoryId=1）、唯一物品（isUnique=true）不显示数量文本
                 if (itemId == 0 || itemData.categoryId == 1 || itemData.isUnique)
                 {
                     quantityText.text = "";
@@ -83,51 +73,46 @@ namespace View.Detail
                 }
             }
 
-            if (iconImage != null)
-            {
-                LoadIcon();
-            }
+            LoadIcon();
 
-            // 更新已装备标记显示
             if (equippedMarker != null)
             {
                 equippedMarker.gameObject.SetActive(isEquipped);
-                Debug.Log($"[UI_BagPrefab] 更新装备标记 - itemId={itemId}, name={itemData.name}, isEquipped={isEquipped}, equippedMarker.active={equippedMarker.gameObject.activeSelf}");
-            }
-            else
-            {
-                Debug.LogError($"[UI_BagPrefab] equippedMarker 为 null - itemId={itemId}, name={itemData.name}");
+                Debug.Log($"[UI_BagPrefab] 更新装备标记 - itemId={itemId}, name={itemData.name}, isEquipped={isEquipped}");
             }
         }
 
         private void LoadIcon()
         {
-            if (!string.IsNullOrEmpty(itemData.iconPath))
+            if (string.IsNullOrEmpty(itemData?.iconPath))
             {
-                Sprite icon = AssetManager.LoadFromResources<Sprite>(itemData.iconPath);
-                if (icon != null)
+                Debug.LogError($"[UI_BagPrefab] 图标路径为空 - 物品ID: {itemId}");
+                iconImage.sprite = null;
+                iconImage.color = Color.gray;
+                return;
+            }
+
+            // ✅ 改为 AA 异步加载
+            AssetManager.LoadFromAddressables<Sprite>(itemData.iconPath, (sprite, handle) =>
+            {
+                _iconHandle = handle;
+                if (sprite != null)
                 {
-                    iconImage.sprite = icon;
+                    iconImage.sprite = sprite;
                     iconImage.color = Color.white;
                 }
                 else
                 {
-                    Debug.LogError($"[UI_BagPrefab] 图标加载失败 - 物品ID: {itemId}, 名称: {itemData.name}, 路径: {itemData.iconPath}");
+                    Debug.LogError($"[UI_BagPrefab] 图标加载失败 - 物品ID: {itemId}, 路径: {itemData.iconPath}");
                     iconImage.sprite = null;
                     iconImage.color = Color.gray;
                 }
-            }
-            else
-            {
-                Debug.LogError($"[UI_BagPrefab] 图标路径为空 - 物品ID: {itemId}, 名称: {itemData.name}");
-                iconImage.sprite = null;
-                iconImage.color = Color.gray;
-            }
+            });
         }
 
         private void OnItemClick()
         {
-            Debug.Log($"[UI_BagPrefab] 点击物品: ID={itemId}, 名称={itemData.name}, 数量={quantity}, 是否已装备={isEquipped}, categoryId={itemData?.categoryId}, itemType={itemData?.itemType}");
+            Debug.Log($"[UI_BagPrefab] 点击物品: ID={itemId}, 名称={itemData.name}, 数量={quantity}, 是否已装备={isEquipped}");
 
             if (itemData != null && itemData.itemType == 2)
             {
@@ -149,19 +134,16 @@ namespace View.Detail
         private void EquipSkin()
         {
             if (itemData == null) return;
-            
+
             int slotType = itemData.categoryId;
             Debug.Log($"[UI_BagPrefab] 装备皮肤: itemId={itemId}, slotType={slotType}, name={itemData.name}");
-            
+
             NetServerManager.Instance?.RequestEquipSkin(slotType, itemId);
-            
+
             isEquipped = true;
             UpdateDisplay();
         }
 
-        /// <summary>
-        /// 将饵料装备到鱼饵槽位（如果已装备则卸下）
-        /// </summary>
         private void EquipBaitToSlot()
         {
             if (itemId == 0)
@@ -187,9 +169,6 @@ namespace View.Detail
             }
         }
 
-        /// <summary>
-        /// 使用窝料：消耗一个窝料，增加连续模式时间
-        /// </summary>
         private void UseNestBait()
         {
             if (quantity <= 0)
@@ -202,18 +181,12 @@ namespace View.Detail
             CommunicateEvent.Modify(CommunicateEvent.EVENT_CONSUME_BAIT_AND_ENTER_CONTINUOUS_MODE);
         }
 
-        /// <summary>
-        /// 设置物品是否已装备
-        /// </summary>
         public void SetEquipped(bool equipped)
         {
             isEquipped = equipped;
             UpdateDisplay();
         }
 
-        /// <summary>
-        /// 获取物品是否已装备
-        /// </summary>
         public bool IsEquipped()
         {
             return isEquipped;

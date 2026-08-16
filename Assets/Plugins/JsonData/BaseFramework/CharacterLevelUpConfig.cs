@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Threading.Tasks;
 
 namespace JsonData
 {
@@ -11,11 +12,11 @@ namespace JsonData
     public static class CharacterLevelUpConfigExtensions
     {
         /// <summary>
-        /// 从Unity Resources加载升级配置
+        /// 从 Addressables 异步加载升级配置
         /// </summary>
-        public static CharacterLevelUpConfig LoadFromResources(string path = "JsonData/BaseFramework/levelup_exp")
+        public static async Task<CharacterLevelUpConfig> LoadFromResourcesAsync(string path = "JsonData/BaseFramework/levelup_exp")
         {
-            TextAsset textAsset = AssetManager.LoadFromResources<TextAsset>(path);
+            var (textAsset, handle) = await AssetManager.LoadFromAddressablesAsync<TextAsset>(path);
             if (textAsset == null)
             {
                 Debug.LogError($"[CharacterLevelUpConfig] 加载失败: {path}");
@@ -65,13 +66,25 @@ namespace JsonData
             debugInfo.AppendLine($"  配置版本: {config.configVersion}");
             debugInfo.AppendLine($"  最后更新: {config.lastUpdateTime}");
             debugInfo.AppendLine($"  等级区间数量: {config.levelUpExpRequirements.Count}");
-            
+
             foreach (var kvp in config.levelUpExpRequirements)
             {
                 debugInfo.AppendLine($"    {kvp.Key}: {kvp.Value} 经验");
             }
-            
+
             Debug.Log(debugInfo.ToString());
+        }
+
+        // ===== 同步版本（仅编辑器工具使用） =====
+        public static CharacterLevelUpConfig LoadFromResourcesSync(string path = "JsonData/BaseFramework/levelup_exp")
+        {
+            TextAsset textAsset = Resources.Load<TextAsset>(path);
+            if (textAsset == null)
+            {
+                Debug.LogError($"[CharacterLevelUpConfig] 加载失败: {path}");
+                return null;
+            }
+            return ParseFromJson(textAsset.text);
         }
     }
 }

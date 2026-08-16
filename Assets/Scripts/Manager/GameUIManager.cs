@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 //using SharedModels;
 
 public class GameUIManager : SingletonMonoFromScene<GameUIManager>
@@ -15,6 +17,13 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     public MapView mapView;
     public DialogView dialogView;
     public CollectionView collectionView;
+
+    private AsyncOperationHandle<GameObject> _adPrefabHandle;
+
+    void OnDestroy()
+    {
+        AssetManager.ReleaseAddressable(_adPrefabHandle);
+    }
 
     public void Init()
     {
@@ -205,16 +214,6 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         CommunicateEvent.Modify<int>("Server_SceneSwitch", sceneId);
     }
 
-    /// <summary>
-    /// 显示钓获结果
-    /// </summary>
-    /// <param name="itemName">物品名称</param>
-    /// <param name="weight">重量</param>
-    /// <param name="icon">图标</param>
-    /// <param name="starRatingId">星级ID</param>
-    /// <param name="itemId">物品ID</param>
-    /// <param name="isFish">是否为鱼类</param>
-    /// <param name="isFirstCatch">是否为首次钓获该鱼</param>
     public void ShowCatchResult(string itemName, float weight, Sprite icon, int starRatingId = 0, int itemId = 0, bool isFish = true, bool isFirstCatch = false)
     {
         if (mainGameView != null)
@@ -283,15 +282,21 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     {
         if (advertisingView == null)
         {
-            GameObject prefab = AssetManager.LoadFromResources<GameObject>("Prefabs/UI/AdvertisingView");
-            if (prefab != null)
+            AssetManager.LoadFromAddressables<GameObject>("Prefabs/UI/AdvertisingView", (prefab, handle) =>
             {
-                GameObject obj = Instantiate(prefab, transform);
-                advertisingView = obj.GetComponent<AdvertisingView>();
-            }
+                _adPrefabHandle = handle;
+                if (prefab != null)
+                {
+                    GameObject obj = Instantiate(prefab, transform);
+                    advertisingView = obj.GetComponent<AdvertisingView>();
+                    if (advertisingView != null)
+                    {
+                        advertisingView.ShowAd(info, onConfirm, null, btnText);
+                    }
+                }
+            });
         }
-
-        if (advertisingView != null)
+        else
         {
             advertisingView.ShowAd(info, onConfirm, null, btnText);
         }
@@ -301,15 +306,21 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     {
         if (advertisingView == null)
         {
-            GameObject prefab = AssetManager.LoadFromResources<GameObject>("Prefabs/UI/AdvertisingView");
-            if (prefab != null)
+            AssetManager.LoadFromAddressables<GameObject>("Prefabs/UI/AdvertisingView", (prefab, handle) =>
             {
-                GameObject obj = Instantiate(prefab, transform);
-                advertisingView = obj.GetComponent<AdvertisingView>();
-            }
+                _adPrefabHandle = handle;
+                if (prefab != null)
+                {
+                    GameObject obj = Instantiate(prefab, transform);
+                    advertisingView = obj.GetComponent<AdvertisingView>();
+                    if (advertisingView != null)
+                    {
+                        advertisingView.ShowAd(info, onConfirmWithResult, null, btnText);
+                    }
+                }
+            });
         }
-
-        if (advertisingView != null)
+        else
         {
             advertisingView.ShowAd(info, onConfirmWithResult, null, btnText);
         }

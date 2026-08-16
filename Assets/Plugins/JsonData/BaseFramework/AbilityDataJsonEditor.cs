@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,7 +20,7 @@ public class AbilityDataJsonEditor : BaseDataEditor<AbilityData>
     private string editAbilityType = "RarityWeight";
     private int editTargetRarityId = 0;
 
-    private const string RELATIVE_PATH = "Resources/JsonData/Ability/abilities.json";
+    private const string RELATIVE_PATH = "Addressables/JsonData/Ability/abilities.json";
 
     // 表头宽度
     private float col1 = 50;    // ID

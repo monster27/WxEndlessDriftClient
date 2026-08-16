@@ -1,4 +1,4 @@
-// ==================== StarRatingDataEditor.cs ====================
+﻿// ==================== StarRatingDataEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,7 +17,7 @@ public class StarRatingDataEditor : BaseDataEditor<StarRatingData>
     private string editColor = "#CD7F32";
     private int editSortOrder = 1;
 
-    private const string RELATIVE_PATH = "Resources/JsonData/BaseFramework/starRatings.json";
+    private const string RELATIVE_PATH = "Addressables/JsonData/BaseFramework/starRatings.json";
 
     // 表头宽度
     private float col1 = 30;   // 颜色

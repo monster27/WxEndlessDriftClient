@@ -1,4 +1,4 @@
-// ==================== BaitDataJsonEditor.cs ====================
+﻿// ==================== BaitDataJsonEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,7 +22,7 @@ public class BaitDataJsonEditor : BaseDataEditor<BaitData>
     private float col4 = 100;  // 解锁场景
     private float col5 = 300;  // 描述
 
-    private const string RELATIVE_PATH = "Resources/JsonData/Game/BagItem/baits.json";
+    private const string RELATIVE_PATH = "Addressables/JsonData/Game/BagItem/baits.json";
 
     public BaitDataJsonEditor() : base(RELATIVE_PATH) { }
 
@@ -251,7 +251,7 @@ public class BaitDataJsonEditor : BaseDataEditor<BaitData>
 
     private void SaveData()
     {
-        string directory = Path.Combine(Application.dataPath, "Resources/JsonData/Game");
+        string directory = Path.Combine(Application.dataPath, "Addressables/JsonData/Game");
         if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
         File.WriteAllText(FullPath, JsonUtility.ToJson(new BaitListWrapper { baits = dataList.ToArray() }, true));
         AssetDatabase.Refresh();

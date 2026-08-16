@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System;
@@ -11,8 +11,8 @@ using System.Linq;
 /// </summary>
 public class FishingComponentJsonEditor : EditorWindow
 {
-    private const string RELATIVE_PATH = "Resources/JsonData/Ability/fishing_components.json";
-    private const string ABILITIES_PATH = "Resources/JsonData/Ability/abilities.json";
+    private const string RELATIVE_PATH = "Addressables/JsonData/Ability/fishing_components.json";
+    private const string ABILITIES_PATH = "Addressables/JsonData/Ability/abilities.json";
 
     private List<FishingComponentConfig> componentList = new List<FishingComponentConfig>();
     private List<AbilityItem> abilityList = new List<AbilityItem>();

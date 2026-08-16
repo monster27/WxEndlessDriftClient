@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 //using SharedModels;
 
 public class ServerManager : SingletonMono<ServerManager>
@@ -17,6 +19,14 @@ public class ServerManager : SingletonMono<ServerManager>
 
     private bool _isEnabled = true;
     public bool IsEnabled => _isEnabled;
+
+    // AA 句柄
+    private AsyncOperationHandle<Sprite> _iconHandle;
+
+    void OnDestroy()
+    {
+        AssetManager.ReleaseAddressable(_iconHandle);
+    }
 
     public void Init()
     {
@@ -42,14 +52,6 @@ public class ServerManager : SingletonMono<ServerManager>
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_TIME_SLOT_CHANGED, OnTimeSlotChanged);
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_WEATHER_CHANGED, OnWeatherChanged);
         CommunicateEvent.Register<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
-        // ========================================================
-        // SimulationServer 相关代码已注释（当前使用网络模式）
-        // ========================================================
-        /*
-        CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_ADD_ITEM, OnAddItem);
-        CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_REMOVE_ITEM, OnRemoveItem);
-        CommunicateEvent.Register<(int, int)>(CommunicateEvent.EVENT_ADD_FISH, OnAddFish);
-        */
         CommunicateEvent.Register(CommunicateEvent.EVENT_SYNC_GOLD, OnSyncGold);
     }
 
@@ -57,100 +59,51 @@ public class ServerManager : SingletonMono<ServerManager>
     {
         if (!_isEnabled)
             return;
-
-        // ========================================================
-        // SimulationServer 相关代码已注释（当前使用网络模式）
-        // ========================================================
-        /*
-        if (SimulationServer.Instance != null && SimulationServer.Instance.IsRunning())
-        {
-            heartbeatTimer += Time.deltaTime;
-            if (heartbeatTimer >= HEARTBEAT_INTERVAL)
-            {
-                heartbeatTimer = 0f;
-                SendHeartbeat();
-            }
-        }
-        */
     }
 
     private void OnTimeSlotChanged(Dictionary<string, object> data)
     {
-        if (!_isEnabled)
-            return;
+        if (!_isEnabled) return;
         Debug.Log("[ServerManager] 转发时间槽变化事件到客户端");
         CommunicateEvent.Modify(CommunicateEvent.EVENT_CLIENT_TIME_SLOT_CHANGED, data);
     }
 
     private void OnWeatherChanged(Dictionary<string, object> data)
     {
-        if (!_isEnabled)
-            return;
+        if (!_isEnabled) return;
         Debug.Log("[ServerManager] 转发天气变化事件到客户端");
         CommunicateEvent.Modify(CommunicateEvent.EVENT_CLIENT_WEATHER_CHANGED, data);
     }
 
     private void OnGoldChanged(Dictionary<string, object> data)
     {
-        if (!_isEnabled)
-            return;
+        if (!_isEnabled) return;
         Debug.Log("[ServerManager] 转发金币变化事件到客户端");
         CommunicateEvent.Modify(CommunicateEvent.EVENT_CLIENT_GOLD_CHANGED, data);
     }
 
     private void OnSyncGold()
     {
-        if (!_isEnabled)
-            return;
-        
+        if (!_isEnabled) return;
+
         Debug.Log("[ServerManager] 收到金币同步请求");
-        
-        // 使用网络服务器模式获取金币
+
         if (NetServerManager.Instance != null)
         {
             int currentGold = NetServerManager.Instance.GetPlayerGold();
             Debug.Log($"[ServerManager] 当前金币: {currentGold}");
-            
+
             var goldData = new Dictionary<string, object>
             {
                 { "gold", currentGold },
                 { "add", 0 },
                 { "reduce", 0 }
             };
-            
+
             CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, goldData);
             CommunicateEvent.Modify<int>(CommunicateEvent.EVENT_GOLD_CHANGED, currentGold);
         }
     }
-
-    // ========================================================
-    // SimulationServer 相关代码已注释（当前使用网络模式）
-    // ========================================================
-    /*
-    private void OnAddItem((int itemId, int quantity) data)
-    {
-        if (!_isEnabled)
-            return;
-        Debug.Log($"[ServerManager] 处理添加物品请求: itemId={data.itemId}, quantity={data.quantity}");
-        SimulationServer.Instance?.AddItem(data.itemId, data.quantity);
-    }
-
-    private void OnRemoveItem((int itemId, int quantity) data)
-    {
-        if (!_isEnabled)
-            return;
-        Debug.Log($"[ServerManager] 处理移除物品请求: itemId={data.itemId}, quantity={data.quantity}");
-        SimulationServer.Instance?.RemoveItem(data.itemId, data.quantity);
-    }
-
-    private void OnAddFish((int fishId, int quantity) data)
-    {
-        if (!_isEnabled)
-            return;
-        Debug.Log($"[ServerManager] 处理添加鱼请求: fishId={data.fishId}, quantity={data.quantity}");
-        SimulationServer.Instance?.AddFish(data.fishId, data.quantity);
-    }
-    */
 
     public void NotifyPlayIdleAnimation()
     {
@@ -196,8 +149,7 @@ public class ServerManager : SingletonMono<ServerManager>
 
     public void OnServerFishingResult(FishingResult result)
     {
-        if (!_isEnabled)
-            return;
+        if (!_isEnabled) return;
 
         if (result == null)
         {
@@ -230,48 +182,15 @@ public class ServerManager : SingletonMono<ServerManager>
                         PlayerDataManager.Instance.RefreshUI();
                     }
 
-                    // ✅ 移除默认的 Idle 动画播放
-                    // SyncInventoryFromServer 内部的 CheckAndUpdateAnimationState 会根据鱼篓状态决定动画
-                    // 如果鱼篓满了，会自动播放 Lazy 动画；否则播放 Idle 动画
                     Debug.Log("[ServerManager] 拉杆动画结束，等待 CheckAndUpdateAnimationState 决定动画");
                 }
             );
         }
     }
 
-    // ========================================================
-    // SimulationServer 相关代码已注释（当前使用网络模式）
-    // ========================================================
-    /*
-    public void RequestFishingData(int detectedFishId, int actualItemId, bool isTrash)
-    {
-        if (!_isEnabled)
-            return;
-
-        Debug.LogFormat("<color=yellow>[ServerManager] 发送请求到服务器: detectedFishId={0}, actualItemId={1}, isTrash={2}</color>",
-            detectedFishId, actualItemId, isTrash);
-
-        if (SimulationServer.Instance != null)
-        {
-            var result = SimulationServer.Instance.CurrentFishingResult;
-            if (result != null)
-            {
-                ShowCatchResult(result.actualItemId);
-
-                if (PlayerDataManager.Instance != null)
-                {
-                    PlayerDataManager.Instance.SyncInventoryFromServer();
-                    PlayerDataManager.Instance.RefreshUI();
-                }
-            }
-        }
-    }
-    */
-
     private void OnFishingResponse(Dictionary<string, object> data)
     {
-        if (!_isEnabled)
-            return;
+        if (!_isEnabled) return;
 
         if (data.TryGetValue("itemId", out object itemIdObj) &&
             data.TryGetValue("fishId", out object fishIdObj) &&
@@ -299,8 +218,6 @@ public class ServerManager : SingletonMono<ServerManager>
                     PlayerDataManager.Instance.SyncInventoryFromServer();
                     PlayerDataManager.Instance.RefreshUI();
                 }
-                
-                // ✅ 移除默认的 Idle 动画播放，让 CheckAndUpdateAnimationState 决定
             });
         }
     }
@@ -315,13 +232,18 @@ public class ServerManager : SingletonMono<ServerManager>
                 string itemName = itemData.name;
                 float weight = GetItemWeight(itemId);
 
-                Sprite icon = null;
                 if (!string.IsNullOrEmpty(itemData.iconPath))
                 {
-                    icon = AssetManager.LoadFromResources<Sprite>(itemData.iconPath);
+                    AssetManager.LoadFromAddressables<Sprite>(itemData.iconPath, (sprite, handle) =>
+                    {
+                        _iconHandle = handle;
+                        GameUIManager.Instance.ShowCatchResult(itemName, weight, sprite);
+                    });
                 }
-
-                GameUIManager.Instance.ShowCatchResult(itemName, weight, icon);
+                else
+                {
+                    GameUIManager.Instance.ShowCatchResult(itemName, weight, null);
+                }
             }
         }
     }
@@ -371,22 +293,11 @@ public class ServerManager : SingletonMono<ServerManager>
         };
 
         Debug.Log($"[ServerManager] 发送心跳包: clientTime={clientTime}");
-
-        // ========================================================
-        // SimulationServer 相关代码已注释（当前使用网络模式）
-        // ========================================================
-        /*
-        if (SimulationServer.Instance != null)
-        {
-            SimulationServer.Instance.ProcessHeartbeat(heartbeatData);
-        }
-        */
     }
 
     private void OnHeartbeatResponse(Dictionary<string, object> data)
     {
-        if (!_isEnabled)
-            return;
+        if (!_isEnabled) return;
 
         if (data.TryGetValue("serverTime", out object serverTimeObj))
         {

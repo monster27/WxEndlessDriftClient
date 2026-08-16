@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
@@ -12,9 +12,9 @@ using System.Linq;
 public class ShopItemEditor : EditorWindow
 {
     #region 数据路径配置
-    private const string ITEM_DATA_PATH = "Resources/JsonData/Game/Items/items.json";
-    private const string CATEGORY_DATA_PATH = "Resources/JsonData/Game/GameFramework/itemCategories.json";
-    private const string SHOP_DATA_PATH = "Resources/JsonData/Game/Shop/shopItems.json";
+    private const string ITEM_DATA_PATH = "Addressables/JsonData/Game/Items/items.json";
+    private const string CATEGORY_DATA_PATH = "Addressables/JsonData/Game/GameFramework/itemCategories.json";
+    private const string SHOP_DATA_PATH = "Addressables/JsonData/Game/Shop/shopItems.json";
     #endregion
 
     #region UI状态变量

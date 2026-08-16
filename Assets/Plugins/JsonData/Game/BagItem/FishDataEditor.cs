@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -32,7 +32,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
     private float editBaseWeight = 2.5f;
     private float editScale = 1.0f;
 
-    private const string RELATIVE_PATH = "Resources/JsonData/Game/BagItem/fishes.json";
+    private const string RELATIVE_PATH = "Addressables/JsonData/Game/BagItem/fishes.json";
 
     // 表头宽度
     private float col1 = 50;   // ID

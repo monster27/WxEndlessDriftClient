@@ -37,20 +37,17 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
     // ========== 重写 Awake 实现持久化 ==========
     protected override void Awake()
     {
-        // 调用基类 Awake（基类会处理单例逻辑）
-        base.Awake();
+        base.Awake();  // ✅ 调用基类
 
-        // 确保对象在场景切换时不被销毁
         if (!_isPersistent)
         {
-            // 确保是根对象
             if (transform.parent != null)
             {
                 transform.SetParent(null);
             }
             DontDestroyOnLoad(gameObject);
             _isPersistent = true;
-            Logger.LogColor("[NetServerManager] 已设置为 DontDestroyOnLoad，将在场景切换中保持存在", "cyan");
+            Logger.LogColor("[NetServerManager] 已设置为 DontDestroyOnLoad", "cyan");
         }
     }
 
@@ -203,8 +200,9 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         }
     }
 
-    void OnApplicationQuit()
+    protected override void OnApplicationQuit()
     {
+        base.OnApplicationQuit();  // ✅ 正确调用基类
         Logger.LogColor("[NetServerManager] OnApplicationQuit - 应用退出", "red");
 
         SendPlayerExit();
@@ -212,8 +210,9 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         isConnected = false;
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();  // ✅ 正确调用基类
         Logger.LogColor("[NetServerManager] OnDestroy - 对象销毁", "red");
 
         if (isConnected)
@@ -231,6 +230,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
         StopAllCoroutines();
         Disconnect();
+        AssetManager.ReleaseAddressable(_iconHandle);
     }
 
     #endregion

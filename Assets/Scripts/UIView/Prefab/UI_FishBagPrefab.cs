@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Text;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 //using SharedModels;
 
 namespace View.Detail
@@ -15,13 +17,13 @@ namespace View.Detail
         public Text weightText;
         public Text priceText;
         public Text starRatingText;
-        public Image starRatingImage;          // 星级图标
-        public Image rarityBackgroundImage;    // ✅ 新增：稀有度背景颜色图片
+        public Image starRatingImage;
+        public Image rarityBackgroundImage;
         public Button selectButton;
         public Image selectedImage;
         public Image newCatchImage;
-        public Image shinyIconImage;           // 闪光图标
-        public Image lockIcon;                 // 锁定图标
+        public Image shinyIconImage;
+        public Image lockIcon;
 
         private int itemId;
         private int quantity;
@@ -30,6 +32,11 @@ namespace View.Detail
         private bool isNewCatch = false;
         private bool isSold = false;
         private FishDetailData fishDetail;
+
+        // AA 句柄
+        private AsyncOperationHandle<Sprite> _iconHandle;
+        private AsyncOperationHandle<Sprite> _rarityHandle;
+        private AsyncOperationHandle<Sprite> _starHandle;
 
         public int ItemId => itemId;
         public int Quantity => quantity;
@@ -75,8 +82,11 @@ namespace View.Detail
             }
         }
 
-        void OnEnable()
+        void OnDestroy()
         {
+            AssetManager.ReleaseAddressable(_iconHandle);
+            AssetManager.ReleaseAddressable(_rarityHandle);
+            AssetManager.ReleaseAddressable(_starHandle);
         }
 
         public void Init(int id, int qty, ItemData data, bool isNewCatchFlag = false, FishDetailData detail = null)
@@ -118,7 +128,6 @@ namespace View.Detail
                 quantityText.gameObject.SetActive(false);
             }
 
-            // ========== 显示重量 ==========
             float displayWeight = fishDetail != null ? fishDetail.weight : GetItemWeight(itemId);
             if (weightText != null)
             {
@@ -134,7 +143,6 @@ namespace View.Detail
                 }
             }
 
-            // ========== 显示价格 ==========
             int displayPrice = CalculateDisplayPrice();
             if (priceText != null)
             {
@@ -150,140 +158,74 @@ namespace View.Detail
                 }
             }
 
-            // ========== ✅ 新增：更新稀有度背景颜色 ==========
             UpdateRarityBackground();
-
-            // ========== 显示星级（使用图片） ==========
             UpdateStarRatingDisplay();
-
-            // ========== 显示闪光图标 ==========
             UpdateShinyIconDisplay();
-
-            // ========== 显示锁定图标 ==========
             UpdateLockIconDisplay();
 
-            if (iconImage != null && itemData != null)
-            {
-                LoadIcon();
-            }
+            LoadIcon();
         }
 
-        /// <summary>
-        /// 更新稀有度背景图片（根据稀有度ID加载对应的图片）
-        /// </summary>
         private void UpdateRarityBackground()
         {
-            if (rarityBackgroundImage == null)
-            {
-                return;
-            }
+            if (rarityBackgroundImage == null) return;
 
-            // 获取稀有度ID
             int rarityId = FishRarityId;
+            if (rarityId <= 0) rarityId = 0;
 
-            // 如果没有稀有度ID或无效，尝试使用默认ID=0
-            if (rarityId <= 0)
+            string path = $"UI/Icon/RarityBackground/{rarityId}";
+            AssetManager.LoadFromAddressables<Sprite>(path, (sprite, handle) =>
             {
-                rarityId = 0;
-            }
-
-            // 尝试加载对应稀有度ID的图片
-            Sprite raritySprite = LoadRarityBackgroundSprite(rarityId);
-
-            if (raritySprite != null)
-            {
-                // 找到对应的图片，设置并显示
-                rarityBackgroundImage.sprite = raritySprite;
-                rarityBackgroundImage.gameObject.SetActive(true);
-                rarityBackgroundImage.color = Color.white;
-                Debug.Log($"[UI_FishBagPrefab] 稀有度背景图片加载成功: itemId={itemId}, rarityId={rarityId}");
-            }
-            else
-            {
-                // 没找到对应ID的图片，尝试加载默认ID=0
-                if (rarityId != 0)
+                _rarityHandle = handle;
+                if (sprite != null)
                 {
-                    Sprite defaultSprite = LoadRarityBackgroundSprite(0);
-                    if (defaultSprite != null)
+                    rarityBackgroundImage.sprite = sprite;
+                    rarityBackgroundImage.gameObject.SetActive(true);
+                    rarityBackgroundImage.color = Color.white;
+                }
+                else
+                {
+                    if (rarityId != 0)
                     {
-                        rarityBackgroundImage.sprite = defaultSprite;
-                        rarityBackgroundImage.gameObject.SetActive(true);
-                        rarityBackgroundImage.color = Color.white;
-                        Debug.Log($"[UI_FishBagPrefab] 使用默认稀有度背景图片: itemId={itemId}, rarityId=0");
-                        return;
+                        AssetManager.LoadFromAddressables<Sprite>("UI/Icon/RarityBackground/0", (defaultSprite, defaultHandle) =>
+                        {
+                            _rarityHandle = defaultHandle;
+                            if (defaultSprite != null)
+                            {
+                                rarityBackgroundImage.sprite = defaultSprite;
+                                rarityBackgroundImage.gameObject.SetActive(true);
+                                rarityBackgroundImage.color = Color.white;
+                                return;
+                            }
+                            rarityBackgroundImage.gameObject.SetActive(false);
+                        });
+                    }
+                    else
+                    {
+                        rarityBackgroundImage.gameObject.SetActive(false);
                     }
                 }
-
-                // 如果连默认图片都没有，隐藏背景
-                rarityBackgroundImage.gameObject.SetActive(false);
-                Debug.Log($"[UI_FishBagPrefab] 稀有度背景图片不存在，隐藏背景: itemId={itemId}, rarityId={rarityId}");
-            }
+            });
         }
 
-        /// <summary>
-        /// 加载稀有度背景图片
-        /// </summary>
-        private Sprite LoadRarityBackgroundSprite(int rarityId)
-        {
-            string path = $"UI/Icon/RarityBackground/{rarityId}";
-            Sprite icon = AssetManager.LoadFromResources<Sprite>(path);
-
-            if (icon != null)
-            {
-                Debug.Log($"[UI_FishBagPrefab] 稀有度背景图片加载成功: ID={rarityId}, 路径={path}");
-                return icon;
-            }
-
-            // 尝试备选路径
-            string[] fallbackPaths = new string[]
-            {
-                $"RarityBackground/{rarityId}",
-                $"Images/RarityBackground/{rarityId}",
-                $"UI/Rarity/{rarityId}"
-            };
-
-            foreach (string fallbackPath in fallbackPaths)
-            {
-                icon = AssetManager.LoadFromResources<Sprite>(fallbackPath);
-                if (icon != null)
-                {
-                    Debug.Log($"[UI_FishBagPrefab] 稀有度背景图片加载成功(备选路径): ID={rarityId}, 路径={fallbackPath}");
-                    return icon;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// 更新闪光图标显示（仅控制显隐，闪光效果由IconShinyEffect组件处理）
-        /// </summary>
         private void UpdateShinyIconDisplay()
         {
             bool isShiny = fishDetail?.isShiny ?? false;
-
             if (shinyIconImage != null)
             {
                 shinyIconImage.gameObject.SetActive(isShiny);
             }
         }
 
-        /// <summary>
-        /// 更新锁定图标显示
-        /// </summary>
         private void UpdateLockIconDisplay()
         {
             bool isLocked = fishDetail?.isLocked ?? false;
-
             if (lockIcon != null)
             {
                 lockIcon.gameObject.SetActive(isLocked);
             }
         }
 
-        /// <summary>
-        /// 设置锁定状态
-        /// </summary>
         public void SetLocked(bool locked)
         {
             if (fishDetail != null)
@@ -293,51 +235,37 @@ namespace View.Detail
             }
         }
 
-        /// <summary>
-        /// 更新星级显示 - 使用图片
-        /// </summary>
         private void UpdateStarRatingDisplay()
         {
             int starRatingId = fishDetail != null ? fishDetail.starRatingId : 0;
 
-            Debug.Log($"[UI_FishBagPrefab] UpdateStarRatingDisplay - itemId={itemId}, starRatingId={starRatingId}");
-
-            // 星级图片
             if (starRatingImage != null)
             {
                 if (starRatingId > 0)
                 {
-                    Sprite starIcon = LoadStarRatingIcon(starRatingId);
-                    if (starIcon != null)
+                    string path = $"UI/Icon/StarRating/star_{starRatingId}";
+                    AssetManager.LoadFromAddressables<Sprite>(path, (sprite, handle) =>
                     {
-                        starRatingImage.sprite = starIcon;
-                        starRatingImage.gameObject.SetActive(true);
-
-                        Color color = starRatingImage.color;
-                        color.a = 1f;
-                        starRatingImage.color = color;
-                        starRatingImage.enabled = true;
-
-                        Debug.Log($"[UI_FishBagPrefab] 星级图标加载成功: ID={starRatingId}");
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"[UI_FishBagPrefab] 星级图标加载失败: ID={starRatingId}");
-                        starRatingImage.gameObject.SetActive(false);
-                    }
+                        _starHandle = handle;
+                        if (sprite != null)
+                        {
+                            starRatingImage.sprite = sprite;
+                            starRatingImage.gameObject.SetActive(true);
+                            starRatingImage.color = Color.white;
+                            starRatingImage.enabled = true;
+                        }
+                        else
+                        {
+                            starRatingImage.gameObject.SetActive(false);
+                        }
+                    });
                 }
                 else
                 {
-                    Debug.Log($"[UI_FishBagPrefab] starRatingId <= 0，隐藏星级图标");
                     starRatingImage.gameObject.SetActive(false);
                 }
             }
-            else
-            {
-                Debug.LogError($"[UI_FishBagPrefab] starRatingImage 为 null! itemId={itemId}");
-            }
 
-            // 星级文字（保留作为备选）
             if (starRatingText != null)
             {
                 if (starRatingId > 0 && LoadDataManager.Instance != null)
@@ -359,66 +287,6 @@ namespace View.Detail
                     starRatingText.gameObject.SetActive(false);
                 }
             }
-        }
-
-        /// <summary>
-        /// 根据星级ID加载对应的星级图标
-        /// </summary>
-        private Sprite LoadStarRatingIcon(int starRatingId)
-        {
-            string path = $"UI/Icon/StarRating/star_{starRatingId}";
-            Sprite icon = AssetManager.LoadFromResources<Sprite>(path);
-
-            if (icon != null)
-            {
-                Debug.Log($"[UI_FishBagPrefab] 星级图标加载成功: ID={starRatingId}, 路径={path}");
-                return icon;
-            }
-
-            Debug.LogWarning($"[UI_FishBagPrefab] 星级图标加载失败: ID={starRatingId}, 路径={path}");
-
-            string[] fallbackPaths = new string[]
-            {
-                $"StarRating/{starRatingId}",
-                $"Images/StarRating/{starRatingId}",
-                $"UI/Icon/Star/{starRatingId}"
-            };
-
-            foreach (string fallbackPath in fallbackPaths)
-            {
-                icon = AssetManager.LoadFromResources<Sprite>(fallbackPath);
-                if (icon != null)
-                {
-                    Debug.Log($"[UI_FishBagPrefab] 星级图标加载成功(备选路径): ID={starRatingId}, 路径={fallbackPath}");
-                    return icon;
-                }
-            }
-
-            Debug.LogWarning($"[UI_FishBagPrefab] 所有路径加载失败，创建纯色备选图标: ID={starRatingId}");
-            return CreateFallbackSprite(starRatingId);
-        }
-
-        private Sprite CreateFallbackSprite(int starRatingId)
-        {
-            if (LoadDataManager.Instance != null)
-            {
-                var starRating = LoadDataManager.Instance.GetStarRatingById(starRatingId);
-                if (starRating != null && !string.IsNullOrEmpty(starRating.color))
-                {
-                    Texture2D tex = new Texture2D(64, 64);
-                    Color color = ParseColor(starRating.color);
-                    for (int x = 0; x < tex.width; x++)
-                    {
-                        for (int y = 0; y < tex.height; y++)
-                        {
-                            tex.SetPixel(x, y, color);
-                        }
-                    }
-                    tex.Apply();
-                    return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                }
-            }
-            return null;
         }
 
         private Color ParseColor(string colorCode)
@@ -482,7 +350,7 @@ namespace View.Detail
         {
             if (string.IsNullOrEmpty(itemData?.iconPath))
             {
-                Debug.LogError($"[UI_FishBagPrefab] 图标路径为空 - 物品ID: {itemId}, 名称: {itemData?.name ?? "未知"}");
+                Debug.LogError($"[UI_FishBagPrefab] 图标路径为空 - 物品ID: {itemId}");
                 iconImage.sprite = null;
                 iconImage.color = Color.gray;
                 return;
@@ -490,58 +358,48 @@ namespace View.Detail
 
             bool isShiny = fishDetail?.isShiny ?? false;
             string basePath = itemData.iconPath;
-            Sprite loadedSprite = null;
 
             if (isShiny)
             {
                 string shinyPath = basePath + "_s";
-
-                // ✅ 先尝试加载 Texture2D 来诊断文件是否存在
-                Texture2D tex = AssetManager.LoadFromResources<Texture2D>(shinyPath);
-                if (tex != null)
+                AssetManager.LoadFromAddressables<Sprite>(shinyPath, (sprite, handle) =>
                 {
-                    Debug.Log($"[UI_FishBagPrefab] 闪光鱼纹理存在: {shinyPath}, 尺寸: {tex.width}x{tex.height}");
-                }
-                else
-                {
-                    Debug.Log($"[UI_FishBagPrefab] 闪光鱼纹理不存在: {shinyPath}");
-                }
-
-                loadedSprite = AssetManager.LoadFromResources<Sprite>(shinyPath);
-
-                if (loadedSprite != null)
-                {
-                    Debug.Log($"[UI_FishBagPrefab] 闪光鱼图标加载成功: {shinyPath}");
-                }
-                else
-                {
-                    // ✅ 改为 Warning（因为会回退到普通图标，不影响功能）
-                    Debug.LogWarning($"[UI_FishBagPrefab] 闪光鱼图标不存在，回退到普通图标: {shinyPath}");
-                }
-            }
-
-            // 如果闪光图标加载失败或不是闪光鱼，加载普通图标
-            if (loadedSprite == null)
-            {
-                loadedSprite = AssetManager.LoadFromResources<Sprite>(basePath);
-                if (loadedSprite != null)
-                {
-                    Debug.Log($"[UI_FishBagPrefab] 普通图标加载成功: {basePath}");
-                }
-            }
-
-            // 最终结果
-            if (loadedSprite != null)
-            {
-                iconImage.sprite = loadedSprite;
-                iconImage.color = Color.white;
+                    _iconHandle = handle;
+                    if (sprite != null)
+                    {
+                        iconImage.sprite = sprite;
+                        iconImage.color = Color.white;
+                    }
+                    else
+                    {
+                        // 回退到普通图标
+                        LoadFallbackIcon(basePath);
+                    }
+                });
             }
             else
             {
-                Debug.LogError($"[UI_FishBagPrefab] 所有图标加载失败! 基础路径: {basePath}, 闪光鱼: {isShiny}, 物品ID: {itemId}");
-                iconImage.sprite = null;
-                iconImage.color = Color.gray;
+                LoadFallbackIcon(basePath);
             }
+        }
+
+        private void LoadFallbackIcon(string path)
+        {
+            AssetManager.LoadFromAddressables<Sprite>(path, (sprite, handle) =>
+            {
+                _iconHandle = handle;
+                if (sprite != null)
+                {
+                    iconImage.sprite = sprite;
+                    iconImage.color = Color.white;
+                }
+                else
+                {
+                    Debug.LogError($"[UI_FishBagPrefab] 图标加载失败: {path}, 物品ID: {itemId}");
+                    iconImage.sprite = null;
+                    iconImage.color = Color.gray;
+                }
+            });
         }
 
         private float GetItemWeight(int itemId)
@@ -559,13 +417,11 @@ namespace View.Detail
 
         private int CalculateDisplayPrice()
         {
-            // ✅ 优先使用服务器返回的 calculatedPrice（每条鱼独立价格）
             if (fishDetail != null && fishDetail.calculatedPrice > 0)
             {
                 return fishDetail.calculatedPrice;
             }
 
-            // ✅ 降级：使用物品基础售价（垃圾等非鱼类物品直接使用 sellPrice）
             if (itemData != null)
             {
                 return itemData.sellPrice;
@@ -578,6 +434,5 @@ namespace View.Detail
         {
             return CalculateDisplayPrice();
         }
-
-        }
+    }
 }

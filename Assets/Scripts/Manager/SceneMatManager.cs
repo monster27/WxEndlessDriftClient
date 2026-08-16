@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 /// <summary>
 /// 场景材质管理器
@@ -108,7 +109,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
     //    }
     //}
 
-    public void Init() 
+    public async void Init() 
     {
         InitializeRenderQueueMap();
         Debug.Log($"[SceneMatManager] Awake - 渲染队列映射初始化完成");
@@ -116,7 +117,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         Debug.Log($"[SceneMatManager] Start - 开始初始化场景系统");
 
         FindAndRegisterAllControllers();
-        LoadSceneData();
+        await LoadSceneData();
         ApplySceneData(currentSceneId);
         UpdateAllControllersRenderQueue();
 
@@ -185,13 +186,13 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 
     // ========== 场景数据加载 ==========
 
-    public void LoadSceneData()
+    public async Task LoadSceneData()
     {
 #if UNITY_EDITOR
-        // 编辑器模式：直接从文件加载
+        // 编辑器模式：直接从 Addressables 加载
         try
         {
-            TextAsset jsonFile = AssetManager.LoadFromResources<TextAsset>(sceneDataPath);
+            var (jsonFile, handle) = await AssetManager.LoadFromAddressablesAsync<TextAsset>(sceneDataPath);
             if (jsonFile == null)
             {
                 Debug.LogWarning($"[SceneMatManager] 无法加载场景数据文件: {sceneDataPath}，创建新数据");
@@ -227,7 +228,10 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         else
         {
             Debug.LogWarning("[SceneMatManager] LoadDataManager 场景数据未加载，尝试重新加载");
-            LoadDataManager.Instance?.LoadSceneData();
+            if (LoadDataManager.Instance != null)
+            {
+                await LoadDataManager.Instance.LoadSceneData();
+            }
             if (LoadDataManager.Instance != null && LoadDataManager.Instance.isSceneDataLoaded)
             {
                 sceneDataWrapper = LoadDataManager.Instance.sceneDataWrapper;

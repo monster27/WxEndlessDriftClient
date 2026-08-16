@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
@@ -13,9 +13,9 @@ using System.Linq;
 /// </summary>
 public class IslandInfoEditor : EditorWindow
 {
-    private const string ISLAND_DATA_PATH = "Resources/JsonData/BaseFramework/islands.json";
-    private const string CATEGORY_DATA_PATH = "Resources/JsonData/Game/GameFramework/itemCategories.json";
-    private const string ISLAND_INFO_DATA_PATH = "Resources/JsonData/Game/GameFramework/islandInfo.json";
+    private const string ISLAND_DATA_PATH = "Addressables/JsonData/BaseFramework/islands.json";
+    private const string CATEGORY_DATA_PATH = "Addressables/JsonData/Game/GameFramework/itemCategories.json";
+    private const string ISLAND_INFO_DATA_PATH = "Addressables/JsonData/Game/GameFramework/islandInfo.json";
 
     private List<IslandData> islandDataList = new List<IslandData>();
     private List<IslandInfoEntry> islandInfoList = new List<IslandInfoEntry>();

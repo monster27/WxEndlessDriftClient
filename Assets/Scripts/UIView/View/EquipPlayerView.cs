@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Threading.Tasks;  // ✅ 添加这行
 //using SharedModels;
 
 public class EquipPlayerView : MonoBehaviour
@@ -175,61 +176,79 @@ public class EquipPlayerView : MonoBehaviour
 
     public void Init()
     {
-        LoadCharacterIds();
         LoadAllIcons();
     }
 
-    private void LoadAllIcons()
+    // ========== 异步加载方法 ==========
+
+    private async void LoadAllIcons()
     {
         iconCache.Clear();
 
-        foreach (int characterId in characterIds)
-            LoadCharacterIcon(characterId);
+        // ✅ 先加载人物ID列表
+        await LoadCharacterIdsAsync();
 
-        var config = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
+        // ✅ 加载人物图标
+        foreach (int characterId in characterIds)
+        {
+            await LoadCharacterIconAsync(characterId);
+        }
+
+        // ✅ 加载技能图标
+        var config = await CompleteFishingSkillConfigExtensions.LoadFromAddressablesAsync("JsonData/Ability/fishing_components");
         if (config != null && config.items != null)
         {
             foreach (var item in config.items)
             {
                 if (item.id >= 3301 && item.id <= 3399)
-                    LoadSkillIcon(item.id);
+                {
+                    await LoadSkillIconAsync(item.id);
+                }
             }
         }
 
         Debug.Log($"[EquipPlayerView] LoadAllIcons 完成，缓存了 {iconCache.Count} 个图标");
     }
 
-    private void LoadCharacterIcon(int characterId)
+    private async Task LoadCharacterIdsAsync()
     {
-        string path = $"UI/Icon/Equipment/Character/{characterId}";
-        Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
-        if (sprite != null)
-            iconCache[characterId] = sprite;
+        characterIds.Clear();
+        var config = await CharacterConfigListExtensions.LoadFromAddressablesAsync("JsonData/BaseFramework/characters");
+        if (config != null)
+        {
+            var ids = config.GetAllCharacterIds();
+            foreach (var id in ids)
+            {
+                characterIds.Add(id);
+            }
+        }
     }
 
-    private void LoadSkillIcon(int skillId)
+    private async Task LoadCharacterIconAsync(int characterId)
+    {
+        string path = $"UI/Icon/Equipment/Character/{characterId}";
+        var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(path);
+        if (sprite != null)
+        {
+            iconCache[characterId] = sprite;
+        }
+        AssetManager.ReleaseAddressable(handle);
+    }
+
+    private async Task LoadSkillIconAsync(int skillId)
     {
         string path = $"UI/Icon/Equipment/Skill/{skillId}";
-        Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
+        var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(path);
         if (sprite != null)
+        {
             iconCache[skillId] = sprite;
+        }
+        AssetManager.ReleaseAddressable(handle);
     }
 
     private Sprite GetIcon(int id)
     {
         return iconCache.TryGetValue(id, out Sprite sprite) ? sprite : null;
-    }
-
-    private void LoadCharacterIds()
-    {
-        characterIds.Clear();
-        var config = CharacterConfigListExtensions.LoadFromResources();
-        if (config != null)
-        {
-            var ids = config.GetAllCharacterIds();
-            foreach (var id in ids)
-                characterIds.Add(id);
-        }
     }
 
     public void Show()
@@ -353,9 +372,9 @@ public class EquipPlayerView : MonoBehaviour
         }
     }
 
-    private void UpdateSkillDisplay()
+    private async void UpdateSkillDisplay()
     {
-        var characterConfig = CharacterConfigListExtensions.LoadFromResources();
+        var characterConfig = await CharacterConfigListExtensions.LoadFromAddressablesAsync("JsonData/BaseFramework/characters");
         int skill1Id = 0;
         int skill2Id = 0;
 
@@ -470,9 +489,9 @@ public class EquipPlayerView : MonoBehaviour
         UpdateDisplay();
     }
 
-    private void OnSkill1UnlockClick()
+    private async void OnSkill1UnlockClick()
     {
-        var characterConfig = CharacterConfigListExtensions.LoadFromResources();
+        var characterConfig = await CharacterConfigListExtensions.LoadFromAddressablesAsync("JsonData/BaseFramework/characters");
         if (characterConfig != null)
         {
             var skillIds = characterConfig.GetCharacterSkillIds(currentCharacterId);
@@ -481,9 +500,9 @@ public class EquipPlayerView : MonoBehaviour
         }
     }
 
-    private void OnSkill2UnlockClick()
+    private async void OnSkill2UnlockClick()
     {
-        var characterConfig = CharacterConfigListExtensions.LoadFromResources();
+        var characterConfig = await CharacterConfigListExtensions.LoadFromAddressablesAsync("JsonData/BaseFramework/characters");
         if (characterConfig != null)
         {
             var skillIds = characterConfig.GetCharacterSkillIds(currentCharacterId);

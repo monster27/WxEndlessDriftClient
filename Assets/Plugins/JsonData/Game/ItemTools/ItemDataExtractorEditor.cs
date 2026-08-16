@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 // ==================== ItemDataExtractorEditor.cs ====================
 using UnityEditor;
 using UnityEngine;
@@ -8,15 +8,15 @@ using System.IO;
 public class ItemDataExtractorEditor : EditorWindow
 {
     private string outputPath = "JsonData/Game/Items/items";
-    private string fishDataPath = "Resources/JsonData/Game/BagItem/fishes.json";
-    private string baitDataPath = "Resources/JsonData/Game/BagItem/baits.json";
-    private string trashDataPath = "Resources/JsonData/Game/BagItem/trash.json";
-    private string nestBaitDataPath = "Resources/JsonData/Game/BagItem/nestBaits.json";
-    private string indoorSkinDataPath = "Resources/JsonData/Game/BagItem/indoorSkin.json";
-    private string outdoorSkinDataPath = "Resources/JsonData/Game/BagItem/outdoorSkin.json";
-    private string categoryDataPath = "Resources/JsonData/Game/GameFramework/itemCategories.json";
-    private string collectionDataPath = "Resources/JsonData/BaseFramework/collection.json";
-    private string islandInfoDataPath = "Resources/JsonData/Game/GameFramework/islandInfo.json";  // ✅ 新增：岛屿情报数据路径
+    private string fishDataPath = "Addressables/JsonData/Game/BagItem/fishes.json";
+    private string baitDataPath = "Addressables/JsonData/Game/BagItem/baits.json";
+    private string trashDataPath = "Addressables/JsonData/Game/BagItem/trash.json";
+    private string nestBaitDataPath = "Addressables/JsonData/Game/BagItem/nestBaits.json";
+    private string indoorSkinDataPath = "Addressables/JsonData/Game/BagItem/indoorSkin.json";
+    private string outdoorSkinDataPath = "Addressables/JsonData/Game/BagItem/outdoorSkin.json";
+    private string categoryDataPath = "Addressables/JsonData/Game/GameFramework/itemCategories.json";
+    private string collectionDataPath = "Addressables/JsonData/BaseFramework/collection.json";
+    private string islandInfoDataPath = "Addressables/JsonData/Game/GameFramework/islandInfo.json";  // ✅ 新增：岛屿情报数据路径
     private Vector2 scrollPosition;
     private List<ItemData> extractedItems = new List<ItemData>();
     private List<ItemData> existingItems = new List<ItemData>();

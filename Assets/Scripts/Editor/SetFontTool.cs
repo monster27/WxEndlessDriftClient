@@ -10,12 +10,10 @@ using System.Linq;
 
 public class SetFontTool : EditorWindow
 {
-    // 旧版 Text 字体
     private Font[] fonts;
     private string[] fontNames;
     private int selectedFontIndex = 0;
 
-    // TMP 字体资源
     private TMP_FontAsset[] tmpFontAssets;
     private string[] tmpFontNames;
     private int selectedTMPIndex = 0;
@@ -25,7 +23,6 @@ public class SetFontTool : EditorWindow
     private bool showLogs = true;
     private bool showReferences = true;
 
-    // 日志和引用记录
     private List<ReferenceInfo> foundReferences = new List<ReferenceInfo>();
     private List<string> operationLogs = new List<string>();
 
@@ -50,7 +47,7 @@ public class SetFontTool : EditorWindow
 
     private void LoadFonts()
     {
-        // ===== 加载旧版 Text 字体 =====
+        // ===== 加载旧版 Text 字体（编辑器用同步加载） =====
         string[] fontGuids = AssetDatabase.FindAssets("t:Font");
         List<Font> validFonts = new List<Font>();
 
@@ -107,7 +104,6 @@ public class SetFontTool : EditorWindow
         GUILayout.Label("选择要应用的字体:", EditorStyles.boldLabel);
         EditorGUILayout.Space();
 
-        // ===== 旧版 Text 字体选择 =====
         if (fonts != null && fonts.Length > 0)
         {
             selectedFontIndex = EditorGUILayout.Popup("旧版 Text 字体:", selectedFontIndex, fontNames);
@@ -119,7 +115,6 @@ public class SetFontTool : EditorWindow
 
         EditorGUILayout.Space();
 
-        // ===== TMP 字体资源选择 =====
         if (tmpFontAssets != null && tmpFontAssets.Length > 0)
         {
             selectedTMPIndex = EditorGUILayout.Popup("TMP 字体资源:", selectedTMPIndex, tmpFontNames);
@@ -137,7 +132,6 @@ public class SetFontTool : EditorWindow
 
         EditorGUILayout.Space();
 
-        // ===== 功能按钮 =====
         EditorGUILayout.LabelField("基本功能", EditorStyles.boldLabel);
         EditorGUILayout.BeginHorizontal();
 
@@ -176,7 +170,6 @@ public class SetFontTool : EditorWindow
 
         EditorGUILayout.Space();
 
-        // ===== 高级功能 =====
         EditorGUILayout.LabelField("高级功能 (自动处理脚本引用)", EditorStyles.boldLabel);
         EditorGUILayout.HelpBox(
             "此功能会:\n" +
@@ -208,7 +201,6 @@ public class SetFontTool : EditorWindow
                 if (foundReferences.Count > 0)
                 {
                     ModifyScripts();
-                    // 等待脚本编译
                     EditorUtility.DisplayDialog("提示", "脚本修改完成，请等待 Unity 编译完成后再执行组件替换。", "确定");
                     EditorGUILayout.EndHorizontal();
                     EditorGUILayout.EndScrollView();
@@ -225,7 +217,6 @@ public class SetFontTool : EditorWindow
 
         EditorGUILayout.Space();
 
-        // ===== 显示引用列表 =====
         showReferences = EditorGUILayout.Foldout(showReferences, $"找到的 Text 引用 ({foundReferences.Count})");
         if (showReferences && foundReferences.Count > 0)
         {
@@ -240,7 +231,6 @@ public class SetFontTool : EditorWindow
 
         EditorGUILayout.Space();
 
-        // ===== 显示日志 =====
         showLogs = EditorGUILayout.Foldout(showLogs, $"操作日志 ({operationLogs.Count})");
         if (showLogs && operationLogs.Count > 0)
         {
@@ -256,9 +246,6 @@ public class SetFontTool : EditorWindow
         EditorGUILayout.EndScrollView();
     }
 
-    /// <summary>
-    /// 将字体应用到旧版 Text 组件
-    /// </summary>
     private void ApplyFontToAllTexts(GameObject[] objects, Font targetFont)
     {
         if (targetFont == null)
@@ -296,9 +283,6 @@ public class SetFontTool : EditorWindow
         UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
     }
 
-    /// <summary>
-    /// 扫描 Text 引用
-    /// </summary>
     private void ScanTextReferences()
     {
         foundReferences.Clear();
@@ -325,7 +309,6 @@ public class SetFontTool : EditorWindow
                 totalBehaviours++;
 
                 System.Type type = behaviour.GetType();
-                // 跳过 Unity 内置组件
                 if (type.Namespace == "UnityEngine" || type.Namespace == "UnityEngine.UI") continue;
 
                 var fields = type.GetFields(
@@ -366,9 +349,6 @@ public class SetFontTool : EditorWindow
         EditorUtility.DisplayDialog("扫描完成", $"扫描了 {totalBehaviours} 个脚本\n找到 {foundReferences.Count} 个 Text 引用", "确定");
     }
 
-    /// <summary>
-    /// 修改脚本源码
-    /// </summary>
     private void ModifyScripts()
     {
         if (foundReferences.Count == 0)
@@ -433,12 +413,8 @@ public class SetFontTool : EditorWindow
             "确定");
     }
 
-    /// <summary>
-    /// 修改脚本内容
-    /// </summary>
     private string ModifyScriptContent(string content)
     {
-        // 1. 添加 using TMPro;
         if (!content.Contains("using TMPro;"))
         {
             var usingMatch = Regex.Match(content, @"using\s+[^;]+;\s*$", RegexOptions.Multiline);
@@ -453,29 +429,21 @@ public class SetFontTool : EditorWindow
             }
         }
 
-        // 2. 替换字段类型
-        // 匹配带属性: [SerializeField] private Text xxx
         string pattern1 = @"(\[[^\]]*SerializeField[^\]]*\]\s*)(private|public|protected)\s+Text\s+([a-zA-Z_][a-zA-Z0-9_]*)";
         content = Regex.Replace(content, pattern1, "$1$2 TextMeshProUGUI $3");
 
-        // 匹配普通字段: public Text xxx
         string pattern2 = @"(?<!(///.*\n))\b(private|public|protected)\s+Text\s+([a-zA-Z_][a-zA-Z0-9_]*)";
         content = Regex.Replace(content, pattern2, "$1 TextMeshProUGUI $2");
 
-        // 3. 替换 Text 属性
         string pattern3 = @"(?<!(///.*\n))\bText\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\{";
         content = Regex.Replace(content, pattern3, "TextMeshProUGUI $1 {");
 
-        // 4. 替换 Text 作为方法参数类型
         string pattern4 = @"\(([^)]*)\bText\b([^)]*)\)";
         content = Regex.Replace(content, pattern4, "($1TextMeshProUGUI$2)");
 
         return content;
     }
 
-    /// <summary>
-    /// 将选中的 GameObject 及其子对象中的所有 Text 组件替换为 TextMeshProUGUI
-    /// </summary>
     private void ReplaceTextToTMP(GameObject[] objects, TMP_FontAsset targetTMPFont)
     {
         if (targetTMPFont == null)
@@ -586,7 +554,6 @@ public class SetFontTool : EditorWindow
 
     private string GetScriptPath(System.Type type)
     {
-        // 通过 MonoScript 获取路径
         var monoScripts = Resources.FindObjectsOfTypeAll<MonoScript>();
         foreach (var script in monoScripts)
         {

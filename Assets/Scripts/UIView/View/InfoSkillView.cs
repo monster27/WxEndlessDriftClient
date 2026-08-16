@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 //using SharedModels;
 
 public class InfoSkillView : MonoBehaviour
@@ -94,10 +95,12 @@ public class InfoSkillView : MonoBehaviour
         CreateSkillItems();
     }
 
-    private void LoadSkillIds()
+    private async void LoadSkillIds()
     {
         skillIds.Clear();
-        var config = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
+
+        // ✅ 从 Addressables 异步加载
+        var config = await CompleteFishingSkillConfigExtensions.LoadFromAddressablesAsync("JsonData/Ability/fishing_components");
         if (config != null && config.items != null)
         {
             foreach (var component in config.items)
@@ -111,21 +114,31 @@ public class InfoSkillView : MonoBehaviour
         skillIds.Sort();
     }
 
-    private void LoadAllIcons()
+    private async void LoadAllIcons()
     {
         iconCache.Clear();
-        foreach (int skillId in skillIds)
+
+        // ✅ 从 Addressables 异步加载配置，然后遍历加载图标
+        var config = await CompleteFishingSkillConfigExtensions.LoadFromAddressablesAsync("JsonData/Ability/fishing_components");
+        if (config != null && config.items != null)
         {
-            string path = $"UI/Icon/Equipment/Skill/{skillId}";
-            Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
-            if (sprite != null)
+            foreach (var component in config.items)
             {
-                iconCache[skillId] = sprite;
+                if (component.id >= 3301 && component.id <= 3399)
+                {
+                    string path = $"UI/Icon/Equipment/Skill/{component.id}";
+                    var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(path);
+                    if (sprite != null)
+                    {
+                        iconCache[component.id] = sprite;
+                    }
+                    AssetManager.ReleaseAddressable(handle);
+                }
             }
         }
     }
 
-    private void CreateSkillItems()
+    private async void CreateSkillItems()
     {
         foreach (Transform child in skillListParent)
         {
@@ -134,6 +147,27 @@ public class InfoSkillView : MonoBehaviour
         skillItems.Clear();
 
         if (skillPrefab == null || skillListParent == null) return;
+
+        // ✅ 先确保 skillIds 已加载
+        if (skillIds.Count == 0)
+        {
+            await CompleteFishingSkillConfigExtensions.LoadFromAddressablesAsync("JsonData/Ability/fishing_components");
+            // LoadSkillIds 是 async void，需要等待结果
+            // 由于 LoadSkillIds 是 async void，这里重新加载
+            skillIds.Clear();
+            var config = await CompleteFishingSkillConfigExtensions.LoadFromAddressablesAsync("JsonData/Ability/fishing_components");
+            if (config != null && config.items != null)
+            {
+                foreach (var component in config.items)
+                {
+                    if (component.id >= 3301 && component.id <= 3399)
+                    {
+                        skillIds.Add(component.id);
+                    }
+                }
+                skillIds.Sort();
+            }
+        }
 
         foreach (int skillId in skillIds)
         {
@@ -145,6 +179,25 @@ public class InfoSkillView : MonoBehaviour
                 skillItems.Add(item);
             }
         }
+    }
+
+    private async Task<string> GetSkillDescriptionAsync(int skillId, int level)
+    {
+        // ✅ 从 Addressables 异步加载
+        var config = await CompleteFishingSkillConfigExtensions.LoadFromAddressablesAsync("JsonData/Ability/fishing_components");
+        if (config == null || config.items == null) return "";
+
+        var component = config.GetComponentById(skillId);
+        if (component == null) return "";
+
+        // ✅ 使用静态调用避免歧义
+        var levelData = FishingComponentConfigExtensions.GetLevelData(component, level);
+        if (levelData != null && !string.IsNullOrEmpty(levelData.levelDescription))
+        {
+            return levelData.levelDescription;
+        }
+
+        return component.description;
     }
 
     public void Show(int skillSlot = 1)
@@ -183,14 +236,14 @@ public class InfoSkillView : MonoBehaviour
         }
     }
 
-    private void UpdateSkillItem(UI_InfoSkillPrefab item, int skillId)
+    private async void UpdateSkillItem(UI_InfoSkillPrefab item, int skillId)
     {
         if (item == null || skillId <= 0) return;
 
         Sprite icon = GetIcon(skillId);
         string name = LoadDataManager.Instance.GetComponentName(skillId);
         int level = GetSkillLevel(skillId);
-        string description = GetSkillDescription(skillId, level);
+        string description = await GetSkillDescriptionAsync(skillId, level);
         EquipState state = GetSkillState(skillId);
         string unlockCondition = GetSkillUnlockCondition(skillId);
 
@@ -202,23 +255,6 @@ public class InfoSkillView : MonoBehaviour
     {
         // 获取技能的解锁条件（人物等级要求）
         return CommunicateEvent.Request<int, string>("CharacterManager_GetSkillUnlockCondition", skillId);
-    }
-
-    private string GetSkillDescription(int skillId, int level)
-    {
-        var config = CompleteFishingSkillConfigExtensions.LoadFromResources("JsonData/Ability/fishing_components");
-        if (config == null || config.items == null) return "";
-
-        var component = config.GetComponentById(skillId);
-        if (component == null) return "";
-
-        var levelData = component.GetLevelData(level);
-        if (levelData != null && !string.IsNullOrEmpty(levelData.levelDescription))
-        {
-            return levelData.levelDescription;
-        }
-
-        return component.description;
     }
 
     private Sprite GetIcon(int id)

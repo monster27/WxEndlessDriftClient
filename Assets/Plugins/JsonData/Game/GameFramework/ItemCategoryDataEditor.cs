@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -10,7 +10,7 @@ public class ItemCategoryDataEditor : EditorWindow
     private ItemCategoryListWrapper categoryWrapper;
     private bool isLoaded = false;
 
-    private const string DATA_PATH = "Resources/JsonData/Game/GameFramework/itemCategories.json";
+    private const string DATA_PATH = "Addressables/JsonData/Game/GameFramework/itemCategories.json";
 
     [MenuItem("Tools/游戏内容/1.游戏框架数据/物品分类", false)]
     public static void ShowWindow()

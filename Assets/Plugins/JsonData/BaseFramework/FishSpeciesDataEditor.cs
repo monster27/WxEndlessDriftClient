@@ -1,4 +1,4 @@
-// ==================== FishSpeciesDataEditor.cs ====================
+﻿// ==================== FishSpeciesDataEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,7 +14,7 @@ public class FishSpeciesDataEditor : BaseDataEditor<FishSpeciesData>
     private string editDescription = "";
     private string editType = "FullScreenSwim";
 
-    private const string RELATIVE_PATH = "Resources/JsonData/BaseFramework/fishSpecies.json";
+    private const string RELATIVE_PATH = "Addressables/JsonData/BaseFramework/fishSpecies.json";
 
     // 表头宽度
     private float col1 = 60;   // ID
