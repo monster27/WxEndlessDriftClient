@@ -152,7 +152,7 @@ public class FishingEquipItem : MonoBehaviour
 
     private void OnEquipClick()
     {
-        Debug.Log($"[FishingEquipItem] OnEquipClick - type={currentType}, equipId={currentEquipId}");
+        Z_Logger.Log($"[FishingEquipItem] OnEquipClick - type={currentType}, equipId={currentEquipId}");
         
         // 获取当前状态
         bool isLocked = lockedObj != null && lockedObj.activeSelf;
@@ -174,7 +174,7 @@ public class FishingEquipItem : MonoBehaviour
 
     private void OnEquipActionClick()
     {
-        Debug.Log($"[FishingEquipItem] OnEquipActionClick - type={currentType}, equipId={currentEquipId}");
+        Z_Logger.Log($"[FishingEquipItem] OnEquipActionClick - type={currentType}, equipId={currentEquipId}");
         if (onEquipActionCallback != null)
         {
             onEquipActionCallback(currentType, currentEquipId);
@@ -183,7 +183,7 @@ public class FishingEquipItem : MonoBehaviour
 
     private void OnWatchAdClick()
     {
-        Debug.Log($"[FishingEquipItem] OnWatchAdClick - type={currentType}, equipId={currentEquipId}");
+        Z_Logger.Log($"[FishingEquipItem] OnWatchAdClick - type={currentType}, equipId={currentEquipId}");
         if (onWatchAdCallback != null)
         {
             onWatchAdCallback(currentType, currentEquipId);

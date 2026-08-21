@@ -46,13 +46,13 @@ public class EquipmentView : MonoBehaviour
 
     private void OnEquipmentRefresh()
     {
-        Debug.Log("[EquipmentView] OnEquipmentRefresh - 刷新所有视图");
+        Z_Logger.Log("[EquipmentView] OnEquipmentRefresh - 刷新所有视图");
         RefreshAllViews();
     }
 
     private void OnEquipChanged((int, int) data)
     {
-        Debug.Log($"[EquipmentView] OnEquipChanged - slotType={data.Item1}, itemId={data.Item2}");
+        Z_Logger.Log($"[EquipmentView] OnEquipChanged - slotType={data.Item1}, itemId={data.Item2}");
         RefreshAllViews();
     }
 
@@ -129,7 +129,7 @@ public class EquipmentView : MonoBehaviour
             }
         }
 
-        Debug.Log($"[EquipmentView] 图标加载完成，共 {iconCache.Count} 个");
+        Z_Logger.Log($"[EquipmentView] 图标加载完成，共 {iconCache.Count} 个");
     }
 
     public Sprite GetIcon(int id)
@@ -184,7 +184,7 @@ public class EquipmentView : MonoBehaviour
         if (_isRefreshing) return;
         _isRefreshing = true;
 
-        Debug.Log("[EquipmentView] RefreshAllViews - 刷新所有视图");
+        Z_Logger.Log("[EquipmentView] RefreshAllViews - 刷新所有视图");
 
         try
         {
@@ -221,13 +221,13 @@ public class EquipmentView : MonoBehaviour
 
     private void OnMaskClick()
     {
-        Debug.Log("[EquipmentView] OnMaskClick - 点击遮罩关闭");
+        Z_Logger.Log("[EquipmentView] OnMaskClick - 点击遮罩关闭");
         Hide();
     }
 
     private void OnCloseClick()
     {
-        Debug.Log("[EquipmentView] OnCloseClick - 点击关闭按钮");
+        Z_Logger.Log("[EquipmentView] OnCloseClick - 点击关闭按钮");
         Hide();
     }
 
@@ -384,7 +384,7 @@ public class EquipmentView : MonoBehaviour
     /// </summary>
     private void OnEquipAction(FishingEquipType type, int equipId)
     {
-        Debug.Log($"[EquipmentView] OnEquipAction - type={type}, equipId={equipId}");
+        Z_Logger.Log($"[EquipmentView] OnEquipAction - type={type}, equipId={equipId}");
 
         EquipmentSlotType slotType = EquipmentSlotType.FishingRod;
         switch (type)
@@ -403,7 +403,7 @@ public class EquipmentView : MonoBehaviour
         }
 
         string componentName = LoadDataManager.Instance.GetComponentName(equipId);
-        Debug.Log($"[EquipmentView] 尝试装备: {componentName} (ID:{equipId})");
+        Z_Logger.Log($"[EquipmentView] 尝试装备: {componentName} (ID:{equipId})");
 
         if (NetServerManager.Instance != null)
         {
@@ -413,7 +413,7 @@ public class EquipmentView : MonoBehaviour
             {
                 if (success)
                 {
-                    Debug.Log($"[EquipmentView] 装备成功: {slotType} -> {equipId}");
+                    Z_Logger.Log($"[EquipmentView] 装备成功: {slotType} -> {equipId}");
 
                     // ✅ 装备成功后，NetServerManager 内部已经拉取了最新数据
                     // 只需要刷新 UI 即可
@@ -425,7 +425,7 @@ public class EquipmentView : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning($"[EquipmentView] 装备失败: {message}");
+                    Z_Logger.LogWarning($"[EquipmentView] 装备失败: {message}");
                     string failMessage = string.IsNullOrEmpty(message) ? LoadDataManager.Instance.GetEquipmentUIText("equipFailed") : message;
                     GameUIManager.ShowWarningMessage(failMessage);
                 }
@@ -459,19 +459,19 @@ public class EquipmentView : MonoBehaviour
                 if (targetId >= 3301 && targetId < 3400)
                 {
                     // 技能
-                    Debug.Log($"[EquipmentView] 广告成功，开始解锁技能: playerId={playerId}, skillId={targetId}");
+                    Z_Logger.Log($"[EquipmentView] 广告成功，开始解锁技能: playerId={playerId}, skillId={targetId}");
 
                     NetServerManager.Instance.UnlockSkill(targetId, (success) =>
                     {
                         if (success)
                         {
-                            Debug.Log($"[EquipmentView] 服务器技能解锁成功，通知UI");
+                            Z_Logger.Log($"[EquipmentView] 服务器技能解锁成功，通知UI");
                             onConfirmWithResult?.Invoke(true);
                             RefreshAllViews();
                         }
                         else
                         {
-                            Debug.LogError($"[EquipmentView] 服务器技能解锁失败");
+                            Z_Logger.LogError($"[EquipmentView] 服务器技能解锁失败");
                             GameUIManager.Instance.ShowTip("技能解锁失败");
                             onConfirmWithResult?.Invoke(false);
                         }
@@ -482,19 +482,19 @@ public class EquipmentView : MonoBehaviour
                     // 装备
                     string equipmentType = GetEquipmentTypeFromId(targetId);
 
-                    Debug.Log($"[EquipmentView] 广告成功，开始解锁装备: playerId={playerId}, equipmentId={targetId}, type={equipmentType}");
+                    Z_Logger.Log($"[EquipmentView] 广告成功，开始解锁装备: playerId={playerId}, equipmentId={targetId}, type={equipmentType}");
 
                     NetServerManager.Instance.UnlockEquipment(playerId, targetId, equipmentType, (success, message) =>
                     {
                         if (success)
                         {
-                            Debug.Log($"[EquipmentView] 服务器解锁成功，通知UI");
+                            Z_Logger.Log($"[EquipmentView] 服务器解锁成功，通知UI");
                             onConfirmWithResult?.Invoke(true);
                             RefreshAllViews();
                         }
                         else
                         {
-                            Debug.LogError($"[EquipmentView] 服务器解锁失败: {message}");
+                            Z_Logger.LogError($"[EquipmentView] 服务器解锁失败: {message}");
                             GameUIManager.Instance.ShowTip("解锁失败: " + message);
                             onConfirmWithResult?.Invoke(false);
                         }
@@ -504,7 +504,7 @@ public class EquipmentView : MonoBehaviour
             else
             {
                 // 广告失败
-                Debug.Log($"[EquipmentView] 广告失败");
+                Z_Logger.Log($"[EquipmentView] 广告失败");
                 onConfirmWithResult?.Invoke(false);
             }
         };

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections.Generic;
 
@@ -58,14 +58,14 @@ public class FishingTipAniCtrl : MonoBehaviour
             // ⭐ 从 LoadDataManager 获取稀有度数据
             if (LoadDataManager.Instance == null)
             {
-                Debug.LogWarning("[FishingTipAniCtrl] LoadDataManager 未初始化，无法加载稀有度数据");
+                Z_Logger.LogWarning("[FishingTipAniCtrl] LoadDataManager 未初始化，无法加载稀有度数据");
                 return;
             }
 
             List<RarityData> rarities = LoadDataManager.Instance.rarities;
             if (rarities == null || rarities.Count == 0)
             {
-                Debug.LogWarning("[FishingTipAniCtrl] LoadDataManager 中没有稀有度数据");
+                Z_Logger.LogWarning("[FishingTipAniCtrl] LoadDataManager 中没有稀有度数据");
                 return;
             }
 
@@ -79,16 +79,16 @@ public class FishingTipAniCtrl : MonoBehaviour
                 else
                 {
                     // 备用：如果 colorCode 无效，尝试使用 color 字段
-                    Debug.LogWarning($"[FishingTipAniCtrl] 稀有度 {rarity.id} 的颜色代码无效: {rarity.colorCode}");
+                    Z_Logger.LogWarning($"[FishingTipAniCtrl] 稀有度 {rarity.id} 的颜色代码无效: {rarity.colorCode}");
                 }
             }
 
             isRarityDataLoaded = true;
-            Debug.Log($"[FishingTipAniCtrl] 从 LoadDataManager 加载稀有度数据完成，共 {rarityColorCache.Count} 个");
+            Z_Logger.Log($"[FishingTipAniCtrl] 从 LoadDataManager 加载稀有度数据完成，共 {rarityColorCache.Count} 个");
         }
         catch (Exception e)
         {
-            Debug.LogError($"[FishingTipAniCtrl] 加载稀有度数据异常: {e.Message}");
+            Z_Logger.LogError($"[FishingTipAniCtrl] 加载稀有度数据异常: {e.Message}");
         }
     }
 
@@ -110,7 +110,7 @@ public class FishingTipAniCtrl : MonoBehaviour
             }
         }
 
-        Debug.LogWarning($"[FishingTipAniCtrl] 未找到稀有度ID: {rarityId}，使用白色");
+        Z_Logger.LogWarning($"[FishingTipAniCtrl] 未找到稀有度ID: {rarityId}，使用白色");
         return Color.white;
     }
 
@@ -128,14 +128,14 @@ public class FishingTipAniCtrl : MonoBehaviour
 
         if (targetRenderer == null)
         {
-            Debug.LogError($"[FishingTipAniCtrl] 找不到 Renderer！物体: {gameObject.name}");
+            Z_Logger.LogError($"[FishingTipAniCtrl] 找不到 Renderer！物体: {gameObject.name}");
             return;
         }
 
         Shader shader = Shader.Find("Custom/DefaultSprite");
         if (shader == null)
         {
-            Debug.LogError("[FishingTipAniCtrl] 找不到 Custom/DefaultSprite Shader！");
+            Z_Logger.LogError("[FishingTipAniCtrl] 找不到 Custom/DefaultSprite Shader！");
             return;
         }
 
@@ -151,7 +151,7 @@ public class FishingTipAniCtrl : MonoBehaviour
 
         if (mainTexture == null)
         {
-            Debug.LogWarning($"[FishingTipAniCtrl] 材质中没有主纹理！物体: {gameObject.name}");
+            Z_Logger.LogWarning($"[FishingTipAniCtrl] 材质中没有主纹理！物体: {gameObject.name}");
         }
 
         material = new Material(shader);
@@ -199,7 +199,7 @@ public class FishingTipAniCtrl : MonoBehaviour
     {
         if (texture == null)
         {
-            Debug.LogWarning($"[FishingTipAniCtrl] 设置的主纹理为空！物体: {gameObject.name}");
+            Z_Logger.LogWarning($"[FishingTipAniCtrl] 设置的主纹理为空！物体: {gameObject.name}");
             return;
         }
 
@@ -218,7 +218,7 @@ public class FishingTipAniCtrl : MonoBehaviour
         if (!isInitialized) return;
         if (blinkTexture == null)
         {
-            Debug.LogWarning($"[FishingTipAniCtrl] 闪烁纹理为空，无法开启闪烁！");
+            Z_Logger.LogWarning($"[FishingTipAniCtrl] 闪烁纹理为空，无法开启闪烁！");
             return;
         }
         enableBlink = true;
@@ -386,12 +386,12 @@ public class FishingTipAniCtrl : MonoBehaviour
     {
         if (!enableTest || !isInitialized) return;
 
-        if (Input.GetKeyDown(KeyCode.Keypad1)) { SetBlinkState(201); Debug.Log("[测试] 普通"); }
-        if (Input.GetKeyDown(KeyCode.Keypad2)) { SetBlinkState(202); Debug.Log("[测试] 罕见"); }
-        if (Input.GetKeyDown(KeyCode.Keypad3)) { SetBlinkState(203); Debug.Log("[测试] 稀有"); }
-        if (Input.GetKeyDown(KeyCode.Keypad4)) { SetBlinkState(204); Debug.Log("[测试] 史诗"); }
-        if (Input.GetKeyDown(KeyCode.Keypad5)) { SetBlinkState(205); Debug.Log("[测试] 传说"); }
-        if (Input.GetKeyDown(KeyCode.Keypad6)) { SetBlinkState(206); Debug.Log("[测试] 幻想"); }
-        if (Input.GetKeyDown(KeyCode.Keypad0)) { StopBlink(); Debug.Log("[测试] 关闭闪烁"); }
+        if (Input.GetKeyDown(KeyCode.Keypad1)) { SetBlinkState(201); Z_Logger.Log("[测试] 普通"); }
+        if (Input.GetKeyDown(KeyCode.Keypad2)) { SetBlinkState(202); Z_Logger.Log("[测试] 罕见"); }
+        if (Input.GetKeyDown(KeyCode.Keypad3)) { SetBlinkState(203); Z_Logger.Log("[测试] 稀有"); }
+        if (Input.GetKeyDown(KeyCode.Keypad4)) { SetBlinkState(204); Z_Logger.Log("[测试] 史诗"); }
+        if (Input.GetKeyDown(KeyCode.Keypad5)) { SetBlinkState(205); Z_Logger.Log("[测试] 传说"); }
+        if (Input.GetKeyDown(KeyCode.Keypad6)) { SetBlinkState(206); Z_Logger.Log("[测试] 幻想"); }
+        if (Input.GetKeyDown(KeyCode.Keypad0)) { StopBlink(); Z_Logger.Log("[测试] 关闭闪烁"); }
     }
 }

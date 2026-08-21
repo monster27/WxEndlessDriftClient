@@ -36,7 +36,7 @@ public class TipView : MonoBehaviour
     {
         if (uiTipPrefab == null)
         {
-            Debug.LogError("[TipView] uiTipPrefab is not assigned!");
+            Z_Logger.LogError("[TipView] uiTipPrefab is not assigned!");
             return;
         }
         
@@ -113,7 +113,7 @@ public class TipView : MonoBehaviour
     {
         if (string.IsNullOrEmpty(message))
         {
-            Debug.LogWarning("[TipView] Message is empty!");
+            Z_Logger.LogWarning("[TipView] Message is empty!");
             return;
         }
         
@@ -158,7 +158,7 @@ public class TipView : MonoBehaviour
         Text text = tip.GetComponentInChildren<Text>();
         if (text == null)
         {
-            Debug.LogError("[TipView] Text component not found in tip prefab!");
+            Z_Logger.LogError("[TipView] Text component not found in tip prefab!");
             ReturnTipToPool(tip);
             yield break;
         }
@@ -169,7 +169,7 @@ public class TipView : MonoBehaviour
         RectTransform rectTransform = tip.GetComponent<RectTransform>();
         if (rectTransform == null)
         {
-            Debug.LogError("[TipView] RectTransform component not found in tip prefab!");
+            Z_Logger.LogError("[TipView] RectTransform component not found in tip prefab!");
             ReturnTipToPool(tip);
             yield break;
         }

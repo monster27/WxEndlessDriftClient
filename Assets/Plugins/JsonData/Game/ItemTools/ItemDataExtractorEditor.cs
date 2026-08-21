@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 // ==================== ItemDataExtractorEditor.cs ====================
 using UnityEditor;
 using UnityEngine;
@@ -196,11 +196,11 @@ public class ItemDataExtractorEditor : EditorWindow
 
         if (fishes == null || fishes.Count == 0)
         {
-            Debug.LogError("[物品提取] 未找到鱼类数据！");
+            Z_Logger.LogError("[物品提取] 未找到鱼类数据！");
             return;
         }
 
-        Debug.Log($"[物品提取] 加载完成：鱼类={fishes.Count}，鱼饵={baits?.Count ?? 0}，垃圾={trashList?.Count ?? 0}，窝料={nestBaits?.Count ?? 0}，已存在物品={existingItems.Count}");
+        Z_Logger.Log($"[物品提取] 加载完成：鱼类={fishes.Count}，鱼饵={baits?.Count ?? 0}，垃圾={trashList?.Count ?? 0}，窝料={nestBaits?.Count ?? 0}，已存在物品={existingItems.Count}");
 
         // ========== 处理鱼类 ==========
         foreach (var fish in fishes)
@@ -475,7 +475,7 @@ public class ItemDataExtractorEditor : EditorWindow
                         }
 
                         extractedItems.Add(item);
-                        Debug.Log($"[物品提取] 添加图鉴情报: ID={infoId}, Name={infoName}, Entries={page.entries?.Count ?? 0}");
+                        Z_Logger.Log($"[物品提取] 添加图鉴情报: ID={infoId}, Name={infoName}, Entries={page.entries?.Count ?? 0}");
                     }
                 }
             }
@@ -522,12 +522,12 @@ public class ItemDataExtractorEditor : EditorWindow
                 }
 
                 extractedItems.Add(item);
-                Debug.Log($"[物品提取] 添加岛屿情报: ID={infoId}, Name={infoName}, Price={islandInfo.price}");
+                Z_Logger.Log($"[物品提取] 添加岛屿情报: ID={infoId}, Name={infoName}, Price={islandInfo.price}");
             }
         }
 
         SaveItemsToJson();
-        Debug.Log($"[物品提取] 完成！共 {extractedItems.Count} 条物品（含 {extractedItems.FindAll(i => i.itemType == 7).Count} 条图鉴情报，{extractedItems.FindAll(i => i.itemType == 8).Count} 条岛屿情报）");
+        Z_Logger.Log($"[物品提取] 完成！共 {extractedItems.Count} 条物品（含 {extractedItems.FindAll(i => i.itemType == 7).Count} 条图鉴情报，{extractedItems.FindAll(i => i.itemType == 8).Count} 条岛屿情报）");
         Repaint();
     }
 
@@ -589,7 +589,7 @@ public class ItemDataExtractorEditor : EditorWindow
 
         if (!File.Exists(fullPath))
         {
-            Debug.Log("[物品提取] 未找到已存在的物品文件，将创建新文件");
+            Z_Logger.Log("[物品提取] 未找到已存在的物品文件，将创建新文件");
             return;
         }
 
@@ -600,12 +600,12 @@ public class ItemDataExtractorEditor : EditorWindow
             if (wrapper != null && wrapper.items != null)
             {
                 existingItems = wrapper.items;
-                Debug.Log($"[物品提取] 已加载 {existingItems.Count} 条已存在物品");
+                Z_Logger.Log($"[物品提取] 已加载 {existingItems.Count} 条已存在物品");
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[物品提取] 加载已存在物品失败: {e.Message}");
+            Z_Logger.LogError($"[物品提取] 加载已存在物品失败: {e.Message}");
         }
     }
 
@@ -623,7 +623,7 @@ public class ItemDataExtractorEditor : EditorWindow
         string fullPath = Path.Combine(Application.dataPath, fishDataPath);
         if (!File.Exists(fullPath))
         {
-            Debug.LogError($"[物品提取] 鱼类文件不存在: {fullPath}");
+            Z_Logger.LogError($"[物品提取] 鱼类文件不存在: {fullPath}");
             return new List<FishData>();
         }
 
@@ -635,7 +635,7 @@ public class ItemDataExtractorEditor : EditorWindow
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[物品提取] 加载鱼类数据失败: {e.Message}");
+            Z_Logger.LogError($"[物品提取] 加载鱼类数据失败: {e.Message}");
             return new List<FishData>();
         }
     }
@@ -645,7 +645,7 @@ public class ItemDataExtractorEditor : EditorWindow
         string fullPath = Path.Combine(Application.dataPath, baitDataPath);
         if (!File.Exists(fullPath))
         {
-            Debug.LogWarning($"[物品提取] 鱼饵文件不存在: {fullPath}");
+            Z_Logger.LogWarning($"[物品提取] 鱼饵文件不存在: {fullPath}");
             return null;
         }
 
@@ -657,7 +657,7 @@ public class ItemDataExtractorEditor : EditorWindow
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[物品提取] 加载鱼饵数据失败: {e.Message}");
+            Z_Logger.LogError($"[物品提取] 加载鱼饵数据失败: {e.Message}");
             return null;
         }
     }
@@ -667,7 +667,7 @@ public class ItemDataExtractorEditor : EditorWindow
         string fullPath = Path.Combine(Application.dataPath, trashDataPath);
         if (!File.Exists(fullPath))
         {
-            Debug.LogWarning($"[物品提取] 垃圾文件不存在: {fullPath}");
+            Z_Logger.LogWarning($"[物品提取] 垃圾文件不存在: {fullPath}");
             return null;
         }
 
@@ -679,7 +679,7 @@ public class ItemDataExtractorEditor : EditorWindow
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[物品提取] 加载垃圾数据失败: {e.Message}");
+            Z_Logger.LogError($"[物品提取] 加载垃圾数据失败: {e.Message}");
             return null;
         }
     }
@@ -689,7 +689,7 @@ public class ItemDataExtractorEditor : EditorWindow
         string fullPath = Path.Combine(Application.dataPath, nestBaitDataPath);
         if (!File.Exists(fullPath))
         {
-            Debug.LogWarning($"[物品提取] 窝料文件不存在: {fullPath}");
+            Z_Logger.LogWarning($"[物品提取] 窝料文件不存在: {fullPath}");
             return null;
         }
 
@@ -701,7 +701,7 @@ public class ItemDataExtractorEditor : EditorWindow
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[物品提取] 加载窝料数据失败: {e.Message}");
+            Z_Logger.LogError($"[物品提取] 加载窝料数据失败: {e.Message}");
             return null;
         }
     }
@@ -711,7 +711,7 @@ public class ItemDataExtractorEditor : EditorWindow
         string fullPath = Path.Combine(Application.dataPath, outdoorSkinDataPath);
         if (!File.Exists(fullPath))
         {
-            Debug.LogWarning($"[物品提取] 室外皮肤文件不存在: {fullPath}");
+            Z_Logger.LogWarning($"[物品提取] 室外皮肤文件不存在: {fullPath}");
             return null;
         }
 
@@ -723,7 +723,7 @@ public class ItemDataExtractorEditor : EditorWindow
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[物品提取] 加载室外皮肤数据失败: {e.Message}");
+            Z_Logger.LogError($"[物品提取] 加载室外皮肤数据失败: {e.Message}");
             return null;
         }
     }
@@ -733,7 +733,7 @@ public class ItemDataExtractorEditor : EditorWindow
         string fullPath = Path.Combine(Application.dataPath, indoorSkinDataPath);
         if (!File.Exists(fullPath))
         {
-            Debug.LogWarning($"[物品提取] 室内皮肤文件不存在: {fullPath}");
+            Z_Logger.LogWarning($"[物品提取] 室内皮肤文件不存在: {fullPath}");
             return null;
         }
 
@@ -745,7 +745,7 @@ public class ItemDataExtractorEditor : EditorWindow
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[物品提取] 加载室内皮肤数据失败: {e.Message}");
+            Z_Logger.LogError($"[物品提取] 加载室内皮肤数据失败: {e.Message}");
             return null;
         }
     }
@@ -756,7 +756,7 @@ public class ItemDataExtractorEditor : EditorWindow
 
         if (!File.Exists(fullPath))
         {
-            Debug.LogWarning($"[物品提取] 物品分类文件不存在: {fullPath}");
+            Z_Logger.LogWarning($"[物品提取] 物品分类文件不存在: {fullPath}");
             categoryWrapper = null;
             return;
         }
@@ -765,11 +765,11 @@ public class ItemDataExtractorEditor : EditorWindow
         {
             string json = File.ReadAllText(fullPath);
             categoryWrapper = JsonUtility.FromJson<CategoryListWrapper>(json);
-            Debug.Log($"[物品提取] 已加载物品分类框架数据");
+            Z_Logger.Log($"[物品提取] 已加载物品分类框架数据");
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[物品提取] 加载物品分类数据失败: {e.Message}");
+            Z_Logger.LogError($"[物品提取] 加载物品分类数据失败: {e.Message}");
             categoryWrapper = null;
         }
     }
@@ -780,7 +780,7 @@ public class ItemDataExtractorEditor : EditorWindow
 
         if (!File.Exists(fullPath))
         {
-            Debug.LogWarning($"[物品提取] 图鉴数据文件不存在: {fullPath}");
+            Z_Logger.LogWarning($"[物品提取] 图鉴数据文件不存在: {fullPath}");
             collectionWrapper = null;
             return;
         }
@@ -791,12 +791,12 @@ public class ItemDataExtractorEditor : EditorWindow
             collectionWrapper = JsonUtility.FromJson<CollectionWrapper>(json);
             if (collectionWrapper?.collection?.categories != null)
             {
-                Debug.Log($"[物品提取] 已加载图鉴数据，共 {collectionWrapper.collection.categories.Count} 个分类");
+                Z_Logger.Log($"[物品提取] 已加载图鉴数据，共 {collectionWrapper.collection.categories.Count} 个分类");
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[物品提取] 加载图鉴数据失败: {e.Message}");
+            Z_Logger.LogError($"[物品提取] 加载图鉴数据失败: {e.Message}");
             collectionWrapper = null;
         }
     }
@@ -808,7 +808,7 @@ public class ItemDataExtractorEditor : EditorWindow
 
         if (!File.Exists(fullPath))
         {
-            Debug.LogWarning($"[物品提取] 岛屿情报数据文件不存在: {fullPath}");
+            Z_Logger.LogWarning($"[物品提取] 岛屿情报数据文件不存在: {fullPath}");
             islandInfoWrapper = null;
             return;
         }
@@ -819,12 +819,12 @@ public class ItemDataExtractorEditor : EditorWindow
             islandInfoWrapper = JsonUtility.FromJson<IslandInfoListWrapper>(json);
             if (islandInfoWrapper?.islandInfoList != null)
             {
-                Debug.Log($"[物品提取] 已加载岛屿情报数据，共 {islandInfoWrapper.islandInfoList.Count} 个");
+                Z_Logger.Log($"[物品提取] 已加载岛屿情报数据，共 {islandInfoWrapper.islandInfoList.Count} 个");
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[物品提取] 加载岛屿情报数据失败: {e.Message}");
+            Z_Logger.LogError($"[物品提取] 加载岛屿情报数据失败: {e.Message}");
             islandInfoWrapper = null;
         }
     }
@@ -875,7 +875,7 @@ public class ItemDataExtractorEditor : EditorWindow
 
         File.WriteAllText(fullPath, json);
         AssetDatabase.Refresh();
-        Debug.Log($"[物品提取] 已保存到: {fullPath}");
+        Z_Logger.Log($"[物品提取] 已保存到: {fullPath}");
     }
 
     // ========== 序列化类 ==========

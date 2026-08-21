@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: WeatherIcon
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 2d55fc6a406dddb47bf5ca3d9af42736, type: 3}
+    - {fileID: 2800000, guid: e5a883943529f924f82e6c9570265869, type: 3}
+    - {fileID: 2800000, guid: 92cb80af08a5ce24abeb00f49a943a40, type: 3}
+    - {fileID: 2800000, guid: 210fb0fdc28891240bb96f30ac267650, type: 3}
+    - {fileID: 2800000, guid: 3a1aba5cd7d91bb4e8c7622134fe45c0, type: 3}
+    - {fileID: 2800000, guid: 3a65f1bd99ac3e7449dd8ffdfbc4ccab, type: 3}
+    - {fileID: 2800000, guid: 0e61cec709b750849b9028e097edd813, type: 3}
+    - {fileID: 2800000, guid: 100e427963bca6d4593ffb9bf644f40b, type: 3}
+    - {fileID: 2800000, guid: efbe77dba6f29db40b22c2aeaf8ddb8d, type: 3}
+    - {fileID: 2800000, guid: 676b1b7ddd2415e469f6e753e4ee78a9, type: 3}
+    - {fileID: 2800000, guid: b4b435179075ca14aaf5da2b1dfe7725, type: 3}
+    - {fileID: 2800000, guid: a31b294e80d700d4db62d320eb594b99, type: 3}
+    - {fileID: 2800000, guid: 793f50a55b99b5441b87d89cb2d6b390, type: 3}
+    - {fileID: 2800000, guid: b5652a9c412a5b944969dfae80260f28, type: 3}
+    - {fileID: 2800000, guid: 0b1997d2bc1961544974289873cedc76, type: 3}
+    - {fileID: 2800000, guid: bb4941d9be4190b4bb133e148fe1630d, type: 3}
+    - {fileID: 2800000, guid: 108b60a7b72fe23468bf5cbeb8877c78, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - 0b1997d2bc1961544974289873cedc76: 21300000
+    - e5a883943529f924f82e6c9570265869: 21300000
+    - 793f50a55b99b5441b87d89cb2d6b390: 21300000
+    - b4b435179075ca14aaf5da2b1dfe7725: 21300000
+    - 108b60a7b72fe23468bf5cbeb8877c78: 21300000
+    - 0e61cec709b750849b9028e097edd813: 21300000
+    - 100e427963bca6d4593ffb9bf644f40b: 21300000
+    - bb4941d9be4190b4bb133e148fe1630d: 21300000
+    - 2d55fc6a406dddb47bf5ca3d9af42736: 21300000
+    - efbe77dba6f29db40b22c2aeaf8ddb8d: 21300000
+    - 3a1aba5cd7d91bb4e8c7622134fe45c0: 21300000
+    - b5652a9c412a5b944969dfae80260f28: 21300000
+    - 676b1b7ddd2415e469f6e753e4ee78a9: 21300000
+    - 3a65f1bd99ac3e7449dd8ffdfbc4ccab: 21300000
+    - 210fb0fdc28891240bb96f30ac267650: 21300000
+    - a31b294e80d700d4db62d320eb594b99: 21300000
+    - 92cb80af08a5ce24abeb00f49a943a40: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 0b1997d2bc1961544974289873cedc76, type: 3}
+  - {fileID: 21300000, guid: e5a883943529f924f82e6c9570265869, type: 3}
+  - {fileID: 21300000, guid: 793f50a55b99b5441b87d89cb2d6b390, type: 3}
+  - {fileID: 21300000, guid: b4b435179075ca14aaf5da2b1dfe7725, type: 3}
+  - {fileID: 21300000, guid: 108b60a7b72fe23468bf5cbeb8877c78, type: 3}
+  - {fileID: 21300000, guid: 0e61cec709b750849b9028e097edd813, type: 3}
+  - {fileID: 21300000, guid: 100e427963bca6d4593ffb9bf644f40b, type: 3}
+  - {fileID: 21300000, guid: bb4941d9be4190b4bb133e148fe1630d, type: 3}
+  - {fileID: 21300000, guid: 2d55fc6a406dddb47bf5ca3d9af42736, type: 3}
+  - {fileID: 21300000, guid: efbe77dba6f29db40b22c2aeaf8ddb8d, type: 3}
+  - {fileID: 21300000, guid: 3a1aba5cd7d91bb4e8c7622134fe45c0, type: 3}
+  - {fileID: 21300000, guid: b5652a9c412a5b944969dfae80260f28, type: 3}
+  - {fileID: 21300000, guid: 676b1b7ddd2415e469f6e753e4ee78a9, type: 3}
+  - {fileID: 21300000, guid: 3a65f1bd99ac3e7449dd8ffdfbc4ccab, type: 3}
+  - {fileID: 21300000, guid: 210fb0fdc28891240bb96f30ac267650, type: 3}
+  - {fileID: 21300000, guid: a31b294e80d700d4db62d320eb594b99, type: 3}
+  - {fileID: 21300000, guid: 92cb80af08a5ce24abeb00f49a943a40, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - 314
+  - 301
+  - 312
+  - 310
+  - 316
+  - 306
+  - 307
+  - 315
+  - 0
+  - 308
+  - 304
+  - 313
+  - 309
+  - 305
+  - 303
+  - 311
+  - 302
+  m_RenderDataMap: {}
+  m_Tag: WeatherIcon
+  m_IsVariant: 0
+  m_IsPlaceholder: 0

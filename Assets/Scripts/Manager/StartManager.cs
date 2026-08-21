@@ -16,16 +16,20 @@ public class StartManager : MonoBehaviour
     public Button localModeButton;
     public Text modeText;
     public Button loginButton;
+    public Image testImage;          // 在 Inspector 中拖入一个 Image 组件
 
     private AsyncOperationHandle<Font> _fontHandle;
+    private AsyncOperationHandle<Sprite> _imageHandle;  // ✅ 新增
 
     private void OnDestroy()
     {
         AssetManager.ReleaseAddressable(_fontHandle);
+        AssetManager.ReleaseAddressable(_imageHandle);  // ✅ 释放图片句柄
     }
 
     private void Start()
     {
+        LoadTestImage();  // ✅ 新增：加载测试图片
         LoadFont700w();
 
         UpdateModeButton();
@@ -64,7 +68,7 @@ public class StartManager : MonoBehaviour
 
     private void OnLoginButtonClick()
     {
-        Debug.Log($"[StartManager] 点击登录按钮，当前模式: {(ServerUrls.IsLocalMode ? "本地" : "远程")}");
+        Z_Logger.Log($"[StartManager] 点击登录按钮，当前模式: {(ServerUrls.IsLocalMode ? "本地" : "远程")}");
         StartCoroutine(LoginCoroutine(username, password));
     }
 
@@ -111,7 +115,7 @@ public class StartManager : MonoBehaviour
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
 
         string url = ServerUrls.GetFullUrl(ServerUrls.Auth.Login);
-        Debug.Log($"[StartManager] 发送登录请求: {url}");
+        Z_Logger.Log($"[StartManager] 发送登录请求: {url}");
 
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
         {
@@ -125,7 +129,7 @@ public class StartManager : MonoBehaviour
             if (request.result == UnityWebRequest.Result.Success)
             {
                 string responseText = request.downloadHandler.text;
-                Debug.Log($"登录响应: {responseText}");
+                Z_Logger.Log($"登录响应: {responseText}");
 
                 try
                 {
@@ -136,18 +140,18 @@ public class StartManager : MonoBehaviour
                         NetServerManager.Instance.SetCurrentPlayerId(response.playerId);
                         NetServerManager.Instance.ResetInitialization();
 
-                        Debug.Log($"[StartManager] 登录成功，设置玩家ID为: {response.playerId}");
+                        Z_Logger.Log($"[StartManager] 登录成功，设置玩家ID为: {response.playerId}");
 
                         if (response.sceneId > 0)
                         {
                             if (EnvManager.Instance != null)
                             {
                                 EnvManager.Instance.currentSceneId = response.sceneId;
-                                Debug.Log($"[StartManager] 从服务器获取场景ID: {response.sceneId}");
+                                Z_Logger.Log($"[StartManager] 从服务器获取场景ID: {response.sceneId}");
                             }
                             else
                             {
-                                Debug.LogWarning("[StartManager] EnvManager 不存在，延迟设置场景ID");
+                                Z_Logger.LogWarning("[StartManager] EnvManager 不存在，延迟设置场景ID");
                                 StartCoroutine(DelayedSetSceneId(response.sceneId));
                             }
                         }
@@ -156,17 +160,17 @@ public class StartManager : MonoBehaviour
                     }
                     else
                     {
-                        Debug.LogError($"[StartManager] 登录失败: {response?.message ?? "未知错误"}");
+                        Z_Logger.LogError($"[StartManager] 登录失败: {response?.message ?? "未知错误"}");
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError($"[StartManager] 解析登录响应失败: {ex.Message}");
+                    Z_Logger.LogError($"[StartManager] 解析登录响应失败: {ex.Message}");
                 }
             }
             else
             {
-                Debug.LogError($"[StartManager] 登录请求失败: {request.error}");
+                Z_Logger.LogError($"[StartManager] 登录请求失败: {request.error}");
             }
         }
     }
@@ -185,17 +189,17 @@ public class StartManager : MonoBehaviour
         if (EnvManager.Instance != null)
         {
             EnvManager.Instance.currentSceneId = sceneId;
-            Debug.Log($"[StartManager] 延迟设置场景ID成功: {sceneId}");
+            Z_Logger.Log($"[StartManager] 延迟设置场景ID成功: {sceneId}");
         }
         else
         {
-            Debug.LogWarning("[StartManager] 延迟设置场景ID失败 - EnvManager 未找到");
+            Z_Logger.LogWarning("[StartManager] 延迟设置场景ID失败 - EnvManager 未找到");
         }
     }
 
     private void LoadLoadingScene()
     {
-        Debug.Log("[StartManager] 跳转到加载场景: LoadingScene");
+        Z_Logger.Log("[StartManager] 跳转到加载场景: LoadingScene");
         SceneManager.LoadScene("LoadingScene");
     }
 
@@ -206,11 +210,36 @@ public class StartManager : MonoBehaviour
         _fontHandle = handle;
         if (font == null)
         {
-            Debug.LogError("加载字体 700w 失败！请检查路径: Assets/Addressables/TTF/700w.ttf");
+            Z_Logger.LogError("加载字体 700w 失败！请检查路径: Assets/Addressables/TTF/700w.ttf");
         }
         else
         {
-            Debug.Log("加载字体 江城园体700w 成功！");
+            Z_Logger.Log("加载字体 江城园体700w 成功！");
+        }
+    }/// <summary>
+     /// ✅ 加载测试图片，验证 Addressables 是否正常工作
+     /// </summary>
+    private async void LoadTestImage()
+    {
+        Z_Logger.Log("[StartManager] ⏳ 开始加载测试图片...");
+
+        // 使用默认图标
+        var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>("UI/DefaultIcon");
+        _imageHandle = handle;
+
+        if (sprite != null && testImage != null)
+        {
+            testImage.sprite = sprite;
+            testImage.color = Color.white;
+            Z_Logger.Log("[StartManager] ✅ 测试图片加载成功: UI/DefaultIcon");
+        }
+        else
+        {
+            Z_Logger.LogWarning("[StartManager] ⚠️ 测试图片加载失败，使用默认颜色");
+            if (testImage != null)
+            {
+                testImage.color = Color.gray;
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
@@ -78,7 +78,7 @@ public class ShopItemEditor : EditorWindow
         LoadShopItems();
         isDataLoaded = true;
         BuildCategoryFilterOptions();
-        Debug.Log($"[商场物品编辑器] 加载完成: 总物品={allItems.Count}, 商场物品={shopItems.Count}");
+        Z_Logger.Log($"[商场物品编辑器] 加载完成: 总物品={allItems.Count}, 商场物品={shopItems.Count}");
     }
 
     private void LoadCategoryData()
@@ -88,7 +88,7 @@ public class ShopItemEditor : EditorWindow
 
         if (!File.Exists(fullPath))
         {
-            Debug.LogWarning($"[商场物品编辑器] 分类文件不存在: {fullPath}");
+            Z_Logger.LogWarning($"[商场物品编辑器] 分类文件不存在: {fullPath}");
             return;
         }
 
@@ -110,12 +110,12 @@ public class ShopItemEditor : EditorWindow
                         }
                     }
                 }
-                Debug.Log($"[商场物品编辑器] 加载分类: {categoryNameMap.Count} 个");
+                Z_Logger.Log($"[商场物品编辑器] 加载分类: {categoryNameMap.Count} 个");
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[商场物品编辑器] 加载分类失败: {e.Message}");
+            Z_Logger.LogError($"[商场物品编辑器] 加载分类失败: {e.Message}");
         }
     }
 
@@ -126,7 +126,7 @@ public class ShopItemEditor : EditorWindow
 
         if (!File.Exists(fullPath))
         {
-            Debug.LogError($"[商场物品编辑器] 物品文件不存在: {fullPath}");
+            Z_Logger.LogError($"[商场物品编辑器] 物品文件不存在: {fullPath}");
             return;
         }
 
@@ -137,12 +137,12 @@ public class ShopItemEditor : EditorWindow
             if (wrapper?.items != null)
             {
                 allItems = wrapper.items;
-                Debug.Log($"[商场物品编辑器] 加载物品: {allItems.Count} 条");
+                Z_Logger.Log($"[商场物品编辑器] 加载物品: {allItems.Count} 条");
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[商场物品编辑器] 加载物品失败: {e.Message}");
+            Z_Logger.LogError($"[商场物品编辑器] 加载物品失败: {e.Message}");
         }
     }
 
@@ -160,13 +160,13 @@ public class ShopItemEditor : EditorWindow
                 if (wrapper?.shopItems != null)
                 {
                     shopItems = wrapper.shopItems;
-                    Debug.Log($"[商场物品编辑器] 加载商场数据: {shopItems.Count} 条");
+                    Z_Logger.Log($"[商场物品编辑器] 加载商场数据: {shopItems.Count} 条");
                     return;
                 }
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[商场物品编辑器] 加载商场数据失败: {e.Message}");
+                Z_Logger.LogWarning($"[商场物品编辑器] 加载商场数据失败: {e.Message}");
             }
         }
 
@@ -196,7 +196,7 @@ public class ShopItemEditor : EditorWindow
             }
         }
 
-        Debug.Log($"[商场物品编辑器] 重新提取商场物品: {extractedCount} 条");
+        Z_Logger.Log($"[商场物品编辑器] 重新提取商场物品: {extractedCount} 条");
         SaveShopItems();
         EditorUtility.DisplayDialog("重新提取完成", $"从物品数据中重新提取了 {extractedCount} 条商场物品", "确定");
         Repaint();
@@ -225,7 +225,7 @@ public class ShopItemEditor : EditorWindow
             }
         }
 
-        Debug.Log($"[商场物品编辑器] 从物品数据提取商场物品: {extractedCount} 条");
+        Z_Logger.Log($"[商场物品编辑器] 从物品数据提取商场物品: {extractedCount} 条");
         SaveShopItems();
     }
 
@@ -635,7 +635,7 @@ public class ShopItemEditor : EditorWindow
 
         File.WriteAllText(fullPath, json);
         AssetDatabase.Refresh();
-        Debug.Log($"[商场物品编辑器] 保存商场数据: {shopItems.Count} 条");
+        Z_Logger.Log($"[商场物品编辑器] 保存商场数据: {shopItems.Count} 条");
     }
     #endregion
 

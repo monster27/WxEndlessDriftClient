@@ -139,43 +139,43 @@ public class MainGameView : BaseView
 
     private void OnMapBtnClick()
     {
-        Debug.Log("[MainGameView] OnMapBtnClick - 点击地图按钮");
+        Z_Logger.Log("[MainGameView] OnMapBtnClick - 点击地图按钮");
         CommunicateEvent.Modify("UI_OpenMap");
     }
 
     private void OnHomeBtnClick()
     {
-        Debug.Log("[MainGameView] OnHomeBtnClick - 点击切换室内外场景按钮");
+        Z_Logger.Log("[MainGameView] OnHomeBtnClick - 点击切换室内外场景按钮");
         CommunicateEvent.Modify("UI_ToggleScene");
     }
 
     private void OnCollectionBtnClick()
     {
-        Debug.Log("[MainGameView] OnCollectionBtnClick - 点击图鉴按钮");
+        Z_Logger.Log("[MainGameView] OnCollectionBtnClick - 点击图鉴按钮");
         CommunicateEvent.Modify("UI_OpenCollection");
     }
 
     private void OnBagBtnClick()
     {
-        Debug.Log("[MainGameView] OnBagBtnClick - 点击背包按钮");
+        Z_Logger.Log("[MainGameView] OnBagBtnClick - 点击背包按钮");
         CommunicateEvent.Modify("UI_OpenBag");
     }
 
     private void OnFishBagBtnClick()
     {
-        Debug.Log("[MainGameView] OnFishBagBtnClick - 点击鱼背包按钮");
+        Z_Logger.Log("[MainGameView] OnFishBagBtnClick - 点击鱼背包按钮");
         CommunicateEvent.Modify("UI_OpenFishBag");
     }
 
     private void OnMallBtnClick()
     {
-        Debug.Log("[MainGameView] OnMallBtnClick - 点击商城按钮");
+        Z_Logger.Log("[MainGameView] OnMallBtnClick - 点击商城按钮");
         CommunicateEvent.Modify("UI_OpenMall");
     }
 
     private void OnEquipBtnClick()
     {
-        Debug.Log("[MainGameView] OnEquipBtnClick - 点击装备按钮");
+        Z_Logger.Log("[MainGameView] OnEquipBtnClick - 点击装备按钮");
         CommunicateEvent.Modify("UI_OpenEquipment");
     }
 
@@ -212,7 +212,7 @@ public class MainGameView : BaseView
     {
         UpdateWeatherIcon(currentWeatherId);
         UpdateTimeIcon(currentTimeSlotId);
-        Debug.Log($"[MainGameView] 更新显示");
+        Z_Logger.Log($"[MainGameView] 更新显示");
     }
 
     private void UpdateWeatherIcon(int weatherId)
@@ -226,7 +226,7 @@ public class MainGameView : BaseView
         }
         else
         {
-            Debug.LogWarning($"[MainGameView] 未找到天气图标: {path}");
+            Z_Logger.LogWarning($"[MainGameView] 未找到天气图标: {path}");
         }
     }
 
@@ -243,36 +243,36 @@ public class MainGameView : BaseView
             {
                 timeIcon.sprite = sprite;
                 TimeTextFadeOutText();
-                Debug.Log($"[MainGameView] 时段图标已更新: {timeSlotId}");
+                Z_Logger.Log($"[MainGameView] 时段图标已更新: {timeSlotId}");
             }
             else
             {
-                Debug.Log($"[MainGameView] 时段图标未变化: {timeSlotId}");
+                Z_Logger.Log($"[MainGameView] 时段图标未变化: {timeSlotId}");
             }
         }
         else
         {
-            Debug.LogWarning($"[MainGameView] 未找到时段图标: {path}");
+            Z_Logger.LogWarning($"[MainGameView] 未找到时段图标: {path}");
         }
     }
 
     private void OnMenuOpenBtnClick()
     {
-        Debug.Log("[MainGameView] OnMenuOpenBtnClick - 点击打开菜单");
+        Z_Logger.Log("[MainGameView] OnMenuOpenBtnClick - 点击打开菜单");
         isMenuOpen = true;
         SetMenuPanelState(isMenuOpen);
     }
 
     private void OnMenuCloseBtnClick()
     {
-        Debug.Log("[MainGameView] OnMenuCloseBtnClick - 点击关闭菜单");
+        Z_Logger.Log("[MainGameView] OnMenuCloseBtnClick - 点击关闭菜单");
         isMenuOpen = false;
         SetMenuPanelState(isMenuOpen);
     }
 
     private void OnHideBtnClick()
     {
-        Debug.Log("[MainGameView] OnHideBtnClick - 点击隐藏右侧");
+        Z_Logger.Log("[MainGameView] OnHideBtnClick - 点击隐藏右侧");
         btnPanel.SetActive(false);
         hidePanelBtn.gameObject.SetActive(false);
         showPanelBtn.gameObject.SetActive(true);
@@ -280,7 +280,7 @@ public class MainGameView : BaseView
 
     private void OnShowBtnClick()
     {
-        Debug.Log("[MainGameView] OnShowBtnClick - 点击显示按钮");
+        Z_Logger.Log("[MainGameView] OnShowBtnClick - 点击显示按钮");
         btnPanel.SetActive(true);
         hidePanelBtn.gameObject.SetActive(true);
         showPanelBtn.gameObject.SetActive(false);
@@ -288,7 +288,7 @@ public class MainGameView : BaseView
 
     private void OnCenterCameraBtnClick()
     {
-        Debug.Log("[MainGameView] OnCenterCameraBtnClick - 点击居中摄像头");
+        Z_Logger.Log("[MainGameView] OnCenterCameraBtnClick - 点击居中摄像头");
         if (CameraManager.Instance != null)
         {
             CameraManager.Instance.MoveToCenter();
@@ -383,19 +383,19 @@ public class MainGameView : BaseView
 
     private void OnBaitCountChanged()
     {
-        Debug.Log("[MainGameView] OnBaitCountChanged - 窝料数量变化");
+        Z_Logger.Log("[MainGameView] OnBaitCountChanged - 窝料数量变化");
         UpdateBaitCountDisplay();
     }
 
     private void OnBaitDataUpdated()
     {
-        Debug.Log("[MainGameView] OnBaitDataUpdated - 鱼饵数据更新");
+        Z_Logger.Log("[MainGameView] OnBaitDataUpdated - 鱼饵数据更新");
         UpdateBaitCountDisplay();
     }
 
     private void OnFishBagDataUpdated()
     {
-        Debug.Log("[MainGameView] OnFishBagDataUpdated - 鱼篓数据更新");
+        Z_Logger.Log("[MainGameView] OnFishBagDataUpdated - 鱼篓数据更新");
         UpdateFishCountDisplay();
     }
 
@@ -404,7 +404,7 @@ public class MainGameView : BaseView
     /// </summary>
     private void OnLevelRewardReceived(string rewardMessage)
     {
-        Debug.Log($"[MainGameView] 收到等级奖励: {rewardMessage}");
+        Z_Logger.Log($"[MainGameView] 收到等级奖励: {rewardMessage}");
         GameUIManager.Instance?.ShowTip($"🎉 {rewardMessage}");
     }
 
@@ -463,36 +463,36 @@ public class MainGameView : BaseView
 
     public void UpdateTime(TimeStatus status, string timeName)
     {
-        Debug.Log($"[MainGameView] UpdateTime called - status={status}, timeName={timeName}, gameTimeTxt={gameTimeTxt != null}");
+        Z_Logger.Log($"[MainGameView] UpdateTime called - status={status}, timeName={timeName}, gameTimeTxt={gameTimeTxt != null}");
 
         if (gameTimeTxt != null)
         {
             gameTimeTxt.text = timeName;
-            Debug.Log($"[MainGameView] 时间文本已更新: {timeName}");
+            Z_Logger.Log($"[MainGameView] 时间文本已更新: {timeName}");
         }
         else
         {
-            Debug.LogWarning("[MainGameView] gameTimeTxt 为 null，无法更新文本");
+            Z_Logger.LogWarning("[MainGameView] gameTimeTxt 为 null，无法更新文本");
         }
 
         timeStatus = status;
         currentTimeSlotId = 401 + (int)status;
-        Debug.Log($"[MainGameView] currentTimeSlotId={currentTimeSlotId}");
+        Z_Logger.Log($"[MainGameView] currentTimeSlotId={currentTimeSlotId}");
         UpdateTimeIcon(currentTimeSlotId);
     }
 
     public void UpdateWeather(int weatherId, string weatherName)
     {
-        Debug.Log($"[MainGameView] UpdateWeather called - weatherId={weatherId}, weatherName={weatherName}, weatherTxt={weatherTxt != null}");
+        Z_Logger.Log($"[MainGameView] UpdateWeather called - weatherId={weatherId}, weatherName={weatherName}, weatherTxt={weatherTxt != null}");
 
         if (weatherTxt != null)
         {
             weatherTxt.text = weatherName;
-            Debug.Log($"[MainGameView] 天气文本已更新: {weatherName}");
+            Z_Logger.Log($"[MainGameView] 天气文本已更新: {weatherName}");
         }
         else
         {
-            Debug.LogWarning("[MainGameView] weatherTxt 为 null，无法更新文本");
+            Z_Logger.LogWarning("[MainGameView] weatherTxt 为 null，无法更新文本");
         }
 
         currentWeatherId = weatherId;
@@ -511,7 +511,7 @@ public class MainGameView : BaseView
     /// <param name="isFirstCatch">是否为首次钓获该鱼</param>
     public void ShowCatchResult(string itemName, float weight, Sprite icon, int starRatingId = 0, int itemId = 0, bool isFish = true, bool isFirstCatch = false)
     {
-        Debug.Log($"ShowCatchResult - itemId:{itemId}, isFish:{isFish}, isFirstCatch:{isFirstCatch}");
+        Z_Logger.Log($"ShowCatchResult - itemId:{itemId}, isFish:{isFish}, isFirstCatch:{isFirstCatch}");
 
         if (FishFlyInManager.Instance != null && itemId > 0)
         {
@@ -526,7 +526,7 @@ public class MainGameView : BaseView
         // ✅ 只有鱼类且是首次钓获时，才显示 newItemTip（垃圾不触发）
         if (newItemTip != null && itemId > 0 && isFish && isFirstCatch)
         {
-            Debug.Log($"[MainGameView] 首次钓获新鱼: {itemName}, 显示 newItemTip");
+            Z_Logger.Log($"[MainGameView] 首次钓获新鱼: {itemName}, 显示 newItemTip");
             newItemTip.EnqueueNewItem(itemName, icon);
         }
     }

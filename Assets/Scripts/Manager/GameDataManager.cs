@@ -29,7 +29,7 @@ public class GameDataManager : SingletonMono<GameDataManager>
     {
         if (isFishing)
         {
-            Debug.Log("[GameDataManager] 正在钓鱼中，请勿重复操作");
+            Z_Logger.Log("[GameDataManager] 正在钓鱼中，请勿重复操作");
             return;
         }
         
@@ -53,7 +53,7 @@ public class GameDataManager : SingletonMono<GameDataManager>
         logBuilder.AppendLine($"  时间: {EnvManager.Instance.timeStatus}");
         logBuilder.AppendLine($"  天气: {EnvManager.Instance.currentWeatherId}");
         logBuilder.AppendLine($"  垃圾连续次数: {trashStreak}");
-        Debug.Log(logBuilder.ToString());
+        Z_Logger.Log(logBuilder.ToString());
         
         CommunicateEvent.Modify(EVENT_FISHING_REQUEST, requestData);
     }
@@ -97,7 +97,7 @@ public class GameDataManager : SingletonMono<GameDataManager>
         logBuilder.AppendLine($"  物品ID: {itemId}");
         logBuilder.AppendLine($"  是否垃圾: {isTrash}");
         logBuilder.AppendLine($"  垃圾连续次数: {trashStreak}");
-        Debug.Log(logBuilder.ToString());
+        Z_Logger.Log(logBuilder.ToString());
     }
     
     private bool IsTrash(int itemId)

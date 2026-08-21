@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Text;
 using UnityEngine.SceneManagement;
+using static SceneMatManager;
 
 public class ManagerManager : SingletonMono<ManagerManager>
 {
@@ -15,14 +16,14 @@ public class ManagerManager : SingletonMono<ManagerManager>
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log($"[ManagerManager] 场景加载完成: {scene.name}");
+        Z_Logger.Log($"[ManagerManager] 场景加载完成: {scene.name}");
 
         InitGameSceneManagers();
     }
 
     private void InitGameSceneManagers()
     {
-        Debug.Log("[ManagerManager] 开始初始化游戏场景管理器...");
+        Z_Logger.Log("[ManagerManager] 开始初始化游戏场景管理器...");
         StringBuilder logBuilder = new StringBuilder();
         logBuilder.AppendLine("[ManagerManager] 初始化管理器列表:");
 
@@ -33,7 +34,7 @@ public class ManagerManager : SingletonMono<ManagerManager>
         {
             if (!LoadDataManager.Instance.isDataLoaded)
             {
-                Debug.Log("[ManagerManager] 等待 LoadDataManager 加载数据...");
+                Z_Logger.Log("[ManagerManager] 等待 LoadDataManager 加载数据...");
             }
             logBuilder.AppendLine("  LoadDataManager: 已就绪");
         }
@@ -66,7 +67,7 @@ public class ManagerManager : SingletonMono<ManagerManager>
         }
         else
         {
-            Debug.LogWarning("[ManagerManager] SkinManager 实例不存在，将延迟初始化");
+            Z_Logger.LogWarning("[ManagerManager] SkinManager 实例不存在，将延迟初始化");
         }
 
         // ====================================================================
@@ -79,7 +80,7 @@ public class ManagerManager : SingletonMono<ManagerManager>
             // ✅ 关键修复：启动网络数据初始化
             if (!NetServerManager.Instance.IsInitialized)
             {
-                Debug.Log("[ManagerManager] 启动 NetServerManager 数据初始化...");
+                Z_Logger.Log("[ManagerManager] 启动 NetServerManager 数据初始化...");
                 NetServerManager.Instance.StartInitialization();
 
                 // ✅ 订阅初始化完成事件，在数据加载完成后才触发 UI 初始化
@@ -95,7 +96,7 @@ public class ManagerManager : SingletonMono<ManagerManager>
         }
         else
         {
-            Debug.LogError("[ManagerManager] NetServerManager 实例不存在！");
+            Z_Logger.LogError("[ManagerManager] NetServerManager 实例不存在！");
         }
 
         // ====================================================================
@@ -142,7 +143,8 @@ public class ManagerManager : SingletonMono<ManagerManager>
         {
             if (SceneMatManager.Instance != null)
             {
-                FishFlyInManager.Instance.Init(SceneMatManager.Instance.gameLayerQueue + 1);
+                //FishFlyInManager.Instance.Init(SceneMatManager.Instance.gameLayerQueue + (int)RenderElementType.Player);
+                FishFlyInManager.Instance.Init(SceneMatManager.Instance.gameLayerQueue);
             }
             logBuilder.AppendLine("  FishFlyInManager: 完成");
         }
@@ -160,7 +162,7 @@ public class ManagerManager : SingletonMono<ManagerManager>
         // 完成加载
         // ====================================================================
         logBuilder.AppendLine("[ManagerManager] 管理器初始化完成，等待网络数据...");
-        Debug.Log(logBuilder.ToString());
+        Z_Logger.Log(logBuilder.ToString());
 
         initializationComplete = true;
     }
@@ -170,7 +172,7 @@ public class ManagerManager : SingletonMono<ManagerManager>
     /// </summary>
     private void OnNetServerInitialized()
     {
-        Debug.Log("[ManagerManager] NetServerManager 初始化完成，开始应用数据...");
+        Z_Logger.Log("[ManagerManager] NetServerManager 初始化完成，开始应用数据...");
 
         // 取消订阅，防止重复触发
         if (NetServerManager.Instance != null)
@@ -185,7 +187,7 @@ public class ManagerManager : SingletonMono<ManagerManager>
         {
             int sceneId = EnvManager.Instance.currentSceneId;
             string sceneIdStr = sceneId.ToString();
-            Debug.Log($"[ManagerManager] 切换到场景: {sceneIdStr}");
+            Z_Logger.Log($"[ManagerManager] 切换到场景: {sceneIdStr}");
 
             if (SceneMatManager.Instance != null)
             {
@@ -199,7 +201,7 @@ public class ManagerManager : SingletonMono<ManagerManager>
         if (SkinManager.Instance != null)
         {
             // SkinManager 会通过事件自动应用皮肤
-            Debug.Log("[ManagerManager] 皮肤数据将自动应用");
+            Z_Logger.Log("[ManagerManager] 皮肤数据将自动应用");
         }
 
         // ====================================================================
@@ -210,7 +212,7 @@ public class ManagerManager : SingletonMono<ManagerManager>
 
     private void OnAllLoadingComplete()
     {
-        Debug.Log("[ManagerManager] 所有加载完成，启用ClickManager");
+        Z_Logger.Log("[ManagerManager] 所有加载完成，启用ClickManager");
         if (ClickManager.Instance != null)
         {
             ClickManager.Instance.IsEnabled = true;
@@ -221,7 +223,7 @@ public class ManagerManager : SingletonMono<ManagerManager>
 
         // 2. ✅ 在 SkinManager 同步皮肤数据之后，再触发背包刷新
         //    确保 BagView.RefreshItems 执行时 SkinManager.equippedSkins 已包含服务器数据
-        Debug.Log("[ManagerManager] 皮肤数据已同步，触发背包刷新事件");
+        Z_Logger.Log("[ManagerManager] 皮肤数据已同步，触发背包刷新事件");
         CommunicateEvent.Modify(CommunicateEvent.EVENT_REFRESH_BAG);
     }
 

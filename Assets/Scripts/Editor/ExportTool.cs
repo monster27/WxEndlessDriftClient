@@ -69,7 +69,7 @@ public class ExportTool : EditorWindow
         {
             if (ex.Message.Contains("AssetStoreDownloadManager"))
             {
-                Debug.LogWarning("Unity Package Manager 临时异常，已自动恢复");
+                Z_Logger.LogWarning("Unity Package Manager 临时异常，已自动恢复");
             }
             else
             {
@@ -91,7 +91,7 @@ public class ExportTool : EditorWindow
         {
             if (ex.Message.Contains("AssetStoreDownloadManager"))
             {
-                Debug.LogWarning("Unity Package Manager 临时异常，路径未保存");
+                Z_Logger.LogWarning("Unity Package Manager 临时异常，路径未保存");
             }
             else
             {
@@ -157,14 +157,14 @@ public class ExportTool : EditorWindow
         // 获取服务器Shared目录路径
         string serverSharedPath = Path.Combine(Application.dataPath.Replace("/Assets", ""), "..", "WxEndlessDriftServer", "Shared");
 
-        Debug.Log($"[ExportTool] ========== 刷新服务器导出列表 ==========");
-        Debug.Log($"[ExportTool] 服务器Shared路径: {serverSharedPath}");
+        Z_Logger.Log($"[ExportTool] ========== 刷新服务器导出列表 ==========");
+        Z_Logger.Log($"[ExportTool] 服务器Shared路径: {serverSharedPath}");
 
         // 1. 获取客户端Resources目录下的JSON数据
         string resourcesPath = Path.Combine(Application.dataPath, "Resources");
         if (Directory.Exists(resourcesPath))
         {
-            Debug.Log($"[ExportTool] 扫描Resources目录: {resourcesPath}");
+            Z_Logger.Log($"[ExportTool] 扫描Resources目录: {resourcesPath}");
             foreach (string file in Directory.GetFiles(resourcesPath, "*.json", SearchOption.AllDirectories))
             {
                 if (file.Contains("ProjectSettings") || file.Contains("Packages"))
@@ -180,19 +180,19 @@ public class ExportTool : EditorWindow
                     fileType = "JSON数据",
                     color = new Color(0.2f, 0.6f, 1f)
                 });
-                Debug.Log($"[ExportTool]   📄 JSON: {file} → {Path.Combine("Data", relativePath)}");
+                Z_Logger.Log($"[ExportTool]   📄 JSON: {file} → {Path.Combine("Data", relativePath)}");
             }
         }
         else
         {
-            Debug.LogWarning($"[ExportTool] Resources目录不存在: {resourcesPath}");
+            Z_Logger.LogWarning($"[ExportTool] Resources目录不存在: {resourcesPath}");
         }
 
         // 2. 获取客户端数据结构（导出到服务器Shared/Structures）
         string structSourcePath = Path.Combine(Application.dataPath, "Plugins", "Json");
         if (Directory.Exists(structSourcePath))
         {
-            Debug.Log($"[ExportTool] 扫描数据结构目录: {structSourcePath}");
+            Z_Logger.Log($"[ExportTool] 扫描数据结构目录: {structSourcePath}");
             foreach (string file in Directory.GetFiles(structSourcePath, "*.cs"))
             {
                 string fileName = Path.GetFileName(file);
@@ -205,19 +205,19 @@ public class ExportTool : EditorWindow
                     fileType = "数据结构",
                     color = new Color(0.2f, 0.8f, 0.2f)
                 });
-                Debug.Log($"[ExportTool]   📄 数据结构: {file} → {Path.Combine("Structures", fileName)}");
+                Z_Logger.Log($"[ExportTool]   📄 数据结构: {file} → {Path.Combine("Structures", fileName)}");
             }
         }
         else
         {
-            Debug.LogWarning($"[ExportTool] 数据结构目录不存在: {structSourcePath}");
+            Z_Logger.LogWarning($"[ExportTool] 数据结构目录不存在: {structSourcePath}");
         }
 
         // 3. 获取客户端SharedModels（导出到服务器Shared/SharedModels）
         string clientSharedModelsPath = Path.Combine(Application.dataPath, "Plugins", "SharedModels");
         if (Directory.Exists(clientSharedModelsPath))
         {
-            Debug.Log($"[ExportTool] 扫描SharedModels目录: {clientSharedModelsPath}");
+            Z_Logger.Log($"[ExportTool] 扫描SharedModels目录: {clientSharedModelsPath}");
             foreach (string file in Directory.GetFiles(clientSharedModelsPath, "*.cs"))
             {
                 string fileName = Path.GetFileName(file);
@@ -230,12 +230,12 @@ public class ExportTool : EditorWindow
                     fileType = "共享模型",
                     color = new Color(1f, 0.6f, 0.2f)
                 });
-                Debug.Log($"[ExportTool]   📄 共享模型: {file} → {Path.Combine("SharedModels", fileName)}");
+                Z_Logger.Log($"[ExportTool]   📄 共享模型: {file} → {Path.Combine("SharedModels", fileName)}");
             }
         }
         else
         {
-            Debug.LogWarning($"[ExportTool] SharedModels目录不存在: {clientSharedModelsPath}");
+            Z_Logger.LogWarning($"[ExportTool] SharedModels目录不存在: {clientSharedModelsPath}");
         }
 
         // 4. 获取游戏事件常量文件（导出到服务器Shared/Events）
@@ -252,15 +252,15 @@ public class ExportTool : EditorWindow
                 fileType = "事件常量",
                 color = new Color(1f, 0.4f, 0.7f)
             });
-            Debug.Log($"[ExportTool]   📄 事件常量: {gameEventConstantsPath} → {Path.Combine("Events", fileName)}");
+            Z_Logger.Log($"[ExportTool]   📄 事件常量: {gameEventConstantsPath} → {Path.Combine("Events", fileName)}");
         }
         else
         {
-            Debug.LogWarning($"[ExportTool] 事件常量文件不存在: {gameEventConstantsPath}");
+            Z_Logger.LogWarning($"[ExportTool] 事件常量文件不存在: {gameEventConstantsPath}");
         }
 
-        Debug.Log($"[ExportTool] 服务器导出列表刷新完成，共 {exportFiles.Count} 个文件");
-        Debug.Log($"[ExportTool] =============================================");
+        Z_Logger.Log($"[ExportTool] 服务器导出列表刷新完成，共 {exportFiles.Count} 个文件");
+        Z_Logger.Log($"[ExportTool] =============================================");
     }
 
     /// <summary>
@@ -270,21 +270,21 @@ public class ExportTool : EditorWindow
     {
         exportToFiles.Clear();
 
-        Debug.Log($"[ExportTool] ========== 刷新客户端导出列表 ==========");
+        Z_Logger.Log($"[ExportTool] ========== 刷新客户端导出列表 ==========");
 
         if (string.IsNullOrEmpty(exportToPath))
         {
-            Debug.LogWarning($"[ExportTool] 目标路径为空，跳过刷新");
-            Debug.Log($"[ExportTool] =============================================");
+            Z_Logger.LogWarning($"[ExportTool] 目标路径为空，跳过刷新");
+            Z_Logger.Log($"[ExportTool] =============================================");
             return;
         }
 
-        Debug.Log($"[ExportTool] 目标项目根目录: {exportToPath}");
+        Z_Logger.Log($"[ExportTool] 目标项目根目录: {exportToPath}");
 
         string resourcesPath = Path.Combine(Application.dataPath, "Resources");
         if (Directory.Exists(resourcesPath))
         {
-            Debug.Log($"[ExportTool] 扫描Resources目录: {resourcesPath}");
+            Z_Logger.Log($"[ExportTool] 扫描Resources目录: {resourcesPath}");
             foreach (string file in Directory.GetFiles(resourcesPath, "*.json", SearchOption.AllDirectories))
             {
                 if (file.Contains("ProjectSettings") || file.Contains("Packages") || file.Contains("Library"))
@@ -300,16 +300,16 @@ public class ExportTool : EditorWindow
                     fileType = "JSON文件",
                     color = new Color(0.2f, 0.8f, 0.6f)
                 });
-                Debug.Log($"[ExportTool]   📄 JSON: {file} → {relativePath}");
+                Z_Logger.Log($"[ExportTool]   📄 JSON: {file} → {relativePath}");
             }
         }
         else
         {
-            Debug.LogWarning($"[ExportTool] Resources目录不存在: {resourcesPath}");
+            Z_Logger.LogWarning($"[ExportTool] Resources目录不存在: {resourcesPath}");
         }
 
-        Debug.Log($"[ExportTool] 客户端导出列表刷新完成，共 {exportToFiles.Count} 个文件");
-        Debug.Log($"[ExportTool] =============================================");
+        Z_Logger.Log($"[ExportTool] 客户端导出列表刷新完成，共 {exportToFiles.Count} 个文件");
+        Z_Logger.Log($"[ExportTool] =============================================");
     }
 
     private void OnGUI()
@@ -513,11 +513,11 @@ public class ExportTool : EditorWindow
         if (!EditorUtility.DisplayDialog("确认导出", confirmMsg, "导出", "取消"))
             return;
 
-        Debug.Log($"[ExportTool] ========== 开始带时间戳导出 ==========");
-        Debug.Log($"[ExportTool] 导出根目录: {exportToPath}");
-        Debug.Log($"[ExportTool] 时间戳文件夹: {folderName}");
-        Debug.Log($"[ExportTool] 完整路径: {fullExportPath}");
-        Debug.Log($"[ExportTool] 待导出文件数: {exportToFiles.Count}");
+        Z_Logger.Log($"[ExportTool] ========== 开始带时间戳导出 ==========");
+        Z_Logger.Log($"[ExportTool] 导出根目录: {exportToPath}");
+        Z_Logger.Log($"[ExportTool] 时间戳文件夹: {folderName}");
+        Z_Logger.Log($"[ExportTool] 完整路径: {fullExportPath}");
+        Z_Logger.Log($"[ExportTool] 待导出文件数: {exportToFiles.Count}");
 
         try
         {
@@ -525,11 +525,11 @@ public class ExportTool : EditorWindow
             if (!Directory.Exists(fullExportPath))
             {
                 Directory.CreateDirectory(fullExportPath);
-                Debug.Log($"[ExportTool] 📁 创建导出目录: {fullExportPath}");
+                Z_Logger.Log($"[ExportTool] 📁 创建导出目录: {fullExportPath}");
             }
             else
             {
-                Debug.Log($"[ExportTool] 📁 使用已存在的目录: {fullExportPath}");
+                Z_Logger.Log($"[ExportTool] 📁 使用已存在的目录: {fullExportPath}");
             }
 
             int successCount = 0;
@@ -553,12 +553,12 @@ public class ExportTool : EditorWindow
                     File.Copy(fileInfo.sourcePath, targetFilePath, true);
                     successCount++;
                     exportedFiles.Add(fileInfo.destinationPath);
-                    Debug.Log($"[ExportTool]   ✅ 导出成功: {fileInfo.destinationPath}");
+                    Z_Logger.Log($"[ExportTool]   ✅ 导出成功: {fileInfo.destinationPath}");
                 }
                 catch (System.Exception ex)
                 {
                     failCount++;
-                    Debug.LogError($"[ExportTool]   ❌ 导出失败 {fileInfo.destinationPath}: {ex.Message}");
+                    Z_Logger.LogError($"[ExportTool]   ❌ 导出失败 {fileInfo.destinationPath}: {ex.Message}");
                 }
             }
 
@@ -571,9 +571,9 @@ public class ExportTool : EditorWindow
                               (failCount > 0 ? $"❌ 失败: {failCount} 个文件\n" : "") +
                               $"\n📂 文件夹名: {folderName}";
 
-            Debug.Log($"[ExportTool] 导出完成: 成功{successCount}, 失败{failCount}");
-            Debug.Log($"[ExportTool] 导出目录: {fullExportPath}");
-            Debug.Log($"[ExportTool] =============================================");
+            Z_Logger.Log($"[ExportTool] 导出完成: 成功{successCount}, 失败{failCount}");
+            Z_Logger.Log($"[ExportTool] 导出目录: {fullExportPath}");
+            Z_Logger.Log($"[ExportTool] =============================================");
 
             // 导出完成后自动打开文件夹
             bool openFolder = EditorUtility.DisplayDialog(
@@ -594,7 +594,7 @@ public class ExportTool : EditorWindow
         catch (System.Exception ex)
         {
             EditorUtility.DisplayDialog("导出失败", $"导出过程中发生错误：\n{ex.Message}", "确定");
-            Debug.LogError($"[ExportTool] 导出错误: {ex}");
+            Z_Logger.LogError($"[ExportTool] 导出错误: {ex}");
         }
     }
 
@@ -760,9 +760,9 @@ public class ExportTool : EditorWindow
             return;
         }
 
-        Debug.Log($"[ExportTool] ========== 开始扫描目标目录 ==========");
-        Debug.Log($"[ExportTool] 目标目录根路径: {basePath}");
-        Debug.Log($"[ExportTool] 当前模式: {(currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp ? "客户端导出" : "服务器导出")}");
+        Z_Logger.Log($"[ExportTool] ========== 开始扫描目标目录 ==========");
+        Z_Logger.Log($"[ExportTool] 目标目录根路径: {basePath}");
+        Z_Logger.Log($"[ExportTool] 当前模式: {(currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp ? "客户端导出" : "服务器导出")}");
 
         try
         {
@@ -773,11 +773,11 @@ public class ExportTool : EditorWindow
                 if (Directory.Exists(assetsPath))
                 {
                     actualBasePath = assetsPath;
-                    Debug.Log($"[ExportTool] 客户端模式: 使用 Assets 目录作为目标路径: {actualBasePath}");
+                    Z_Logger.Log($"[ExportTool] 客户端模式: 使用 Assets 目录作为目标路径: {actualBasePath}");
                 }
                 else
                 {
-                    Debug.LogWarning($"[ExportTool] Assets 目录不存在，使用原始路径: {actualBasePath}");
+                    Z_Logger.LogWarning($"[ExportTool] Assets 目录不存在，使用原始路径: {actualBasePath}");
                 }
             }
 
@@ -786,11 +786,11 @@ public class ExportTool : EditorWindow
             if (currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp)
             {
                 string resourcesPath = Path.Combine(Application.dataPath, "Resources");
-                Debug.Log($"[ExportTool] 源目录(客户端Resources): {resourcesPath}");
+                Z_Logger.Log($"[ExportTool] 源目录(客户端Resources): {resourcesPath}");
 
                 if (exportToFiles != null && exportToFiles.Count > 0)
                 {
-                    Debug.Log($"[ExportTool] 从导出列表获取 {exportToFiles.Count} 个文件名");
+                    Z_Logger.Log($"[ExportTool] 从导出列表获取 {exportToFiles.Count} 个文件名");
                     foreach (var fileInfo in exportToFiles)
                     {
                         sourceFileNames.Add(fileInfo.fileName);
@@ -798,26 +798,26 @@ public class ExportTool : EditorWindow
                 }
                 else if (Directory.Exists(resourcesPath))
                 {
-                    Debug.Log($"[ExportTool] 导出列表为空，直接从Resources目录读取");
+                    Z_Logger.Log($"[ExportTool] 导出列表为空，直接从Resources目录读取");
                     foreach (string file in Directory.GetFiles(resourcesPath, "*", SearchOption.AllDirectories))
                     {
                         if (file.Contains("ProjectSettings") || file.Contains("Packages"))
                             continue;
                         string fileName = Path.GetFileName(file);
                         sourceFileNames.Add(fileName);
-                        Debug.Log($"[ExportTool]   添加源文件: {fileName}");
+                        Z_Logger.Log($"[ExportTool]   添加源文件: {fileName}");
                     }
                 }
                 else
                 {
-                    Debug.LogWarning($"[ExportTool] Resources目录不存在: {resourcesPath}");
+                    Z_Logger.LogWarning($"[ExportTool] Resources目录不存在: {resourcesPath}");
                 }
             }
             else
             {
                 if (exportFiles != null && exportFiles.Count > 0)
                 {
-                    Debug.Log($"[ExportTool] 从导出列表获取 {exportFiles.Count} 个文件名");
+                    Z_Logger.Log($"[ExportTool] 从导出列表获取 {exportFiles.Count} 个文件名");
                     foreach (var fileInfo in exportFiles)
                     {
                         sourceFileNames.Add(fileInfo.fileName);
@@ -825,7 +825,7 @@ public class ExportTool : EditorWindow
                 }
                 else
                 {
-                    Debug.Log($"[ExportTool] 导出列表为空，尝试从源目录读取");
+                    Z_Logger.Log($"[ExportTool] 导出列表为空，尝试从源目录读取");
 
                     string[] sourceDirs = {
                         Path.Combine(Application.dataPath, "Resources"),
@@ -838,7 +838,7 @@ public class ExportTool : EditorWindow
                     {
                         if (Directory.Exists(dir))
                         {
-                            Debug.Log($"[ExportTool] 扫描源目录: {dir}");
+                            Z_Logger.Log($"[ExportTool] 扫描源目录: {dir}");
                             foreach (string file in Directory.GetFiles(dir, "*", SearchOption.AllDirectories))
                             {
                                 if (file.Contains("ProjectSettings") || file.Contains("Packages"))
@@ -848,7 +848,7 @@ public class ExportTool : EditorWindow
                                 {
                                     string fileName = Path.GetFileName(file);
                                     sourceFileNames.Add(fileName);
-                                    Debug.Log($"[ExportTool]   添加源文件: {fileName}");
+                                    Z_Logger.Log($"[ExportTool]   添加源文件: {fileName}");
                                 }
                             }
                         }
@@ -856,13 +856,13 @@ public class ExportTool : EditorWindow
                 }
             }
 
-            Debug.Log($"[ExportTool] 源文件名称列表: 共 {sourceFileNames.Count} 个");
+            Z_Logger.Log($"[ExportTool] 源文件名称列表: 共 {sourceFileNames.Count} 个");
 
             string[] targetExtensions = { "*.json", "*.cs" };
             List<string> targetFiles = new List<string>();
 
-            Debug.Log($"[ExportTool] 扫描目标目录: {actualBasePath}");
-            Debug.Log($"[ExportTool] 扫描文件扩展名: {string.Join(", ", targetExtensions)}");
+            Z_Logger.Log($"[ExportTool] 扫描目标目录: {actualBasePath}");
+            Z_Logger.Log($"[ExportTool] 扫描文件扩展名: {string.Join(", ", targetExtensions)}");
 
             string[] scanDirs;
             if (currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp)
@@ -871,11 +871,11 @@ public class ExportTool : EditorWindow
                 if (Directory.Exists(resourcesDir))
                 {
                     scanDirs = new string[] { resourcesDir };
-                    Debug.Log($"[ExportTool] 客户端模式: 只扫描 Resources 目录: {resourcesDir}");
+                    Z_Logger.Log($"[ExportTool] 客户端模式: 只扫描 Resources 目录: {resourcesDir}");
                 }
                 else
                 {
-                    Debug.LogWarning($"[ExportTool] 客户端模式: Resources 目录不存在: {resourcesDir}");
+                    Z_Logger.LogWarning($"[ExportTool] 客户端模式: Resources 目录不存在: {resourcesDir}");
                     scanDirs = new string[] { actualBasePath };
                 }
             }
@@ -886,7 +886,7 @@ public class ExportTool : EditorWindow
                     .Select(d => Path.Combine(actualBasePath, d))
                     .Where(Directory.Exists)
                     .ToArray();
-                Debug.Log($"[ExportTool] 服务器模式: 扫描 {scanDirs.Length} 个子目录");
+                Z_Logger.Log($"[ExportTool] 服务器模式: 扫描 {scanDirs.Length} 个子目录");
             }
 
             foreach (string scanDir in scanDirs)
@@ -894,7 +894,7 @@ public class ExportTool : EditorWindow
                 if (!Directory.Exists(scanDir))
                     continue;
 
-                Debug.Log($"[ExportTool] 扫描目录: {scanDir}");
+                Z_Logger.Log($"[ExportTool] 扫描目录: {scanDir}");
 
                 foreach (string ext in targetExtensions)
                 {
@@ -905,12 +905,12 @@ public class ExportTool : EditorWindow
 
                         string relativePath = file.Replace(actualBasePath, "").TrimStart('/', '\\');
                         targetFiles.Add(relativePath);
-                        Debug.Log($"[ExportTool]   找到目标文件: {relativePath}");
+                        Z_Logger.Log($"[ExportTool]   找到目标文件: {relativePath}");
                     }
                 }
             }
 
-            Debug.Log($"[ExportTool] 目标目录相关文件总数: {targetFiles.Count}");
+            Z_Logger.Log($"[ExportTool] 目标目录相关文件总数: {targetFiles.Count}");
 
             foreach (string targetFile in targetFiles)
             {
@@ -925,7 +925,7 @@ public class ExportTool : EditorWindow
                         status = FileStatus.Redundant,
                         fullPath = Path.Combine(actualBasePath, targetFile)
                     });
-                    Debug.Log($"[ExportTool]   🔄 已有文件(冗余): {targetFile} (文件名: {fileName})");
+                    Z_Logger.Log($"[ExportTool]   🔄 已有文件(冗余): {targetFile} (文件名: {fileName})");
                 }
                 else
                 {
@@ -936,7 +936,7 @@ public class ExportTool : EditorWindow
                         status = FileStatus.Other,
                         fullPath = Path.Combine(actualBasePath, targetFile)
                     });
-                    Debug.Log($"[ExportTool]   📄 其他文件: {targetFile} (文件名: {fileName})");
+                    Z_Logger.Log($"[ExportTool]   📄 其他文件: {targetFile} (文件名: {fileName})");
                 }
             }
 
@@ -946,15 +946,15 @@ public class ExportTool : EditorWindow
             int redundantCount = scanResults.Count(r => r.status == FileStatus.Redundant);
             int otherCount = scanResults.Count(r => r.status == FileStatus.Other);
 
-            Debug.Log($"[ExportTool] 扫描完成！找到 {redundantCount} 个已有文件，{otherCount} 个其他文件");
-            Debug.Log($"[ExportTool] =============================================");
+            Z_Logger.Log($"[ExportTool] 扫描完成！找到 {redundantCount} 个已有文件，{otherCount} 个其他文件");
+            Z_Logger.Log($"[ExportTool] =============================================");
 
             EditorUtility.DisplayDialog("扫描完成", $"扫描完成！\n\n🔄 已有文件: {redundantCount} 个\n📄 其他文件: {otherCount} 个", "确定");
         }
         catch (System.Exception ex)
         {
             EditorUtility.DisplayDialog("扫描失败", $"扫描过程中发生错误：\n{ex.Message}", "确定");
-            Debug.LogError($"[ExportTool] 扫描文件错误: {ex}");
+            Z_Logger.LogError($"[ExportTool] 扫描文件错误: {ex}");
         }
     }
 
@@ -972,9 +972,9 @@ public class ExportTool : EditorWindow
         int failCount = 0;
         List<string> deletedList = new List<string>();
 
-        Debug.Log($"[ExportTool] ========== 开始删除已有文件 ==========");
-        Debug.Log($"[ExportTool] 目标目录: {basePath}");
-        Debug.Log($"[ExportTool] 待删除文件数: {redundantFiles.Count}");
+        Z_Logger.Log($"[ExportTool] ========== 开始删除已有文件 ==========");
+        Z_Logger.Log($"[ExportTool] 目标目录: {basePath}");
+        Z_Logger.Log($"[ExportTool] 待删除文件数: {redundantFiles.Count}");
 
         try
         {
@@ -994,12 +994,12 @@ public class ExportTool : EditorWindow
                         File.Delete(fullPath);
                         deletedCount++;
                         deletedList.Add(result.fileName);
-                        Debug.Log($"[ExportTool]   🗑️ 已删除: {result.relativePath} (完整路径: {fullPath})");
+                        Z_Logger.Log($"[ExportTool]   🗑️ 已删除: {result.relativePath} (完整路径: {fullPath})");
                     }
                     catch (System.Exception ex)
                     {
                         failCount++;
-                        Debug.LogError($"[ExportTool]   ❌ 删除失败 {result.relativePath}: {ex.Message}");
+                        Z_Logger.LogError($"[ExportTool]   ❌ 删除失败 {result.relativePath}: {ex.Message}");
                     }
                 }
             }
@@ -1022,8 +1022,8 @@ public class ExportTool : EditorWindow
                 }
             }
 
-            Debug.Log($"[ExportTool] 清除完成：删除 {deletedCount} 个文件，{deletedDirs} 个空目录");
-            Debug.Log($"[ExportTool] =============================================");
+            Z_Logger.Log($"[ExportTool] 清除完成：删除 {deletedCount} 个文件，{deletedDirs} 个空目录");
+            Z_Logger.Log($"[ExportTool] =============================================");
 
             EditorUtility.DisplayDialog("清除完成", resultMsg, "确定");
 
@@ -1032,7 +1032,7 @@ public class ExportTool : EditorWindow
         catch (System.Exception ex)
         {
             EditorUtility.DisplayDialog("清除失败", $"清除过程中发生错误：\n{ex.Message}", "确定");
-            Debug.LogError($"[ExportTool] 清除已有文件错误: {ex}");
+            Z_Logger.LogError($"[ExportTool] 清除已有文件错误: {ex}");
         }
     }
 
@@ -1060,19 +1060,19 @@ public class ExportTool : EditorWindow
                         {
                             Directory.Delete(dir);
                             deletedCount++;
-                            Debug.Log($"[ExportTool]   📁 已删除空目录: {dir}");
+                            Z_Logger.Log($"[ExportTool]   📁 已删除空目录: {dir}");
                         }
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogWarning($"[ExportTool]   删除目录失败 {dir}: {ex.Message}");
+                    Z_Logger.LogWarning($"[ExportTool]   删除目录失败 {dir}: {ex.Message}");
                 }
             }
         }
         catch (System.Exception ex)
         {
-            Debug.LogWarning($"[ExportTool] 删除空目录时发生错误: {ex.Message}");
+            Z_Logger.LogWarning($"[ExportTool] 删除空目录时发生错误: {ex.Message}");
         }
 
         return deletedCount;
@@ -1082,44 +1082,44 @@ public class ExportTool : EditorWindow
     {
         if (scanResults.Count == 0)
         {
-            Debug.Log("[ExportTool] 📋 没有文件");
+            Z_Logger.Log("[ExportTool] 📋 没有文件");
             return;
         }
 
         var redundantFiles = scanResults.Where(r => r.status == FileStatus.Redundant).ToList();
         var otherFiles = scanResults.Where(r => r.status == FileStatus.Other).ToList();
 
-        Debug.Log($"[ExportTool] ========== 📊 完整扫描报告 ==========");
-        Debug.Log($"[ExportTool] 📁 目标目录根路径: {basePath}");
-        Debug.Log($"[ExportTool] 📅 扫描时间: {System.DateTime.Now}");
-        Debug.Log($"[ExportTool] 当前模式: {(currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp ? "客户端导出" : "服务器导出")}");
-        Debug.Log($"[ExportTool] ");
-        Debug.Log($"[ExportTool] 🔄 已有文件 ({redundantFiles.Count} 个) - 文件名与源目录相同，建议删除");
-        Debug.Log($"[ExportTool] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        Z_Logger.Log($"[ExportTool] ========== 📊 完整扫描报告 ==========");
+        Z_Logger.Log($"[ExportTool] 📁 目标目录根路径: {basePath}");
+        Z_Logger.Log($"[ExportTool] 📅 扫描时间: {System.DateTime.Now}");
+        Z_Logger.Log($"[ExportTool] 当前模式: {(currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp ? "客户端导出" : "服务器导出")}");
+        Z_Logger.Log($"[ExportTool] ");
+        Z_Logger.Log($"[ExportTool] 🔄 已有文件 ({redundantFiles.Count} 个) - 文件名与源目录相同，建议删除");
+        Z_Logger.Log($"[ExportTool] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         foreach (var file in redundantFiles)
         {
-            Debug.Log($"[ExportTool]    🗑️ 相对路径: {file.relativePath}");
-            Debug.Log($"[ExportTool]        完整路径: {file.fullPath}");
+            Z_Logger.Log($"[ExportTool]    🗑️ 相对路径: {file.relativePath}");
+            Z_Logger.Log($"[ExportTool]        完整路径: {file.fullPath}");
         }
 
         if (otherFiles.Count > 0)
         {
-            Debug.Log($"[ExportTool] ");
-            Debug.Log($"[ExportTool] 📄 其他文件 ({otherFiles.Count} 个) - 文件名不在源目录中，可能是手动创建");
-            Debug.Log($"[ExportTool] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            Z_Logger.Log($"[ExportTool] ");
+            Z_Logger.Log($"[ExportTool] 📄 其他文件 ({otherFiles.Count} 个) - 文件名不在源目录中，可能是手动创建");
+            Z_Logger.Log($"[ExportTool] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             foreach (var file in otherFiles)
             {
-                Debug.Log($"[ExportTool]    📄 相对路径: {file.relativePath}");
-                Debug.Log($"[ExportTool]        完整路径: {file.fullPath}");
+                Z_Logger.Log($"[ExportTool]    📄 相对路径: {file.relativePath}");
+                Z_Logger.Log($"[ExportTool]        完整路径: {file.fullPath}");
             }
         }
 
-        Debug.Log($"[ExportTool] ");
-        Debug.Log($"[ExportTool] ========== 📊 统计 ==========");
-        Debug.Log($"[ExportTool] 总文件数: {scanResults.Count}");
-        Debug.Log($"[ExportTool] 🔄 已有文件: {redundantFiles.Count}");
-        Debug.Log($"[ExportTool] 📄 其他文件: {otherFiles.Count}");
-        Debug.Log($"[ExportTool] =============================================");
+        Z_Logger.Log($"[ExportTool] ");
+        Z_Logger.Log($"[ExportTool] ========== 📊 统计 ==========");
+        Z_Logger.Log($"[ExportTool] 总文件数: {scanResults.Count}");
+        Z_Logger.Log($"[ExportTool] 🔄 已有文件: {redundantFiles.Count}");
+        Z_Logger.Log($"[ExportTool] 📄 其他文件: {otherFiles.Count}");
+        Z_Logger.Log($"[ExportTool] =============================================");
 
         EditorUtility.DisplayDialog(
             "报告已输出",
@@ -1374,10 +1374,10 @@ public class ExportTool : EditorWindow
         if (!EditorUtility.DisplayDialog("确认导出", confirmMsg, "导出", "取消"))
             return;
 
-        Debug.Log($"[ExportTool] ========== 开始客户端导出 ==========");
-        Debug.Log($"[ExportTool] 源项目: {Application.dataPath}");
-        Debug.Log($"[ExportTool] 目标项目: {exportToPath}");
-        Debug.Log($"[ExportTool] 待导出文件数: {exportToFiles.Count}");
+        Z_Logger.Log($"[ExportTool] ========== 开始客户端导出 ==========");
+        Z_Logger.Log($"[ExportTool] 源项目: {Application.dataPath}");
+        Z_Logger.Log($"[ExportTool] 目标项目: {exportToPath}");
+        Z_Logger.Log($"[ExportTool] 待导出文件数: {exportToFiles.Count}");
 
         try
         {
@@ -1405,7 +1405,7 @@ public class ExportTool : EditorWindow
                         if (sourceContent == destContent)
                         {
                             skipCount++;
-                            Debug.Log($"[ExportTool]   ⏭️ 跳过(内容相同): {fileInfo.destinationPath}");
+                            Z_Logger.Log($"[ExportTool]   ⏭️ 跳过(内容相同): {fileInfo.destinationPath}");
                             continue;
                         }
 
@@ -1413,18 +1413,18 @@ public class ExportTool : EditorWindow
                         if (!File.Exists(backupPath))
                         {
                             File.Copy(targetFilePath, backupPath);
-                            Debug.Log($"[ExportTool]   💾 备份: {backupPath}");
+                            Z_Logger.Log($"[ExportTool]   💾 备份: {backupPath}");
                         }
                     }
 
                     File.Copy(fileInfo.sourcePath, targetFilePath, true);
                     successCount++;
-                    Debug.Log($"[ExportTool]   ✅ 导出成功: {fileInfo.destinationPath}");
+                    Z_Logger.Log($"[ExportTool]   ✅ 导出成功: {fileInfo.destinationPath}");
                 }
                 catch (System.Exception ex)
                 {
                     failCount++;
-                    Debug.LogError($"[ExportTool]   ❌ 导出失败 {fileInfo.destinationPath}: {ex.Message}");
+                    Z_Logger.LogError($"[ExportTool]   ❌ 导出失败 {fileInfo.destinationPath}: {ex.Message}");
                 }
             }
 
@@ -1436,8 +1436,8 @@ public class ExportTool : EditorWindow
                               $"❌ 失败: {failCount} 个文件\n\n" +
                               $"目标目录:\n{exportToPath}";
 
-            Debug.Log($"[ExportTool] 导出完成: 成功{successCount}, 跳过{skipCount}, 失败{failCount}");
-            Debug.Log($"[ExportTool] =============================================");
+            Z_Logger.Log($"[ExportTool] 导出完成: 成功{successCount}, 跳过{skipCount}, 失败{failCount}");
+            Z_Logger.Log($"[ExportTool] =============================================");
 
             EditorUtility.DisplayDialog("导出完成", resultMsg, "确定");
 
@@ -1447,7 +1447,7 @@ public class ExportTool : EditorWindow
         catch (System.Exception ex)
         {
             EditorUtility.DisplayDialog("导出失败", $"导出过程中发生错误:\n{ex.Message}", "确定");
-            Debug.LogError($"[ExportTool] 导出JSON错误: {ex}");
+            Z_Logger.LogError($"[ExportTool] 导出JSON错误: {ex}");
         }
     }
 
@@ -1472,9 +1472,9 @@ public class ExportTool : EditorWindow
             }
         }
 
-        Debug.Log($"[ExportTool] ========== 开始服务器导出 ==========");
-        Debug.Log($"[ExportTool] 服务器Shared目录: {exportPath}");
-        Debug.Log($"[ExportTool] 待导出文件数: {exportFiles.Count}");
+        Z_Logger.Log($"[ExportTool] ========== 开始服务器导出 ==========");
+        Z_Logger.Log($"[ExportTool] 服务器Shared目录: {exportPath}");
+        Z_Logger.Log($"[ExportTool] 待导出文件数: {exportFiles.Count}");
 
         try
         {
@@ -1507,19 +1507,19 @@ public class ExportTool : EditorWindow
                             if (!File.Exists(backupPath))
                             {
                                 File.Copy(destFullPath, backupPath);
-                                Debug.Log($"[ExportTool]   💾 备份: {backupPath}");
+                                Z_Logger.Log($"[ExportTool]   💾 备份: {backupPath}");
                             }
                         }
                     }
 
                     File.Copy(fileInfo.sourcePath, destFullPath, true);
                     successCount++;
-                    Debug.Log($"[ExportTool]   ✅ 导出成功: {fileInfo.destinationPath}");
+                    Z_Logger.Log($"[ExportTool]   ✅ 导出成功: {fileInfo.destinationPath}");
                 }
                 catch (System.Exception e)
                 {
                     failCount++;
-                    Debug.LogError($"[ExportTool]   ❌ 导出失败 {fileInfo.sourcePath}: {e.Message}");
+                    Z_Logger.LogError($"[ExportTool]   ❌ 导出失败 {fileInfo.sourcePath}: {e.Message}");
                 }
             }
 
@@ -1533,8 +1533,8 @@ public class ExportTool : EditorWindow
             }
             message += $"\n导出目录:\n{exportPath}";
 
-            Debug.Log($"[ExportTool] 导出完成: 成功{successCount}, 失败{failCount}");
-            Debug.Log($"[ExportTool] =============================================");
+            Z_Logger.Log($"[ExportTool] 导出完成: 成功{successCount}, 失败{failCount}");
+            Z_Logger.Log($"[ExportTool] =============================================");
 
             EditorUtility.DisplayDialog("导出完成", message, "确定");
 
@@ -1544,21 +1544,21 @@ public class ExportTool : EditorWindow
         catch (System.Exception e)
         {
             EditorUtility.DisplayDialog("导出失败", $"导出过程中发生错误:\n{e.Message}", "确定");
-            Debug.LogError($"[ExportTool] 导出错误: {e}");
+            Z_Logger.LogError($"[ExportTool] 导出错误: {e}");
         }
     }
 
     private void ValidateData()
     {
-        Debug.Log($"[ExportTool] ========== 开始数据一致性验证 ==========");
-        Debug.Log($"[ExportTool] 当前模式: {(currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp ? "客户端导出" : "服务器导出")}");
+        Z_Logger.Log($"[ExportTool] ========== 开始数据一致性验证 ==========");
+        Z_Logger.Log($"[ExportTool] 当前模式: {(currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp ? "客户端导出" : "服务器导出")}");
 
         string report;
         bool isConsistent = ValidateDataConsistency(out report);
 
-        Debug.Log($"[ExportTool] 验证结果: {(isConsistent ? "✅ 一致" : "❌ 不一致")}");
-        Debug.Log($"[ExportTool] 详细报告:\n{report}");
-        Debug.Log($"[ExportTool] =============================================");
+        Z_Logger.Log($"[ExportTool] 验证结果: {(isConsistent ? "✅ 一致" : "❌ 不一致")}");
+        Z_Logger.Log($"[ExportTool] 详细报告:\n{report}");
+        Z_Logger.Log($"[ExportTool] =============================================");
 
         if (isConsistent)
         {
@@ -1595,13 +1595,13 @@ public class ExportTool : EditorWindow
 
         string serverSharedPath = Path.Combine(Application.dataPath.Replace("/Assets", ""), "..", "WxEndlessDriftServer", "Shared");
 
-        Debug.Log($"[ExportTool] ========== 数据一致性验证详情 ==========");
-        Debug.Log($"[ExportTool] 服务器Shared路径: {serverSharedPath}");
+        Z_Logger.Log($"[ExportTool] ========== 数据一致性验证详情 ==========");
+        Z_Logger.Log($"[ExportTool] 服务器Shared路径: {serverSharedPath}");
 
         string resourcesPath = Path.Combine(Application.dataPath, "Resources");
         if (Directory.Exists(resourcesPath))
         {
-            Debug.Log($"[ExportTool] 检查Resources目录: {resourcesPath}");
+            Z_Logger.Log($"[ExportTool] 检查Resources目录: {resourcesPath}");
             foreach (string clientFile in Directory.GetFiles(resourcesPath, "*.json", SearchOption.AllDirectories))
             {
                 if (clientFile.Contains("ProjectSettings") || clientFile.Contains("Packages"))
@@ -1623,13 +1623,13 @@ public class ExportTool : EditorWindow
                 if (filesMatch)
                 {
                     consistentCount++;
-                    Debug.Log($"[ExportTool]   ✅ 一致: Data/{relativePath}");
+                    Z_Logger.Log($"[ExportTool]   ✅ 一致: Data/{relativePath}");
                 }
                 else
                 {
                     inconsistentCount++;
                     isConsistent = false;
-                    Debug.Log($"[ExportTool]   ❌ 不一致: Data/{relativePath}{(File.Exists(serverFile) ? "" : " (服务器端不存在)")}");
+                    Z_Logger.Log($"[ExportTool]   ❌ 不一致: Data/{relativePath}{(File.Exists(serverFile) ? "" : " (服务器端不存在)")}");
                     report += $"\n❌ 不一致: {relativePath}";
                     if (!File.Exists(serverFile))
                     {
@@ -1640,7 +1640,7 @@ public class ExportTool : EditorWindow
         }
         else
         {
-            Debug.LogWarning($"[ExportTool] Resources目录不存在: {resourcesPath}");
+            Z_Logger.LogWarning($"[ExportTool] Resources目录不存在: {resourcesPath}");
         }
 
         string clientSharedModelsPath = Path.Combine(Application.dataPath, "Plugins", "SharedModels");
@@ -1648,7 +1648,7 @@ public class ExportTool : EditorWindow
 
         if (Directory.Exists(clientSharedModelsPath))
         {
-            Debug.Log($"[ExportTool] 检查SharedModels目录: {clientSharedModelsPath}");
+            Z_Logger.Log($"[ExportTool] 检查SharedModels目录: {clientSharedModelsPath}");
             foreach (string clientFile in Directory.GetFiles(clientSharedModelsPath, "*.cs"))
             {
                 string fileName = Path.GetFileName(clientFile);
@@ -1667,13 +1667,13 @@ public class ExportTool : EditorWindow
                 if (filesMatch)
                 {
                     consistentCount++;
-                    Debug.Log($"[ExportTool]   ✅ 一致: SharedModels/{fileName}");
+                    Z_Logger.Log($"[ExportTool]   ✅ 一致: SharedModels/{fileName}");
                 }
                 else
                 {
                     inconsistentCount++;
                     isConsistent = false;
-                    Debug.Log($"[ExportTool]   ❌ 不一致: SharedModels/{fileName}{(File.Exists(serverFile) ? "" : " (服务器端不存在)")}");
+                    Z_Logger.Log($"[ExportTool]   ❌ 不一致: SharedModels/{fileName}{(File.Exists(serverFile) ? "" : " (服务器端不存在)")}");
                     report += $"\n❌ 不一致: SharedModels/{fileName}";
                     if (!File.Exists(serverFile))
                     {
@@ -1684,7 +1684,7 @@ public class ExportTool : EditorWindow
         }
         else
         {
-            Debug.LogWarning($"[ExportTool] SharedModels目录不存在: {clientSharedModelsPath}");
+            Z_Logger.LogWarning($"[ExportTool] SharedModels目录不存在: {clientSharedModelsPath}");
         }
 
         string clientStructPath = Path.Combine(Application.dataPath, "Plugins", "Json");
@@ -1692,7 +1692,7 @@ public class ExportTool : EditorWindow
 
         if (Directory.Exists(clientStructPath))
         {
-            Debug.Log($"[ExportTool] 检查Structures目录: {clientStructPath}");
+            Z_Logger.Log($"[ExportTool] 检查Structures目录: {clientStructPath}");
             foreach (string clientFile in Directory.GetFiles(clientStructPath, "*.cs"))
             {
                 string fileName = Path.GetFileName(clientFile);
@@ -1711,13 +1711,13 @@ public class ExportTool : EditorWindow
                 if (filesMatch)
                 {
                     consistentCount++;
-                    Debug.Log($"[ExportTool]   ✅ 一致: Structures/{fileName}");
+                    Z_Logger.Log($"[ExportTool]   ✅ 一致: Structures/{fileName}");
                 }
                 else
                 {
                     inconsistentCount++;
                     isConsistent = false;
-                    Debug.Log($"[ExportTool]   ❌ 不一致: Structures/{fileName}{(File.Exists(serverFile) ? "" : " (服务器端不存在)")}");
+                    Z_Logger.Log($"[ExportTool]   ❌ 不一致: Structures/{fileName}{(File.Exists(serverFile) ? "" : " (服务器端不存在)")}");
                     report += $"\n❌ 不一致: Structures/{fileName}";
                     if (!File.Exists(serverFile))
                     {
@@ -1728,7 +1728,7 @@ public class ExportTool : EditorWindow
         }
         else
         {
-            Debug.LogWarning($"[ExportTool] Structures目录不存在: {clientStructPath}");
+            Z_Logger.LogWarning($"[ExportTool] Structures目录不存在: {clientStructPath}");
         }
 
         string clientEventPath = Path.Combine(Application.dataPath, "Scripts", "BaseTool", "GameEventConstants.cs");
@@ -1736,7 +1736,7 @@ public class ExportTool : EditorWindow
 
         if (File.Exists(clientEventPath))
         {
-            Debug.Log($"[ExportTool] 检查事件常量: {clientEventPath}");
+            Z_Logger.Log($"[ExportTool] 检查事件常量: {clientEventPath}");
             totalFiles++;
             if (File.Exists(serverEventPath))
             {
@@ -1745,13 +1745,13 @@ public class ExportTool : EditorWindow
                 if (clientContent == serverContent)
                 {
                     consistentCount++;
-                    Debug.Log($"[ExportTool]   ✅ 一致: Events/GameEventConstants.cs");
+                    Z_Logger.Log($"[ExportTool]   ✅ 一致: Events/GameEventConstants.cs");
                 }
                 else
                 {
                     inconsistentCount++;
                     isConsistent = false;
-                    Debug.Log($"[ExportTool]   ❌ 不一致: Events/GameEventConstants.cs");
+                    Z_Logger.Log($"[ExportTool]   ❌ 不一致: Events/GameEventConstants.cs");
                     report += "\n❌ 不一致: Events/GameEventConstants.cs";
                 }
             }
@@ -1759,13 +1759,13 @@ public class ExportTool : EditorWindow
             {
                 inconsistentCount++;
                 isConsistent = false;
-                Debug.Log($"[ExportTool]   ❌ 不一致: Events/GameEventConstants.cs (服务器端不存在)");
+                Z_Logger.Log($"[ExportTool]   ❌ 不一致: Events/GameEventConstants.cs (服务器端不存在)");
                 report += "\n❌ 不一致: Events/GameEventConstants.cs (服务器端不存在)";
             }
         }
         else
         {
-            Debug.LogWarning($"[ExportTool] 事件常量文件不存在: {clientEventPath}");
+            Z_Logger.LogWarning($"[ExportTool] 事件常量文件不存在: {clientEventPath}");
         }
 
         string summary = $"\n📊 数据一致性验证报告:\n";
@@ -1782,11 +1782,11 @@ public class ExportTool : EditorWindow
             summary += "\n⚠️ 发现不一致的文件，建议运行一键导出工具同步数据。";
         }
 
-        Debug.Log($"[ExportTool] ========== 验证统计 ==========");
-        Debug.Log($"[ExportTool] 总文件数: {totalFiles}");
-        Debug.Log($"[ExportTool] ✅ 一致: {consistentCount}");
-        Debug.Log($"[ExportTool] ❌ 不一致: {inconsistentCount}");
-        Debug.Log($"[ExportTool] =============================================");
+        Z_Logger.Log($"[ExportTool] ========== 验证统计 ==========");
+        Z_Logger.Log($"[ExportTool] 总文件数: {totalFiles}");
+        Z_Logger.Log($"[ExportTool] ✅ 一致: {consistentCount}");
+        Z_Logger.Log($"[ExportTool] ❌ 不一致: {inconsistentCount}");
+        Z_Logger.Log($"[ExportTool] =============================================");
 
         report = summary + report;
         return isConsistent;

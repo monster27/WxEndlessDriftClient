@@ -118,7 +118,7 @@ public class EnvironmentRenderManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[EnvironmentRenderManager] 初始化时没有可用的时段图片");
+            Z_Logger.LogWarning("[EnvironmentRenderManager] 初始化时没有可用的时段图片");
         }
 
         // 初始化天气
@@ -135,11 +135,11 @@ public class EnvironmentRenderManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("[EnvironmentRenderManager] 初始化时没有可用的天气图片（天气可以为空）");
+            Z_Logger.Log("[EnvironmentRenderManager] 初始化时没有可用的天气图片（天气可以为空）");
         }
 
         isInitialized = true;
-        Debug.Log($"[EnvironmentRenderManager] 环境初始化完成: TimeId={currentTimeId}, WeatherId={currentWeatherId}");
+        Z_Logger.Log($"[EnvironmentRenderManager] 环境初始化完成: TimeId={currentTimeId}, WeatherId={currentWeatherId}");
     }
 
     /// <summary>
@@ -149,13 +149,13 @@ public class EnvironmentRenderManager : MonoBehaviour
     {
         if (timeLayerController == null)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 时段层控制器未设置");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 时段层控制器未设置");
             return;
         }
 
         if (sprite == null)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 时段图片为空，不进行渲染");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 时段图片为空，不进行渲染");
             return;
         }
 
@@ -164,7 +164,7 @@ public class EnvironmentRenderManager : MonoBehaviour
         {
             // ✅ 使用 SceneMatCtrl 的 SetMainTexture 方法
             timeLayerController.SetMainTexture(texture);
-            Debug.Log($"[EnvironmentRenderManager] 设置时段层图片: {sprite.name}");
+            Z_Logger.Log($"[EnvironmentRenderManager] 设置时段层图片: {sprite.name}");
         }
     }
 
@@ -175,13 +175,13 @@ public class EnvironmentRenderManager : MonoBehaviour
     {
         if (timeLayerController == null)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 时段层控制器未设置");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 时段层控制器未设置");
             return;
         }
 
         if (sprite == null)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 时段图片为空，不进行渲染");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 时段图片为空，不进行渲染");
             return;
         }
 
@@ -199,7 +199,7 @@ public class EnvironmentRenderManager : MonoBehaviour
         {
             // ✅ 使用 SceneMatCtrl 的 TransitionTo 方法
             timeLayerController.TransitionTo(texture, duration);
-            Debug.Log($"[EnvironmentRenderManager] 平滑设置时段层图片: {sprite.name}, 时长: {duration}s");
+            Z_Logger.Log($"[EnvironmentRenderManager] 平滑设置时段层图片: {sprite.name}, 时长: {duration}s");
         }
     }
 
@@ -210,13 +210,13 @@ public class EnvironmentRenderManager : MonoBehaviour
     {
         if (weatherLayerController == null)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 天气层控制器未设置");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 天气层控制器未设置");
             return;
         }
 
         if (sprite == null)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 天气图片为空，不进行渲染");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 天气图片为空，不进行渲染");
             return;
         }
 
@@ -225,7 +225,7 @@ public class EnvironmentRenderManager : MonoBehaviour
         {
             // ✅ 使用 SceneMatCtrl 的 SetMainTexture 方法
             weatherLayerController.SetMainTexture(texture);
-            Debug.Log($"[EnvironmentRenderManager] 设置天气层图片: {sprite.name}");
+            Z_Logger.Log($"[EnvironmentRenderManager] 设置天气层图片: {sprite.name}");
         }
     }
 
@@ -236,13 +236,13 @@ public class EnvironmentRenderManager : MonoBehaviour
     {
         if (weatherLayerController == null)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 天气层控制器未设置");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 天气层控制器未设置");
             return;
         }
 
         if (sprite == null)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 天气图片为空，不进行渲染");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 天气图片为空，不进行渲染");
             return;
         }
 
@@ -260,7 +260,7 @@ public class EnvironmentRenderManager : MonoBehaviour
         {
             // ✅ 使用 SceneMatCtrl 的 TransitionTo 方法
             weatherLayerController.TransitionTo(texture, duration);
-            Debug.Log($"[EnvironmentRenderManager] 平滑设置天气层图片: {sprite.name}, 时长: {duration}s");
+            Z_Logger.Log($"[EnvironmentRenderManager] 平滑设置天气层图片: {sprite.name}, 时长: {duration}s");
         }
     }
 
@@ -280,7 +280,7 @@ public class EnvironmentRenderManager : MonoBehaviour
     {
         if (!isInitialized)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换时段");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换时段");
             return;
         }
 
@@ -288,16 +288,16 @@ public class EnvironmentRenderManager : MonoBehaviour
 
         if (!timeEnvironmentDict.TryGetValue(timeId, out target) || target == null)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 时段ID {timeId} 未找到对应图片");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 时段ID {timeId} 未找到对应图片");
 
             if (timeDefaultSprite != null)
             {
-                Debug.LogWarning($"[EnvironmentRenderManager] 使用时段默认图片");
+                Z_Logger.LogWarning($"[EnvironmentRenderManager] 使用时段默认图片");
                 target = timeDefaultSprite;
             }
             else
             {
-                Debug.LogWarning("[EnvironmentRenderManager] 时段默认图片也未设置，不进行渲染");
+                Z_Logger.LogWarning("[EnvironmentRenderManager] 时段默认图片也未设置，不进行渲染");
                 return;
             }
         }
@@ -309,7 +309,7 @@ public class EnvironmentRenderManager : MonoBehaviour
 
         // ✅ 使用平滑过渡
         SetTimeSpriteSmooth(target);
-        Debug.Log($"[EnvironmentRenderManager] 切换时段环境: ID={timeId}, 名称={(target != null ? target.name : "null")}");
+        Z_Logger.Log($"[EnvironmentRenderManager] 切换时段环境: ID={timeId}, 名称={(target != null ? target.name : "null")}");
     }
 
     /// <summary>
@@ -319,7 +319,7 @@ public class EnvironmentRenderManager : MonoBehaviour
     {
         if (!isInitialized)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换天气");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换天气");
             return;
         }
 
@@ -327,16 +327,16 @@ public class EnvironmentRenderManager : MonoBehaviour
 
         if (!weatherEnvironmentDict.TryGetValue(weatherId, out target) || target == null)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 天气ID {weatherId} 未找到对应图片");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 天气ID {weatherId} 未找到对应图片");
 
             if (weatherDefaultSprite != null)
             {
-                Debug.LogWarning($"[EnvironmentRenderManager] 使用天气默认图片");
+                Z_Logger.LogWarning($"[EnvironmentRenderManager] 使用天气默认图片");
                 target = weatherDefaultSprite;
             }
             else
             {
-                Debug.LogWarning("[EnvironmentRenderManager] 天气默认图片也未设置，不进行渲染（天气可以没有渲染效果）");
+                Z_Logger.LogWarning("[EnvironmentRenderManager] 天气默认图片也未设置，不进行渲染（天气可以没有渲染效果）");
                 return;
             }
         }
@@ -348,7 +348,7 @@ public class EnvironmentRenderManager : MonoBehaviour
 
         // ✅ 使用平滑过渡
         SetWeatherSpriteSmooth(target);
-        Debug.Log($"[EnvironmentRenderManager] 切换天气环境: ID={weatherId}, 名称={(target != null ? target.name : "null")}");
+        Z_Logger.Log($"[EnvironmentRenderManager] 切换天气环境: ID={weatherId}, 名称={(target != null ? target.name : "null")}");
     }
 
     /// <summary>
@@ -358,7 +358,7 @@ public class EnvironmentRenderManager : MonoBehaviour
     {
         if (!isInitialized)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换时段");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换时段");
             return;
         }
 
@@ -373,16 +373,16 @@ public class EnvironmentRenderManager : MonoBehaviour
 
         if (!timeEnvironmentDict.TryGetValue(timeId, out target) || target == null)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 时段ID {timeId} 未找到对应图片");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 时段ID {timeId} 未找到对应图片");
 
             if (timeDefaultSprite != null)
             {
-                Debug.LogWarning($"[EnvironmentRenderManager] 使用时段默认图片");
+                Z_Logger.LogWarning($"[EnvironmentRenderManager] 使用时段默认图片");
                 target = timeDefaultSprite;
             }
             else
             {
-                Debug.LogWarning("[EnvironmentRenderManager] 时段默认图片也未设置，不进行渲染");
+                Z_Logger.LogWarning("[EnvironmentRenderManager] 时段默认图片也未设置，不进行渲染");
                 return;
             }
         }
@@ -393,7 +393,7 @@ public class EnvironmentRenderManager : MonoBehaviour
         currentTimeSprite = target;
 
         SetTimeSprite(target);
-        Debug.Log($"[EnvironmentRenderManager] 立即切换时段环境: ID={timeId}");
+        Z_Logger.Log($"[EnvironmentRenderManager] 立即切换时段环境: ID={timeId}");
     }
 
     /// <summary>
@@ -403,7 +403,7 @@ public class EnvironmentRenderManager : MonoBehaviour
     {
         if (!isInitialized)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换天气");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 尚未初始化，无法切换天气");
             return;
         }
 
@@ -418,16 +418,16 @@ public class EnvironmentRenderManager : MonoBehaviour
 
         if (!weatherEnvironmentDict.TryGetValue(weatherId, out target) || target == null)
         {
-            Debug.LogWarning($"[EnvironmentRenderManager] 天气ID {weatherId} 未找到对应图片");
+            Z_Logger.LogWarning($"[EnvironmentRenderManager] 天气ID {weatherId} 未找到对应图片");
 
             if (weatherDefaultSprite != null)
             {
-                Debug.LogWarning($"[EnvironmentRenderManager] 使用天气默认图片");
+                Z_Logger.LogWarning($"[EnvironmentRenderManager] 使用天气默认图片");
                 target = weatherDefaultSprite;
             }
             else
             {
-                Debug.LogWarning("[EnvironmentRenderManager] 天气默认图片也未设置，不进行渲染（天气可以没有渲染效果）");
+                Z_Logger.LogWarning("[EnvironmentRenderManager] 天气默认图片也未设置，不进行渲染（天气可以没有渲染效果）");
                 return;
             }
         }
@@ -438,7 +438,7 @@ public class EnvironmentRenderManager : MonoBehaviour
         currentWeatherSprite = target;
 
         SetWeatherSprite(target);
-        Debug.Log($"[EnvironmentRenderManager] 立即切换天气环境: ID={weatherId}");
+        Z_Logger.Log($"[EnvironmentRenderManager] 立即切换天气环境: ID={weatherId}");
     }
 
     /// <summary>
@@ -466,7 +466,7 @@ public class EnvironmentRenderManager : MonoBehaviour
     /// </summary>
     public void Reinitialize()
     {
-        Debug.Log($"[EnvironmentRenderManager] 重新初始化环境");
+        Z_Logger.Log($"[EnvironmentRenderManager] 重新初始化环境");
         BuildDictionaries();
 
         // 重新应用当前时段和天气
@@ -481,7 +481,7 @@ public class EnvironmentRenderManager : MonoBehaviour
         }
 
         isInitialized = true;
-        Debug.Log($"[EnvironmentRenderManager] 重新初始化完成: TimeId={currentTimeId}, WeatherId={currentWeatherId}");
+        Z_Logger.Log($"[EnvironmentRenderManager] 重新初始化完成: TimeId={currentTimeId}, WeatherId={currentWeatherId}");
     }
 }
 

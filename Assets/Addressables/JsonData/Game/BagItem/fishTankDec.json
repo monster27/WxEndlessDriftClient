@@ -1,0 +1,64 @@
+{
+    "items": [
+        {
+            "id": 8001,
+            "name": "默认摆设",
+            "description": "基础款摆设",
+            "categoryId": 80
+        },
+        {
+            "id": 8002,
+            "name": "糖果-摆设",
+            "description": "糖果系列摆设",
+            "categoryId": 80
+        },
+        {
+            "id": 8201,
+            "name": "默认挂饰",
+            "description": "基础款挂饰",
+            "categoryId": 81
+        },
+        {
+            "id": 8202,
+            "name": "糖果-挂饰",
+            "description": "糖果系列挂饰",
+            "categoryId": 81
+        },
+        {
+            "id": 8401,
+            "name": "默认边框",
+            "description": "基础款边框",
+            "categoryId": 82
+        },
+        {
+            "id": 8402,
+            "name": "糖果-边框",
+            "description": "糖果系列边框",
+            "categoryId": 82
+        },
+        {
+            "id": 8601,
+            "name": "默认底面",
+            "description": "基础款底面",
+            "categoryId": 83
+        },
+        {
+            "id": 8602,
+            "name": "糖果-底面",
+            "description": "糖果系列底面",
+            "categoryId": 83
+        },
+        {
+            "id": 8801,
+            "name": "默认背景",
+            "description": "基础款背景",
+            "categoryId": 84
+        },
+        {
+            "id": 8802,
+            "name": "糖果-背景",
+            "description": "糖果系列背景",
+            "categoryId": 84
+        }
+    ]
+}

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 //using SharedModels;
-using Logger = Utils.Logger;
+//using Z_Logger = Utils.Z_Logger;
 
 public partial class NetServerManager 
 {
@@ -57,12 +57,12 @@ public partial class NetServerManager
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"[NetServerManager] 解析{errorLabel ?? url}失败: {ex.Message}");
+                    Z_Logger.LogError($"[NetServerManager] 解析{errorLabel ?? url}失败: {ex.Message}");
                 }
             }
             else
             {
-                Logger.LogError($"[NetServerManager] 获取{errorLabel ?? url}失败: {request.error}");
+                Z_Logger.LogError($"[NetServerManager] 获取{errorLabel ?? url}失败: {request.error}");
             }
         }
     }
@@ -81,7 +81,7 @@ public partial class NetServerManager
             }
             else
             {
-                Logger.LogError($"[NetServerManager] 获取{errorLabel ?? url}失败: {request.error}");
+                Z_Logger.LogError($"[NetServerManager] 获取{errorLabel ?? url}失败: {request.error}");
             }
         }
     }
@@ -104,7 +104,7 @@ public partial class NetServerManager
             }
             else
             {
-                Logger.LogError($"[NetServerManager] {errorLabel ?? url} 请求失败: {request.error}");
+                Z_Logger.LogError($"[NetServerManager] {errorLabel ?? url} 请求失败: {request.error}");
             }
         }
     }
@@ -118,13 +118,13 @@ public partial class NetServerManager
             if (data != null && data.sceneId > 0)
             {
                 EnvManager.Instance.currentSceneId = data.sceneId;
-                Logger.Log($"[NetServerManager] 初始化 - 场景ID: {data.sceneId}");
+                Z_Logger.Log($"[NetServerManager] 初始化 - 场景ID: {data.sceneId}");
             }
             else
             {
                 // 默认场景
                 EnvManager.Instance.currentSceneId = 1;
-                Logger.LogWarning("[NetServerManager] 初始化 - 使用默认场景ID: 1");
+                Z_Logger.LogWarning("[NetServerManager] 初始化 - 使用默认场景ID: 1");
             }
 
             // ✅ 场景加载完成后，通知SceneMatManager切换
@@ -182,7 +182,7 @@ public partial class NetServerManager
                 if (skinId > 0) equippedItemCache.Add(skinId);
             }
         }
-        Logger.Log($"[NetServerManager] 装备ID缓存已重建，共 {equippedItemCache.Count} 个已装备物品");
+        Z_Logger.Log($"[NetServerManager] 装备ID缓存已重建，共 {equippedItemCache.Count} 个已装备物品");
     }
 
     private bool IsCharacterObtained(int characterId)
@@ -230,7 +230,7 @@ public partial class NetServerManager
         }
         // ✅ 重建装备ID缓存（皮肤数据变更后）
         RebuildEquippedItemCache();
-        Logger.Log($"[NetServerManager] 皮肤数据已更新到NetServerManager，共 {equippedSkinsData.Count} 个");
+        Z_Logger.Log($"[NetServerManager] 皮肤数据已更新到NetServerManager，共 {equippedSkinsData.Count} 个");
     }
 
     /// <summary>
@@ -286,11 +286,11 @@ public partial class NetServerManager
     {
         if (isDataLoading)
         {
-            Logger.LogWarning("[NetServerManager] 数据正在加载中，请勿重复调用");
+            Z_Logger.LogWarning("[NetServerManager] 数据正在加载中，请勿重复调用");
             return;
         }
         isDataLoading = true;
-        Logger.Log("[NetServerManager] 开始加载所有玩家数据...");
+        Z_Logger.Log("[NetServerManager] 开始加载所有玩家数据...");
         StartCoroutine(FetchAllPlayerData());
     }
 
@@ -318,7 +318,7 @@ public partial class NetServerManager
         yield return null;
 
         OnAllDataLoaded?.Invoke();
-        Logger.Log("[NetServerManager] 所有玩家数据加载完成！");
+        Z_Logger.Log("[NetServerManager] 所有玩家数据加载完成！");
         CommunicateEvent.Modify("NetworkLoadingComplete", "所有数据加载完成！");
         isDataLoading = false;
     }
@@ -336,7 +336,7 @@ public partial class NetServerManager
             {
                 playerInventory[item.key] = item.value;
             }
-            Logger.Log($"[NetServerManager] 背包数据加载完成: {playerInventory.Count} 件物品");
+            Z_Logger.Log($"[NetServerManager] 背包数据加载完成: {playerInventory.Count} 件物品");
 
             // ✅ 添加这行
             if (PlayerDataManager.Instance != null)
@@ -370,13 +370,13 @@ public partial class NetServerManager
             equippedSkill1Level = data.skill1Level > 0 ? data.skill1Level : 1;
             equippedSkill2Level = data.skill2Level > 0 ? data.skill2Level : 1;
 
-            Logger.Log($"[NetServerManager] 装备数据从服务器同步完成: Rod={equippedRodId}(Lv.{equippedRodLevel}), Line={equippedLineId}(Lv.{equippedLineLevel}), Hook={equippedHookId}(Lv.{equippedHookLevel}), Char={equippedCharacterId}(Lv.{characterLevel}), Bait={equippedBaitId}");
+            Z_Logger.Log($"[NetServerManager] 装备数据从服务器同步完成: Rod={equippedRodId}(Lv.{equippedRodLevel}), Line={equippedLineId}(Lv.{equippedLineLevel}), Hook={equippedHookId}(Lv.{equippedHookLevel}), Char={equippedCharacterId}(Lv.{characterLevel}), Bait={equippedBaitId}");
 
             // ✅ 重建装备ID缓存
             RebuildEquippedItemCache();
 
             // ✅ 移除Bag_RefreshItems，等待初始化完成统一刷新
-            Logger.Log("[NetServerManager] 装备数据已就绪，等待初始化完成统一刷新");
+            Z_Logger.Log("[NetServerManager] 装备数据已就绪，等待初始化完成统一刷新");
         }, "装备数据");
     }
 
@@ -422,7 +422,7 @@ public partial class NetServerManager
             // 更新 PlayerDataManager
             PlayerDataManager.Instance?.UpdateFishDetailData(fishDetailData);
 
-            Logger.Log($"[NetServerManager] 鱼篓数据加载完成: {fishInventory.Count} 种鱼，总数量: {total}，容量: {fishBagCapacity}，已满: {isFishBagFull}");
+            Z_Logger.Log($"[NetServerManager] 鱼篓数据加载完成: {fishInventory.Count} 种鱼，总数量: {total}，容量: {fishBagCapacity}，已满: {isFishBagFull}");
         }, "鱼篓数据");
     }
 
@@ -431,7 +431,7 @@ public partial class NetServerManager
     {
         yield return FetchGetJson(ServerUrls.Player.CharacterById(_currentPlayerId), json =>
         {
-            Logger.Log("[NetServerManager] 人物数据加载完成: " + json);
+            Z_Logger.Log("[NetServerManager] 人物数据加载完成: " + json);
         }, "人物数据");
     }
 
@@ -468,7 +468,7 @@ public partial class NetServerManager
         yield return FetchGetJson<GoldResponse>(ServerUrls.Player.GoldById(_currentPlayerId), data =>
         {
             if (data != null) playerGold = data.gold;
-            Logger.Log("[NetServerManager] 更新玩家金币: " + playerGold);
+            Z_Logger.Log("[NetServerManager] 更新玩家金币: " + playerGold);
             
             CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, new Dictionary<string, object>
             {
@@ -487,7 +487,7 @@ public partial class NetServerManager
             if (data?.items == null) return;
             playerInventory.Clear();
             foreach (var item in data.items) playerInventory[item.key] = item.value;
-            Logger.Log("[NetServerManager] 更新玩家背包: " + playerInventory.Count + " 件物品");
+            Z_Logger.Log("[NetServerManager] 更新玩家背包: " + playerInventory.Count + " 件物品");
 
             if (playerInventory.ContainsKey(2001)) CommunicateEvent.Modify("BaitDataUpdated");
             
@@ -529,10 +529,10 @@ public partial class NetServerManager
             }
             catch (System.Exception ex)
             {
-                Logger.LogError($"[NetServerManager] 解析人物列表失败: {ex.Message}");
+                Z_Logger.LogError($"[NetServerManager] 解析人物列表失败: {ex.Message}");
             }
             unlockedCharacters.Add(3401);
-            Logger.Log($"[NetServerManager] 同步人物列表完成，共 {unlockedCharacters.Count} 个已解锁人物");
+            Z_Logger.Log($"[NetServerManager] 同步人物列表完成，共 {unlockedCharacters.Count} 个已解锁人物");
         }, "人物列表");
     }
 
@@ -568,7 +568,7 @@ public partial class NetServerManager
             int total = GetTotalFishCount();
             isFishBagFull = total >= fishBagCapacity;
             PlayerDataManager.Instance?.UpdateFishDetailData(fishDetailData);
-            Logger.Log("[NetServerManager] 更新玩家鱼篓: " + fishInventory.Count + " 种鱼，总数量: " + total + "，详细数据: " + fishDetailData.Count + " 种");
+            Z_Logger.Log("[NetServerManager] 更新玩家鱼篓: " + fishInventory.Count + " 种鱼，总数量: " + total + "，详细数据: " + fishDetailData.Count + " 种");
         }, "鱼篓数据");
     }
 
@@ -577,7 +577,7 @@ public partial class NetServerManager
         yield return FetchGetJson<CapacityResponse>(ServerUrls.Inventory.FishCapacityById(_currentPlayerId), data =>
         {
             if (data != null) fishBagCapacity = data.capacity;
-            Logger.Log("[NetServerManager] 更新鱼篓容量: " + fishBagCapacity);
+            Z_Logger.Log("[NetServerManager] 更新鱼篓容量: " + fishBagCapacity);
         }, "鱼篓容量");
     }
 
@@ -605,7 +605,7 @@ public partial class NetServerManager
             equippedSkill1Level = data.skill1Level > 0 ? data.skill1Level : 1;
             equippedSkill2Level = data.skill2Level > 0 ? data.skill2Level : 1;
 
-            Logger.Log($"[NetServerManager] 登录后更新装备: Char={equippedCharacterId}(Lv.{characterLevel}), Bait={equippedBaitId}, Rod={equippedRodId}(Lv.{equippedRodLevel})");
+            Z_Logger.Log($"[NetServerManager] 登录后更新装备: Char={equippedCharacterId}(Lv.{characterLevel}), Bait={equippedBaitId}, Rod={equippedRodId}(Lv.{equippedRodLevel})");
             CommunicateEvent.Modify("Bag_RefreshItems");
         }, "装备数据");
     }
@@ -618,7 +618,7 @@ public partial class NetServerManager
             equippedCharacterId = data.characterId > 0 ? data.characterId : 3401;
             characterLevel = data.level > 0 ? data.level : 1;
             currentCharacterExp = data.exp;
-            Logger.Log($"[NetServerManager] 更新人物: CharId={equippedCharacterId}, Lv={characterLevel}, Exp={currentCharacterExp}");
+            Z_Logger.Log($"[NetServerManager] 更新人物: CharId={equippedCharacterId}, Lv={characterLevel}, Exp={currentCharacterExp}");
         }, "人物数据");
     }
 
@@ -635,7 +635,7 @@ public partial class NetServerManager
         }
         else
         {
-            Logger.LogWarning("[NetServerManager] PlayerDataManager 尚未就绪，跳过数据同步");
+            Z_Logger.LogWarning("[NetServerManager] PlayerDataManager 尚未就绪，跳过数据同步");
         }
 
         // 【修复】使用 CommunicateEvent.EVENT_EQUIP_CHANGED 而不是 S2C_EVENT_EQUIP_CHANGED
@@ -665,7 +665,7 @@ public partial class NetServerManager
                     foreach (var c in chars) unlockedCharacters.Add(c.characterId);
             }
             unlockedCharacters.Add(3401);
-            Logger.Log($"[NetServerManager] 同步人物列表完成，共 {unlockedCharacters.Count} 个");
+            Z_Logger.Log($"[NetServerManager] 同步人物列表完成，共 {unlockedCharacters.Count} 个");
         }, "人物列表");
     }
 
@@ -678,7 +678,7 @@ public partial class NetServerManager
             if (resp == null || !resp.success || resp.unlockedEquipment == null) return;
             unlockedEquipment.Clear();
             foreach (var id in resp.unlockedEquipment) unlockedEquipment.Add(id);
-            Logger.Log($"[NetServerManager] 同步已解锁装备列表完成，共 {unlockedEquipment.Count} 个");
+            Z_Logger.Log($"[NetServerManager] 同步已解锁装备列表完成，共 {unlockedEquipment.Count} 个");
             CommunicateEvent.Modify<List<int>>("SyncUnlockedEquipment", new List<int>(unlockedEquipment));
         }, "已解锁装备");
     }
@@ -714,7 +714,7 @@ public partial class NetServerManager
             if (data?.items == null) return;
             playerInventory.Clear();
             foreach (var item in data.items) playerInventory[item.key] = item.value;
-            Logger.Log("[NetServerManager] 普通背包数据已更新: " + playerInventory.Count + " 件物品");
+            Z_Logger.Log("[NetServerManager] 普通背包数据已更新: " + playerInventory.Count + " 件物品");
             CommunicateEvent.Modify<Dictionary<int, int>>("BagDataUpdated", playerInventory);
         }, "背包数据");
     }
@@ -729,7 +729,7 @@ public partial class NetServerManager
         if (!CheckNetworkConnection())
             return;
 
-        Debug.Log($"[NetServerManager] 切换玩家场景: PlayerId={_currentPlayerId}, SceneId={sceneId}");
+        Z_Logger.Log($"[NetServerManager] 切换玩家场景: PlayerId={_currentPlayerId}, SceneId={sceneId}");
         StartCoroutine(SwitchPlayerSceneCoroutine(sceneId));
     }
 
@@ -747,7 +747,7 @@ public partial class NetServerManager
             {
                 if (response != null && response.success)
                 {
-                    Debug.Log($"[NetServerManager] 场景切换成功: {sceneId}");
+                    Z_Logger.Log($"[NetServerManager] 场景切换成功: {sceneId}");
 
                     // 更新本地场景
                     EnvManager.Instance.currentSceneId = sceneId;
@@ -765,7 +765,7 @@ public partial class NetServerManager
                 }
                 else
                 {
-                    Debug.LogWarning($"[NetServerManager] 场景切换失败: {response?.message ?? "未知错误"}");
+                    Z_Logger.LogWarning($"[NetServerManager] 场景切换失败: {response?.message ?? "未知错误"}");
                     var responseData = new Dictionary<string, object>
                     {
                     { "success", false },
@@ -777,7 +777,7 @@ public partial class NetServerManager
             },
             (error) =>
             {
-                Debug.LogError($"[NetServerManager] 场景切换请求失败: {error}");
+                Z_Logger.LogError($"[NetServerManager] 场景切换请求失败: {error}");
                 var responseData = new Dictionary<string, object>
                 {
                 { "success", false },
@@ -804,14 +804,14 @@ public partial class NetServerManager
     {
         if (playerInventory == null || !playerInventory.ContainsKey(3401))
         {
-            Logger.LogWarning("[NetServerManager] 玩家未拥有基础人物3401，正在添加...");
+            Z_Logger.LogWarning("[NetServerManager] 玩家未拥有基础人物3401，正在添加...");
             yield return StartCoroutine(AddCharacterToInventory(3401));
         }
         yield return StartCoroutine(AddCharacterToPlayerCharacter(3401));
 
         if (equippedCharacterId < 3401 || equippedCharacterId > 3500)
         {
-            Logger.LogWarning($"[NetServerManager] 当前装备的人物ID({equippedCharacterId})无效，装备基础人物3401");
+            Z_Logger.LogWarning($"[NetServerManager] 当前装备的人物ID({equippedCharacterId})无效，装备基础人物3401");
             yield return StartCoroutine(SendEquipRequest((int)EquipmentSlotType.Character, 3401));
         }
     }
@@ -837,7 +837,7 @@ public partial class NetServerManager
         {
             var resp = JsonUtility.FromJson<AddItemResponse>(responseText);
             if (resp != null && resp.success)
-                Logger.Log($"[NetServerManager] 成功添加人物 {characterId} 到PlayerCharacter表");
+                Z_Logger.Log($"[NetServerManager] 成功添加人物 {characterId} 到PlayerCharacter表");
         }, "添加人物到PlayerCharacter");
     }
 
@@ -854,7 +854,7 @@ public partial class NetServerManager
             var resp = JsonUtility.FromJson<AddItemResponse>(responseText);
             if (resp != null && resp.success)
             {
-                Logger.Log($"[NetServerManager] 成功解锁人物 {characterId}");
+                Z_Logger.Log($"[NetServerManager] 成功解锁人物 {characterId}");
                 callback?.Invoke(true);
                 PlayerDataManager.Instance?.SyncInventoryFromServer();
                 SyncUnlockedCharactersFromServer();
@@ -1018,7 +1018,7 @@ public partial class NetServerManager
         {
             try
             {
-                Logger.Log($"[NetServerManager] 图鉴原始JSON数据: {json}");
+                Z_Logger.Log($"[NetServerManager] 图鉴原始JSON数据: {json}");
                 playerCollectionData.Clear();
                 var list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<PlayerFishCollectionData>>(json);
                 if (list != null)
@@ -1026,18 +1026,18 @@ public partial class NetServerManager
                     foreach (var item in list)
                     {
                         playerCollectionData[item.FishId] = item;
-                        Logger.Log($"[NetServerManager] 图鉴数据 - FishId:{item.FishId}, CatchCount:{item.CatchCount}, MaxWeight:{item.MaxWeight}");
+                        Z_Logger.Log($"[NetServerManager] 图鉴数据 - FishId:{item.FishId}, CatchCount:{item.CatchCount}, MaxWeight:{item.MaxWeight}");
                     }
-                    Logger.Log($"[NetServerManager] 图鉴数据加载完成: {playerCollectionData.Count} 种鱼");
+                    Z_Logger.Log($"[NetServerManager] 图鉴数据加载完成: {playerCollectionData.Count} 种鱼");
                 }
                 else
                 {
-                    Logger.LogWarning($"[NetServerManager] 图鉴数据为空或解析结果为null");
+                    Z_Logger.LogWarning($"[NetServerManager] 图鉴数据为空或解析结果为null");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError($"[NetServerManager] 解析图鉴数据失败: {ex.Message}");
+                Z_Logger.LogError($"[NetServerManager] 解析图鉴数据失败: {ex.Message}");
             }
             
             PlayerDataManager.Instance?.SyncCollectionFromServer();
@@ -1056,7 +1056,7 @@ public partial class NetServerManager
         {
             try
             {
-                Logger.Log($"[NetServerManager] 图鉴进度原始JSON数据: {json}");
+                Z_Logger.Log($"[NetServerManager] 图鉴进度原始JSON数据: {json}");
                 playerCollectionProgress.Clear();
                 var list = Newtonsoft.Json.JsonConvert.DeserializeObject<List<PlayerCollectionProgress>>(json);
                 if (list != null)
@@ -1064,18 +1064,18 @@ public partial class NetServerManager
                     playerCollectionProgress.AddRange(list);
                     foreach (var progress in playerCollectionProgress)
                     {
-                        Logger.Log($"[NetServerManager] 图鉴进度 - CategoryId:{progress.categoryId}, PageId:{progress.pageId}, Completion:{progress.completionPercent}%, AvailableRewards:{progress.availableRewards?.Count ?? 0}");
+                        Z_Logger.Log($"[NetServerManager] 图鉴进度 - CategoryId:{progress.categoryId}, PageId:{progress.pageId}, Completion:{progress.completionPercent}%, AvailableRewards:{progress.availableRewards?.Count ?? 0}");
                     }
-                    Logger.Log($"[NetServerManager] 图鉴进度加载完成: {playerCollectionProgress.Count} 条");
+                    Z_Logger.Log($"[NetServerManager] 图鉴进度加载完成: {playerCollectionProgress.Count} 条");
                 }
                 else
                 {
-                    Logger.LogWarning($"[NetServerManager] 图鉴进度数据为空或解析结果为null");
+                    Z_Logger.LogWarning($"[NetServerManager] 图鉴进度数据为空或解析结果为null");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError($"[NetServerManager] 解析图鉴进度数据失败: {ex.Message}");
+                Z_Logger.LogError($"[NetServerManager] 解析图鉴进度数据失败: {ex.Message}");
             }
             onComplete?.Invoke();
         }, "图鉴进度");
@@ -1124,12 +1124,12 @@ public partial class NetServerManager
                 if (list != null)
                 {
                     purchasedCollectionInfoPages.UnionWith(list);
-                    Logger.Log($"[NetServerManager] 已购买图鉴情报加载完成: {list.Count} 页");
+                    Z_Logger.Log($"[NetServerManager] 已购买图鉴情报加载完成: {list.Count} 页");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError($"[NetServerManager] 解析已购买图鉴情报失败: {ex.Message}");
+                Z_Logger.LogError($"[NetServerManager] 解析已购买图鉴情报失败: {ex.Message}");
             }
         }, "已购买图鉴情报");
 
@@ -1160,18 +1160,18 @@ public partial class NetServerManager
                 if (success)
                 {
                     purchasedCollectionInfoPages.Add(pageId);
-                    Logger.Log($"[NetServerManager] 购买图鉴情报页面 {pageId} 成功");
+                    Z_Logger.Log($"[NetServerManager] 购买图鉴情报页面 {pageId} 成功");
                 }
                 else
                 {
-                    Logger.LogWarning($"[NetServerManager] 购买图鉴情报页面 {pageId} 失败");
+                    Z_Logger.LogWarning($"[NetServerManager] 购买图鉴情报页面 {pageId} 失败");
                 }
                 
                 onComplete?.Invoke(success);
             }
             catch (Exception ex)
             {
-                Logger.LogError($"[NetServerManager] 解析购买图鉴情报结果失败: {ex.Message}");
+                Z_Logger.LogError($"[NetServerManager] 解析购买图鉴情报结果失败: {ex.Message}");
                 onComplete?.Invoke(false);
             }
         }, "购买图鉴情报");
@@ -1188,7 +1188,7 @@ public partial class NetServerManager
         {
             if (data != null)
             {
-                Logger.Log($"[NetServerManager] 获取鱼篓等级: Level={data.level}, Capacity={data.capacity}, UpgradeCost={data.upgradeCost}");
+                Z_Logger.Log($"[NetServerManager] 获取鱼篓等级: Level={data.level}, Capacity={data.capacity}, UpgradeCost={data.upgradeCost}");
                 onSuccess?.Invoke(data);
             }
         }, "鱼篓等级");
@@ -1217,7 +1217,7 @@ public partial class NetServerManager
                 var resp = JsonUtility.FromJson<FishBagUpgradeResponse>(responseText);
                 if (resp != null)
                 {
-                    Logger.Log($"[NetServerManager] 鱼篓升级结果: success={resp.success}, message={resp.message}");
+                    Z_Logger.Log($"[NetServerManager] 鱼篓升级结果: success={resp.success}, message={resp.message}");
                     upgradeSuccess = resp.success;
                     upgradeMessage = resp.message;
                     if (resp.success && resp.capacity > 0)
@@ -1233,7 +1233,7 @@ public partial class NetServerManager
             }
             catch (Exception ex)
             {
-                Logger.LogError($"[NetServerManager] 解析鱼篓升级结果失败: {ex.Message}");
+                Z_Logger.LogError($"[NetServerManager] 解析鱼篓升级结果失败: {ex.Message}");
                 upgradeSuccess = false;
                 upgradeMessage = "解析升级结果失败";
             }
@@ -1263,7 +1263,7 @@ public partial class NetServerManager
                 var resp = JsonUtility.FromJson<FishBagUpgradeResponse>(responseText);
                 if (resp != null)
                 {
-                    Logger.Log($"[NetServerManager] 鱼篓广告升级结果: success={resp.success}, message={resp.message}");
+                    Z_Logger.Log($"[NetServerManager] 鱼篓广告升级结果: success={resp.success}, message={resp.message}");
                     upgradeSuccess = resp.success;
                     upgradeMessage = resp.message;
                     if (resp.success && resp.capacity > 0)
@@ -1279,7 +1279,7 @@ public partial class NetServerManager
             }
             catch (Exception ex)
             {
-                Logger.LogError($"[NetServerManager] 解析鱼篓广告升级结果失败: {ex.Message}");
+                Z_Logger.LogError($"[NetServerManager] 解析鱼篓广告升级结果失败: {ex.Message}");
                 upgradeSuccess = false;
                 upgradeMessage = "解析升级结果失败";
             }
@@ -1306,7 +1306,7 @@ public partial class NetServerManager
         {
             if (data != null)
             {
-                Logger.Log($"[NetServerManager] 获取自动出售倒计时: remainingSeconds={data.remainingSeconds}, isEnabled={data.isEnabled}");
+                Z_Logger.Log($"[NetServerManager] 获取自动出售倒计时: remainingSeconds={data.remainingSeconds}, isEnabled={data.isEnabled}");
                 onSuccess?.Invoke(data);
             }
         }, "自动出售倒计时");
@@ -1331,18 +1331,18 @@ public partial class NetServerManager
                 if (resp != null && resp.success)
                 {
                     success = true;
-                    Logger.Log($"[NetServerManager] 设置鱼类锁定状态成功: fishItemId={fishItemId}, isLocked={isLocked}");
+                    Z_Logger.Log($"[NetServerManager] 设置鱼类锁定状态成功: fishItemId={fishItemId}, isLocked={isLocked}");
                 }
                 else
                 {
                     success = false;
-                    Logger.LogError($"[NetServerManager] 设置鱼类锁定状态失败: fishItemId={fishItemId}, message={resp?.message}");
+                    Z_Logger.LogError($"[NetServerManager] 设置鱼类锁定状态失败: fishItemId={fishItemId}, message={resp?.message}");
                 }
             }
             catch (Exception ex)
             {
                 success = false;
-                Logger.LogError($"[NetServerManager] 设置鱼类锁定状态解析失败: {ex.Message}");
+                Z_Logger.LogError($"[NetServerManager] 设置鱼类锁定状态解析失败: {ex.Message}");
             }
         }, "设置鱼类锁定");
         
@@ -1369,7 +1369,7 @@ public partial class NetServerManager
                 if (response != null && response.success)
                 {
                     success = true;
-                    Logger.Log($"[NetServerManager] 切换自动出售状态成功: enable={enable}, remainingSeconds={response.remainingSeconds}");
+                    Z_Logger.Log($"[NetServerManager] 切换自动出售状态成功: enable={enable}, remainingSeconds={response.remainingSeconds}");
                     
                     if (response.fishItems != null && response.fishItems.Count > 0)
                     {
@@ -1398,20 +1398,20 @@ public partial class NetServerManager
                             });
                         }
                         PlayerDataManager.Instance?.UpdateFishDetailData(fishDetailData);
-                        Logger.Log($"[NetServerManager] 自动出售状态切换后同步鱼篓数据: {fishInventory.Count} 种鱼");
+                        Z_Logger.Log($"[NetServerManager] 自动出售状态切换后同步鱼篓数据: {fishInventory.Count} 种鱼");
                     }
                 }
                 else
                 {
                     success = false;
-                    Logger.LogError($"[NetServerManager] 切换自动出售状态失败: enable={enable}, message={response?.message}");
+                    Z_Logger.LogError($"[NetServerManager] 切换自动出售状态失败: enable={enable}, message={response?.message}");
                 }
             }
             catch (Exception ex)
             {
                 success = false;
-                Logger.LogError($"[NetServerManager] 切换自动出售状态解析失败: {ex.Message}");
-                Logger.LogWarning($"[NetServerManager] 服务器端缺少toggle-auto-sell端点，将使用本地状态管理");
+                Z_Logger.LogError($"[NetServerManager] 切换自动出售状态解析失败: {ex.Message}");
+                Z_Logger.LogWarning($"[NetServerManager] 服务器端缺少toggle-auto-sell端点，将使用本地状态管理");
                 success = true;
             }
         }, "切换自动出售");
@@ -1444,7 +1444,7 @@ public partial class NetServerManager
         {
             if (data != null)
             {
-                Logger.Log($"[NetServerManager] 获取自动出售状态: hasFeature={data.hasAutoSellFeature}, isEnabled={data.isEnabled}, remainingSeconds={data.remainingSeconds}");
+                Z_Logger.Log($"[NetServerManager] 获取自动出售状态: hasFeature={data.hasAutoSellFeature}, isEnabled={data.isEnabled}, remainingSeconds={data.remainingSeconds}");
                 onSuccess?.Invoke(data);
             }
         }, "自动出售状态");
@@ -1461,7 +1461,7 @@ public partial class NetServerManager
         {
             if (data != null)
             {
-                Logger.Log("[NetServerManager] 获取鱼篓筛选配置成功");
+                Z_Logger.Log("[NetServerManager] 获取鱼篓筛选配置成功");
                 onSuccess?.Invoke(data);
             }
         }, "鱼篓筛选配置");
@@ -1486,18 +1486,18 @@ public partial class NetServerManager
                 if (resp != null && resp.success)
                 {
                     success = true;
-                    Logger.Log("[NetServerManager] 保存鱼篓筛选配置成功");
+                    Z_Logger.Log("[NetServerManager] 保存鱼篓筛选配置成功");
                 }
                 else
                 {
                     success = false;
-                    Logger.LogError($"[NetServerManager] 保存鱼篓筛选配置失败: message={resp?.message}");
+                    Z_Logger.LogError($"[NetServerManager] 保存鱼篓筛选配置失败: message={resp?.message}");
                 }
             }
             catch (Exception ex)
             {
                 success = false;
-                Logger.LogError($"[NetServerManager] 保存鱼篓筛选配置解析失败: {ex.Message}");
+                Z_Logger.LogError($"[NetServerManager] 保存鱼篓筛选配置解析失败: {ex.Message}");
             }
         }, "保存鱼篓筛选配置");
         
@@ -1525,12 +1525,12 @@ public partial class NetServerManager
                 {
                     islandIds.Add(101);
                 }
-                Logger.Log($"[NetServerManager] 获取岛屿情报成功: {islandIds.Count} 个岛屿");
+                Z_Logger.Log($"[NetServerManager] 获取岛屿情报成功: {islandIds.Count} 个岛屿");
                 onComplete?.Invoke(islandIds);
             }
             else
             {
-                Logger.LogWarning("[NetServerManager] 获取岛屿情报失败，使用默认");
+                Z_Logger.LogWarning("[NetServerManager] 获取岛屿情报失败，使用默认");
                 onComplete?.Invoke(new List<int> { 101 });
             }
         }, "岛屿情报");

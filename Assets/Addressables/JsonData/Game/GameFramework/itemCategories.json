@@ -85,6 +85,21 @@
             ]
         },
         {
+            "id": 8,
+            "name": "鱼缸装饰",
+            "code": "H",
+            "description": "H.鱼缸装饰",
+            "startId": 8001,
+            "endId": 8999,
+            "subCategories": [
+                { "id": 80, "name": "鱼缸装饰_摆设", "description": "鱼缸内的摆设装饰", "startId": 8001, "endId": 8199 },
+                { "id": 81, "name": "鱼缸装饰_挂饰", "description": "鱼缸内的挂饰装饰", "startId": 8201, "endId": 8399 },
+                { "id": 82, "name": "鱼缸装饰_边框", "description": "鱼缸的边框装饰", "startId": 8401, "endId": 8599 },
+                { "id": 83, "name": "鱼缸装饰_底面", "description": "鱼缸的底面装饰", "startId": 8601, "endId": 8799 },
+                { "id": 84, "name": "鱼缸装饰_背景", "description": "鱼缸的背景装饰", "startId": 8801, "endId": 8999 }
+            ]
+        },
+        {
             "id": 9,
             "name": "垃圾",
             "code": "I",

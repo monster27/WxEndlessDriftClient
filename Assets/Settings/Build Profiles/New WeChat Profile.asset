@@ -34,7 +34,7 @@ MonoBehaviour:
         ProjectConf:
           projectName: "\u65E0\u5C3D\u6F02\u6D41"
           Appid: wxcb84fd0603979214
-          CDN: https://a.unity.cn/client_api/v1/buckets/ecd936fa-2414-4570-bcf4-1ae5caa7e824/release_by_badge/EndlessDrift/content
+          CDN: https://a.unity.cn/client_api/v1/buckets/ecd936fa-2414-4570-bcf4-1ae5caa7e824/release_by_badge/Dev/content
           assetLoadType: 0
           compressDataPackage: 0
           VideoUrl: 

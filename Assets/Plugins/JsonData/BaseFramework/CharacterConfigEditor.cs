@@ -11,7 +11,7 @@ using System.Linq;
 public class CharacterConfigEditor : EditorWindow
 {
     private List<CharacterConfig> characterList = new List<CharacterConfig>();
-    private string savePath = "Assets/Resources/JsonData/BaseFramework/characters.json";
+    private string savePath = "Assets/Addressables/JsonData/BaseFramework/characters.json";
     private const int CHARACTER_START_ID = 3401;
     private const int CHARACTER_END_ID = 3499;
     private Vector2 scrollPosition;
@@ -91,7 +91,7 @@ public class CharacterConfigEditor : EditorWindow
 
         File.WriteAllText(savePath, json);
         AssetDatabase.Refresh();
-        Debug.Log("人物配置已保存: " + savePath);
+        Z_Logger.Log("人物配置已保存: " + savePath);
     }
 
     private void OnGUI()
@@ -204,7 +204,7 @@ public class CharacterConfigEditor : EditorWindow
                 // 验证ID范围
                 if (newId < CHARACTER_START_ID || newId > CHARACTER_END_ID)
                 {
-                    Debug.LogWarning($"ID {newId} 超出范围 {CHARACTER_START_ID}-{CHARACTER_END_ID}");
+                    Z_Logger.LogWarning($"ID {newId} 超出范围 {CHARACTER_START_ID}-{CHARACTER_END_ID}");
                 }
                 else if (!IsIdDuplicate(newId, index))
                 {

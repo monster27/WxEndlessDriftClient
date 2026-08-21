@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: "\u4E0A\u9C7C\u9876\u90E8\u5C0F\u5F39\u7A97"
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 19d6dbbe058fd1b459e7b5dd22a0aaa5, type: 3}
+    - {fileID: 2800000, guid: b2d87749be065ff4fb8ee97c3f6f1556, type: 3}
+    - {fileID: 2800000, guid: 2d300a0f7070cab499a6aff41e775bf6, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - b2d87749be065ff4fb8ee97c3f6f1556: 21300000
+    - 19d6dbbe058fd1b459e7b5dd22a0aaa5: 21300000
+    - 2d300a0f7070cab499a6aff41e775bf6: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: b2d87749be065ff4fb8ee97c3f6f1556, type: 3}
+  - {fileID: 21300000, guid: 19d6dbbe058fd1b459e7b5dd22a0aaa5, type: 3}
+  - {fileID: 21300000, guid: 2d300a0f7070cab499a6aff41e775bf6, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - TileMark
+  - GetItemTileBg
+  - "\u9C7C\u4FE1\u606F"
+  m_RenderDataMap: {}
+  m_Tag: "\u4E0A\u9C7C\u9876\u90E8\u5C0F\u5F39\u7A97"
+  m_IsVariant: 0
+  m_IsPlaceholder: 0

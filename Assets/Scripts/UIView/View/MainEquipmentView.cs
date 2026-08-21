@@ -645,49 +645,49 @@ public class MainEquipmentView : MonoBehaviour
 
     private void OnFishingRodClick()
     {
-        Debug.Log("[MainEquipmentView] OnFishingRodClick - 点击钓竿按钮");
+        Z_Logger.Log("[MainEquipmentView] OnFishingRodClick - 点击钓竿按钮");
         callback?.Invoke("OpenFishingRod", null);
     }
 
     private void OnFishingLineClick()
     {
-        Debug.Log("[MainEquipmentView] OnFishingLineClick - 点击钓线按钮");
+        Z_Logger.Log("[MainEquipmentView] OnFishingLineClick - 点击钓线按钮");
         callback?.Invoke("OpenFishingLine", null);
     }
 
     private void OnFishingHookClick()
     {
-        Debug.Log("[MainEquipmentView] OnFishingHookClick - 点击钓钩按钮");
+        Z_Logger.Log("[MainEquipmentView] OnFishingHookClick - 点击钓钩按钮");
         callback?.Invoke("OpenFishingHook", null);
     }
 
     private void OnSkillClick(int skillSlot)
     {
-        Debug.Log($"[MainEquipmentView] OnSkillClick - 点击技能按钮, skillSlot={skillSlot}");
+        Z_Logger.Log($"[MainEquipmentView] OnSkillClick - 点击技能按钮, skillSlot={skillSlot}");
 
         // 检查技能槽位是否已解锁
         bool isSlotUnlocked = CommunicateEvent.Request<int, bool>("EVENT_IS_SKILL_SLOT_UNLOCKED", skillSlot);
         if (!isSlotUnlocked)
         {
-            Debug.Log($"[MainEquipmentView] OnSkillClick - 技能槽位 {skillSlot} 未解锁，触发看广告解锁");
+            Z_Logger.Log($"[MainEquipmentView] OnSkillClick - 技能槽位 {skillSlot} 未解锁，触发看广告解锁");
             string slotName = skillSlot == 1 ? "技能1" : "技能2";
             string info = $"看广告解锁{slotName}槽位";
             callback?.Invoke("OpenAd", new object[] { info, skillSlot, "看广告解锁", (System.Action)(() =>
             {
-                Debug.Log($"[MainEquipmentView] 看广告解锁技能槽位回调执行 - slot={skillSlot}");
+                Z_Logger.Log($"[MainEquipmentView] 看广告解锁技能槽位回调执行 - slot={skillSlot}");
                 if (NetServerManager.Instance != null)
                 {
                     NetServerManager.Instance.UnlockSkillSlot(skillSlot, (success) =>
                     {
                         if (success)
                         {
-                            Debug.Log($"[MainEquipmentView] 技能槽位 {skillSlot} 解锁成功");
+                            Z_Logger.Log($"[MainEquipmentView] 技能槽位 {skillSlot} 解锁成功");
                             UpdateDisplay();
                             CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"{slotName}槽位解锁成功！");
                         }
                         else
                         {
-                            Debug.LogWarning($"[MainEquipmentView] 技能槽位 {skillSlot} 解锁失败");
+                            Z_Logger.LogWarning($"[MainEquipmentView] 技能槽位 {skillSlot} 解锁失败");
                             CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "解锁失败，请重试");
                         }
                     });
@@ -701,7 +701,7 @@ public class MainEquipmentView : MonoBehaviour
 
     private void OnCharacterClick()
     {
-        Debug.Log("[MainEquipmentView] OnCharacterClick - 点击人物按钮");
+        Z_Logger.Log("[MainEquipmentView] OnCharacterClick - 点击人物按钮");
         callback?.Invoke("OpenCharacter", null);
     }
 }

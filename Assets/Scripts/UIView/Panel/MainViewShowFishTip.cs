@@ -63,7 +63,7 @@ public class MainViewShowFishTip : MonoBehaviour
         rectTransform = GetComponent<RectTransform>();
         if (rectTransform == null)
         {
-            Debug.LogError("[MainViewShowFishTip] RectTransform component not found!");
+            Z_Logger.LogError("[MainViewShowFishTip] RectTransform component not found!");
         }
 
         if (transform.parent != null)
@@ -125,7 +125,7 @@ public class MainViewShowFishTip : MonoBehaviour
     {
         NewItemData data = new NewItemData(itemName, icon);
         newItemQueue.Enqueue(data);
-        Debug.Log($"[MainViewShowFishTip] 入队新物品：{itemName}, 当前队列长度：{newItemQueue.Count}");
+        Z_Logger.Log($"[MainViewShowFishTip] 入队新物品：{itemName}, 当前队列长度：{newItemQueue.Count}");
 
         if (currentState == TipState.Idle)
         {
@@ -139,7 +139,7 @@ public class MainViewShowFishTip : MonoBehaviour
     public void ClearQueue()
     {
         newItemQueue.Clear();
-        Debug.Log("[MainViewShowFishTip] 队列已清空");
+        Z_Logger.Log("[MainViewShowFishTip] 队列已清空");
     }
 
     /// <summary>
@@ -153,7 +153,7 @@ public class MainViewShowFishTip : MonoBehaviour
         }
 
         NewItemData data = newItemQueue.Dequeue();
-        Debug.Log($"[MainViewShowFishTip] 开始显示提示，剩余队列长度：{newItemQueue.Count}");
+        Z_Logger.Log($"[MainViewShowFishTip] 开始显示提示，剩余队列长度：{newItemQueue.Count}");
 
         // 设置图标
         if (iconImage != null)
@@ -300,7 +300,7 @@ public class MainViewShowFishTip : MonoBehaviour
     /// </summary>
     private void OnMaskBtnClick()
     {
-        Debug.Log("[MainViewShowFishTip] MaskBtn 点击，立即关闭提示");
+        Z_Logger.Log("[MainViewShowFishTip] MaskBtn 点击，立即关闭提示");
         newItemQueue.Clear();
         currentState = TipState.Idle;
         isActive = false;

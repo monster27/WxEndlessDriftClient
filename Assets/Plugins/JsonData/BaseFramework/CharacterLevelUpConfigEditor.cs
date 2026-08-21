@@ -1,4 +1,4 @@
-// ==================== CharacterLevelUpConfigEditor.cs（编辑器工具）====================
+﻿// ==================== CharacterLevelUpConfigEditor.cs（编辑器工具）====================
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
@@ -11,7 +11,7 @@ using System.IO;
 public class CharacterLevelUpConfigEditor : EditorWindow
 {
     private List<LevelRangeExp> levelRangeExpList = new List<LevelRangeExp>();
-    private string savePath = "Assets/Resources/JsonData/BaseFramework/level_up_exp_config.json";
+    private string savePath = "Assets/Addressables/JsonData/BaseFramework/level_up_exp_config.json";
     private Vector2 scrollPosition;
 
     // 等级区间配置
@@ -45,7 +45,7 @@ public class CharacterLevelUpConfigEditor : EditorWindow
             if (wrapper != null)
             {
                 ConvertWrapperToLists(wrapper);
-                Debug.Log("加载配置成功");
+                Z_Logger.Log("加载配置成功");
             }
             else
             {

@@ -68,13 +68,13 @@ namespace View.Detail
             string newSignature = GenerateDataSignature(newInventory, detailData);
             if (newSignature == lastDataSignature && fishPrefabs.Count > 0)
             {
-                Debug.Log("[FishDetail] 数据无变化，跳过刷新");
+                Z_Logger.Log("[FishDetail] 数据无变化，跳过刷新");
                 return;
             }
             lastDataSignature = newSignature;
 
-            Debug.Log($"[FishDetail] ===== 开始更新鱼篓显示 =====");
-            Debug.Log($"[FishDetail] 传入数据 - itemDataMap数量: {itemDataMap?.Count ?? 0}, newInventory物品类型数: {newInventory.Count}, detailData数量: {detailData?.Count ?? 0}");
+            Z_Logger.Log($"[FishDetail] ===== 开始更新鱼篓显示 =====");
+            Z_Logger.Log($"[FishDetail] 传入数据 - itemDataMap数量: {itemDataMap?.Count ?? 0}, newInventory物品类型数: {newInventory.Count}, detailData数量: {detailData?.Count ?? 0}");
 
             if (detailData != null && detailData.Count > 0)
             {
@@ -106,10 +106,10 @@ namespace View.Detail
             currentItemDataMap = new Dictionary<int, ItemData>(itemDataMap);
             currentFishDetailData = detailData != null ? new Dictionary<int, List<FishDetailData>>(detailData) : new Dictionary<int, List<FishDetailData>>();
 
-            Debug.Log($"[FishDetail] ===== 更新完成，当前 fishPrefabs 中的物品种类: {fishPrefabs.Count} =====");
+            Z_Logger.Log($"[FishDetail] ===== 更新完成，当前 fishPrefabs 中的物品种类: {fishPrefabs.Count} =====");
             foreach (var kvp in fishPrefabs)
             {
-                Debug.Log($"   最终 ID={kvp.Key}, 实例数={kvp.Value.Count}");
+                Z_Logger.Log($"   最终 ID={kvp.Key}, 实例数={kvp.Value.Count}");
             }
         }
 
@@ -165,7 +165,7 @@ namespace View.Detail
                 if (!newInventory.ContainsKey(itemId))
                 {
                     // 这种鱼完全没有了，回收所有实例
-                    Debug.Log($"[FishDetail] 移除完全消失的物品种类: ID={itemId}, 实例数={kvp.Value.Count}");
+                    Z_Logger.Log($"[FishDetail] 移除完全消失的物品种类: ID={itemId}, 实例数={kvp.Value.Count}");
                     foreach (var prefab in kvp.Value)
                     {
                         ReturnFishToPool(prefab);
@@ -181,7 +181,7 @@ namespace View.Detail
                     // 如果新数量少于当前实例数，移除多余的
                     if (prefabs.Count > newQuantity)
                     {
-                        Debug.Log($"[FishDetail] 物品种类 ID={itemId} 数量减少: 原={prefabs.Count}, 新={newQuantity}");
+                        Z_Logger.Log($"[FishDetail] 物品种类 ID={itemId} 数量减少: 原={prefabs.Count}, 新={newQuantity}");
                         while (prefabs.Count > newQuantity)
                         {
                             UI_FishBagPrefab lastPrefab = prefabs[prefabs.Count - 1];
@@ -200,7 +200,7 @@ namespace View.Detail
 
         private void UpdateOrAddFish(int itemId, int newQuantity, ItemData itemData, List<FishDetailData> fishDetails = null)
         {
-            Debug.Log($"[FishDetail] UpdateOrAddFish - ID={itemId}, 名称={itemData?.name}, newQuantity={newQuantity}, 详情条数={fishDetails?.Count ?? 0}");
+            Z_Logger.Log($"[FishDetail] UpdateOrAddFish - ID={itemId}, 名称={itemData?.name}, newQuantity={newQuantity}, 详情条数={fishDetails?.Count ?? 0}");
 
             if (!fishPrefabs.ContainsKey(itemId)) fishPrefabs[itemId] = new List<UI_FishBagPrefab>();
             List<UI_FishBagPrefab> prefabs = fishPrefabs[itemId];
@@ -227,7 +227,7 @@ namespace View.Detail
                 }
             }
 
-            Debug.Log($"[FishDetail] UpdateOrAddFish 完成 - ID={itemId}, 最终实例数={prefabs.Count}");
+            Z_Logger.Log($"[FishDetail] UpdateOrAddFish 完成 - ID={itemId}, 最终实例数={prefabs.Count}");
         }
 
         private FishDetailData CreateDefaultDetail(int itemId, ItemData itemData)
@@ -288,18 +288,18 @@ namespace View.Detail
         // ✅ 修改：按重量排序时使用实际重量（从 FishDetailData 获取）
         public void SortFishItems(FishBagView.SortType sortType)
         {
-            Debug.Log($"[FishDetail] SortFishItems - 排序类型: {sortType}");
+            Z_Logger.Log($"[FishDetail] SortFishItems - 排序类型: {sortType}");
 
             if (contentTransform == null || fishPrefabs.Count == 0)
             {
-                Debug.Log("[FishDetail] SortFishItems - 没有需要排序的鱼");
+                Z_Logger.Log("[FishDetail] SortFishItems - 没有需要排序的鱼");
                 return;
             }
 
             List<UI_FishBagPrefab> allActivePrefabs = GetAllFishPrefabs();
             if (allActivePrefabs.Count == 0)
             {
-                Debug.Log("[FishDetail] SortFishItems - 没有活动的鱼预制体");
+                Z_Logger.Log("[FishDetail] SortFishItems - 没有活动的鱼预制体");
                 return;
             }
 
@@ -309,7 +309,7 @@ namespace View.Detail
                 case FishBagView.SortType.Rarity:
                     // 稀有度降序
                     allActivePrefabs.Sort((a, b) => b.FishRarityId.CompareTo(a.FishRarityId));
-                    Debug.Log($"[FishDetail] 按稀有度排序（降序）");
+                    Z_Logger.Log($"[FishDetail] 按稀有度排序（降序）");
                     break;
 
                 case FishBagView.SortType.CatchOrder:
@@ -320,7 +320,7 @@ namespace View.Detail
                         if (diff != 0) return diff > 0 ? 1 : -1;
                         return b.FishRarityId.CompareTo(a.FishRarityId);
                     });
-                    Debug.Log($"[FishDetail] 按钓获时间排序（升序，最先钓上来的在前）");
+                    Z_Logger.Log($"[FishDetail] 按钓获时间排序（升序，最先钓上来的在前）");
                     break;
 
                 case FishBagView.SortType.Price:
@@ -331,19 +331,19 @@ namespace View.Detail
                         int priceB = b.GetTotalSellPrice();
                         return priceB.CompareTo(priceA);
                     });
-                    Debug.Log($"[FishDetail] 按价格排序（降序）");
+                    Z_Logger.Log($"[FishDetail] 按价格排序（降序）");
                     break;
 
                 case FishBagView.SortType.Weight:
                     // ✅ 修复：重量降序，使用实际重量
                     allActivePrefabs.Sort((a, b) => b.FishWeight.CompareTo(a.FishWeight));
-                    Debug.Log($"[FishDetail] 按重量排序（降序）");
+                    Z_Logger.Log($"[FishDetail] 按重量排序（降序）");
                     break;
 
                 default:
                     // 默认按稀有度降序
                     allActivePrefabs.Sort((a, b) => b.FishRarityId.CompareTo(a.FishRarityId));
-                    Debug.Log($"[FishDetail] 默认按稀有度排序（降序）");
+                    Z_Logger.Log($"[FishDetail] 默认按稀有度排序（降序）");
                     break;
             }
 
@@ -352,7 +352,7 @@ namespace View.Detail
                 allActivePrefabs[i].transform.SetSiblingIndex(i);
             }
 
-            Debug.Log($"[FishDetail] SortFishItems - 完成排序，共 {allActivePrefabs.Count} 条鱼");
+            Z_Logger.Log($"[FishDetail] SortFishItems - 完成排序，共 {allActivePrefabs.Count} 条鱼");
         }
 
         // ✅ 数据签名生成：用于比对数据是否变化，避免不必要的 UI 重建
@@ -462,11 +462,11 @@ namespace View.Detail
         // ✅ 修改：创建鱼预制体时传递详情数据
         private UI_FishBagPrefab CreateFishItemPrefab(int itemId, int quantity, ItemData itemData, bool isNewCatch = false, FishDetailData detail = null)
         {
-            Debug.Log($"[FishDetail] CreateFishItemPrefab - itemId={itemId}, quantity={quantity}, isNewCatch={isNewCatch}, 物品名称={(itemData != null ? itemData.name : "null")}, 重量={(detail != null ? detail.weight.ToString() : "无")}, 星级ID={(detail != null ? detail.starRatingId.ToString() : "无")}");
+            Z_Logger.Log($"[FishDetail] CreateFishItemPrefab - itemId={itemId}, quantity={quantity}, isNewCatch={isNewCatch}, 物品名称={(itemData != null ? itemData.name : "null")}, 重量={(detail != null ? detail.weight.ToString() : "无")}, 星级ID={(detail != null ? detail.starRatingId.ToString() : "无")}");
 
             if (fishBagItemPrefab == null)
             {
-                Debug.LogError("[FishDetail] fishBagItemPrefab is not assigned");
+                Z_Logger.LogError("[FishDetail] fishBagItemPrefab is not assigned");
                 return null;
             }
 
@@ -474,21 +474,21 @@ namespace View.Detail
 
             if (fishItem == null)
             {
-                Debug.Log($"[FishDetail] 从池中获取失败，创建新实例");
+                Z_Logger.Log($"[FishDetail] 从池中获取失败，创建新实例");
                 GameObject itemObj = Instantiate(fishBagItemPrefab, contentTransform);
                 fishItem = itemObj.GetComponent<UI_FishBagPrefab>();
 
                 if (fishItem == null)
                 {
                     Destroy(itemObj);
-                    Debug.LogError("[FishDetail] UI_FishBagPrefab component not found");
+                    Z_Logger.LogError("[FishDetail] UI_FishBagPrefab component not found");
                     return null;
                 }
-                Debug.Log($"[FishDetail] 新实例创建成功");
+                Z_Logger.Log($"[FishDetail] 新实例创建成功");
             }
             else
             {
-                Debug.Log($"[FishDetail] 从池中获取实例成功");
+                Z_Logger.Log($"[FishDetail] 从池中获取实例成功");
                 fishItem.transform.SetParent(contentTransform);
                 fishItem.transform.localScale = Vector3.one;
             }
@@ -499,7 +499,7 @@ namespace View.Detail
             fishItem.SetSelection(false);
             fishItem.gameObject.SetActive(true);
 
-            Debug.Log($"[FishDetail] CreateFishItemPrefab 完成 - itemId={itemId}");
+            Z_Logger.Log($"[FishDetail] CreateFishItemPrefab 完成 - itemId={itemId}");
             return fishItem;
         }
 
@@ -516,7 +516,7 @@ namespace View.Detail
             {
                 UI_FishBagPrefab item = fishObjectPool[0];
                 fishObjectPool.RemoveAt(0);
-                Debug.Log($"[FishDetail] 从池中获取物品, 池剩余: {fishObjectPool.Count}");
+                Z_Logger.Log($"[FishDetail] 从池中获取物品, 池剩余: {fishObjectPool.Count}");
                 return item;
             }
             return null;

@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Textures
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: f88677df267a41d6be1e7a6133e7d227, type: 3}
+    - {fileID: 2800000, guid: 283f897e4925411ebbaa758b4cb13fc2, type: 3}
+    - {fileID: 2800000, guid: 85ac55597b97403c82fc6601a93cf241, type: 3}
+    - {fileID: 2800000, guid: 1cdc5b506b1a4a33a53c30669ced1f51, type: 3}
+    - {fileID: 2800000, guid: 2ce5c55e85304b819a1826ecbc839aa5, type: 3}
+    - {fileID: 2800000, guid: 6eb184de103d4b3f812b38561065192f, type: 3}
+    - {fileID: 2800000, guid: 03d0538de6e24c0f819bfc9ce084dfa9, type: 3}
+    - {fileID: 2800000, guid: bb8dfcd263ad4eb383a33d74a720be6f, type: 3}
+    - {fileID: 2800000, guid: 602cb87b6a29443b8636370ea0751574, type: 3}
+    - {fileID: 2800000, guid: 8878a782f4334ecbbcf683b3ac780966, type: 3}
+    - {fileID: 2800000, guid: 17c350171f7a3ca479f830547c66d187, type: 3}
+    - {fileID: 2800000, guid: 4ccf43d26c4748c792174516f4a8fcef, type: 3}
+    - {fileID: 2800000, guid: c76d18757a194d618355f05f815cb0a1, type: 3}
+    - {fileID: 2800000, guid: 10c49fcd9c64421db7c0133e61e55f97, type: 3}
+    - {fileID: 2800000, guid: ed5290d8df18488780e2996b9b882f01, type: 3}
+    - {fileID: 2800000, guid: 7631f4eff8f74ed38eb3eb9db17134e1, type: 3}
+    - {fileID: 2800000, guid: 2b5e9ae96c5644d8bae932f8b4ca68a2, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - 1cdc5b506b1a4a33a53c30669ced1f51: 21300000
+    - 8878a782f4334ecbbcf683b3ac780966: 21300000
+    - 4ccf43d26c4748c792174516f4a8fcef: 21300000
+    - bb8dfcd263ad4eb383a33d74a720be6f: 21300000
+    - c76d18757a194d618355f05f815cb0a1: 21300000
+    - 17c350171f7a3ca479f830547c66d187: 21300000
+    - ed5290d8df18488780e2996b9b882f01: 21300000
+    - 85ac55597b97403c82fc6601a93cf241: 21300000
+    - 2b5e9ae96c5644d8bae932f8b4ca68a2: 21300000
+    - 602cb87b6a29443b8636370ea0751574: 21300000
+    - 03d0538de6e24c0f819bfc9ce084dfa9: 21300000
+    - 10c49fcd9c64421db7c0133e61e55f97: 21300000
+    - 2ce5c55e85304b819a1826ecbc839aa5: 21300000
+    - 283f897e4925411ebbaa758b4cb13fc2: 21300000
+    - 6eb184de103d4b3f812b38561065192f: 21300000
+    - f88677df267a41d6be1e7a6133e7d227: 21300000
+    - 7631f4eff8f74ed38eb3eb9db17134e1: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 1cdc5b506b1a4a33a53c30669ced1f51, type: 3}
+  - {fileID: 21300000, guid: 8878a782f4334ecbbcf683b3ac780966, type: 3}
+  - {fileID: 21300000, guid: 4ccf43d26c4748c792174516f4a8fcef, type: 3}
+  - {fileID: 21300000, guid: bb8dfcd263ad4eb383a33d74a720be6f, type: 3}
+  - {fileID: 21300000, guid: c76d18757a194d618355f05f815cb0a1, type: 3}
+  - {fileID: 21300000, guid: 17c350171f7a3ca479f830547c66d187, type: 3}
+  - {fileID: 21300000, guid: ed5290d8df18488780e2996b9b882f01, type: 3}
+  - {fileID: 21300000, guid: 85ac55597b97403c82fc6601a93cf241, type: 3}
+  - {fileID: 21300000, guid: 2b5e9ae96c5644d8bae932f8b4ca68a2, type: 3}
+  - {fileID: 21300000, guid: 602cb87b6a29443b8636370ea0751574, type: 3}
+  - {fileID: 21300000, guid: 03d0538de6e24c0f819bfc9ce084dfa9, type: 3}
+  - {fileID: 21300000, guid: 10c49fcd9c64421db7c0133e61e55f97, type: 3}
+  - {fileID: 21300000, guid: 2ce5c55e85304b819a1826ecbc839aa5, type: 3}
+  - {fileID: 21300000, guid: 283f897e4925411ebbaa758b4cb13fc2, type: 3}
+  - {fileID: 21300000, guid: 6eb184de103d4b3f812b38561065192f, type: 3}
+  - {fileID: 21300000, guid: f88677df267a41d6be1e7a6133e7d227, type: 3}
+  - {fileID: 21300000, guid: 7631f4eff8f74ed38eb3eb9db17134e1, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Fruit Jelly (B&W)
+  - Small Crate_normal
+  - Text Overflow - Linked Text Image 1
+  - Mask Zig-n-Zag
+  - Text Overflow - Linked Text UI Screenshot
+  - Sunny Days - Seamless
+  - Wipe Pattern - Diagonal
+  - Floor Tiles 1 - diffuse
+  - Wipe Pattern - Radial Quad
+  - Small Crate_diffuse
+  - Gradient Vertical (Color)
+  - Wipe Pattern - Circle
+  - Gradient Diagonal (Color)
+  - Floor Cement
+  - Gradient Horizontal (Color)
+  - Brushed Metal 3
+  - Wipe Pattern - Radial Double
+  m_RenderDataMap: {}
+  m_Tag: Textures
+  m_IsVariant: 0
+  m_IsPlaceholder: 0

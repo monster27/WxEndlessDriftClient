@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -15,7 +15,7 @@ public class ItemCategoryDataEditor : EditorWindow
     [MenuItem("Tools/游戏内容/1.游戏框架数据/物品分类", false)]
     public static void ShowWindow()
     {
-        ItemCategoryDataEditor window = GetWindow<ItemCategoryDataEditor>("物品分类框架");
+        ItemCategoryDataEditor window = GetWindow<ItemCategoryDataEditor>($"物品分类框架(itemCategories)");
         window.minSize = new Vector2(750, 600);
         window.Show();
     }
@@ -47,13 +47,13 @@ public class ItemCategoryDataEditor : EditorWindow
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"加载物品分类数据失败: {e.Message}");
+                Z_Logger.LogError($"加载物品分类数据失败: {e.Message}");
                 isLoaded = false;
             }
         }
         else
         {
-            Debug.LogWarning($"物品分类数据文件不存在: {fullPath}");
+            Z_Logger.LogWarning($"物品分类数据文件不存在: {fullPath}");
             isLoaded = false;
         }
     }
@@ -61,7 +61,19 @@ public class ItemCategoryDataEditor : EditorWindow
     private void DrawHeader()
     {
         EditorGUILayout.BeginVertical("box");
+
+        EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("物品分类框架", EditorStyles.boldLabel);
+
+        // ✅ 新增：复制文件名按钮
+        if (GUILayout.Button("📋 复制文件名", GUILayout.Width(100), GUILayout.Height(20)))
+        {
+            string fileName = Path.GetFileName(DATA_PATH);
+            GUIUtility.systemCopyBuffer = fileName;
+            EditorUtility.DisplayDialog("复制成功", $"已复制文件名到剪贴板：\n\n{fileName}", "确定");
+        }
+        EditorGUILayout.EndHorizontal();
+
         EditorGUILayout.LabelField("此框架数据用于系统解析，仅作查看用途", EditorStyles.miniLabel);
         EditorGUILayout.EndVertical();
         GUILayout.Space(5);
@@ -133,8 +145,13 @@ public class ItemCategoryDataEditor : EditorWindow
         // 根据ID显示不同的图标
         string icon = subCat.id switch
         {
+            70 => "🏝️",  // 岛屿情报
             71 => "📖",  // 图鉴情报
-            72 => "🏝️",  // 岛屿情报
+            80 => "🪸",  // 鱼缸装饰_摆设
+            81 => "🎀",  // 鱼缸装饰_挂饰
+            82 => "🖼️",  // 鱼缸装饰_边框
+            83 => "🧱",  // 鱼缸装饰_底面
+            84 => "🌅",  // 鱼缸装饰_背景
             _ => "📄"
         };
 
@@ -160,8 +177,9 @@ public class ItemCategoryDataEditor : EditorWindow
 （4）D.室外装饰皮肤  鱼篓装饰（41）【4001-4099】- 帐篷装饰（42）【4101-4199】- 提示器装饰（43）【4201-4299】
 （5）E.室内装饰皮肤  墙壁（51）【5000-5049】- 地板（52）【5050-5099】- 楼梯（53）【5100-5149】- 灯带（54）【5150-5199】- 挂饰（55）【5200-5249】- 望远镜（56）【5250-5299】- 昆虫房（57）【5300-5349】- 宠物屋（58）【5350-5399】- 鱼缸（59）【5400-5449】- 熊猫（60）【5450-5499】- 鹦鹉（61）【5500-5549】- 桌子（62）【5550-5599】
 （6）G.情报      岛屿情报（70）【7001-7099】- 图鉴情报（71）【7101-7199】
-（7）I.垃圾      【9001 - 9020】
-（8）S.特殊      不在其他分类范围内的物品（分类ID: 99）";
+（7）H.鱼缸装饰  摆设（80）【8001-8199】- 挂饰（81）【8201-8399】- 边框（82）【8401-8599】- 底面（83）【8601-8799】- 背景（84）【8801-8999】
+（8）I.垃圾      【9001 - 9020】
+（9）S.特殊      不在其他分类范围内的物品（分类ID: 99）";
 
         EditorGUILayout.HelpBox(helpText, MessageType.Info);
         EditorGUILayout.EndVertical();

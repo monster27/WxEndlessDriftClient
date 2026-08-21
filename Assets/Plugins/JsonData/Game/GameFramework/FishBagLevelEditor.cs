@@ -1,4 +1,4 @@
-﻿// ==================== FishBagLevelEditor.cs ====================
+// ==================== FishBagLevelEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -292,17 +292,17 @@ public class FishBagLevelEditor : EditorWindow
                 dataList = wrapper?.fishBagLevels ?? new List<FishBagLevelData>();
                 // 按等级排序
                 dataList = dataList.OrderBy(x => x.level).ToList();
-                if (dataList.Count > 0) Debug.Log($"[FishBagLevelEditor] 加载成功，共{dataList.Count}条数据");
+                if (dataList.Count > 0) Z_Logger.Log($"[FishBagLevelEditor] 加载成功，共{dataList.Count}条数据");
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"[FishBagLevelEditor] 加载失败: {e.Message}");
+                Z_Logger.LogError($"[FishBagLevelEditor] 加载失败: {e.Message}");
                 dataList = new List<FishBagLevelData>();
             }
         }
         else
         {
-            Debug.LogWarning($"[FishBagLevelEditor] 文件不存在: {FullPath}，创建默认数据");
+            Z_Logger.LogWarning($"[FishBagLevelEditor] 文件不存在: {FullPath}，创建默认数据");
             CreateDefaultData();
         }
         Repaint();
@@ -335,7 +335,7 @@ public class FishBagLevelEditor : EditorWindow
         string json = JsonUtility.ToJson(wrapper, true);
         File.WriteAllText(FullPath, json);
         AssetDatabase.Refresh();
-        Debug.Log($"[FishBagLevelEditor] 保存成功: {FullPath}");
+        Z_Logger.Log($"[FishBagLevelEditor] 保存成功: {FullPath}");
     }
 
     private void AddNewItem()

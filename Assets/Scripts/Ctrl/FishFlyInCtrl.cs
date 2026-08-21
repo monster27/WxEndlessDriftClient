@@ -21,7 +21,7 @@ public class FishFlyInCtrl : MonoBehaviour
     {
         if (go == null)
         {
-            Debug.LogError("FishFlyInCtrl: go 未赋值!");
+            Z_Logger.LogError("FishFlyInCtrl: go 未赋值!");
             return;
         }
 

@@ -40,7 +40,7 @@ namespace View.Detail
             EquipmentSlotType slotType = data.Item1;
             int itemId = data.Item2;
 
-            Debug.Log($"[BagDetail] 接收到装备状态更新事件: SlotType={slotType}, ItemId={itemId}");
+            Z_Logger.Log($"[BagDetail] 接收到装备状态更新事件: SlotType={slotType}, ItemId={itemId}");
 
             // 如果是鱼饵槽位的装备变化
             if (slotType == EquipmentSlotType.Bait)
@@ -57,7 +57,7 @@ namespace View.Detail
             int slotType = data.Item1;
             int skinId = data.Item2;
 
-            Debug.Log($"[BagDetail] 接收到皮肤装备状态更新事件: SlotType={slotType}, SkinId={skinId}");
+            Z_Logger.Log($"[BagDetail] 接收到皮肤装备状态更新事件: SlotType={slotType}, SkinId={skinId}");
 
             UpdateSkinEquippedState(slotType, skinId);
         }
@@ -67,7 +67,7 @@ namespace View.Detail
         /// </summary>
         private void UpdateBaitEquippedState(int newBaitId)
         {
-            Debug.Log($"[BagDetail] UpdateBaitEquippedState - newBaitId={newBaitId}");
+            Z_Logger.Log($"[BagDetail] UpdateBaitEquippedState - newBaitId={newBaitId}");
 
             foreach (var kvp in itemPrefabs)
             {
@@ -88,7 +88,7 @@ namespace View.Detail
                     if (prefab != null)
                     {
                         prefab.SetEquipped(shouldBeEquipped);
-                        Debug.Log($"[BagDetail] 更新物品装备状态: itemId={itemId}, shouldBeEquipped={shouldBeEquipped}, activeSelf={prefab.gameObject.activeSelf}");
+                        Z_Logger.Log($"[BagDetail] 更新物品装备状态: itemId={itemId}, shouldBeEquipped={shouldBeEquipped}, activeSelf={prefab.gameObject.activeSelf}");
                     }
                 }
             }
@@ -99,7 +99,7 @@ namespace View.Detail
         /// </summary>
         private void UpdateSkinEquippedState(int slotType, int newSkinId)
         {
-            Debug.Log($"[BagDetail] UpdateSkinEquippedState - slotType={slotType}, newSkinId={newSkinId}");
+            Z_Logger.Log($"[BagDetail] UpdateSkinEquippedState - slotType={slotType}, newSkinId={newSkinId}");
 
             foreach (var kvp in itemPrefabs)
             {
@@ -111,7 +111,7 @@ namespace View.Detail
                     if (prefab != null)
                     {
                         prefab.SetEquipped(shouldBeEquipped);
-                        Debug.Log($"[BagDetail] 更新皮肤装备状态: itemId={itemId}, shouldBeEquipped={shouldBeEquipped}");
+                        Z_Logger.Log($"[BagDetail] 更新皮肤装备状态: itemId={itemId}, shouldBeEquipped={shouldBeEquipped}");
                     }
                 }
             }
@@ -210,11 +210,11 @@ namespace View.Detail
         /// </summary>
         public void UpdateItemsBySingleCategory(Dictionary<int, ItemData> itemDataMap, Dictionary<int, int> inventory, int categoryId)
         {
-            Debug.Log($"[BagDetail] UpdateItemsBySingleCategory - 分类ID: {categoryId}, 物品数: {inventory?.Count ?? 0}");
+            Z_Logger.Log($"[BagDetail] UpdateItemsBySingleCategory - 分类ID: {categoryId}, 物品数: {inventory?.Count ?? 0}");
 
             if (categoryId == 21)
             {
-                Debug.Log("[BagDetail] 检测到鱼饵分类，调用 UpdateBaitItemsWithNoBaitOption");
+                Z_Logger.Log("[BagDetail] 检测到鱼饵分类，调用 UpdateBaitItemsWithNoBaitOption");
                 UpdateBaitItemsWithNoBaitOption(itemDataMap, inventory);
                 return;
             }
@@ -227,11 +227,11 @@ namespace View.Detail
                     if (itemData.categoryId == categoryId)
                     {
                         count++;
-                        Debug.Log($"[BagDetail] 分类 {categoryId} 包含物品: ID={item.Key}, 名称={itemData.name}, 数量={item.Value}");
+                        Z_Logger.Log($"[BagDetail] 分类 {categoryId} 包含物品: ID={item.Key}, 名称={itemData.name}, 数量={item.Value}");
                     }
                 }
             }
-            Debug.Log($"[BagDetail] 分类 {categoryId} 共有 {count} 种物品");
+            Z_Logger.Log($"[BagDetail] 分类 {categoryId} 共有 {count} 种物品");
 
             UpdateItemsBySubCategory(itemDataMap, inventory, new List<int> { categoryId });
         }
@@ -246,7 +246,7 @@ namespace View.Detail
             int equippedBaitId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Bait);
             bool noBaitEquipped = equippedBaitId == 0;
 
-            Debug.Log($"[BagDetail] UpdateBaitItemsWithNoBaitOption - equippedBaitId={equippedBaitId}, noBaitEquipped={noBaitEquipped}");
+            Z_Logger.Log($"[BagDetail] UpdateBaitItemsWithNoBaitOption - equippedBaitId={equippedBaitId}, noBaitEquipped={noBaitEquipped}");
 
             ItemData noBaitData = new ItemData
             {
@@ -258,7 +258,7 @@ namespace View.Detail
             };
 
             currentItemIds.Add(0);
-            Debug.Log($"[BagDetail] 创建无鱼饵选项 - isEquipped={noBaitEquipped}");
+            Z_Logger.Log($"[BagDetail] 创建无鱼饵选项 - isEquipped={noBaitEquipped}");
             HandleItemStacking(0, 1, noBaitData, noBaitEquipped);
 
             if (inventory != null)
@@ -274,7 +274,7 @@ namespace View.Detail
                         {
                             currentItemIds.Add(itemId);
                             bool isEquipped = (itemId == equippedBaitId);
-                            Debug.Log($"[BagDetail] 创建鱼饵选项 - itemId={itemId}, quantity={quantity}, isEquipped={isEquipped}");
+                            Z_Logger.Log($"[BagDetail] 创建鱼饵选项 - itemId={itemId}, quantity={quantity}, isEquipped={isEquipped}");
                             HandleItemStacking(itemId, quantity, itemData, isEquipped);
                         }
                     }
@@ -404,13 +404,13 @@ namespace View.Detail
             if (NetServerManager.Instance != null)
             {
                 bool cached = NetServerManager.Instance.IsItemEquippedCached(itemId);
-                Debug.Log($"[BagDetail] IsItemEquipped(缓存) - itemId={itemId}, result={cached}");
+                Z_Logger.Log($"[BagDetail] IsItemEquipped(缓存) - itemId={itemId}, result={cached}");
                 return cached;
             }
 
             // 降级：通过事件系统查询
             bool isEquipped = CommunicateEvent.Request<int, bool>(CommunicateEvent.EVENT_IS_ITEM_EQUIPPED, itemId);
-            Debug.Log($"[BagDetail] IsItemEquipped(降级) - itemId={itemId}, 事件检查结果: {isEquipped}");
+            Z_Logger.Log($"[BagDetail] IsItemEquipped(降级) - itemId={itemId}, 事件检查结果: {isEquipped}");
             return isEquipped;
         }
 
@@ -465,7 +465,7 @@ namespace View.Detail
                         }
                         else
                         {
-                            Debug.LogWarning($"[BagDetail] ReturnUnusedToPool - prefab为null");
+                            Z_Logger.LogWarning($"[BagDetail] ReturnUnusedToPool - prefab为null");
                         }
                     }
                     toRemove.Add(kvp.Key);

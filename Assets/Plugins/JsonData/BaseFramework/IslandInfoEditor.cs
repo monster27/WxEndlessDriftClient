@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
@@ -78,7 +78,7 @@ public class IslandInfoEditor : EditorWindow
 
         if (islandInfoList.Count > 0 && savedIslandInfoList.Count == 0)
         {
-            Debug.Log("[岛屿情报编辑器] 未找到已保存的数据，自动创建默认数据");
+            Z_Logger.Log("[岛屿情报编辑器] 未找到已保存的数据，自动创建默认数据");
             SaveIslandInfoData();
             LoadSavedIslandInfo();
             GenerateIslandInfoList();
@@ -87,7 +87,7 @@ public class IslandInfoEditor : EditorWindow
         isDataLoaded = true;
         isDirty = false;
 
-        Debug.Log($"[岛屿情报编辑器] 加载完成: 岛屿={islandDataList.Count}, 情报={islandInfoList.Count}, 已保存={savedIslandInfoList.Count}");
+        Z_Logger.Log($"[岛屿情报编辑器] 加载完成: 岛屿={islandDataList.Count}, 情报={islandInfoList.Count}, 已保存={savedIslandInfoList.Count}");
     }
 
     private void LoadIslandData()
@@ -97,7 +97,7 @@ public class IslandInfoEditor : EditorWindow
 
         if (!File.Exists(fullPath))
         {
-            Debug.LogWarning($"[岛屿情报编辑器] 岛屿数据文件不存在: {fullPath}");
+            Z_Logger.LogWarning($"[岛屿情报编辑器] 岛屿数据文件不存在: {fullPath}");
             return;
         }
 
@@ -108,12 +108,12 @@ public class IslandInfoEditor : EditorWindow
             if (wrapper?.islands != null)
             {
                 islandDataList = wrapper.islands;
-                Debug.Log($"[岛屿情报编辑器] 加载岛屿: {islandDataList.Count} 个");
+                Z_Logger.Log($"[岛屿情报编辑器] 加载岛屿: {islandDataList.Count} 个");
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[岛屿情报编辑器] 加载岛屿数据失败: {e.Message}");
+            Z_Logger.LogError($"[岛屿情报编辑器] 加载岛屿数据失败: {e.Message}");
         }
     }
 
@@ -124,7 +124,7 @@ public class IslandInfoEditor : EditorWindow
 
         if (!File.Exists(fullPath))
         {
-            Debug.LogWarning($"[岛屿情报编辑器] 分类数据文件不存在: {fullPath}");
+            Z_Logger.LogWarning($"[岛屿情报编辑器] 分类数据文件不存在: {fullPath}");
             return;
         }
 
@@ -132,11 +132,11 @@ public class IslandInfoEditor : EditorWindow
         {
             string json = File.ReadAllText(fullPath);
             categoryWrapper = JsonUtility.FromJson<CategoryListWrapper>(json);
-            Debug.Log($"[岛屿情报编辑器] 加载分类数据");
+            Z_Logger.Log($"[岛屿情报编辑器] 加载分类数据");
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[岛屿情报编辑器] 加载分类数据失败: {e.Message}");
+            Z_Logger.LogError($"[岛屿情报编辑器] 加载分类数据失败: {e.Message}");
         }
     }
 
@@ -147,7 +147,7 @@ public class IslandInfoEditor : EditorWindow
 
         if (!File.Exists(fullPath))
         {
-            Debug.Log($"[岛屿情报编辑器] 岛屿情报数据文件不存在: {fullPath}");
+            Z_Logger.Log($"[岛屿情报编辑器] 岛屿情报数据文件不存在: {fullPath}");
             return;
         }
 
@@ -169,12 +169,12 @@ public class IslandInfoEditor : EditorWindow
                         iconPath = saved.iconPath
                     });
                 }
-                Debug.Log($"[岛屿情报编辑器] 加载已保存岛屿情报: {savedIslandInfoList.Count} 个");
+                Z_Logger.Log($"[岛屿情报编辑器] 加载已保存岛屿情报: {savedIslandInfoList.Count} 个");
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[岛屿情报编辑器] 加载岛屿情报数据失败: {e.Message}");
+            Z_Logger.LogError($"[岛屿情报编辑器] 加载岛屿情报数据失败: {e.Message}");
         }
     }
 
@@ -242,7 +242,7 @@ public class IslandInfoEditor : EditorWindow
             islandInfoList.Add(entry);
         }
 
-        Debug.Log($"[岛屿情报编辑器] 生成 {islandInfoList.Count} 个岛屿情报");
+        Z_Logger.Log($"[岛屿情报编辑器] 生成 {islandInfoList.Count} 个岛屿情报");
     }
 
     #endregion
@@ -542,7 +542,7 @@ public class IslandInfoEditor : EditorWindow
 
         isDirty = false;
         statusMessage = $"✅ 数据已保存！共 {saveList.Count} 个岛屿情报";
-        Debug.Log($"[岛屿情报编辑器] 保存成功: {fullPath}, 共 {saveList.Count} 条");
+        Z_Logger.Log($"[岛屿情报编辑器] 保存成功: {fullPath}, 共 {saveList.Count} 条");
 
         EditorUtility.DisplayDialog("保存成功", $"岛屿情报数据已保存！\n共 {saveList.Count} 个岛屿情报\n\n文件路径:\n{fullPath}", "确定");
 

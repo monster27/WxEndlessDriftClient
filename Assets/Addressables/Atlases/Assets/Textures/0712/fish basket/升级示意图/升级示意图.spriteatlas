@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: "\u5347\u7EA7\u793A\u610F\u56FE"
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: c714c2be1d7d6c7418935d874d63a5b0, type: 3}
+    - {fileID: 2800000, guid: ea6f934b2d0f94241b23dfbbfa0b7ff6, type: 3}
+    - {fileID: 2800000, guid: fbc0563df652015438780c95024c4876, type: 3}
+    - {fileID: 2800000, guid: 7c5c725e02cfe8040b890478c7c945f6, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - ea6f934b2d0f94241b23dfbbfa0b7ff6: 21300000
+    - fbc0563df652015438780c95024c4876: 21300000
+    - 7c5c725e02cfe8040b890478c7c945f6: 21300000
+    - c714c2be1d7d6c7418935d874d63a5b0: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: ea6f934b2d0f94241b23dfbbfa0b7ff6, type: 3}
+  - {fileID: 21300000, guid: fbc0563df652015438780c95024c4876, type: 3}
+  - {fileID: 21300000, guid: 7c5c725e02cfe8040b890478c7c945f6, type: 3}
+  - {fileID: 21300000, guid: c714c2be1d7d6c7418935d874d63a5b0, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Fish Coin Icon
+  - Upgrade button
+  - "\u9C7C\u7BD3\u5347\u7EA7\u793A\u610F\u56FE"
+  - Billboard base map
+  m_RenderDataMap: {}
+  m_Tag: "\u5347\u7EA7\u793A\u610F\u56FE"
+  m_IsVariant: 0
+  m_IsPlaceholder: 0

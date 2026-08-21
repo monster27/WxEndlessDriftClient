@@ -6,7 +6,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
-using Logger = Utils.Logger;
+//using Z_Logger = Utils.Z_Logger;
 //using SharedModels;
 
 public partial class NetServerManager
@@ -56,20 +56,20 @@ public partial class NetServerManager
     {
         if (_isInitialized)
         {
-            Logger.Log("[NetServerManager] 已经初始化完成，跳过");
+            Z_Logger.Log("[NetServerManager] 已经初始化完成，跳过");
             OnInitializationComplete?.Invoke();
             return;
         }
 
         if (_isInitializing)
         {
-            Logger.Log("[NetServerManager] 正在初始化中，跳过重复调用");
+            Z_Logger.Log("[NetServerManager] 正在初始化中，跳过重复调用");
             return;
         }
 
         if (!_isInitCalled)
         {
-            Logger.LogWarning("[NetServerManager] Init() 尚未调用，自动调用 Init()");
+            Z_Logger.LogWarning("[NetServerManager] Init() 尚未调用，自动调用 Init()");
             Init();
         }
 
@@ -80,11 +80,11 @@ public partial class NetServerManager
 
         if (!isConnected)
         {
-            Logger.Log("[NetServerManager] 等待服务器连接...");
+            Z_Logger.Log("[NetServerManager] 等待服务器连接...");
             StartConnect();
         }
 
-        Logger.LogColor("[NetServerManager] 开始网络数据初始化...", "cyan");
+        Z_Logger.LogColor("[NetServerManager] 开始网络数据初始化...", "cyan");
         StartCoroutine(InitializeCoroutine());
     }
 
@@ -107,7 +107,7 @@ public partial class NetServerManager
         unlockedEquipment.Clear();
         mallItems.Clear();
 
-        Logger.Log("[NetServerManager] 初始化状态已重置");
+        Z_Logger.Log("[NetServerManager] 初始化状态已重置");
     }
 
     // ========== 初始化协程 ==========
@@ -122,7 +122,7 @@ public partial class NetServerManager
 
         if (!isConnected)
         {
-            Logger.Log("[NetServerManager] 等待服务器连接...");
+            Z_Logger.Log("[NetServerManager] 等待服务器连接...");
             yield return StartCoroutine(WaitForConnection());
 
             if (!isConnected)
@@ -151,7 +151,7 @@ public partial class NetServerManager
             _currentStepIndex = i;
             var step = _initSteps[i];
 
-            Logger.Log($"[NetServerManager] 执行初始化步骤 [{i + 1}/{_initSteps.Count}]: {step.Name}");
+            Z_Logger.Log($"[NetServerManager] 执行初始化步骤 [{i + 1}/{_initSteps.Count}]: {step.Name}");
 
             float stepProgress = completedWeight / totalWeight;
             OnProgressUpdated?.Invoke(stepProgress, step.Name);
@@ -175,7 +175,7 @@ public partial class NetServerManager
         _initFailed = false;
         _isInitializing = false;
 
-        Logger.LogColor("[NetServerManager] 网络数据初始化完成！", "green");
+        Z_Logger.LogColor("[NetServerManager] 网络数据初始化完成！", "green");
         OnProgressUpdated?.Invoke(1f, "完成");
 
         OnInitializationComplete?.Invoke();
@@ -188,27 +188,27 @@ public partial class NetServerManager
         // ✅ 修复：在所有数据加载完成后，重新计算鱼篓状态
         int totalFishCount = GetTotalFishCount();
         isFishBagFull = totalFishCount >= fishBagCapacity;
-        Logger.Log($"[NetServerManager] 初始化完成，鱼篓状态: {totalFishCount}/{fishBagCapacity}, isFull={isFishBagFull}");
+        Z_Logger.Log($"[NetServerManager] 初始化完成，鱼篓状态: {totalFishCount}/{fishBagCapacity}, isFull={isFishBagFull}");
 
         // ⭐ 启动钓鱼状态轮询
-        Logger.Log("[NetServerManager] 启动钓鱼状态轮询...");
+        Z_Logger.Log("[NetServerManager] 启动钓鱼状态轮询...");
         StartCoroutine(PollFishingStatus());
 
         // ⭐ 根据鱼篓状态启动自动钓鱼或播放Lazy动画
         if (isFishBagFull)
         {
             NotifyPlayLazyAnimation();
-            Logger.Log("[NetServerManager] 鱼篓已满，播放Lazy动画");
+            Z_Logger.Log("[NetServerManager] 鱼篓已满，播放Lazy动画");
         }
         else
         {
             AutoStartFishing();
-            Logger.Log("[NetServerManager] 自动钓鱼已启动");
+            Z_Logger.Log("[NetServerManager] 自动钓鱼已启动");
         }
 
         // ✅ 背包刷新事件(EVENT_REFRESH_BAG)已移至 ManagerManager.OnAllLoadingComplete 中发送
         // 确保在 EVENT_ALL_LOADING_COMPLETE（SkinManager 同步皮肤数据）之后才刷新背包 UI
-        Logger.Log("[NetServerManager] 初始化完成，等待 ManagerManager 触发背包刷新");
+        Z_Logger.Log("[NetServerManager] 初始化完成，等待 ManagerManager 触发背包刷新");
     }
 
     // ========== 等待连接完成的协程 ==========
@@ -228,24 +228,24 @@ public partial class NetServerManager
 
             if (networkState == NetUtils.NetworkState.Connecting)
             {
-                Logger.Log($"[NetServerManager] 正在连接服务器... (等待中)");
+                Z_Logger.Log($"[NetServerManager] 正在连接服务器... (等待中)");
                 yield return new WaitForSeconds(waitTime);
                 continue;
             }
 
             retryCount++;
-            Logger.Log($"[NetServerManager] 连接失败，第 {retryCount}/{maxRetries} 次重试...");
+            Z_Logger.Log($"[NetServerManager] 连接失败，第 {retryCount}/{maxRetries} 次重试...");
             yield return StartCoroutine(ConnectToServer());
             yield return new WaitForSeconds(waitTime);
         }
 
         if (!isConnected)
         {
-            Logger.LogError($"[NetServerManager] 连接服务器失败，已重试 {retryCount} 次");
+            Z_Logger.LogError($"[NetServerManager] 连接服务器失败，已重试 {retryCount} 次");
         }
         else
         {
-            Logger.Log("[NetServerManager] 服务器连接成功");
+            Z_Logger.Log("[NetServerManager] 服务器连接成功");
         }
     }
 
@@ -275,7 +275,7 @@ public partial class NetServerManager
     private IEnumerator FetchPlayerSkinsCoroutine()
     {
         yield return RequestPlayerSkinsCoroutine();
-        Logger.Log("[NetServerManager] 初始化 - 皮肤数据加载完成");
+        Z_Logger.Log("[NetServerManager] 初始化 - 皮肤数据加载完成");
     }
 
     private IEnumerator FetchPlayerGoldCoroutine()
@@ -285,7 +285,7 @@ public partial class NetServerManager
             if (data != null)
             {
                 playerGold = data.gold;
-                Logger.Log("[NetServerManager] 初始化 - 金币: " + playerGold);
+                Z_Logger.Log("[NetServerManager] 初始化 - 金币: " + playerGold);
             }
             else
             {
@@ -320,10 +320,10 @@ public partial class NetServerManager
             }
             catch (System.Exception ex)
             {
-                Logger.LogError($"[NetServerManager] 解析人物列表失败: {ex.Message}");
+                Z_Logger.LogError($"[NetServerManager] 解析人物列表失败: {ex.Message}");
             }
             unlockedCharacters.Add(3401);
-            Logger.Log($"[NetServerManager] 初始化 - 已解锁人物: {unlockedCharacters.Count} 个");
+            Z_Logger.Log($"[NetServerManager] 初始化 - 已解锁人物: {unlockedCharacters.Count} 个");
         }, "人物列表");
     }
 
@@ -334,12 +334,12 @@ public partial class NetServerManager
             if (data != null)
             {
                 fishBagCapacity = data.capacity;
-                Logger.Log("[NetServerManager] 初始化 - 鱼篓容量: " + fishBagCapacity);
+                Z_Logger.Log("[NetServerManager] 初始化 - 鱼篓容量: " + fishBagCapacity);
             }
             else
             {
                 fishBagCapacity = 20;
-                Logger.LogWarning("[NetServerManager] 初始化 - 使用默认鱼篓容量: 20");
+                Z_Logger.LogWarning("[NetServerManager] 初始化 - 使用默认鱼篓容量: 20");
             }
         }, "鱼篓容量");
     }
@@ -352,7 +352,7 @@ public partial class NetServerManager
             {
                 baitEndTime = data.baitEndTime;
                 UpdateContinuousModeRemainingTime();
-                Logger.Log($"[NetServerManager] 初始化 - 连续模式状态: isIn={isInContinuousMode}, time={continuousModeRemainingTime}");
+                Z_Logger.Log($"[NetServerManager] 初始化 - 连续模式状态: isIn={isInContinuousMode}, time={continuousModeRemainingTime}");
             }
         }, "连续模式状态");
     }
@@ -364,7 +364,7 @@ public partial class NetServerManager
             if (data != null)
             {
                 currentSceneBaitCount = data.baitCount;
-                Logger.Log("[NetServerManager] 初始化 - 窝料数量: " + currentSceneBaitCount);
+                Z_Logger.Log("[NetServerManager] 初始化 - 窝料数量: " + currentSceneBaitCount);
             }
         }, "窝料数量");
     }

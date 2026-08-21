@@ -128,7 +128,7 @@ public class FishBagView : BaseView
 
     private void OnAutoSellStatusChanged(NetServerManager.AutoSellTimerResponse data)
     {
-        Debug.Log($"[FishBagView] 收到自动出售状态变更事件: hasFeature={data.hasAutoSellFeature}, isEnabled={data.isEnabled}, remainingSeconds={data.remainingSeconds}");
+        Z_Logger.Log($"[FishBagView] 收到自动出售状态变更事件: hasFeature={data.hasAutoSellFeature}, isEnabled={data.isEnabled}, remainingSeconds={data.remainingSeconds}");
 
         _remainingSeconds = data.remainingSeconds;
         _isAutoSellEnabled = data.isEnabled;
@@ -149,7 +149,7 @@ public class FishBagView : BaseView
 
     private void OnFishSelectionChanged(UI_FishBagPrefab fishPrefab)
     {
-        Debug.Log($"[FishBagView] 鱼类选择改变: ID={fishPrefab.ItemId}, IsSelected={fishPrefab.IsSelected}");
+        Z_Logger.Log($"[FishBagView] 鱼类选择改变: ID={fishPrefab.ItemId}, IsSelected={fishPrefab.IsSelected}");
         UpdateTotalSellPrice();
     }
 
@@ -163,7 +163,7 @@ public class FishBagView : BaseView
 
     public void OpenBag()
     {
-        Debug.Log("[FishBagView] 打开鱼篓界面");
+        Z_Logger.Log("[FishBagView] 打开鱼篓界面");
 
         if (fishBagSelectPanel != null)
         {
@@ -214,7 +214,7 @@ public class FishBagView : BaseView
     {
         if (fishInventory == null)
         {
-            Debug.LogWarning("[FishBagView] UpdateFishItems: fishInventory 为空");
+            Z_Logger.LogWarning("[FishBagView] UpdateFishItems: fishInventory 为空");
             return;
         }
 
@@ -223,7 +223,7 @@ public class FishBagView : BaseView
             if (PlayerDataManager.Instance != null)
             {
                 fishDetailData = PlayerDataManager.Instance.GetFishDetailData();
-                Debug.Log($"[FishBagView] 从 PlayerDataManager 获取详情数据: {fishDetailData?.Count ?? 0} 种");
+                Z_Logger.Log($"[FishBagView] 从 PlayerDataManager 获取详情数据: {fishDetailData?.Count ?? 0} 种");
             }
         }
 
@@ -241,10 +241,10 @@ public class FishBagView : BaseView
         if (detailData == null && PlayerDataManager.Instance != null)
         {
             detailData = PlayerDataManager.Instance.GetFishDetailData();
-            Debug.Log($"[FishBagView] UpdateFishDetail - 从 PlayerDataManager 获取详情数据: {detailData?.Count ?? 0} 种");
+            Z_Logger.Log($"[FishBagView] UpdateFishDetail - 从 PlayerDataManager 获取详情数据: {detailData?.Count ?? 0} 种");
         }
 
-        Debug.Log($"[FishBagView] UpdateFishDetail - 传入数据: fishInventory数量={fishInventory?.Count ?? 0}, itemDataMap数量={itemDataMap?.Count ?? 0}, detailData数量={detailData?.Count ?? 0}");
+        Z_Logger.Log($"[FishBagView] UpdateFishDetail - 传入数据: fishInventory数量={fishInventory?.Count ?? 0}, itemDataMap数量={itemDataMap?.Count ?? 0}, detailData数量={detailData?.Count ?? 0}");
 
         if (fishDetail != null)
         {
@@ -252,7 +252,7 @@ public class FishBagView : BaseView
         }
         else
         {
-            Debug.LogWarning("[FishBagView] UpdateFishDetail: fishDetail 为 null");
+            Z_Logger.LogWarning("[FishBagView] UpdateFishDetail: fishDetail 为 null");
         }
     }
 
@@ -278,20 +278,20 @@ public class FishBagView : BaseView
             var itemDataMap = LoadDataManager.Instance?.GetItemDataMap();
             var fishDetailData = PlayerDataManager.Instance.GetFishDetailData();
 
-            Debug.Log($"[FishBagView] RefreshItems - 鱼篓数据 (保留选中: {selectedFishIds.Count} 个):");
+            Z_Logger.Log($"[FishBagView] RefreshItems - 鱼篓数据 (保留选中: {selectedFishIds.Count} 个):");
             if (fishInventory != null)
             {
                 int totalCount = 0;
                 foreach (var kvp in fishInventory)
                 {
                     totalCount += kvp.Value;
-                    Debug.Log($"   物品ID: {kvp.Key}, 数量: {kvp.Value}");
+                    Z_Logger.Log($"   物品ID: {kvp.Key}, 数量: {kvp.Value}");
                 }
-                Debug.Log($"   总数量: {totalCount}");
+                Z_Logger.Log($"   总数量: {totalCount}");
             }
             else
             {
-                Debug.Log("   鱼篓数据为 null");
+                Z_Logger.Log("   鱼篓数据为 null");
             }
 
             if (itemDataMap != null)
@@ -346,7 +346,7 @@ public class FishBagView : BaseView
 
     public void OnSelectAllButtonClick()
     {
-        Debug.Log("[FishBagView] OnSelectAllButtonClick - 点击全选按钮");
+        Z_Logger.Log("[FishBagView] OnSelectAllButtonClick - 点击全选按钮");
         if (fishDetail != null)
         {
             FishBagFilter filter = GetCurrentFilter();
@@ -428,7 +428,7 @@ public class FishBagView : BaseView
 
     private void OnSetSelectButtonClick()
     {
-        Debug.Log("[FishBagView] OnSetSelectButtonClick - 点击设置按钮");
+        Z_Logger.Log("[FishBagView] OnSetSelectButtonClick - 点击设置按钮");
         if (fishBagSelectPanel != null)
         {
             fishBagSelectPanel.TogglePanel();
@@ -437,7 +437,7 @@ public class FishBagView : BaseView
 
     private void OnLockButtonClick()
     {
-        Debug.Log("[FishBagView] OnLockButtonClick - 点击锁定按钮");
+        Z_Logger.Log("[FishBagView] OnLockButtonClick - 点击锁定按钮");
         if (fishDetail != null)
         {
             List<UI_FishBagPrefab> selectedPrefabs = fishDetail.GetSelectedFishPrefabs();
@@ -478,11 +478,11 @@ public class FishBagView : BaseView
                     if (success)
                     {
                         prefab.SetLocked(locked);
-                        Debug.Log($"[FishBagView] 鱼类锁定状态更新: fishId={prefab.FishDetail.fishId}, locked={locked}");
+                        Z_Logger.Log($"[FishBagView] 鱼类锁定状态更新: fishId={prefab.FishDetail.fishId}, locked={locked}");
                     }
                     else
                     {
-                        Debug.LogError($"[FishBagView] 鱼类锁定状态更新失败: fishId={prefab.FishDetail.fishId}");
+                        Z_Logger.LogError($"[FishBagView] 鱼类锁定状态更新失败: fishId={prefab.FishDetail.fishId}");
                     }
                     requestCompleted = true;
                 });
@@ -495,7 +495,7 @@ public class FishBagView : BaseView
 
     public void OnSellButtonClick()
     {
-        Debug.Log("[FishBagView] OnSellButtonClick 被调用");
+        Z_Logger.Log("[FishBagView] OnSellButtonClick 被调用");
 
         if (fishDetail != null)
         {
@@ -510,7 +510,7 @@ public class FishBagView : BaseView
                 {
                     if (fishPrefab.IsLocked)
                     {
-                        Debug.Log($"[FishBagView] 跳过锁定的鱼: ID={fishPrefab.ItemId}");
+                        Z_Logger.Log($"[FishBagView] 跳过锁定的鱼: ID={fishPrefab.ItemId}");
                         continue;
                     }
                     selectedItemIds.Add(fishPrefab.ItemId);
@@ -524,11 +524,11 @@ public class FishBagView : BaseView
 
             if (selectedItemIds.Count == 0)
             {
-                Debug.Log("[FishBagView] 没有选中任何物品，无法售卖");
+                Z_Logger.Log("[FishBagView] 没有选中任何物品，无法售卖");
                 return;
             }
 
-            Debug.LogFormat("[FishBagView] 准备售卖 {0} 条鱼", selectedItemIds.Count);
+            Z_Logger.LogFormat("[FishBagView] 准备售卖 {0} 条鱼", selectedItemIds.Count);
 
             foreach (var prefab in selectedPrefabs)
             {
@@ -612,14 +612,14 @@ public class FishBagView : BaseView
 
     private void OnDataUpdated()
     {
-        Debug.Log("[FishBagView] 收到数据更新事件，刷新鱼篓");
+        Z_Logger.Log("[FishBagView] 收到数据更新事件，刷新鱼篓");
         RefreshItems();
     }
 
     private void OnSortButtonClick(SortType sortType)
     {
         currentSortType = sortType;
-        Debug.Log($"[FishBagView] 排序方式变更: {sortType}");
+        Z_Logger.Log($"[FishBagView] 排序方式变更: {sortType}");
 
         if (fishDetail != null)
         {
@@ -629,12 +629,12 @@ public class FishBagView : BaseView
 
     private void OnUpgradeButtonClick()
     {
-        Debug.Log("[FishBagView] 点击升级按钮");
+        Z_Logger.Log("[FishBagView] 点击升级按钮");
 
         var netManager = NetServerManager.Instance;
         if (netManager == null)
         {
-            Debug.LogError("[FishBagView] NetServerManager.Instance 为空");
+            Z_Logger.LogError("[FishBagView] NetServerManager.Instance 为空");
             return;
         }
 
@@ -642,7 +642,7 @@ public class FishBagView : BaseView
         {
             if (data == null)
             {
-                Debug.LogError("[FishBagView] 获取鱼篓等级数据失败");
+                Z_Logger.LogError("[FishBagView] 获取鱼篓等级数据失败");
                 ShowTip("获取鱼篓等级失败");
                 return;
             }
@@ -665,32 +665,32 @@ public class FishBagView : BaseView
 
     private void OnConfirmUpgrade()
     {
-        Debug.Log("[FishBagView] 确认升级鱼篓");
+        Z_Logger.Log("[FishBagView] 确认升级鱼篓");
 
         var netManager = NetServerManager.Instance;
         if (netManager == null)
         {
-            Debug.LogError("[FishBagView] NetServerManager.Instance 为空");
+            Z_Logger.LogError("[FishBagView] NetServerManager.Instance 为空");
             return;
         }
 
         int currentGold = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_GOLD, 0);
-        Debug.Log($"[FishBagView] 当前金币: {currentGold}, 升级成本: {_currentUpgradeCost}");
+        Z_Logger.Log($"[FishBagView] 当前金币: {currentGold}, 升级成本: {_currentUpgradeCost}");
 
         if (currentGold < _currentUpgradeCost)
         {
-            Debug.Log("[FishBagView] 金币不足，跳转广告界面");
+            Z_Logger.Log("[FishBagView] 金币不足，跳转广告界面");
             string adInfo = $"金币不足！升级需要{_currentUpgradeCost}金币，观看广告可免费升级鱼篓！";
             GameUIManager.Instance.ShowAdvertising(adInfo, 0, "看广告升级", (bool adSuccess) =>
             {
                 if (adSuccess)
                 {
-                    Debug.Log("[FishBagView] 广告观看成功，执行免费升级");
+                    Z_Logger.Log("[FishBagView] 广告观看成功，执行免费升级");
                     DoUpgradeFishBagByAd();
                 }
                 else
                 {
-                    Debug.Log("[FishBagView] 广告观看失败或取消");
+                    Z_Logger.Log("[FishBagView] 广告观看失败或取消");
                     ShowTip("广告未完成，升级取消");
                 }
             });
@@ -705,7 +705,7 @@ public class FishBagView : BaseView
         var netManager = NetServerManager.Instance;
         if (netManager == null)
         {
-            Debug.LogError("[FishBagView] NetServerManager.Instance 为空");
+            Z_Logger.LogError("[FishBagView] NetServerManager.Instance 为空");
             return;
         }
 
@@ -717,7 +717,7 @@ public class FishBagView : BaseView
         var netManager = NetServerManager.Instance;
         if (netManager == null)
         {
-            Debug.LogError("[FishBagView] NetServerManager.Instance 为空");
+            Z_Logger.LogError("[FishBagView] NetServerManager.Instance 为空");
             return;
         }
 
@@ -751,13 +751,13 @@ public class FishBagView : BaseView
 
     private void StartAutoSellTimer()
     {
-        Debug.Log("[FishBagView] 开始自动出售定时器");
+        Z_Logger.Log("[FishBagView] 开始自动出售定时器");
         StopAutoSellTimer();
 
         var netManager = NetServerManager.Instance;
         if (netManager == null)
         {
-            Debug.LogError("[FishBagView] NetServerManager.Instance 为空");
+            Z_Logger.LogError("[FishBagView] NetServerManager.Instance 为空");
             return;
         }
 
@@ -768,30 +768,30 @@ public class FishBagView : BaseView
                 _remainingSeconds = data.remainingSeconds;
                 _isAutoSellEnabled = data.isEnabled;
                 _hasAutoSellFeature = data.hasAutoSellFeature;
-                Debug.Log($"[FishBagView] 获取自动出售定时器状态: hasFeature={_hasAutoSellFeature}, isEnabled={_isAutoSellEnabled}, remainingSeconds={_remainingSeconds}");
+                Z_Logger.Log($"[FishBagView] 获取自动出售定时器状态: hasFeature={_hasAutoSellFeature}, isEnabled={_isAutoSellEnabled}, remainingSeconds={_remainingSeconds}");
 
                 UpdateAutoSellPanelVisibility();
                 UpdateTimerDisplay();
 
                 if (_hasAutoSellFeature && _isAutoSellEnabled && _remainingSeconds > 0)
                 {
-                    Debug.Log($"[FishBagView] 启动自动出售倒计时，剩余时间: {_remainingSeconds}秒");
+                    Z_Logger.Log($"[FishBagView] 启动自动出售倒计时，剩余时间: {_remainingSeconds}秒");
                     _timerCoroutine = StartCoroutine(AutoSellTimerCoroutine());
                 }
                 else if (_hasAutoSellFeature && _isAutoSellEnabled)
                 {
-                    Debug.Log("[FishBagView] 自动出售已启用，但剩余时间为0，立即刷新数据");
+                    Z_Logger.Log("[FishBagView] 自动出售已启用，但剩余时间为0，立即刷新数据");
                     UpdateTimerDisplay();
                     netManager.NotifySyncInventoryFromServer();
                 }
                 else
                 {
-                    Debug.Log("[FishBagView] 自动出售功能未启用");
+                    Z_Logger.Log("[FishBagView] 自动出售功能未启用");
                 }
             }
             else
             {
-                Debug.LogError("[FishBagView] 获取自动出售定时器状态失败");
+                Z_Logger.LogError("[FishBagView] 获取自动出售定时器状态失败");
             }
         });
     }

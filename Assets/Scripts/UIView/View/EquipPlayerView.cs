@@ -105,7 +105,7 @@ public class EquipPlayerView : MonoBehaviour
 
     private void OnBagRefresh()
     {
-        Debug.Log("[EquipPlayerView] OnBagRefresh - 背包数据已更新，刷新装备视图");
+        Z_Logger.Log("[EquipPlayerView] OnBagRefresh - 背包数据已更新，刷新装备视图");
         UpdateDisplay();
     }
 
@@ -126,13 +126,13 @@ public class EquipPlayerView : MonoBehaviour
 
     private void OnEquipChanged((int, int) data)
     {
-        Debug.Log($"[EquipPlayerView] OnEquipChanged - slotType={data.Item1}, itemId={data.Item2}");
+        Z_Logger.Log($"[EquipPlayerView] OnEquipChanged - slotType={data.Item1}, itemId={data.Item2}");
         UpdateDisplay();
     }
 
     private void OnItemQuantityChanged((int, int) data)
     {
-        Debug.Log($"[EquipPlayerView] OnItemQuantityChanged - itemId={data.Item1}, quantity={data.Item2}");
+        Z_Logger.Log($"[EquipPlayerView] OnItemQuantityChanged - itemId={data.Item1}, quantity={data.Item2}");
         UpdateDisplay();
     }
 
@@ -207,7 +207,7 @@ public class EquipPlayerView : MonoBehaviour
             }
         }
 
-        Debug.Log($"[EquipPlayerView] LoadAllIcons 完成，缓存了 {iconCache.Count} 个图标");
+        Z_Logger.Log($"[EquipPlayerView] LoadAllIcons 完成，缓存了 {iconCache.Count} 个图标");
     }
 
     private async Task LoadCharacterIdsAsync()
@@ -253,7 +253,7 @@ public class EquipPlayerView : MonoBehaviour
 
     public void Show()
     {
-        Debug.Log("[EquipPlayerView] Show() called");
+        Z_Logger.Log("[EquipPlayerView] Show() called");
 
         NetServerManager.Instance?.SyncCharacterDataFromServer();
 
@@ -284,7 +284,7 @@ public class EquipPlayerView : MonoBehaviour
         {
             if (characterIds.Count == 0)
             {
-                Debug.LogError("[EquipPlayerView] characterIds is EMPTY!");
+                Z_Logger.LogError("[EquipPlayerView] characterIds is EMPTY!");
                 return;
             }
 
@@ -536,7 +536,7 @@ public class EquipPlayerView : MonoBehaviour
 
     private void OnEquipClick()
     {
-        Debug.Log($"[EquipPlayerView] OnEquipClick - currentCharacterId={currentCharacterId}");
+        Z_Logger.Log($"[EquipPlayerView] OnEquipClick - currentCharacterId={currentCharacterId}");
 
         CommunicateEvent.Modify<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_ITEM, (EquipmentSlotType.Character, currentCharacterId));
 

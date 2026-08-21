@@ -1,4 +1,4 @@
-﻿// ==================== TrashDataEditor.cs ====================
+// ==================== TrashDataEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -35,12 +35,12 @@ public class TrashDataEditor : BaseDataEditor<TrashData>
             if (wrapper != null && wrapper.trashList != null)
             {
                 dataList = wrapper.trashList;
-                Debug.Log($"[TrashDataEditor] 加载了 {dataList.Count} 条垃圾数据");
+                Z_Logger.Log($"[TrashDataEditor] 加载了 {dataList.Count} 条垃圾数据");
             }
         }
         else
         {
-            Debug.Log("[TrashDataEditor] 未找到垃圾数据文件，将创建新文件");
+            Z_Logger.Log("[TrashDataEditor] 未找到垃圾数据文件，将创建新文件");
         }
 
         Repaint();
@@ -62,7 +62,7 @@ public class TrashDataEditor : BaseDataEditor<TrashData>
         }
 
         File.WriteAllText(FullPath, json);
-        Debug.Log($"[TrashDataEditor] 保存了 {dataList.Count} 条垃圾数据");
+        Z_Logger.Log($"[TrashDataEditor] 保存了 {dataList.Count} 条垃圾数据");
         AssetDatabase.Refresh();
     }
 

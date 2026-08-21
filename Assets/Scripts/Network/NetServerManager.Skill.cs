@@ -4,7 +4,7 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 //using SharedModels;
-using Logger = Utils.Logger;
+//using Z_Logger = Utils.Z_Logger;
 
 public partial class NetServerManager
 {
@@ -18,7 +18,7 @@ public partial class NetServerManager
         string url = serverUrl + ServerUrls.Skill.Unlock;
         string jsonData = $"{{\"PlayerId\":{_currentPlayerId},\"ComponentId\":{skillId}}}";
 
-        Logger.Log($"[NetServerManager] 解锁技能请求: {jsonData}");
+        Z_Logger.Log($"[NetServerManager] 解锁技能请求: {jsonData}");
 
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
         {
@@ -33,17 +33,17 @@ public partial class NetServerManager
             if (request.result == UnityWebRequest.Result.Success)
             {
                 string responseText = request.downloadHandler.text;
-                Logger.Log($"[NetServerManager] 解锁技能响应: {responseText}");
+                Z_Logger.Log($"[NetServerManager] 解锁技能响应: {responseText}");
 
                 try
                 {
                     var response = JsonUtility.FromJson<UnlockSkillResponse>(responseText);
                     if (response != null && response.success)
                 {
-                    Logger.Log($"[NetServerManager] 成功解锁技能 {skillId}");
+                    Z_Logger.Log($"[NetServerManager] 成功解锁技能 {skillId}");
 
                     equipmentLevelMap[skillId] = 1;
-                    Logger.Log($"[NetServerManager] 设置技能等级缓存: skillId={skillId}, level=1");
+                    Z_Logger.Log($"[NetServerManager] 设置技能等级缓存: skillId={skillId}, level=1");
 
                     // ✅ 更新本地背包数据，使 IsSkillObtained 返回正确结果
                     if (response.inventory != null)
@@ -54,7 +54,7 @@ public partial class NetServerManager
                             inventoryDict[item.key] = item.value;
                         }
                         playerInventory = inventoryDict;
-                        Logger.Log($"[NetServerManager] 解锁技能后背包数据已更新: {playerInventory.Count} 个物品");
+                        Z_Logger.Log($"[NetServerManager] 解锁技能后背包数据已更新: {playerInventory.Count} 个物品");
 
                         if (PlayerDataManager.Instance != null)
                         {
@@ -78,19 +78,19 @@ public partial class NetServerManager
                 }
                     else
                     {
-                        Logger.LogWarning($"[NetServerManager] 解锁技能失败: {response?.message ?? "未知错误"}");
+                        Z_Logger.LogWarning($"[NetServerManager] 解锁技能失败: {response?.message ?? "未知错误"}");
                         callback?.Invoke(false);
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Logger.LogError($"[NetServerManager] 解析解锁技能响应失败: {ex.Message}");
+                    Z_Logger.LogError($"[NetServerManager] 解析解锁技能响应失败: {ex.Message}");
                     callback?.Invoke(false);
                 }
             }
             else
             {
-                Logger.LogError($"[NetServerManager] 解锁技能请求失败: {request.error}");
+                Z_Logger.LogError($"[NetServerManager] 解锁技能请求失败: {request.error}");
                 callback?.Invoke(false);
             }
         }
@@ -109,7 +109,7 @@ public partial class NetServerManager
         string url = serverUrl + ServerUrls.Skill.UnlockSlot;
         string jsonData = $"{{\"PlayerId\":{_currentPlayerId},\"Slot\":{slot}}}";
 
-        Logger.Log($"[NetServerManager] 解锁技能槽位请求: {jsonData}");
+        Z_Logger.Log($"[NetServerManager] 解锁技能槽位请求: {jsonData}");
 
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
         {
@@ -124,14 +124,14 @@ public partial class NetServerManager
             if (request.result == UnityWebRequest.Result.Success)
             {
                 string responseText = request.downloadHandler.text;
-                Logger.Log($"[NetServerManager] 解锁技能槽位响应: {responseText}");
+                Z_Logger.Log($"[NetServerManager] 解锁技能槽位响应: {responseText}");
 
                 try
                 {
                     var response = JsonUtility.FromJson<UnlockSkillSlotResponse>(responseText);
                     if (response != null && response.success)
                     {
-                        Logger.Log($"[NetServerManager] 成功解锁技能槽位 {slot}");
+                        Z_Logger.Log($"[NetServerManager] 成功解锁技能槽位 {slot}");
 
                         if (slot == 1)
                             skill1SlotUnlocked = true;
@@ -146,19 +146,19 @@ public partial class NetServerManager
                     }
                     else
                     {
-                        Logger.LogWarning($"[NetServerManager] 解锁技能槽位失败: {response?.message ?? "未知错误"}");
+                        Z_Logger.LogWarning($"[NetServerManager] 解锁技能槽位失败: {response?.message ?? "未知错误"}");
                         callback?.Invoke(false);
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Logger.LogError($"[NetServerManager] 解析解锁技能槽位响应失败: {ex.Message}");
+                    Z_Logger.LogError($"[NetServerManager] 解析解锁技能槽位响应失败: {ex.Message}");
                     callback?.Invoke(false);
                 }
             }
             else
             {
-                Logger.LogError($"[NetServerManager] 解锁技能槽位请求失败: {request.error}");
+                Z_Logger.LogError($"[NetServerManager] 解锁技能槽位请求失败: {request.error}");
                 callback?.Invoke(false);
             }
         }
@@ -174,7 +174,7 @@ public partial class NetServerManager
         string url = serverUrl + ServerUrls.Skill.Upgrade;
         string jsonData = $"{{\"PlayerId\":{_currentPlayerId},\"ComponentId\":{skillId},\"NewLevel\":{newLevel}}}";
 
-        Logger.Log($"[NetServerManager] 升级技能请求: {jsonData}");
+        Z_Logger.Log($"[NetServerManager] 升级技能请求: {jsonData}");
 
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
         {
@@ -189,22 +189,22 @@ public partial class NetServerManager
             if (request.result == UnityWebRequest.Result.Success)
             {
                 string responseText = request.downloadHandler.text;
-                Logger.Log($"[NetServerManager] 升级技能响应: {responseText}");
+                Z_Logger.Log($"[NetServerManager] 升级技能响应: {responseText}");
 
                 try
                 {
                     var response = JsonUtility.FromJson<SkillUpgradeResponse>(responseText);
                     if (response != null && response.success)
                 {
-                    Logger.Log($"[NetServerManager] 成功升级技能 {skillId} 到等级 {response.level}");
+                    Z_Logger.Log($"[NetServerManager] 成功升级技能 {skillId} 到等级 {response.level}");
 
                     equipmentLevelMap[skillId] = response.level;
-                    Logger.Log($"[NetServerManager] 更新技能等级缓存: skillId={skillId}, level={response.level}");
+                    Z_Logger.Log($"[NetServerManager] 更新技能等级缓存: skillId={skillId}, level={response.level}");
 
                     if (response.gold > 0)
                     {
                         playerGold = response.gold;
-                        Logger.Log($"[NetServerManager] 升级技能后金币: {playerGold}");
+                        Z_Logger.Log($"[NetServerManager] 升级技能后金币: {playerGold}");
 
                         CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, new Dictionary<string, object>
                         {
@@ -216,7 +216,7 @@ public partial class NetServerManager
                     }
                     else
                     {
-                        Logger.Log("[NetServerManager] 服务器响应未包含金币，触发同步");
+                        Z_Logger.Log("[NetServerManager] 服务器响应未包含金币，触发同步");
                         CommunicateEvent.Modify(CommunicateEvent.EVENT_SYNC_GOLD);
                     }
 
@@ -226,19 +226,19 @@ public partial class NetServerManager
                 }
                     else
                     {
-                        Logger.LogWarning($"[NetServerManager] 升级技能失败: {response?.message ?? "未知错误"}");
+                        Z_Logger.LogWarning($"[NetServerManager] 升级技能失败: {response?.message ?? "未知错误"}");
                         callback?.Invoke(false);
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Logger.LogError($"[NetServerManager] 解析升级技能响应失败: {ex.Message}");
+                    Z_Logger.LogError($"[NetServerManager] 解析升级技能响应失败: {ex.Message}");
                     callback?.Invoke(false);
                 }
             }
             else
             {
-                Logger.LogError($"[NetServerManager] 升级技能请求失败: {request.error}");
+                Z_Logger.LogError($"[NetServerManager] 升级技能请求失败: {request.error}");
                 callback?.Invoke(false);
             }
         }

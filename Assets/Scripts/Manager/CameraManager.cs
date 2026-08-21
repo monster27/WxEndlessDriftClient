@@ -32,9 +32,15 @@ public class CameraManager : MonoBehaviour
     [Tooltip("是否检测UI点击，启用后点击UI不会触发摄像头移动")]
     public bool checkUI = true;
 
+    // ========== 状态控制 ==========
+    public bool isIndoorMode = false;
+
     // 目标位置
     private float targetX;
     private float currentX;
+
+    // 保存的室外位置（用于切换回室外时恢复）
+    private float savedOutdoorX = 0f;
 
     // 手指状态
     private bool isDragging = false;
@@ -67,6 +73,7 @@ public class CameraManager : MonoBehaviour
         {
             currentX = targetCamera.transform.position.x;
             targetX = currentX;
+            savedOutdoorX = currentX;
         }
 
         // 缓存所有 GraphicRaycaster 组件
@@ -74,13 +81,17 @@ public class CameraManager : MonoBehaviour
         {
             graphicRaycasters = FindObjectsOfType<GraphicRaycaster>();
         }
+
+        isIndoorMode = false;
+        Z_Logger.Log("[CameraManager] 初始化完成，室外模式");
     }
 
     private void Update()
     {
-        HandleTouchInput();
+        // 室内模式不可移动
+        if (isIndoorMode) return;
 
-        // 平滑移动到目标位置
+        HandleTouchInput();
         SmoothMoveToTarget();
     }
 
@@ -96,7 +107,6 @@ public class CameraManager : MonoBehaviour
         }
         else
         {
-            // 确保精确到达目标位置
             targetCamera.transform.position = new Vector3(targetX, targetCamera.transform.position.y, targetCamera.transform.position.z);
             currentX = targetX;
         }
@@ -104,15 +114,12 @@ public class CameraManager : MonoBehaviour
 
     private void HandleTouchInput()
     {
-        // 如果有触摸输入
         if (Input.touchCount > 0)
         {
             Touch touch = Input.GetTouch(0);
 
-            // 检测是否点击到UI
             if (checkUI && IsPointerOverUI(touch.position))
             {
-                // 如果点击到UI，终止拖拽
                 if (isDragging)
                 {
                     isDragging = false;
@@ -142,7 +149,6 @@ public class CameraManager : MonoBehaviour
                     break;
             }
         }
-        // 支持鼠标模拟（编辑器测试用）
         else if (Application.isEditor)
         {
             HandleMouseInput();
@@ -153,10 +159,8 @@ public class CameraManager : MonoBehaviour
     {
         Vector3 mousePosition = Input.mousePosition;
 
-        // 检测是否点击到UI
         if (checkUI && IsPointerOverUI(mousePosition))
         {
-            // 如果点击到UI，终止拖拽
             if (isDragging)
             {
                 isDragging = false;
@@ -189,29 +193,24 @@ public class CameraManager : MonoBehaviour
         float newX;
         if (isMirrored)
         {
-            // 镜像模式：反向移动
             newX = cameraStartX - (currentPosition.x - dragStartX) * moveScale * 0.01f;
         }
         else
         {
-            // 正常模式
             newX = cameraStartX + (currentPosition.x - dragStartX) * moveScale * 0.01f;
         }
         newX = Mathf.Clamp(newX, minX, maxX);
         targetX = newX;
+
+        // 保存室外位置
+        savedOutdoorX = targetX;
     }
 
-    /// <summary>
-    /// 检测是否点击到UI
-    /// </summary>
-    /// <param name="position">屏幕坐标位置</param>
-    /// <returns>是否点击到UI</returns>
     private bool IsPointerOverUI(Vector3 position)
     {
         if (!checkUI)
             return false;
 
-        // 使用 EventSystem 检测
         if (EventSystem.current != null)
         {
             pointerEventData = new PointerEventData(EventSystem.current)
@@ -219,7 +218,6 @@ public class CameraManager : MonoBehaviour
                 position = position
             };
 
-            // 检测所有 Canvas
             var results = new System.Collections.Generic.List<RaycastResult>();
             EventSystem.current.RaycastAll(pointerEventData, results);
 
@@ -229,7 +227,6 @@ public class CameraManager : MonoBehaviour
             }
         }
 
-        // 备用检测：使用 GraphicRaycaster
         if (graphicRaycasters != null && graphicRaycasters.Length > 0)
         {
             pointerEventData = new PointerEventData(EventSystem.current)
@@ -254,9 +251,6 @@ public class CameraManager : MonoBehaviour
         return false;
     }
 
-    /// <summary>
-    /// 检测是否点击到UI（使用屏幕坐标）
-    /// </summary>
     public bool IsPointerOverUI()
     {
         if (!checkUI)
@@ -266,13 +260,65 @@ public class CameraManager : MonoBehaviour
         return IsPointerOverUI(position);
     }
 
+    // ========== 场景切换控制 ==========
+
+    /// <summary>
+    /// 切换到室内模式（X=0，不可移动）
+    /// </summary>
+    public void SwitchToIndoor()
+    {
+        if (targetCamera == null)
+        {
+            Z_Logger.LogWarning("[CameraManager] 目标摄像头未设置");
+            return;
+        }
+
+        // 保存当前室外位置
+        savedOutdoorX = targetX;
+
+        // 移动到 X=0
+        targetX = 0f;
+        currentX = 0f;
+        targetCamera.transform.position = new Vector3(0f, targetCamera.transform.position.y, targetCamera.transform.position.z);
+
+        isIndoorMode = true;
+        isDragging = false;
+
+        Z_Logger.Log($"[CameraManager] 切换到室内模式（X=0，不可移动），保存室外位置: {savedOutdoorX}");
+    }
+
+    /// <summary>
+    /// 切换到室外模式（恢复到保存的位置，可移动）
+    /// </summary>
+    public void SwitchToOutdoor()
+    {
+        if (targetCamera == null)
+        {
+            Z_Logger.LogWarning("[CameraManager] 目标摄像头未设置");
+            return;
+        }
+
+        isIndoorMode = false;
+
+        // 恢复到保存的室外位置
+        targetX = savedOutdoorX;
+        currentX = savedOutdoorX;
+        targetCamera.transform.position = new Vector3(savedOutdoorX, targetCamera.transform.position.y, targetCamera.transform.position.z);
+
+        Z_Logger.Log($"[CameraManager] 切换到室外模式（可移动），恢复到位置 X={savedOutdoorX}");
+    }
+
+    // ========== 摄像头控制 ==========
+
     /// <summary>
     /// 移动摄像头到指定位置
     /// </summary>
     public void MoveToX(float x)
     {
+        if (isIndoorMode) return;
         targetX = Mathf.Clamp(x, minX, maxX);
-        Debug.Log($"[CameraManager] 移动摄像头到 X={targetX}");
+        savedOutdoorX = targetX;
+        Z_Logger.Log($"[CameraManager] 移动摄像头到 X={targetX}");
     }
 
     /// <summary>
@@ -288,12 +334,14 @@ public class CameraManager : MonoBehaviour
     /// </summary>
     public void MoveToXSmooth(float x, float speed = -1f)
     {
+        if (isIndoorMode) return;
         targetX = Mathf.Clamp(x, minX, maxX);
+        savedOutdoorX = targetX;
         if (speed > 0)
         {
             smoothSpeed = speed;
         }
-        Debug.Log($"[CameraManager] 平滑移动摄像头到 X={targetX}");
+        Z_Logger.Log($"[CameraManager] 平滑移动摄像头到 X={targetX}");
     }
 
     /// <summary>
@@ -313,15 +361,24 @@ public class CameraManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 保存室外位置
+    /// </summary>
+    public void SaveOutdoorPosition()
+    {
+        savedOutdoorX = targetX;
+        Z_Logger.Log($"[CameraManager] 保存室外位置 X={savedOutdoorX}");
+    }
+
+    /// <summary>
     /// 设置移动范围
     /// </summary>
     public void SetRange(float min, float max)
     {
         minX = min;
         maxX = max;
-        // 确保当前值在新范围内
         targetX = Mathf.Clamp(targetX, minX, maxX);
         currentX = Mathf.Clamp(currentX, minX, maxX);
+        savedOutdoorX = Mathf.Clamp(savedOutdoorX, minX, maxX);
     }
 
     /// <summary>
@@ -330,7 +387,7 @@ public class CameraManager : MonoBehaviour
     public void ToggleMirrorMode()
     {
         isMirrored = !isMirrored;
-        Debug.Log($"[CameraManager] 镜像模式: {(isMirrored ? "开启" : "关闭")}");
+        Z_Logger.Log($"[CameraManager] 镜像模式: {(isMirrored ? "开启" : "关闭")}");
     }
 
     /// <summary>
@@ -339,7 +396,7 @@ public class CameraManager : MonoBehaviour
     public void SetMirrorMode(bool enabled)
     {
         isMirrored = enabled;
-        Debug.Log($"[CameraManager] 镜像模式设置为: {(isMirrored ? "开启" : "关闭")}");
+        Z_Logger.Log($"[CameraManager] 镜像模式设置为: {(isMirrored ? "开启" : "关闭")}");
     }
 
     /// <summary>
@@ -348,24 +405,24 @@ public class CameraManager : MonoBehaviour
     public void SetCheckUI(bool enabled)
     {
         checkUI = enabled;
-        Debug.Log($"[CameraManager] UI检测: {(checkUI ? "开启" : "关闭")}");
+        Z_Logger.Log($"[CameraManager] UI检测: {(checkUI ? "开启" : "关闭")}");
     }
+
     /// <summary>
     /// 根据镜像模式自动调整摄像头位置
-    /// 镜像模式：拉到最大X (maxX)
-    /// 非镜像模式：拉到最小X (minX)
     /// </summary>
     public void AdjustPositionByMirrorMode()
     {
+        if (isIndoorMode) return;
         if (isMirrored)
         {
             MoveToX(maxX);
-            Debug.Log($"[CameraManager] 镜像模式：摄像头拉到最大位置 X={maxX}");
+            Z_Logger.Log($"[CameraManager] 镜像模式：摄像头拉到最大位置 X={maxX}");
         }
         else
         {
             MoveToX(minX);
-            Debug.Log($"[CameraManager] 非镜像模式：摄像头拉到最小位置 X={minX}");
+            Z_Logger.Log($"[CameraManager] 非镜像模式：摄像头拉到最小位置 X={minX}");
         }
     }
 
@@ -374,17 +431,19 @@ public class CameraManager : MonoBehaviour
     /// </summary>
     public void AdjustPositionByMirrorModeSmooth(float speed = -1f)
     {
+        if (isIndoorMode) return;
         if (isMirrored)
         {
             MoveToXSmooth(maxX, speed);
-            Debug.Log($"[CameraManager] 镜像模式：摄像头平滑移动到最大位置 X={maxX}");
+            Z_Logger.Log($"[CameraManager] 镜像模式：摄像头平滑移动到最大位置 X={maxX}");
         }
         else
         {
             MoveToXSmooth(minX, speed);
-            Debug.Log($"[CameraManager] 非镜像模式：摄像头平滑移动到最小位置 X={minX}");
+            Z_Logger.Log($"[CameraManager] 非镜像模式：摄像头平滑移动到最小位置 X={minX}");
         }
     }
+
     /// <summary>
     /// 重置摄像头位置
     /// </summary>
@@ -392,11 +451,12 @@ public class CameraManager : MonoBehaviour
     {
         targetX = 0f;
         currentX = 0f;
+        savedOutdoorX = 0f;
         if (targetCamera != null)
         {
             targetCamera.transform.position = new Vector3(0f, targetCamera.transform.position.y, targetCamera.transform.position.z);
         }
-        Debug.Log("[CameraManager] 摄像头位置已重置");
+        Z_Logger.Log("[CameraManager] 摄像头位置已重置");
     }
 
     /// <summary>
@@ -413,5 +473,29 @@ public class CameraManager : MonoBehaviour
     public void StopDragging()
     {
         isDragging = false;
+    }
+
+    /// <summary>
+    /// 判断是否在室内模式
+    /// </summary>
+    public bool IsIndoorMode()
+    {
+        return isIndoorMode;
+    }
+
+    /// <summary>
+    /// 判断是否在室外模式
+    /// </summary>
+    public bool IsOutdoorMode()
+    {
+        return !isIndoorMode;
+    }
+
+    /// <summary>
+    /// 获取保存的室外位置
+    /// </summary>
+    public float GetSavedOutdoorX()
+    {
+        return savedOutdoorX;
     }
 }

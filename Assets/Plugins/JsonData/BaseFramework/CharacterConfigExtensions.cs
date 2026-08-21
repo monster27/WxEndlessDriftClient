@@ -15,14 +15,14 @@ public static class CharacterConfigExtensions
     {
         if (string.IsNullOrEmpty(config.iconPath))
         {
-            Debug.LogWarning($"[CharacterConfig] 人物ID={config.id} 图标路径为空");
+            Z_Logger.LogWarning($"[CharacterConfig] 人物ID={config.id} 图标路径为空");
             return null;
         }
 
         var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(config.iconPath);
         if (sprite == null)
         {
-            Debug.LogWarning($"[CharacterConfig] 加载图标失败: {config.iconPath}");
+            Z_Logger.LogWarning($"[CharacterConfig] 加载图标失败: {config.iconPath}");
         }
         return sprite;
     }
@@ -61,7 +61,7 @@ public static class CharacterConfigExtensions
         var (texture, handle) = await AssetManager.LoadFromAddressablesAsync<Texture2D>(path);
         if (texture == null)
         {
-            Debug.LogWarning($"[CharacterConfig] 加载纹理失败: {path}");
+            Z_Logger.LogWarning($"[CharacterConfig] 加载纹理失败: {path}");
         }
         return texture;
     }
@@ -71,14 +71,14 @@ public static class CharacterConfigExtensions
     {
         if (string.IsNullOrEmpty(config.iconPath))
         {
-            Debug.LogWarning($"[CharacterConfig] 人物ID={config.id} 图标路径为空");
+            Z_Logger.LogWarning($"[CharacterConfig] 人物ID={config.id} 图标路径为空");
             return null;
         }
 
         Sprite sprite = Resources.Load<Sprite>(config.iconPath);
         if (sprite == null)
         {
-            Debug.LogWarning($"[CharacterConfig] 加载图标失败: {config.iconPath}");
+            Z_Logger.LogWarning($"[CharacterConfig] 加载图标失败: {config.iconPath}");
         }
         return sprite;
     }
@@ -108,7 +108,7 @@ public static class CharacterConfigExtensions
         Texture2D texture = Resources.Load<Texture2D>(path);
         if (texture == null)
         {
-            Debug.LogWarning($"[CharacterConfig] 加载纹理失败: {path}");
+            Z_Logger.LogWarning($"[CharacterConfig] 加载纹理失败: {path}");
         }
         return texture;
     }

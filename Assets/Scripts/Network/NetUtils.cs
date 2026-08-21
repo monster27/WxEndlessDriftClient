@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using Utils;
+//using Utils;
 
 /// <summary>
 /// 网络工具类
@@ -94,7 +94,7 @@ public static class NetUtils
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogWarning($"[NetUtils] 反序列化属性失败: {prop.Name}, 错误: {ex.Message}");
+                    Z_Logger.LogWarning($"[NetUtils] 反序列化属性失败: {prop.Name}, 错误: {ex.Message}");
                 }
             }
         }
@@ -242,7 +242,7 @@ public static class NetUtils
                     {
                         value = dict[key];
                         found = true;
-                        Utils.Logger.Log($"[NetUtils] 大小写匹配: {key} -> {prop.Name}");
+                        Z_Logger.Log($"[NetUtils] 大小写匹配: {key} -> {prop.Name}");
                     }
                 }
                 
@@ -254,11 +254,11 @@ public static class NetUtils
                         
                         if (value is Dictionary<string, object> nestedDict && prop.FieldType.IsClass && prop.FieldType != typeof(string))
                         {
-                            Utils.Logger.Log($"[NetUtils] 解析嵌套对象: prop={prop.Name}, type={prop.FieldType.Name}, nestedDict keys={string.Join(",", nestedDict.Keys)}");
+                            Z_Logger.Log($"[NetUtils] 解析嵌套对象: prop={prop.Name}, type={prop.FieldType.Name}, nestedDict keys={string.Join(",", nestedDict.Keys)}");
                             var nestedJson = SerializeToJson(nestedDict);
-                            Utils.Logger.Log($"[NetUtils] 嵌套JSON: {nestedJson}");
+                            Z_Logger.Log($"[NetUtils] 嵌套JSON: {nestedJson}");
                             convertedValue = ParseJsonInternal(prop.FieldType, nestedJson);
-                            Utils.Logger.Log($"[NetUtils] 嵌套解析结果: {convertedValue}");
+                            Z_Logger.Log($"[NetUtils] 嵌套解析结果: {convertedValue}");
                         }
                         else
                         {
@@ -269,7 +269,7 @@ public static class NetUtils
                     }
                     catch (Exception ex)
                     {
-                        Utils.Logger.LogError($"[NetUtils] 解析字段 {prop.Name} 失败: {ex.Message}");
+                        Z_Logger.LogError($"[NetUtils] 解析字段 {prop.Name} 失败: {ex.Message}");
                     }
                 }
             }
@@ -453,7 +453,7 @@ public static class NetUtils
         {
             if (!data.ContainsKey(key))
             {
-                Debug.LogWarning($"[NetUtils] 数据验证失败：缺少键 '{key}'");
+                Z_Logger.LogWarning($"[NetUtils] 数据验证失败：缺少键 '{key}'");
                 return false;
             }
         }
@@ -605,7 +605,7 @@ public static class NetUtils
     public static void LogRequest(string action, Dictionary<string, object> data = null)
     {
         string dataStr = data != null ? string.Join(", ", data.Select(kvp => $"{kvp.Key}={kvp.Value}")) : "无数据";
-        Debug.Log($"<color=blue>[NetUtils] 发送请求: {action}, 数据: {dataStr}</color>");
+        Z_Logger.Log($"<color=blue>[NetUtils] 发送请求: {action}, 数据: {dataStr}</color>");
     }
 
     /// <summary>
@@ -614,7 +614,7 @@ public static class NetUtils
     public static void LogResponse(string action, Dictionary<string, object> data = null)
     {
         string dataStr = data != null ? string.Join(", ", data.Select(kvp => $"{kvp.Key}={kvp.Value}")) : "无数据";
-        Debug.Log($"<color=green>[NetUtils] 收到响应: {action}, 数据: {dataStr}</color>");
+        Z_Logger.Log($"<color=green>[NetUtils] 收到响应: {action}, 数据: {dataStr}</color>");
     }
 
     /// <summary>
@@ -623,7 +623,7 @@ public static class NetUtils
     public static void LogError(string message, Exception ex = null)
     {
         string errorStr = ex != null ? $"{message}, 异常: {ex.Message}" : message;
-        Debug.LogError($"<color=red>[NetUtils] 网络错误: {errorStr}</color>");
+        Z_Logger.LogError($"<color=red>[NetUtils] 网络错误: {errorStr}</color>");
     }
 
     #endregion

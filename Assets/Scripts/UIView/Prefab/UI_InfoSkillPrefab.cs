@@ -217,7 +217,7 @@ public class UI_InfoSkillPrefab : MonoBehaviour
 
     private void OnDetailBtnClick()
     {
-        Debug.Log($"[UI_InfoSkillPrefab] OnDetailBtnClick - skillId={skillId}");
+        Z_Logger.Log($"[UI_InfoSkillPrefab] OnDetailBtnClick - skillId={skillId}");
 
         bool isObtained = CommunicateEvent.Request<int, bool>(CommunicateEvent.EVENT_IS_SKILL_OBTAINED, skillId);
 
@@ -236,7 +236,7 @@ public class UI_InfoSkillPrefab : MonoBehaviour
 
     private void OnUpgradeBtnClick()
     {
-        Debug.Log($"[UI_InfoSkillPrefab] OnUpgradeBtnClick - skillId={skillId}");
+        Z_Logger.Log($"[UI_InfoSkillPrefab] OnUpgradeBtnClick - skillId={skillId}");
         if (onUpgradeClick != null)
         {
             onUpgradeClick(skillId);
@@ -245,7 +245,7 @@ public class UI_InfoSkillPrefab : MonoBehaviour
 
     private void OnWatchAdBtnClick()
     {
-        Debug.Log($"[UI_InfoSkillPrefab] OnWatchAdBtnClick - skillId={skillId}");
+        Z_Logger.Log($"[UI_InfoSkillPrefab] OnWatchAdBtnClick - skillId={skillId}");
         if (onWatchAdClick != null)
         {
             onWatchAdClick(skillId);
@@ -254,14 +254,14 @@ public class UI_InfoSkillPrefab : MonoBehaviour
 
     private void OnEquipBtnClick()
     {
-        Debug.Log($"[UI_InfoSkillPrefab] OnEquipBtnClick - skillId={skillId}");
+        Z_Logger.Log($"[UI_InfoSkillPrefab] OnEquipBtnClick - skillId={skillId}");
         if (onEquipClick != null)
         {
             onEquipClick(skillId);
         }
         else
         {
-            Debug.LogWarning("[UI_InfoSkillPrefab] onEquipClick is null!");
+            Z_Logger.LogWarning("[UI_InfoSkillPrefab] onEquipClick is null!");
         }
     }
 }

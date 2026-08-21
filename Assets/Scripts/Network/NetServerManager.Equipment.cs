@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 //using SharedModels;
-using Logger = Utils.Logger;
+//using Z_Logger = Utils.Z_Logger;
 
 public partial class NetServerManager
 {
@@ -49,7 +49,7 @@ public partial class NetServerManager
         if (!isConnected || _currentPlayerId <= 0) yield break;
 
         string url = ServerUrls.Player.EquipmentById(_currentPlayerId);
-        Logger.Log($"[NetServerManager] 获取装备数据: {url}");
+        Z_Logger.Log($"[NetServerManager] 获取装备数据: {url}");
 
         using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + url))
         {
@@ -63,7 +63,7 @@ public partial class NetServerManager
                 try
                 {
                     string json = request.downloadHandler.text;
-                    Logger.Log($"[NetServerManager] 装备数据响应: {json}");
+                    Z_Logger.Log($"[NetServerManager] 装备数据响应: {json}");
 
                     var equipment = NetUtils.ParseJson<EquipmentResponse>(json);
                     if (equipment != null)
@@ -93,7 +93,7 @@ public partial class NetServerManager
                         equipmentLevelMap[equippedSkill2Id] = equippedSkill2Level;
                         equipmentLevelMap[equippedCharacterId] = characterLevel;
 
-                        Logger.Log($"[NetServerManager] 装备数据初始化完成: Rod={equippedRodId}(Lv.{equippedRodLevel}), Line={equippedLineId}(Lv.{equippedLineLevel}), Hook={equippedHookId}(Lv.{equippedHookLevel})");
+                        Z_Logger.Log($"[NetServerManager] 装备数据初始化完成: Rod={equippedRodId}(Lv.{equippedRodLevel}), Line={equippedLineId}(Lv.{equippedLineLevel}), Hook={equippedHookId}(Lv.{equippedHookLevel})");
 
                         // ✅ 重建装备ID缓存
                         RebuildEquippedItemCache();
@@ -103,12 +103,12 @@ public partial class NetServerManager
                 }
                 catch (System.Exception ex)
                 {
-                    Logger.LogError($"[NetServerManager] 解析装备数据失败: {ex.Message}");
+                    Z_Logger.LogError($"[NetServerManager] 解析装备数据失败: {ex.Message}");
                 }
             }
             else
             {
-                Logger.LogError($"[NetServerManager] 获取装备数据失败: {request.error}");
+                Z_Logger.LogError($"[NetServerManager] 获取装备数据失败: {request.error}");
             }
         }
     }
@@ -156,11 +156,11 @@ public partial class NetServerManager
     {
         if (equipmentLevelMap.TryGetValue(itemId, out int level))
         {
-            Logger.Log($"[NetServerManager] GetComponentLevel - 从字典获取: itemId={itemId}, level={level}");
+            Z_Logger.Log($"[NetServerManager] GetComponentLevel - 从字典获取: itemId={itemId}, level={level}");
             return level;
         }
 
-        Logger.Log($"[NetServerManager] GetComponentLevel - itemId={itemId}, 字典中未找到，尝试直接匹配");
+        Z_Logger.Log($"[NetServerManager] GetComponentLevel - itemId={itemId}, 字典中未找到，尝试直接匹配");
         if (itemId == equippedRodId) return equippedRodLevel;
         if (itemId == equippedLineId) return equippedLineLevel;
         if (itemId == equippedHookId) return equippedHookLevel;
@@ -224,7 +224,7 @@ public partial class NetServerManager
             return;
         }
 
-        Logger.Log($"[NetServerManager] 处理装备请求: slotType={slotType}, itemId={itemId}");
+        Z_Logger.Log($"[NetServerManager] 处理装备请求: slotType={slotType}, itemId={itemId}");
 
         int slotTypeInt = (int)slotType;
         StartCoroutine(SendEquipRequestWithCallback(slotTypeInt, itemId, onComplete));
@@ -238,7 +238,7 @@ public partial class NetServerManager
             return;
         }
 
-        Logger.Log($"[NetServerManager] 处理卸下装备请求: slotType={slotType}");
+        Z_Logger.Log($"[NetServerManager] 处理卸下装备请求: slotType={slotType}");
 
         int slotTypeInt = (int)slotType;
         StartCoroutine(SendUnequipRequestWithCallback(slotTypeInt, onComplete));
@@ -252,7 +252,7 @@ public partial class NetServerManager
     private IEnumerator SendEquipRequestWithCallback(int slotType, int itemId, System.Action<bool, string> onComplete)
     {
         string url = ServerUrls.Player.EquipItem(_currentPlayerId, slotType, itemId);
-        Logger.Log($"[NetServerManager] 发送装备请求: {url}");
+        Z_Logger.Log($"[NetServerManager] 发送装备请求: {url}");
 
         using (UnityWebRequest request = UnityWebRequest.PostWwwForm(serverUrl + url, ""))
         {
@@ -266,13 +266,13 @@ public partial class NetServerManager
                 try
                 {
                     string json = request.downloadHandler.text;
-                    Logger.Log($"[NetServerManager] 装备响应: {json}");
+                    Z_Logger.Log($"[NetServerManager] 装备响应: {json}");
 
                     var response = JsonUtility.FromJson<EquipResponse>(json);
 
                     if (response != null && response.success)
                     {
-                        Logger.Log($"[NetServerManager] 装备成功: slotType={slotType}, itemId={itemId}");
+                        Z_Logger.Log($"[NetServerManager] 装备成功: slotType={slotType}, itemId={itemId}");
 
                         // ✅ 1. 先更新本地装备数据
                         if (response.equipment != null)
@@ -296,7 +296,7 @@ public partial class NetServerManager
                             equippedSkill1Level = response.equipment.skill1Level > 0 ? response.equipment.skill1Level : 1;
                             equippedSkill2Level = response.equipment.skill2Level > 0 ? response.equipment.skill2Level : 1;
 
-                            Logger.Log($"[NetServerManager] 装备数据已更新: Rod={equippedRodId}(Lv.{equippedRodLevel}), Char={equippedCharacterId}(Lv.{characterLevel}), Bait={equippedBaitId}");
+                            Z_Logger.Log($"[NetServerManager] 装备数据已更新: Rod={equippedRodId}(Lv.{equippedRodLevel}), Char={equippedCharacterId}(Lv.{characterLevel}), Bait={equippedBaitId}");
                         }
 
                         if (response.inventory != null)
@@ -307,7 +307,7 @@ public partial class NetServerManager
                                 inventoryDict[item.key] = item.value;
                             }
                             playerInventory = inventoryDict;
-                            Logger.Log($"[NetServerManager] 背包数据已更新: {playerInventory.Count} 个物品");
+                            Z_Logger.Log($"[NetServerManager] 背包数据已更新: {playerInventory.Count} 个物品");
 
                             if (PlayerDataManager.Instance != null)
                             {
@@ -323,7 +323,7 @@ public partial class NetServerManager
                                 fishBagDict[item.key] = item.value;
                             }
                             fishInventory = fishBagDict;
-                            Logger.Log($"[NetServerManager] 鱼篓数据已更新: {fishInventory.Count} 种鱼");
+                            Z_Logger.Log($"[NetServerManager] 鱼篓数据已更新: {fishInventory.Count} 种鱼");
                         }
 
                         // ✅ 4. 更新解锁装备缓存
@@ -335,7 +335,7 @@ public partial class NetServerManager
                         // ✅ 5. 如果是人物装备，同步人物数据
                         if (slotType == (int)EquipmentSlotType.Character)
                         {
-                            Logger.Log($"[NetServerManager] 检测到人物装备，立即同步人物数据...");
+                            Z_Logger.Log($"[NetServerManager] 检测到人物装备，立即同步人物数据...");
                             StartCoroutine(SyncCharacterDataAfterEquip(itemId));
                         }
 
@@ -350,19 +350,19 @@ public partial class NetServerManager
                     }
                     else
                     {
-                        Logger.LogWarning($"[NetServerManager] 装备失败: {response?.message ?? "未知错误"}");
+                        Z_Logger.LogWarning($"[NetServerManager] 装备失败: {response?.message ?? "未知错误"}");
                         onComplete?.Invoke(false, response?.message ?? "装备失败");
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Logger.LogError($"[NetServerManager] 解析装备响应失败: {ex.Message}");
+                    Z_Logger.LogError($"[NetServerManager] 解析装备响应失败: {ex.Message}");
                     onComplete?.Invoke(false, "解析响应失败");
                 }
             }
             else
             {
-                Logger.LogError($"[NetServerManager] 装备请求失败: {request.error}");
+                Z_Logger.LogError($"[NetServerManager] 装备请求失败: {request.error}");
                 onComplete?.Invoke(false, request.error);
             }
         }
@@ -371,7 +371,7 @@ public partial class NetServerManager
     private IEnumerator SendUnequipRequestWithCallback(int slotType, System.Action<bool, string> onComplete)
     {
         string url = ServerUrls.Player.UnequipItem(_currentPlayerId, slotType);
-        Logger.Log($"[NetServerManager] 发送卸下装备请求: {url}");
+        Z_Logger.Log($"[NetServerManager] 发送卸下装备请求: {url}");
 
         using (UnityWebRequest request = UnityWebRequest.PostWwwForm(serverUrl + url, ""))
         {
@@ -385,13 +385,13 @@ public partial class NetServerManager
                 try
                 {
                     string json = request.downloadHandler.text;
-                    Logger.Log($"[NetServerManager] 卸下装备响应: {json}");
+                    Z_Logger.Log($"[NetServerManager] 卸下装备响应: {json}");
 
                     var response = JsonUtility.FromJson<EquipResponse>(json);
 
                     if (response != null && response.success)
                     {
-                        Logger.Log($"[NetServerManager] 卸下装备成功: slotType={slotType}");
+                        Z_Logger.Log($"[NetServerManager] 卸下装备成功: slotType={slotType}");
 
                         if (response.equipment != null)
                         {
@@ -413,7 +413,7 @@ public partial class NetServerManager
                             equippedSkill1Level = response.equipment.skill1Level > 0 ? response.equipment.skill1Level : 1;
                             equippedSkill2Level = response.equipment.skill2Level > 0 ? response.equipment.skill2Level : 1;
 
-                            Logger.Log($"[NetServerManager] 装备数据已更新: Bait={equippedBaitId}");
+                            Z_Logger.Log($"[NetServerManager] 装备数据已更新: Bait={equippedBaitId}");
                         }
 
                         if (response.inventory != null)
@@ -424,7 +424,7 @@ public partial class NetServerManager
                                 inventoryDict[item.key] = item.value;
                             }
                             playerInventory = inventoryDict;
-                            Logger.Log($"[NetServerManager] 背包数据已更新: {playerInventory.Count} 个物品");
+                            Z_Logger.Log($"[NetServerManager] 背包数据已更新: {playerInventory.Count} 个物品");
 
                             if (PlayerDataManager.Instance != null)
                             {
@@ -439,19 +439,19 @@ public partial class NetServerManager
                     }
                     else
                     {
-                        Logger.LogWarning($"[NetServerManager] 卸下装备失败: {response?.message ?? "未知错误"}");
+                        Z_Logger.LogWarning($"[NetServerManager] 卸下装备失败: {response?.message ?? "未知错误"}");
                         onComplete?.Invoke(false, response?.message ?? "卸下失败");
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Logger.LogError($"[NetServerManager] 解析卸下装备响应失败: {ex.Message}");
+                    Z_Logger.LogError($"[NetServerManager] 解析卸下装备响应失败: {ex.Message}");
                     onComplete?.Invoke(false, "解析响应失败");
                 }
             }
             else
             {
-                Logger.LogError($"[NetServerManager] 卸下装备请求失败: {request.error}");
+                Z_Logger.LogError($"[NetServerManager] 卸下装备请求失败: {request.error}");
                 onComplete?.Invoke(false, request.error);
             }
         }
@@ -465,7 +465,7 @@ public partial class NetServerManager
             return;
 
         var (slotType, itemId) = data;
-        Logger.Log($"[NetServerManager] 处理装备请求: slotType={slotType}, itemId={itemId}");
+        Z_Logger.Log($"[NetServerManager] 处理装备请求: slotType={slotType}, itemId={itemId}");
 
         int slotTypeInt = (int)slotType;
         StartCoroutine(SendEquipRequest(slotTypeInt, itemId));
@@ -476,17 +476,17 @@ public partial class NetServerManager
         if (!CheckNetworkConnection())
             return;
 
-        Logger.Log($"[NetServerManager] 处理装备鱼饵请求: itemId={itemId}");
+        Z_Logger.Log($"[NetServerManager] 处理装备鱼饵请求: itemId={itemId}");
 
         EquipItemWithCallback(EquipmentSlotType.Bait, itemId, (success, message) =>
         {
             if (success)
             {
-                Logger.Log($"[NetServerManager] 装备鱼饵成功: itemId={itemId}, message={message}");
+                Z_Logger.Log($"[NetServerManager] 装备鱼饵成功: itemId={itemId}, message={message}");
             }
             else
             {
-                Logger.LogWarning($"[NetServerManager] 装备鱼饵失败: itemId={itemId}, message={message}");
+                Z_Logger.LogWarning($"[NetServerManager] 装备鱼饵失败: itemId={itemId}, message={message}");
             }
         });
     }
@@ -496,17 +496,17 @@ public partial class NetServerManager
         if (!CheckNetworkConnection())
             return;
 
-        Logger.Log($"[NetServerManager] 处理卸下鱼饵请求: slotType={slotType}");
+        Z_Logger.Log($"[NetServerManager] 处理卸下鱼饵请求: slotType={slotType}");
 
         UnequipItemWithCallback(slotType, (success, message) =>
         {
             if (success)
             {
-                Logger.Log($"[NetServerManager] 卸下鱼饵成功: slotType={slotType}, message={message}");
+                Z_Logger.Log($"[NetServerManager] 卸下鱼饵成功: slotType={slotType}, message={message}");
             }
             else
             {
-                Logger.LogWarning($"[NetServerManager] 卸下鱼饵失败: slotType={slotType}, message={message}");
+                Z_Logger.LogWarning($"[NetServerManager] 卸下鱼饵失败: slotType={slotType}, message={message}");
             }
         });
     }
@@ -537,7 +537,7 @@ public partial class NetServerManager
                 equippedBaitId = itemId;
                 break;
         }
-        Logger.Log($"[NetServerManager] 本地装备数据已更新: {slotType} = {itemId}");
+        Z_Logger.Log($"[NetServerManager] 本地装备数据已更新: {slotType} = {itemId}");
         // ✅ 重建装备ID缓存
         RebuildEquippedItemCache();
     }
@@ -545,7 +545,7 @@ public partial class NetServerManager
     private IEnumerator SendEquipRequest(int slotType, int itemId)
     {
         string url = ServerUrls.Player.EquipItem(_currentPlayerId, slotType, itemId);
-        Logger.Log($"[NetServerManager] 发送装备请求: {url}");
+        Z_Logger.Log($"[NetServerManager] 发送装备请求: {url}");
 
         using (UnityWebRequest request = UnityWebRequest.PostWwwForm(serverUrl + url, ""))
         {
@@ -562,7 +562,7 @@ public partial class NetServerManager
                     var response = JsonUtility.FromJson<EquipResponse>(json);
                     if (response != null && response.success)
                     {
-                        Logger.Log($"[NetServerManager] 装备成功: slotType={slotType}, itemId={itemId}");
+                        Z_Logger.Log($"[NetServerManager] 装备成功: slotType={slotType}, itemId={itemId}");
 
                         // ✅ 更新本地装备数据
                         UpdateLocalEquippedItem((EquipmentSlotType)slotType, itemId);
@@ -574,7 +574,7 @@ public partial class NetServerManager
 
                         if (slotType == (int)EquipmentSlotType.Character)
                         {
-                            Logger.Log($"[NetServerManager] 检测到人物装备，立即同步人物数据...");
+                            Z_Logger.Log($"[NetServerManager] 检测到人物装备，立即同步人物数据...");
                             StartCoroutine(SyncCharacterDataAfterEquip(itemId));
                         }
 
@@ -583,17 +583,17 @@ public partial class NetServerManager
                     }
                     else
                     {
-                        Logger.LogWarning($"[NetServerManager] 装备失败: {response?.message ?? "未知错误"}");
+                        Z_Logger.LogWarning($"[NetServerManager] 装备失败: {response?.message ?? "未知错误"}");
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Logger.LogError($"[NetServerManager] 解析装备响应失败: {ex.Message}");
+                    Z_Logger.LogError($"[NetServerManager] 解析装备响应失败: {ex.Message}");
                 }
             }
             else
             {
-                Logger.LogError($"[NetServerManager] 装备请求失败: {request.error}");
+                Z_Logger.LogError($"[NetServerManager] 装备请求失败: {request.error}");
             }
         }
     }
@@ -614,7 +614,7 @@ public partial class NetServerManager
                     equippedCharacterId = response.characterId;
                     characterLevel = response.level;
                     currentCharacterExp = response.exp;
-                    Logger.Log($"[NetServerManager] 人物数据同步完成: CharacterId={equippedCharacterId}, Level={characterLevel}, Exp={currentCharacterExp}");
+                    Z_Logger.Log($"[NetServerManager] 人物数据同步完成: CharacterId={equippedCharacterId}, Level={characterLevel}, Exp={currentCharacterExp}");
 
                     int requiredExp = GetExpToNextLevel();
 
@@ -623,7 +623,7 @@ public partial class NetServerManager
             },
             (error) =>
             {
-                Logger.LogError($"[NetServerManager] 人物数据同步失败: {error}");
+                Z_Logger.LogError($"[NetServerManager] 人物数据同步失败: {error}");
             }));
     }
 
@@ -632,7 +632,7 @@ public partial class NetServerManager
         yield return new WaitForSeconds(0.3f);
 
         string url = ServerUrls.Player.CharacterById(_currentPlayerId);
-        Logger.Log($"[NetServerManager] 正在从服务器获取人物数据: {url}");
+        Z_Logger.Log($"[NetServerManager] 正在从服务器获取人物数据: {url}");
 
         using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + url))
         {
@@ -644,7 +644,7 @@ public partial class NetServerManager
                 try
                 {
                     string json = request.downloadHandler.text;
-                    Logger.Log($"[NetServerManager] 人物数据响应: {json}");
+                    Z_Logger.Log($"[NetServerManager] 人物数据响应: {json}");
                     var response = JsonUtility.FromJson<CharacterSyncResponse>(json);
 
                     if (response != null)
@@ -653,7 +653,7 @@ public partial class NetServerManager
                         characterLevel = response.level > 0 ? response.level : 1;
                         currentCharacterExp = response.exp;
 
-                        Logger.Log($"[NetServerManager] 装备后人物数据同步完成: CharacterId={equippedCharacterId}, Level={characterLevel}, Exp={currentCharacterExp}");
+                        Z_Logger.Log($"[NetServerManager] 装备后人物数据同步完成: CharacterId={equippedCharacterId}, Level={characterLevel}, Exp={currentCharacterExp}");
 
                         int requiredExp = GetExpToNextLevel();
 
@@ -661,24 +661,24 @@ public partial class NetServerManager
 
                         if (response.characterId != expectedCharacterId)
                         {
-                            Logger.LogWarning($"[NetServerManager] 警告：获取到的人物ID({response.characterId})与预期({expectedCharacterId})不符！");
+                            Z_Logger.LogWarning($"[NetServerManager] 警告：获取到的人物ID({response.characterId})与预期({expectedCharacterId})不符！");
                         }
 
                         if (PlayerAniManager.Instance != null && equippedCharacterId > 0)
                         {
-                            Logger.Log($"[NetServerManager] 切换人物动画: characterId={equippedCharacterId}");
+                            Z_Logger.Log($"[NetServerManager] 切换人物动画: characterId={equippedCharacterId}");
                             PlayerAniManager.Instance.SwitchCharacter(equippedCharacterId);
                         }
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Logger.LogError($"[NetServerManager] 解析人物数据失败: {ex.Message}");
+                    Z_Logger.LogError($"[NetServerManager] 解析人物数据失败: {ex.Message}");
                 }
             }
             else
             {
-                Logger.LogError($"[NetServerManager] 获取人物数据失败: {request.error}");
+                Z_Logger.LogError($"[NetServerManager] 获取人物数据失败: {request.error}");
             }
         }
     }
@@ -690,12 +690,12 @@ public partial class NetServerManager
         if (!CheckNetworkConnection())
             return;
 
-        Logger.Log($"[NetServerManager] 处理装备解锁请求: equipId={equipId}");
+        Z_Logger.Log($"[NetServerManager] 处理装备解锁请求: equipId={equipId}");
 
         string equipmentType = GetEquipmentType(equipId);
         if (string.IsNullOrEmpty(equipmentType))
         {
-            Logger.LogWarning($"[NetServerManager] 无法确定装备类型: equipId={equipId}");
+            Z_Logger.LogWarning($"[NetServerManager] 无法确定装备类型: equipId={equipId}");
             GameUIManager.Instance?.ShowTip("装备类型错误");
             return;
         }
@@ -710,13 +710,13 @@ public partial class NetServerManager
         StartCoroutine(SendRequest<object>(ServerUrls.Equipment.Unlock, requestData,
             (response) =>
             {
-                Logger.Log($"[NetServerManager] 装备解锁成功: equipId={equipId}");
+                Z_Logger.Log($"[NetServerManager] 装备解锁成功: equipId={equipId}");
 
                 StartCoroutine(FetchPlayerDataAfterUnlock());
             },
             (error) =>
             {
-                Logger.LogWarning($"[NetServerManager] 装备解锁失败: {error}");
+                Z_Logger.LogWarning($"[NetServerManager] 装备解锁失败: {error}");
                 GameUIManager.Instance?.ShowTip("解锁失败，请重试");
             }));
     }
@@ -753,12 +753,12 @@ public partial class NetServerManager
 
         GameUIManager.Instance?.ShowTip("解锁成功！");
 
-        Logger.Log("[NetServerManager] 装备解锁后已刷新玩家数据");
+        Z_Logger.Log("[NetServerManager] 装备解锁后已刷新玩家数据");
     }
 
     public void UnlockEquipment(int playerId, int equipmentId, string equipmentType, System.Action<bool, string> onComplete)
     {
-        Logger.LogColor($"[NetServerManager] UnlockEquipment: PlayerId={playerId}, EquipmentId={equipmentId}, Type={equipmentType}", "cyan");
+        Z_Logger.LogColor($"[NetServerManager] UnlockEquipment: PlayerId={playerId}, EquipmentId={equipmentId}, Type={equipmentType}", "cyan");
 
         if (!CheckNetworkConnection())
         {
@@ -780,18 +780,18 @@ public partial class NetServerManager
             {
                 if (response.success)
                 {
-                    Logger.LogColor($"[NetServerManager] 装备解锁成功: {response.message}", "green");
+                    Z_Logger.LogColor($"[NetServerManager] 装备解锁成功: {response.message}", "green");
                     onComplete?.Invoke(true, response.message);
                 }
                 else
                 {
-                    Logger.LogError($"[NetServerManager] 装备解锁失败: {response.message}");
+                    Z_Logger.LogError($"[NetServerManager] 装备解锁失败: {response.message}");
                     onComplete?.Invoke(false, response.message);
                 }
             },
             (error) =>
             {
-                Logger.LogError($"[NetServerManager] 装备解锁请求失败: {error}");
+                Z_Logger.LogError($"[NetServerManager] 装备解锁请求失败: {error}");
                 onComplete?.Invoke(false, error);
             },
             forcePost: true
@@ -800,7 +800,7 @@ public partial class NetServerManager
 
     public void UpgradeEquipment(int equipId, System.Action<bool, string> onComplete)
     {
-        Logger.LogColor($"[NetServerManager] UpgradeEquipment: PlayerId={_currentPlayerId}, EquipId={equipId}", "cyan");
+        Z_Logger.LogColor($"[NetServerManager] UpgradeEquipment: PlayerId={_currentPlayerId}, EquipId={equipId}", "cyan");
 
         if (!CheckNetworkConnection())
         {
@@ -811,7 +811,7 @@ public partial class NetServerManager
         string equipmentType = GetEquipmentType(equipId);
         if (string.IsNullOrEmpty(equipmentType))
         {
-            Logger.LogWarning($"[NetServerManager] 无法确定装备类型: equipId={equipId}");
+            Z_Logger.LogWarning($"[NetServerManager] 无法确定装备类型: equipId={equipId}");
             onComplete?.Invoke(false, "装备类型错误");
             return;
         }
@@ -822,7 +822,7 @@ public partial class NetServerManager
         
         if (playerGold < upgradeCost)
         {
-            Logger.LogWarning($"[NetServerManager] 金币不足，无法升级: equipId={equipId}, currentLevel={currentLevel}, cost={upgradeCost}, gold={playerGold}");
+            Z_Logger.LogWarning($"[NetServerManager] 金币不足，无法升级: equipId={equipId}, currentLevel={currentLevel}, cost={upgradeCost}, gold={playerGold}");
             onComplete?.Invoke(false, "金币不足");
             return;
         }
@@ -834,7 +834,7 @@ public partial class NetServerManager
         { "EquipmentType", equipmentType },
         { "CurrentLevel", currentLevel }
     };
-        Logger.Log($"[NetServerManager] 升级请求: equipId={equipId}, currentLevel={currentLevel}, cost={upgradeCost}");
+        Z_Logger.Log($"[NetServerManager] 升级请求: equipId={equipId}, currentLevel={currentLevel}, cost={upgradeCost}");
 
         StartCoroutine(SendRequest<EquipmentUpgradeResponse>(
             ServerUrls.Equipment.Upgrade,
@@ -843,14 +843,14 @@ public partial class NetServerManager
             {
                 if (response.success)
                 {
-                    Logger.LogColor($"[NetServerManager] 装备升级成功: {response.message}", "green");
-                    Logger.Log($"[NetServerManager] 升级响应 - newLevel={response.newLevel}, gold={response.gold}");
+                    Z_Logger.LogColor($"[NetServerManager] 装备升级成功: {response.message}", "green");
+                    Z_Logger.Log($"[NetServerManager] 升级响应 - newLevel={response.newLevel}, gold={response.gold}");
 
                     // 优先使用 newLevel 更新当前升级装备的等级
                     if (response.newLevel > 0)
                     {
                         equipmentLevelMap[equipId] = response.newLevel;
-                        Logger.Log($"[NetServerManager] 使用newLevel更新等级: equipId={equipId}, newLevel={response.newLevel}");
+                        Z_Logger.Log($"[NetServerManager] 使用newLevel更新等级: equipId={equipId}, newLevel={response.newLevel}");
                         
                         EquipmentSlotType updateSlotType = GetEquipmentSlotType(equipId);
                         switch (updateSlotType)
@@ -879,7 +879,7 @@ public partial class NetServerManager
                     // 更新本地装备数据（从嵌套对象）
                     if (response.equipment != null)
                     {
-                        Logger.Log($"[NetServerManager] 装备数据解析成功 - rodId={response.equipment.rodId}, rodLevel={response.equipment.rodLevel}, lineId={response.equipment.lineId}, lineLevel={response.equipment.lineLevel}");
+                        Z_Logger.Log($"[NetServerManager] 装备数据解析成功 - rodId={response.equipment.rodId}, rodLevel={response.equipment.rodLevel}, lineId={response.equipment.lineId}, lineLevel={response.equipment.lineLevel}");
 
                         equippedRodId = response.equipment.rodId > 0 ? response.equipment.rodId : 3001;
                         equippedLineId = response.equipment.lineId > 0 ? response.equipment.lineId : 3101;
@@ -896,7 +896,7 @@ public partial class NetServerManager
                         equippedSkill1Level = response.equipment.skill1Level > 0 ? response.equipment.skill1Level : 1;
                         equippedSkill2Level = response.equipment.skill2Level > 0 ? response.equipment.skill2Level : 1;
 
-                        Logger.Log($"[NetServerManager] 升级后装备: Rod={equippedRodId}(Lv.{equippedRodLevel}), Char={equippedCharacterId}(Lv.{characterLevel})");
+                        Z_Logger.Log($"[NetServerManager] 升级后装备: Rod={equippedRodId}(Lv.{equippedRodLevel}), Char={equippedCharacterId}(Lv.{characterLevel})");
 
                         // 更新所有装备等级字典
                         equipmentLevelMap[equippedRodId] = equippedRodLevel;
@@ -911,7 +911,7 @@ public partial class NetServerManager
                     if (response.gold > 0)
                     {
                         playerGold = response.gold;
-                        Logger.Log($"[NetServerManager] 升级后金币: {playerGold}");
+                        Z_Logger.Log($"[NetServerManager] 升级后金币: {playerGold}");
 
                         CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, new Dictionary<string, object>
                         {
@@ -923,7 +923,7 @@ public partial class NetServerManager
                     }
                     else
                     {
-                        Logger.Log("[NetServerManager] 服务器响应未包含金币，触发同步");
+                        Z_Logger.Log("[NetServerManager] 服务器响应未包含金币，触发同步");
                         CommunicateEvent.Modify(CommunicateEvent.EVENT_SYNC_GOLD);
                     }
 
@@ -938,14 +938,14 @@ public partial class NetServerManager
                 }
                 else
                 {
-                    Logger.Log($"[NetServerManager] 装备升级失败: {response.message}");
+                    Z_Logger.Log($"[NetServerManager] 装备升级失败: {response.message}");
                     CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, response.message);
                     onComplete?.Invoke(false, response.message);
                 }
             },
             (error) =>
             {
-                Logger.LogError($"[NetServerManager] 装备升级请求失败: {error}");
+                Z_Logger.LogError($"[NetServerManager] 装备升级请求失败: {error}");
                 onComplete?.Invoke(false, error);
             },
             forcePost: true

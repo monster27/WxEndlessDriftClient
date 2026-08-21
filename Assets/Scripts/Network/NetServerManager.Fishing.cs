@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 //using SharedModels;
-using Logger = Utils.Logger;
+//using Z_Logger = Utils.Z_Logger;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
@@ -58,7 +58,7 @@ public partial class NetServerManager
 
     private IEnumerator DoFishingCoroutine(string url, Dictionary<string, object> requestData)
     {
-        if (!isConnected) { Logger.LogWarning("[NetServerManager] 未连接服务器，无法钓鱼"); yield break; }
+        if (!isConnected) { Z_Logger.LogWarning("[NetServerManager] 未连接服务器，无法钓鱼"); yield break; }
 
         string json = NetUtils.SerializeToJson(requestData);
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
@@ -73,7 +73,7 @@ public partial class NetServerManager
 
             if (request.result != UnityWebRequest.Result.Success)
             {
-                Logger.LogError("[NetServerManager] 钓鱼请求失败: " + request.error);
+                Z_Logger.LogError("[NetServerManager] 钓鱼请求失败: " + request.error);
                 yield break;
             }
 
@@ -82,11 +82,11 @@ public partial class NetServerManager
                 var response = JsonUtility.FromJson<FishingCatchResponse>(request.downloadHandler.text);
                 if (response == null || !response.success)
                 {
-                    Logger.LogWarning("[NetServerManager] 钓鱼失败: " + (response?.message ?? "未知错误"));
+                    Z_Logger.LogWarning("[NetServerManager] 钓鱼失败: " + (response?.message ?? "未知错误"));
                     yield break;
                 }
 
-                Logger.Log($"[NetServerManager] 钓鱼成功: {response.fishName} ({response.weight}kg)");
+                Z_Logger.Log($"[NetServerManager] 钓鱼成功: {response.fishName} ({response.weight}kg)");
                 playerGold = response.goldBalance;
 
                 if (response.isTrash)
@@ -108,7 +108,7 @@ public partial class NetServerManager
             }
             catch (Exception ex)
             {
-                Logger.LogError("[NetServerManager] 解析钓鱼响应失败: " + ex.Message);
+                Z_Logger.LogError("[NetServerManager] 解析钓鱼响应失败: " + ex.Message);
             }
         }
     }
@@ -120,7 +120,7 @@ public partial class NetServerManager
         // ✅ 启动前检查鱼篓状态
         if (isFishBagFull)
         {
-            Logger.Log("[NetServerManager] StartAutoFishing - 鱼篓已满，无法启动自动钓鱼");
+            Z_Logger.Log("[NetServerManager] StartAutoFishing - 鱼篓已满，无法启动自动钓鱼");
             NotifyPlayLazyAnimation();
             GameUIManager.ShowMessage("鱼篓已满，无法继续钓鱼");
             return;
@@ -136,7 +136,7 @@ public partial class NetServerManager
             { "baitId", actualBaitId }
         };
 
-        Logger.Log($"[NetServerManager] StartAutoFishing - 发送启动请求, sceneId={sceneId}, baitId={actualBaitId}");
+        Z_Logger.Log($"[NetServerManager] StartAutoFishing - 发送启动请求, sceneId={sceneId}, baitId={actualBaitId}");
 
         StartCoroutine(SendRequest<AutoFishingResponse>(ServerUrls.Fishing.AutoStart, requestData,
             (resp) =>
@@ -145,17 +145,17 @@ public partial class NetServerManager
                 {
                     isAutoFishing = true;
                     isPaused = false;
-                    Logger.Log("[NetServerManager] 自动钓鱼已启动");
+                    Z_Logger.Log("[NetServerManager] 自动钓鱼已启动");
                 }
                 else
                 {
-                    Logger.LogWarning($"[NetServerManager] 启动自动钓鱼失败: {resp?.message ?? "未知错误"}");
+                    Z_Logger.LogWarning($"[NetServerManager] 启动自动钓鱼失败: {resp?.message ?? "未知错误"}");
                     GameUIManager.ShowMessage(resp?.message ?? "启动自动钓鱼失败");
                 }
             },
             (error) =>
             {
-                Logger.LogError($"[NetServerManager] 启动自动钓鱼请求失败: {error}");
+                Z_Logger.LogError($"[NetServerManager] 启动自动钓鱼请求失败: {error}");
                 GameUIManager.ShowMessage("网络错误，启动自动钓鱼失败");
             }
         ));
@@ -167,7 +167,7 @@ public partial class NetServerManager
         var requestData = new Dictionary<string, object> { { "playerId", _currentPlayerId } };
         StartCoroutine(SendRequest<AutoFishingResponse>(ServerUrls.Fishing.AutoStop, requestData, resp =>
         {
-            if (resp != null && resp.success) { isAutoFishing = false; Logger.Log("[NetServerManager] 自动钓鱼已停止"); }
+            if (resp != null && resp.success) { isAutoFishing = false; Z_Logger.Log("[NetServerManager] 自动钓鱼已停止"); }
         }));
     }
 
@@ -175,20 +175,20 @@ public partial class NetServerManager
     {
         if (isAutoFishing)
         {
-            Logger.Log("[NetServerManager] AutoStartFishing - 已经在自动钓鱼中");
+            Z_Logger.Log("[NetServerManager] AutoStartFishing - 已经在自动钓鱼中");
             return;
         }
 
         // ✅ 再次检查鱼篓状态，防止在启动时鱼篓已满
         if (isFishBagFull)
         {
-            Logger.Log("[NetServerManager] AutoStartFishing - 鱼篓已满，无法启动自动钓鱼");
+            Z_Logger.Log("[NetServerManager] AutoStartFishing - 鱼篓已满，无法启动自动钓鱼");
             NotifyPlayLazyAnimation();
             return;
         }
 
         int baitId = equippedBaitId > 0 ? equippedBaitId : 0;
-        Logger.Log($"[NetServerManager] AutoStartFishing - 开始自动钓鱼, baitId={baitId}");
+        Z_Logger.Log($"[NetServerManager] AutoStartFishing - 开始自动钓鱼, baitId={baitId}");
         StartAutoFishing(baitId);
     }
 
@@ -207,7 +207,7 @@ public partial class NetServerManager
             // ⭐ 检查是否已销毁或断开
             if (!isConnected || this == null || gameObject == null)
             {
-                Logger.Log("[NetServerManager] PollFishingStatus 退出 - 连接断开或对象销毁");
+                Z_Logger.Log("[NetServerManager] PollFishingStatus 退出 - 连接断开或对象销毁");
                 yield break;
             }
 
@@ -218,7 +218,7 @@ public partial class NetServerManager
 
                 if (request.result != UnityWebRequest.Result.Success)
                 {
-                    Logger.LogWarning("[NetServerManager] 获取钓鱼状态失败: " + request.error);
+                    Z_Logger.LogWarning("[NetServerManager] 获取钓鱼状态失败: " + request.error);
                     continue;
                 }
 
@@ -228,22 +228,22 @@ public partial class NetServerManager
                     if (response == null || !response.success) continue;
 
                     // ⭐ 打印关键信息，方便调试
-                    Logger.Log($"[NetServerManager] 轮询状态: auto={response.isAutoFishing}, paused={response.isPaused}, nextTime={response.nextFishingTime}, hasCatch={response.lastCatch != null}");
+                    Z_Logger.Log($"[NetServerManager] 轮询状态: auto={response.isAutoFishing}, paused={response.isPaused}, nextTime={response.nextFishingTime}, hasCatch={response.lastCatch != null}");
 
                     bool wasPaused = isPaused, wasFull = isFishBagFull;
 
                     if (!response.isAutoFishing && isAutoFishing)
                     {
-                        Logger.Log($"[NetServerManager] 警告: 服务器返回 isAutoFishing=false, 但本地状态为 true, 可能是服务器缓存丢失");
-                        Logger.Log($"[NetServerManager] 当前鱼篓状态: {GetTotalFishCount()}/{fishBagCapacity}, 是否已满: {isFishBagFull}");
+                        Z_Logger.Log($"[NetServerManager] 警告: 服务器返回 isAutoFishing=false, 但本地状态为 true, 可能是服务器缓存丢失");
+                        Z_Logger.Log($"[NetServerManager] 当前鱼篓状态: {GetTotalFishCount()}/{fishBagCapacity}, 是否已满: {isFishBagFull}");
 
                         if (!isFishBagFull)
                         {
-                            Logger.Log($"[NetServerManager] 鱼篓未满，保持本地自动钓鱼状态");
+                            Z_Logger.Log($"[NetServerManager] 鱼篓未满，保持本地自动钓鱼状态");
                         }
                         else
                         {
-                            Logger.Log($"[NetServerManager] 鱼篓已满，同步服务器状态为 false");
+                            Z_Logger.Log($"[NetServerManager] 鱼篓已满，同步服务器状态为 false");
                             isAutoFishing = false;
                         }
                     }
@@ -263,11 +263,11 @@ public partial class NetServerManager
                     ProcessAutoSellFishBagUpdate();
 
                     string display = GetNextFishingDisplay(response);
-                    Logger.Log($"[NetServerManager] 钓鱼状态: auto={isAutoFishing}, paused={isPaused}, full={isFishBagFull}, trash={trashStreak}, fish={GetTotalFishCount()}, next={display}");
+                    Z_Logger.Log($"[NetServerManager] 钓鱼状态: auto={isAutoFishing}, paused={isPaused}, full={isFishBagFull}, trash={trashStreak}, fish={GetTotalFishCount()}, next={display}");
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError("[NetServerManager] 解析钓鱼状态失败: " + ex.Message);
+                    Z_Logger.LogError("[NetServerManager] 解析钓鱼状态失败: " + ex.Message);
                 }
             }
         }
@@ -318,12 +318,12 @@ public partial class NetServerManager
         lastCatch.isFirstCatch = (currentCount == 0);
 
         float struggleTime = lastCatch.struggleTime > 0 ? lastCatch.struggleTime : 1.5f;
-        Logger.Log($"[NetServerManager] 检测到新钓获: {lastCatch.fishName} (ID:{lastCatch.fishId}), {lastCatch.weight}kg, 挣扎{struggleTime}秒, 时间戳:{lastCatch.caughtTimestamp}, 首次:{lastCatch.isFirstCatch}");
+        Z_Logger.Log($"[NetServerManager] 检测到新钓获: {lastCatch.fishName} (ID:{lastCatch.fishId}), {lastCatch.weight}kg, 挣扎{struggleTime}秒, 时间戳:{lastCatch.caughtTimestamp}, 首次:{lastCatch.isFirstCatch}");
 
         // ✅ 如果正在播放收竿动画或鱼篓已满，将捕获加入队列，等动画结束后再显示
         if (isPlayingReelAnimation || isFishBagFull)
         {
-            Logger.Log($"[NetServerManager] 收竿动画中/鱼篓已满，捕获加入待显示队列: {lastCatch.fishName}");
+            Z_Logger.Log($"[NetServerManager] 收竿动画中/鱼篓已满，捕获加入待显示队列: {lastCatch.fishName}");
             pendingCatchQueue.Enqueue(lastCatch);
             return;
         }
@@ -358,7 +358,7 @@ public partial class NetServerManager
             {
                 var next = pendingCatchQueue.Dequeue();
                 float nextStruggle = next.struggleTime > 0 ? next.struggleTime : 1.5f;
-                Logger.Log($"[NetServerManager] 从队列中取出下一条捕获: {next.fishName}");
+                Z_Logger.Log($"[NetServerManager] 从队列中取出下一条捕获: {next.fishName}");
                 StartCatchAnimation(next, nextStruggle);
             }
         });
@@ -374,14 +374,14 @@ public partial class NetServerManager
             // 1. 从 LoadDataManager 获取鱼类数据
             if (LoadDataManager.Instance == null)
             {
-                Logger.LogWarning("[NetServerManager] LoadDataManager 未初始化，无法设置鱼饵提示颜色");
+                Z_Logger.LogWarning("[NetServerManager] LoadDataManager 未初始化，无法设置鱼饵提示颜色");
                 return;
             }
 
             FishData fishData = LoadDataManager.Instance.GetFishById(fishId);
             if (fishData == null)
             {
-                Logger.LogWarning($"[NetServerManager] 未找到鱼类数据: fishId={fishId}");
+                Z_Logger.LogWarning($"[NetServerManager] 未找到鱼类数据: fishId={fishId}");
                 return;
             }
 
@@ -389,7 +389,7 @@ public partial class NetServerManager
             int rarityId = fishData.rarityId;
             if (rarityId <= 0)
             {
-                Logger.LogWarning($"[NetServerManager] 鱼类 {fishId} 的稀有度ID无效: {rarityId}");
+                Z_Logger.LogWarning($"[NetServerManager] 鱼类 {fishId} 的稀有度ID无效: {rarityId}");
                 return;
             }
 
@@ -397,20 +397,20 @@ public partial class NetServerManager
             RarityData rarityData = LoadDataManager.Instance.GetRarityById(rarityId);
             if (rarityData == null)
             {
-                Logger.LogWarning($"[NetServerManager] 未找到稀有度数据: rarityId={rarityId}");
+                Z_Logger.LogWarning($"[NetServerManager] 未找到稀有度数据: rarityId={rarityId}");
                 return;
             }
 
             // 4. 解析颜色
             if (string.IsNullOrEmpty(rarityData.colorCode))
             {
-                Logger.LogWarning($"[NetServerManager] 稀有度 {rarityId} 的颜色代码为空");
+                Z_Logger.LogWarning($"[NetServerManager] 稀有度 {rarityId} 的颜色代码为空");
                 return;
             }
 
             if (!ColorUtility.TryParseHtmlString(rarityData.colorCode, out Color color))
             {
-                Logger.LogWarning($"[NetServerManager] 解析颜色失败: colorCode={rarityData.colorCode}");
+                Z_Logger.LogWarning($"[NetServerManager] 解析颜色失败: colorCode={rarityData.colorCode}");
                 return;
             }
 
@@ -418,16 +418,16 @@ public partial class NetServerManager
             if (PlayerAniManager.Instance != null)
             {
                 PlayerAniManager.Instance.SetFishTip(color, struggleTime);
-                Logger.Log($"[NetServerManager] 设置鱼饵提示颜色: fishId={fishId}, rarityId={rarityId}, color={rarityData.colorCode} , struggleTime-{struggleTime}");
+                Z_Logger.Log($"[NetServerManager] 设置鱼饵提示颜色: fishId={fishId}, rarityId={rarityId}, color={rarityData.colorCode} , struggleTime-{struggleTime}");
             }
             else
             {
-                Logger.LogWarning("[NetServerManager] PlayerAniManager 未初始化，无法设置鱼饵提示颜色");
+                Z_Logger.LogWarning("[NetServerManager] PlayerAniManager 未初始化，无法设置鱼饵提示颜色");
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[NetServerManager] SetFishTipColorByFishId 异常: {ex.Message}");
+            Z_Logger.LogError($"[NetServerManager] SetFishTipColorByFishId 异常: {ex.Message}");
         }
     }
 
@@ -465,13 +465,13 @@ public partial class NetServerManager
 
     private void ProcessWeatherAndTimeSync(FishingStatusResponse response)
     {
-        Debug.Log($"[NetServerManager] ProcessWeatherAndTimeSync - currentWeatherId={response.currentWeatherId}, timeSlotId={response.timeSlotId}, timeStatus={response.timeStatus}");
+        Z_Logger.Log($"[NetServerManager] ProcessWeatherAndTimeSync - currentWeatherId={response.currentWeatherId}, timeSlotId={response.timeSlotId}, timeStatus={response.timeStatus}");
 
         if (response.currentWeatherId > 0)
         {
             currentWeatherId = response.currentWeatherId;
             currentWeatherName = GetWeatherNameById(response.currentWeatherId);
-            Debug.Log($"[NetServerManager] 触发天气变化事件: weatherId={currentWeatherId}, weatherName={currentWeatherName}");
+            Z_Logger.Log($"[NetServerManager] 触发天气变化事件: weatherId={currentWeatherId}, weatherName={currentWeatherName}");
             CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_CLIENT_WEATHER_CHANGED, new Dictionary<string, object>
             {
                 { "weatherId", currentWeatherId }, { "weatherName", currentWeatherName }
@@ -479,7 +479,7 @@ public partial class NetServerManager
         }
         else
         {
-            Debug.LogWarning($"[NetServerManager] 天气ID无效: {response.currentWeatherId}");
+            Z_Logger.LogWarning($"[NetServerManager] 天气ID无效: {response.currentWeatherId}");
         }
 
         if (response.timeSlotId > 0)
@@ -487,7 +487,7 @@ public partial class NetServerManager
             currentTimeSlotId = response.timeSlotId;
             currentTimeSlotName = GetTimeSlotNameById(response.timeSlotId);
             currentTimeStatus = (TimeStatus)response.timeStatus;
-            Debug.Log($"[NetServerManager] 触发时段变化事件: timeSlotId={currentTimeSlotId}, timeSlotName={currentTimeSlotName}, timeStatus={(int)currentTimeStatus}");
+            Z_Logger.Log($"[NetServerManager] 触发时段变化事件: timeSlotId={currentTimeSlotId}, timeSlotName={currentTimeSlotName}, timeStatus={(int)currentTimeStatus}");
             CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_CLIENT_TIME_SLOT_CHANGED, new Dictionary<string, object>
             {
                 { "timeSlotId", currentTimeSlotId }, { "timeSlotName", currentTimeSlotName },
@@ -496,7 +496,7 @@ public partial class NetServerManager
         }
         else
         {
-            Debug.LogWarning($"[NetServerManager] 时段ID无效: {response.timeSlotId}");
+            Z_Logger.LogWarning($"[NetServerManager] 时段ID无效: {response.timeSlotId}");
         }
     }
 
@@ -541,7 +541,7 @@ public partial class NetServerManager
         if (isPlayingReelAnimation)
         {
             pendingAnimationRequest = PendingAnimationType.Idle;
-            Logger.Log("[NetServerManager] 收杆动画播放中，将Idle动画请求排入队列");
+            Z_Logger.Log("[NetServerManager] 收杆动画播放中，将Idle动画请求排入队列");
             return;
         }
         pendingAnimationRequest = PendingAnimationType.None;
@@ -553,7 +553,7 @@ public partial class NetServerManager
         if (isPlayingReelAnimation)
         {
             pendingAnimationRequest = PendingAnimationType.Lazy;
-            Logger.Log("[NetServerManager] 收杆动画播放中，将Lazy动画请求排入队列");
+            Z_Logger.Log("[NetServerManager] 收杆动画播放中，将Lazy动画请求排入队列");
             return;
         }
         pendingAnimationRequest = PendingAnimationType.None;
@@ -597,11 +597,11 @@ public partial class NetServerManager
         switch (pendingAnimationRequest)
         {
             case PendingAnimationType.Idle:
-                Logger.Log("[NetServerManager] 执行待处理的Idle动画请求");
+                Z_Logger.Log("[NetServerManager] 执行待处理的Idle动画请求");
                 PlayerAniManager.Instance?.PlayIdleAnimation();
                 break;
             case PendingAnimationType.Lazy:
-                Logger.Log("[NetServerManager] 执行待处理的Lazy动画请求");
+                Z_Logger.Log("[NetServerManager] 执行待处理的Lazy动画请求");
                 PlayerAniManager.Instance?.PlayLazyAnimation();
                 break;
         }
@@ -702,7 +702,7 @@ public partial class NetServerManager
 
         if (detailIds == null || detailIds.Count == 0)
         {
-            Logger.LogWarning("[NetServerManager] 售卖鱼失败：没有选择任何鱼");
+            Z_Logger.LogWarning("[NetServerManager] 售卖鱼失败：没有选择任何鱼");
             GameUIManager.Instance?.ShowTip("请选择要出售的鱼");
             return;
         }
@@ -714,15 +714,15 @@ public partial class NetServerManager
         { "totalPrice", 0 }  // 服务器会自动计算价格，传0即可
     };
 
-        Logger.Log($"[NetServerManager] 售卖鱼: {detailIds.Count}条, fishItemIds=[{string.Join(",", detailIds)}]");
+        Z_Logger.Log($"[NetServerManager] 售卖鱼: {detailIds.Count}条, fishItemIds=[{string.Join(",", detailIds)}]");
 
         string jsonToSend = NetUtils.SerializeToJson(requestData);
-        Logger.Log($"[NetServerManager] 发送JSON: {jsonToSend}");
+        Z_Logger.Log($"[NetServerManager] 发送JSON: {jsonToSend}");
 
         StartCoroutine(SendRequest<SellFishResponse>(ServerUrls.Player.SellFish(_currentPlayerId), requestData,
             response =>
             {
-                Logger.Log("[NetServerManager] 售卖鱼成功");
+                Z_Logger.Log("[NetServerManager] 售卖鱼成功");
 
                 // ✅ 从服务器响应中提取金币和价格数据
                 if (response != null)
@@ -730,13 +730,13 @@ public partial class NetServerManager
                     if (response.gold > 0)
                     {
                         playerGold = response.gold;
-                        Logger.Log($"[NetServerManager] 售卖后金币: {playerGold}");
+                        Z_Logger.Log($"[NetServerManager] 售卖后金币: {playerGold}");
                         // ✅ 立即更新 UI，不等待 FetchPlayerGold
                         GameUIManager.Instance?.UpdateGoldDisplay(playerGold);
                     }
                     if (response.totalPrice > 0)
                     {
-                        Logger.Log($"[NetServerManager] 售卖获得金币: {response.totalPrice}");
+                        Z_Logger.Log($"[NetServerManager] 售卖获得金币: {response.totalPrice}");
 
                         // ✅ 显示卖鱼成功Tip
                         string tipMessage = $"💰 出售成功！\n共出售 {response.soldCount} 条鱼\n获得 {response.totalPrice} 金币";
@@ -748,7 +748,7 @@ public partial class NetServerManager
             },
             error =>
             {
-                Logger.LogWarning("[NetServerManager] 售卖鱼失败: " + error);
+                Z_Logger.LogWarning("[NetServerManager] 售卖鱼失败: " + error);
                 GameUIManager.Instance?.ShowTip("售卖失败，请重试");
             }));
     }

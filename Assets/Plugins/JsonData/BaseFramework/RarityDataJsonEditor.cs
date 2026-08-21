@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -225,13 +225,13 @@ public class RarityDataJsonEditor : EditorWindow
             {
                 var wrapper = JsonUtility.FromJson<RarityListWrapper>(File.ReadAllText(fullPath));
                 rarities = wrapper?.rarities ?? new List<RarityData>();
-                if (rarities.Count > 0) Debug.Log($"加载成功，共{rarities.Count}条数据");
+                if (rarities.Count > 0) Z_Logger.Log($"加载成功，共{rarities.Count}条数据");
             }
-            catch (System.Exception e) { Debug.LogError($"加载失败: {e.Message}"); rarities = new List<RarityData>(); }
+            catch (System.Exception e) { Z_Logger.LogError($"加载失败: {e.Message}"); rarities = new List<RarityData>(); }
         }
         else
         {
-            Debug.LogWarning($"文件不存在: {fullPath}，创建空列表");
+            Z_Logger.LogWarning($"文件不存在: {fullPath}，创建空列表");
             rarities = new List<RarityData>();
         }
         Repaint();
@@ -244,7 +244,7 @@ public class RarityDataJsonEditor : EditorWindow
 
         File.WriteAllText(Path.Combine(Application.dataPath, "Addressables/JsonData/BaseFramework/rarities.json"), JsonUtility.ToJson(new RarityListWrapper { rarities = rarities }, true));
         AssetDatabase.Refresh();
-        Debug.Log("保存成功");
+        Z_Logger.Log("保存成功");
     }
 
     private void AddNewItem()

@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: "\u80CC\u5305\u754C\u9762"
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 5dfc9f67911c9304a9e6e8a420578179, type: 3}
+    - {fileID: 2800000, guid: 7cb1d78e91c9396468055ca9597ae21e, type: 3}
+    - {fileID: 2800000, guid: 1375eabda40f90042b8aafc23bf60774, type: 3}
+    - {fileID: 2800000, guid: 7da9ecf1b5f66d249abf347c2c1dab53, type: 3}
+    - {fileID: 2800000, guid: 5e0877c04d665164b8c6abd5c7297ffb, type: 3}
+    - {fileID: 2800000, guid: 4a57d09db9857fe4a8ffdb531433b4ef, type: 3}
+    - {fileID: 2800000, guid: cffc53308317ef3479eb1bc7ff7f4987, type: 3}
+    - {fileID: 2800000, guid: ad86d7c2a6c5b44458813a13deb9ea56, type: 3}
+    - {fileID: 2800000, guid: 4bca51ac4fdbb0a4fb3be897f1dcfa83, type: 3}
+    - {fileID: 2800000, guid: 73ef09978e47929459fbf83b784b56d4, type: 3}
+    - {fileID: 2800000, guid: 1ade7861f50480d43b6093303e0304e8, type: 3}
+    - {fileID: 2800000, guid: 4b27314b49cb4554da1351563a43475b, type: 3}
+    - {fileID: 2800000, guid: 4a614b6b0cdcf9f4783eaefe872b885b, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - cffc53308317ef3479eb1bc7ff7f4987: 21300000
+    - 5e0877c04d665164b8c6abd5c7297ffb: 21300000
+    - 1ade7861f50480d43b6093303e0304e8: 21300000
+    - 7da9ecf1b5f66d249abf347c2c1dab53: 21300000
+    - ad86d7c2a6c5b44458813a13deb9ea56: 21300000
+    - 5dfc9f67911c9304a9e6e8a420578179: 21300000
+    - 73ef09978e47929459fbf83b784b56d4: 21300000
+    - 4b27314b49cb4554da1351563a43475b: 21300000
+    - 4a614b6b0cdcf9f4783eaefe872b885b: 21300000
+    - 4bca51ac4fdbb0a4fb3be897f1dcfa83: 21300000
+    - 4a57d09db9857fe4a8ffdb531433b4ef: 21300000
+    - 1375eabda40f90042b8aafc23bf60774: 21300000
+    - 7cb1d78e91c9396468055ca9597ae21e: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: cffc53308317ef3479eb1bc7ff7f4987, type: 3}
+  - {fileID: 21300000, guid: 5e0877c04d665164b8c6abd5c7297ffb, type: 3}
+  - {fileID: 21300000, guid: 1ade7861f50480d43b6093303e0304e8, type: 3}
+  - {fileID: 21300000, guid: 7da9ecf1b5f66d249abf347c2c1dab53, type: 3}
+  - {fileID: 21300000, guid: ad86d7c2a6c5b44458813a13deb9ea56, type: 3}
+  - {fileID: 21300000, guid: 5dfc9f67911c9304a9e6e8a420578179, type: 3}
+  - {fileID: 21300000, guid: 73ef09978e47929459fbf83b784b56d4, type: 3}
+  - {fileID: 21300000, guid: 4b27314b49cb4554da1351563a43475b, type: 3}
+  - {fileID: 21300000, guid: 4a614b6b0cdcf9f4783eaefe872b885b, type: 3}
+  - {fileID: 21300000, guid: 4bca51ac4fdbb0a4fb3be897f1dcfa83, type: 3}
+  - {fileID: 21300000, guid: 4a57d09db9857fe4a8ffdb531433b4ef, type: 3}
+  - {fileID: 21300000, guid: 1375eabda40f90042b8aafc23bf60774, type: 3}
+  - {fileID: 21300000, guid: 7cb1d78e91c9396468055ca9597ae21e, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - "\u7802\u9505"
+  - "\u754C\u9762\u793A\u610F\uFF08\u9C7C\u7BD3\u88C5\u9970\uFF09"
+  - "\u9C7C\u7BD3\u88C5\u9970"
+  - "\u7279\u6B8A"
+  - "\u7A9D\u6599"
+  - "\u56FE\u6807\u5E95\u56FE"
+  - "\u88C5\u5907\u4E2D"
+  - "\u9C7C\u9975"
+  - "\u9C7C\u9975\u7A9D\u6599"
+  - "\u88C5\u5907"
+  - "\u754C\u9762\u793A\u610F\uFF08\u9C7C\u9975\u7A9D\u6599\uFF09"
+  - "\u5E95\u56FE"
+  - "\u5E10\u7BF7\u88C5\u9970"
+  m_RenderDataMap: {}
+  m_Tag: "\u80CC\u5305\u754C\u9762"
+  m_IsVariant: 0
+  m_IsPlaceholder: 0

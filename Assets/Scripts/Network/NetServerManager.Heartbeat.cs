@@ -3,7 +3,7 @@ using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
 //using SharedModels;
-using Logger = Utils.Logger;
+//using Z_Logger = Utils.Z_Logger;
 using System;
 
 public partial class NetServerManager 
@@ -24,11 +24,11 @@ public partial class NetServerManager
     {
         if (!isConnected)
         {
-            Logger.Log("[NetServerManager] 未连接服务器，跳过退出请求");
+            Z_Logger.Log("[NetServerManager] 未连接服务器，跳过退出请求");
             return;
         }
 
-        Logger.LogColor("[NetServerManager] 发送玩家退出请求", "orange");
+        Z_Logger.LogColor("[NetServerManager] 发送玩家退出请求", "orange");
 
         var requestData = new Dictionary<string, object>
         {
@@ -39,12 +39,12 @@ public partial class NetServerManager
         StartCoroutine(SendRequest<object>(ServerUrls.Player.Exit(_currentPlayerId), requestData,
             onSuccess: (response) =>
             {
-                Logger.LogColor("[NetServerManager] 玩家退出请求成功", "green");
+                Z_Logger.LogColor("[NetServerManager] 玩家退出请求成功", "green");
                 StopHeartbeat();
             },
             onError: (error) =>
             {
-                Logger.LogWarning("[NetServerManager] 玩家退出请求失败: " + error);
+                Z_Logger.LogWarning("[NetServerManager] 玩家退出请求失败: " + error);
             },
             forcePost: true
         ));
@@ -52,7 +52,7 @@ public partial class NetServerManager
 
     public void RequestReconnect()
     {
-        Logger.LogColor("[NetServerManager] 请求重连恢复状态", "orange");
+        Z_Logger.LogColor("[NetServerManager] 请求重连恢复状态", "orange");
 
         var requestData = new Dictionary<string, object>
         {
@@ -63,7 +63,7 @@ public partial class NetServerManager
         StartCoroutine(SendRequest<object>(ServerUrls.Player.Reconnect(_currentPlayerId), requestData,
             onSuccess: (response) =>
             {
-                Logger.LogColor("[NetServerManager] 重连请求成功，开始恢复钓鱼状态", "green");
+                Z_Logger.LogColor("[NetServerManager] 重连请求成功，开始恢复钓鱼状态", "green");
 
                 StartCoroutine(FetchGameState());
                 StartCoroutine(FetchBaitCount());
@@ -74,7 +74,7 @@ public partial class NetServerManager
             },
             onError: (error) =>
             {
-                Logger.LogWarning("[NetServerManager] 重连请求失败: " + error + "，尝试重新连接");
+                Z_Logger.LogWarning("[NetServerManager] 重连请求失败: " + error + "，尝试重新连接");
                 Reconnect();
             },
             forcePost: true
@@ -88,7 +88,7 @@ public partial class NetServerManager
             StopCoroutine(heartbeatCoroutine);
         }
         heartbeatCoroutine = StartCoroutine(SendHeartbeatCoroutine());
-        Logger.Log("[NetServerManager] 心跳协程已启动");
+        Z_Logger.Log("[NetServerManager] 心跳协程已启动");
     }
 
     private void StopHeartbeat()
@@ -97,7 +97,7 @@ public partial class NetServerManager
         {
             StopCoroutine(heartbeatCoroutine);
             heartbeatCoroutine = null;
-            Logger.Log("[NetServerManager] 心跳协程已停止");
+            Z_Logger.Log("[NetServerManager] 心跳协程已停止");
         }
     }
 
@@ -128,11 +128,11 @@ public partial class NetServerManager
         StartCoroutine(SendRequest<object>(ServerUrls.Player.Heartbeat(_currentPlayerId), requestData,
             onSuccess: (response) =>
             {
-                Logger.LogColor("[NetServerManager] 心跳发送成功", "cyan");
+                Z_Logger.LogColor("[NetServerManager] 心跳发送成功", "cyan");
             },
             onError: (error) =>
             {
-                Logger.LogWarning("[NetServerManager] 心跳发送失败: " + error);
+                Z_Logger.LogWarning("[NetServerManager] 心跳发送失败: " + error);
             },
             forcePost: true
         ));
@@ -147,7 +147,7 @@ public partial class NetServerManager
 
         if (missedHeartbeats >= NetUtils.MAX_MISSED_HEARTBEATS)
         {
-            Logger.LogError("[NetServerManager] 心跳超时，断开连接");
+            Z_Logger.LogError("[NetServerManager] 心跳超时，断开连接");
             networkState = NetUtils.NetworkState.Reconnecting;
             isConnected = false;
             missedHeartbeats = 0;
@@ -157,7 +157,7 @@ public partial class NetServerManager
 
     private IEnumerator SendHeartbeatRequest()
     {
-        Logger.Log("[NetServerManager] SendHeartbeat 被调用");
+        Z_Logger.Log("[NetServerManager] SendHeartbeat 被调用");
 
         long clientTime = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var requestData = new Dictionary<string, object>
@@ -170,7 +170,7 @@ public partial class NetServerManager
             {
                 if (response != null)
                 {
-                    Logger.Log("[NetServerManager] OnHeartbeatResponse 收到心跳响应");
+                    Z_Logger.Log("[NetServerManager] OnHeartbeatResponse 收到心跳响应");
                     lastServerTime = response.serverTime;
                     isConnected = true;
                     missedHeartbeats = 0;
@@ -179,14 +179,14 @@ public partial class NetServerManager
                     // ✅ 检测商城数据刷新标记
                     if (response.mallDataRefreshed)
                     {
-                        Logger.Log("[NetServerManager] 服务器通知商城数据已刷新，立即同步");
+                        Z_Logger.Log("[NetServerManager] 服务器通知商城数据已刷新，立即同步");
                         SyncMallItemsFromServer();
                     }
                 }
             },
             (error) =>
             {
-                Logger.LogWarning("[NetServerManager] 心跳请求失败: " + error);
+                Z_Logger.LogWarning("[NetServerManager] 心跳请求失败: " + error);
                 isConnected = false;
             });
     }

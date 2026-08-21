@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 //using SharedModels;
-using Logger = Utils.Logger;
+//using Z_Logger = Utils.Z_Logger;
 
 public partial class NetServerManager
 {
@@ -11,7 +11,7 @@ public partial class NetServerManager
 
     private void RegisterServerEvents()
     {
-        Logger.Log("[NetServerManager] 开始注册网络模式下的事件处理器...");
+        Z_Logger.Log("[NetServerManager] 开始注册网络模式下的事件处理器...");
 
         // ========== 连续模式 ==========
         CommunicateEvent.RegisterRequest<int, bool>(CommunicateEvent.EVENT_IS_IN_CONTINUOUS_MODE, _ => isInContinuousMode);
@@ -82,7 +82,7 @@ public partial class NetServerManager
             return false;
         });
 
-        Logger.Log("[NetServerManager] 事件处理器注册完成！");
+        Z_Logger.Log("[NetServerManager] 事件处理器注册完成！");
     }
 
     private void OnSyncGold()
@@ -90,10 +90,10 @@ public partial class NetServerManager
         if (!_isEnabled)
             return;
 
-        Logger.Log("[NetServerManager] 收到金币同步请求");
+        Z_Logger.Log("[NetServerManager] 收到金币同步请求");
 
         int currentGold = playerGold;
-        Logger.Log($"[NetServerManager] 当前金币: {currentGold}");
+        Z_Logger.Log($"[NetServerManager] 当前金币: {currentGold}");
 
         var goldData = new Dictionary<string, object>
         {

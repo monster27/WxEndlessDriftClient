@@ -122,7 +122,7 @@ public class ConsoleLogCaptureTool : EditorWindow
         if (EditorApplication.isPlaying && autoCaptureOnPlay && !isCapturing)
         {
             StartCapture();
-            Debug.Log("[日志捕获工具] 编辑器启动时自动开始捕获（运行模式）");
+            Z_Logger.Log("[日志捕获工具] 编辑器启动时自动开始捕获（运行模式）");
         }
     }
 
@@ -208,7 +208,7 @@ public class ConsoleLogCaptureTool : EditorWindow
             if (autoCaptureOnPlay && !isCapturing)
             {
                 StartCapture();
-                Debug.Log("[日志捕获工具] 自动开始捕获（进入运行模式）");
+                Z_Logger.Log("[日志捕获工具] 自动开始捕获（进入运行模式）");
             }
         }
         else if (state == PlayModeStateChange.ExitingPlayMode)
@@ -216,7 +216,7 @@ public class ConsoleLogCaptureTool : EditorWindow
             if (isCapturing)
             {
                 StopCapture();
-                Debug.Log("[日志捕获工具] 自动停止捕获（退出运行模式）");
+                Z_Logger.Log("[日志捕获工具] 自动停止捕获（退出运行模式）");
             }
         }
     }
@@ -317,7 +317,7 @@ public class ConsoleLogCaptureTool : EditorWindow
                     }
                     isRenaming = false;
                     SaveAllData();
-                    Debug.Log($"[日志捕获工具] 已删除分组: {groupName}");
+                    Z_Logger.Log($"[日志捕获工具] 已删除分组: {groupName}");
 
                     if (isCapturing)
                     {
@@ -384,7 +384,7 @@ public class ConsoleLogCaptureTool : EditorWindow
                         currentGroup.groupName = renameTempName;
                         isRenaming = false;
                         SaveAllData();
-                        Debug.Log($"[日志捕获工具] 分组已重命名为: {renameTempName}");
+                        Z_Logger.Log($"[日志捕获工具] 分组已重命名为: {renameTempName}");
                     }
                     else if (keywordGroups.Any(g => g.groupName == renameTempName && g != currentGroup))
                     {
@@ -680,14 +680,14 @@ public class ConsoleLogCaptureTool : EditorWindow
         filteredLogs.Clear();
         Application.logMessageReceived += OnLogMessageReceived;
         string groupName = currentGroup.isReadOnly ? $"{currentGroup.groupName} (固定捕获)" : currentGroup.groupName;
-        Debug.Log($"日志捕获已开始... (分组: {groupName})");
+        Z_Logger.Log($"日志捕获已开始... (分组: {groupName})");
     }
 
     private void StopCapture()
     {
         isCapturing = false;
         Application.logMessageReceived -= OnLogMessageReceived;
-        Debug.Log("日志捕获已停止");
+        Z_Logger.Log("日志捕获已停止");
     }
 
     private void ClearLogs()
@@ -698,7 +698,7 @@ public class ConsoleLogCaptureTool : EditorWindow
 
     private void RefreshFilteredLogs()
     {
-        Debug.Log($"[日志捕获工具] 切换分组到: {keywordGroups[selectedGroupIndex].groupName}");
+        Z_Logger.Log($"[日志捕获工具] 切换分组到: {keywordGroups[selectedGroupIndex].groupName}");
     }
 
     private void OnLogMessageReceived(string condition, string stackTrace, LogType type)
@@ -963,7 +963,7 @@ public class ConsoleLogCaptureTool : EditorWindow
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[日志捕获工具] 加载分组数据失败: {e.Message}");
+                Z_Logger.LogWarning($"[日志捕获工具] 加载分组数据失败: {e.Message}");
             }
         }
     }

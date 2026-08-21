@@ -40,7 +40,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
     {
         if (_isInitialized)
         {
-            Debug.Log("[PlayerDataManager] 已经初始化完成，跳过");
+            Z_Logger.Log("[PlayerDataManager] 已经初始化完成，跳过");
             return;
         }
 
@@ -52,7 +52,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         _isInitialized = true;
         _isReady = true;
         DontDestroyOnLoad(gameObject);
-        Debug.Log("[PlayerDataManager] 初始化完成");
+        Z_Logger.Log("[PlayerDataManager] 初始化完成");
     }
 
     private void SubscribeToNetServerInitialization()
@@ -64,7 +64,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             // 如果 NetServerManager 已经初始化完成且事件已注册，直接同步
             if (NetServerManager.Instance.IsInitialized)
             {
-                Debug.Log("[PlayerDataManager] NetServerManager 已初始化，直接同步数据");
+                Z_Logger.Log("[PlayerDataManager] NetServerManager 已初始化，直接同步数据");
                 SyncInventoryFromServer();
                 SyncGoldFromServer();
             }
@@ -73,12 +73,12 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
                 // 订阅初始化完成事件
                 NetServerManager.Instance.OnInitializationComplete += OnNetServerInitialized;
                 _hasSubscribedToNetServer = true;
-                Debug.Log("[PlayerDataManager] 已订阅 NetServerManager 初始化完成事件，等待初始化...");
+                Z_Logger.Log("[PlayerDataManager] 已订阅 NetServerManager 初始化完成事件，等待初始化...");
             }
         }
         else
         {
-            Debug.LogWarning("[PlayerDataManager] NetServerManager 实例不存在，延迟订阅");
+            Z_Logger.LogWarning("[PlayerDataManager] NetServerManager 实例不存在，延迟订阅");
             _isWaitingForNetServer = true;
             StartCoroutine(DelayedSubscribe());
         }
@@ -97,7 +97,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
                 if (NetServerManager.Instance.IsInitialized)
                 {
-                    Debug.Log("[PlayerDataManager] NetServerManager 已初始化，同步数据");
+                    Z_Logger.Log("[PlayerDataManager] NetServerManager 已初始化，同步数据");
                     SyncInventoryFromServer();
                     SyncGoldFromServer();
                 }
@@ -105,7 +105,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
                 {
                     NetServerManager.Instance.OnInitializationComplete += OnNetServerInitialized;
                     _hasSubscribedToNetServer = true;
-                    Debug.Log("[PlayerDataManager] 延迟订阅 NetServerManager 初始化完成事件成功");
+                    Z_Logger.Log("[PlayerDataManager] 延迟订阅 NetServerManager 初始化完成事件成功");
                 }
                 yield break;
             }
@@ -113,7 +113,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         }
 
         _isWaitingForNetServer = false;
-        Debug.LogWarning("[PlayerDataManager] 无法找到 NetServerManager 实例，数据同步可能失败");
+        Z_Logger.LogWarning("[PlayerDataManager] 无法找到 NetServerManager 实例，数据同步可能失败");
     }
 
     private void RegisterEvents()
@@ -145,12 +145,12 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         // ✅ 注册UI数据更新请求事件
         CommunicateEvent.Register("UI_RequestUpdateAllData", OnRequestUpdateAllData);
 
-        Debug.Log("[PlayerDataManager] 事件注册完成");
+        Z_Logger.Log("[PlayerDataManager] 事件注册完成");
     }
 
     private void OnNetServerInitialized()
     {
-        Debug.Log("[PlayerDataManager] NetServerManager 初始化完成，同步数据");
+        Z_Logger.Log("[PlayerDataManager] NetServerManager 初始化完成，同步数据");
         SyncInventoryFromServer();
         SyncGoldFromServer();
     }
@@ -160,7 +160,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         if (data.TryGetValue("gold", out object goldObj))
         {
             gold = System.Convert.ToInt32(goldObj);
-            Debug.LogFormat("[PlayerDataManager] 金币变化: {0}", gold);
+            Z_Logger.LogFormat("[PlayerDataManager] 金币变化: {0}", gold);
             UpdateGoldUI();
         }
     }
@@ -182,12 +182,12 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         {
             if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
             {
-                Debug.LogWarning("[PlayerDataManager] NetServerManager 未初始化，跳过金币同步");
+                Z_Logger.LogWarning("[PlayerDataManager] NetServerManager 未初始化，跳过金币同步");
                 return;
             }
 
             gold = CommunicateEvent.Request<int, int>("VIEW_EVENT_GET_GOLD", 0);
-            Debug.LogFormat("[PlayerDataManager] 同步金币: {0}", gold);
+            Z_Logger.LogFormat("[PlayerDataManager] 同步金币: {0}", gold);
             UpdateGoldUI();
 
             // ✅ 通知UI更新金币
@@ -195,7 +195,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"[PlayerDataManager] 同步金币失败: {ex.Message}");
+            Z_Logger.LogError($"[PlayerDataManager] 同步金币失败: {ex.Message}");
         }
     }
 
@@ -203,7 +203,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
     {
         if (_isSyncing)
         {
-            Debug.Log("[PlayerDataManager] 正在同步中，跳过重复调用");
+            Z_Logger.Log("[PlayerDataManager] 正在同步中，跳过重复调用");
             return;
         }
 
@@ -211,11 +211,11 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
         try
         {
-            Debug.Log("[PlayerDataManager] ===== 开始同步背包数据 =====");
+            Z_Logger.Log("[PlayerDataManager] ===== 开始同步背包数据 =====");
 
             if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
             {
-                Debug.LogWarning("[PlayerDataManager] NetServerManager 未初始化，跳过同步");
+                Z_Logger.LogWarning("[PlayerDataManager] NetServerManager 未初始化，跳过同步");
                 _isSyncing = false;
                 return;
             }
@@ -225,12 +225,12 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             if (inventory != null)
             {
                 playerInventory = inventory;
-                Debug.Log($"[PlayerDataManager] 背包数据同步完成，物品数: {playerInventory?.Count ?? 0}");
+                Z_Logger.Log($"[PlayerDataManager] 背包数据同步完成，物品数: {playerInventory?.Count ?? 0}");
             }
 
             // 2. 获取服务器最新的鱼篓数据（数量汇总）
             var serverFishInventory = CommunicateEvent.Request<int, Dictionary<int, int>>("VIEW_EVENT_GET_FISH_INVENTORY", 0);
-            Debug.Log($"[PlayerDataManager] 服务器鱼篓数据: {(serverFishInventory != null ? serverFishInventory.Count : 0)} 种物品");
+            Z_Logger.Log($"[PlayerDataManager] 服务器鱼篓数据: {(serverFishInventory != null ? serverFishInventory.Count : 0)} 种物品");
 
             // ✅ 关键修复：同步鱼详情数据
             // 通过 VIEW_EVENT_GET_FISH_DETAIL_DATA 从 NetServerManager 获取详情数据
@@ -238,7 +238,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             if (serverFishDetailData != null)
             {
                 fishDetailData = serverFishDetailData;
-                Debug.Log($"[PlayerDataManager] 鱼详情数据同步完成: {fishDetailData.Count} 种鱼");
+                Z_Logger.Log($"[PlayerDataManager] 鱼详情数据同步完成: {fishDetailData.Count} 种鱼");
             }
             else
             {
@@ -266,17 +266,17 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
             // 4. 同步鱼篓容量
             fishBagCapacity = CommunicateEvent.Request<int, int>("VIEW_EVENT_GET_FISH_BAG_CAPACITY", 0);
-            Debug.Log($"[PlayerDataManager] 鱼篓容量: {fishBagCapacity}");
+            Z_Logger.Log($"[PlayerDataManager] 鱼篓容量: {fishBagCapacity}");
 
             // 5. 打印最终数据
-            Debug.Log($"[PlayerDataManager] 最终鱼篓数据: {fishInventory.Count} 种物品");
+            Z_Logger.Log($"[PlayerDataManager] 最终鱼篓数据: {fishInventory.Count} 种物品");
             int totalCount = 0;
             foreach (var kvp in fishInventory)
             {
                 totalCount += kvp.Value;
-                Debug.Log($"   物品ID: {kvp.Key}, 数量: {kvp.Value}");
+                Z_Logger.Log($"   物品ID: {kvp.Key}, 数量: {kvp.Value}");
             }
-            Debug.Log($"   鱼篓总数量: {totalCount}/{fishBagCapacity}");
+            Z_Logger.Log($"   鱼篓总数量: {totalCount}/{fishBagCapacity}");
 
             PrintAllData();
             CheckAndUpdateAnimationState();
@@ -288,7 +288,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             if (GameUIManager.Instance?.fishBagView != null && GameUIManager.Instance.fishBagView.gameObject.activeSelf)
             {
                 GameUIManager.Instance.fishBagView.RefreshItems();
-                Debug.Log("[PlayerDataManager] 已刷新鱼篓UI");
+                Z_Logger.Log("[PlayerDataManager] 已刷新鱼篓UI");
             }
 
             if (GameUIManager.Instance?.bagView != null && GameUIManager.Instance.bagView.gameObject.activeSelf)
@@ -298,20 +298,20 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
                 if (bagInventory != null && itemDataMap != null)
                 {
                     GameUIManager.Instance.bagView.UpdateBagItems(bagInventory, itemDataMap);
-                    Debug.Log("[PlayerDataManager] 已刷新背包UI");
+                    Z_Logger.Log("[PlayerDataManager] 已刷新背包UI");
                 }
             }
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"[PlayerDataManager] 同步背包数据异常: {ex.Message}\n{ex.StackTrace}");
+            Z_Logger.LogError($"[PlayerDataManager] 同步背包数据异常: {ex.Message}\n{ex.StackTrace}");
         }
         finally
         {
             _isSyncing = false;
         }
 
-        Debug.Log("[PlayerDataManager] ===== 背包数据同步完成 =====");
+        Z_Logger.Log("[PlayerDataManager] ===== 背包数据同步完成 =====");
     }
 
     /// <summary>
@@ -326,13 +326,13 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
     {
         if (newInventory == null)
         {
-            Debug.LogWarning("[PlayerDataManager] UpdateInventoryFromServer: 新背包数据为空，跳过");
+            Z_Logger.LogWarning("[PlayerDataManager] UpdateInventoryFromServer: 新背包数据为空，跳过");
             return;
         }
 
         // ✅ 先更新数据
         playerInventory = new Dictionary<int, int>(newInventory);
-        Debug.Log($"[PlayerDataManager] 从服务器响应更新背包数据，物品数: {playerInventory.Count}");
+        Z_Logger.Log($"[PlayerDataManager] 从服务器响应更新背包数据，物品数: {playerInventory.Count}");
 
         CheckAndUpdateAnimationState();
 
@@ -350,7 +350,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             if (itemDataMap != null)
             {
                 GameUIManager.Instance.bagView.UpdateBagItems(playerInventory, itemDataMap);
-                Debug.Log("[PlayerDataManager] 已刷新背包UI");
+                Z_Logger.Log("[PlayerDataManager] 已刷新背包UI");
             }
         }
     }
@@ -359,13 +359,13 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
     {
         if (NetServerManager.Instance == null)
         {
-            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - NetServerManager 为空，跳过");
+            Z_Logger.Log("[PlayerDataManager] CheckAndUpdateAnimationState - NetServerManager 为空，跳过");
             return;
         }
 
         if (PlayerAniManager.Instance == null)
         {
-            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - PlayerAniManager 不存在，跳过动画更新（当前场景可能不是 GameScene）");
+            Z_Logger.Log("[PlayerDataManager] CheckAndUpdateAnimationState - PlayerAniManager 不存在，跳过动画更新（当前场景可能不是 GameScene）");
             return;
         }
 
@@ -373,12 +373,12 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         {
             if (PlayerAniManager.Instance.CurrentPlayerState == PlayerAniManager.PlayerAnimState.Reel)
             {
-                Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 收杆动画已结束，准备切换到目标动画");
+                Z_Logger.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 收杆动画已结束，准备切换到目标动画");
             }
         }
         catch
         {
-            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - PlayerAniManager 状态访问失败，跳过动画更新");
+            Z_Logger.Log("[PlayerDataManager] CheckAndUpdateAnimationState - PlayerAniManager 状态访问失败，跳过动画更新");
             return;
         }
 
@@ -388,12 +388,12 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
         if (isFull)
         {
-            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 鱼篓已满，请求播放Lazy动画");
+            Z_Logger.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 鱼篓已满，请求播放Lazy动画");
             NetServerManager.Instance.NotifyPlayLazyAnimation();
         }
         else
         {
-            Debug.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 鱼篓未满，请求播放Idle动画");
+            Z_Logger.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 鱼篓未满，请求播放Idle动画");
             NetServerManager.Instance.NotifyPlayIdleAnimation();
         }
     }
@@ -430,7 +430,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
             }
         }
 
-        Debug.Log(logBuilder.ToString());
+        Z_Logger.Log(logBuilder.ToString());
     }
 
     public void AddItem(int itemId, int quantity)
@@ -555,7 +555,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
                         collectionLevel = kvp.Value.collectionLevel
                     };
                 }
-                Debug.Log($"[PlayerDataManager] 图鉴数据同步完成: {collectionData.Count} 种鱼");
+                Z_Logger.Log($"[PlayerDataManager] 图鉴数据同步完成: {collectionData.Count} 种鱼");
             }
         }
     }
@@ -669,33 +669,33 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
     private void OnSyncUnlockedCharacters(List<int> characterIds)
     {
-        Debug.Log($"[PlayerDataManager] 收到人物解锁数据同步，共 {characterIds?.Count ?? 0} 个");
+        Z_Logger.Log($"[PlayerDataManager] 收到人物解锁数据同步，共 {characterIds?.Count ?? 0} 个");
     }
 
     private void OnSyncUnlockedEquipment(List<int> equipmentIds)
     {
-        Debug.Log($"[PlayerDataManager] 收到装备解锁数据同步，共 {equipmentIds?.Count ?? 0} 个");
+        Z_Logger.Log($"[PlayerDataManager] 收到装备解锁数据同步，共 {equipmentIds?.Count ?? 0} 个");
     }
 
     private void OnMallDataChanged(Dictionary<int, MallItemData> mallItems)
     {
-        Debug.Log($"[PlayerDataManager] 收到商城数据同步，共 {mallItems?.Count ?? 0} 个物品");
+        Z_Logger.Log($"[PlayerDataManager] 收到商城数据同步，共 {mallItems?.Count ?? 0} 个物品");
     }
 
     private void OnCharacterDataChanged((int, int, int) data)
     {
-        Debug.Log($"[PlayerDataManager] 收到人物数据变化: 角色ID={data.Item1}, 等级={data.Item2}, 经验={data.Item3}");
+        Z_Logger.Log($"[PlayerDataManager] 收到人物数据变化: 角色ID={data.Item1}, 等级={data.Item2}, 经验={data.Item3}");
     }
 
     private void OnBagDataUpdated(Dictionary<int, int> inventory)
     {
-        Debug.Log($"[PlayerDataManager] 收到背包数据更新，共 {inventory?.Count ?? 0} 个物品");
+        Z_Logger.Log($"[PlayerDataManager] 收到背包数据更新，共 {inventory?.Count ?? 0} 个物品");
         SyncInventoryFromServer();
     }
 
     private void OnFishBagDataUpdated()
     {
-        Debug.Log("[PlayerDataManager] 收到鱼篓数据更新事件");
+        Z_Logger.Log("[PlayerDataManager] 收到鱼篓数据更新事件");
         SyncInventoryFromServer();
     }
     /// <summary>
@@ -703,7 +703,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
     /// </summary>
     private void OnRequestUpdateAllData()
     {
-        Debug.Log("[PlayerDataManager] 收到UI数据更新请求");
+        Z_Logger.Log("[PlayerDataManager] 收到UI数据更新请求");
 
         // 同步最新数据
         SyncInventoryFromServer();
@@ -720,7 +720,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
     {
         if (GameUIManager.Instance == null)
         {
-            Debug.LogWarning("[PlayerDataManager] GameUIManager 不可用");
+            Z_Logger.LogWarning("[PlayerDataManager] GameUIManager 不可用");
             return;
         }
 
@@ -743,7 +743,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         }
         GameUIManager.Instance.UpdateBaitCountDisplay(baitCount);
 
-        Debug.Log($"[PlayerDataManager] UI数据更新完成 - 金币:{gold}, 鱼篓:{totalCount}/{fishBagCapacity}, 窝料:{baitCount}");
+        Z_Logger.Log($"[PlayerDataManager] UI数据更新完成 - 金币:{gold}, 鱼篓:{totalCount}/{fishBagCapacity}, 窝料:{baitCount}");
     }
 
     private void OnDestroy()
@@ -752,7 +752,7 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         {
             NetServerManager.Instance.OnInitializationComplete -= OnNetServerInitialized;
             _hasSubscribedToNetServer = false;
-            Debug.Log("[PlayerDataManager] 已取消订阅 NetServerManager 初始化完成事件");
+            Z_Logger.Log("[PlayerDataManager] 已取消订阅 NetServerManager 初始化完成事件");
         }
     }
 }

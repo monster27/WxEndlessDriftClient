@@ -99,7 +99,7 @@ public static class CompleteFishingSkillConfigExtensions
             var (textAsset, handle) = await AssetManager.LoadFromAddressablesAsync<TextAsset>(path);
             if (textAsset == null)
             {
-                Debug.LogError($"[CompleteFishingSkillConfig] 加载失败: {path}");
+                Z_Logger.LogError($"[CompleteFishingSkillConfig] 加载失败: {path}");
                 return null;
             }
 
@@ -108,11 +108,11 @@ public static class CompleteFishingSkillConfigExtensions
 
             if (_cachedConfig == null)
             {
-                Debug.LogError($"[CompleteFishingSkillConfig] 解析失败: {path}");
+                Z_Logger.LogError($"[CompleteFishingSkillConfig] 解析失败: {path}");
                 return null;
             }
 
-            Debug.Log($"[CompleteFishingSkillConfig] 加载成功，路径: {path}，共 {_cachedConfig.items?.Count ?? 0} 个组件");
+            Z_Logger.Log($"[CompleteFishingSkillConfig] 加载成功，路径: {path}，共 {_cachedConfig.items?.Count ?? 0} 个组件");
 
             foreach (var cb in _pendingCallbacks)
             {

@@ -16,7 +16,7 @@ public static class ServerUrls
     public static void SetLocalMode(bool isLocal)
     {
         _isLocalMode = isLocal;
-        //Debug.Log($"[ServerUrls] 切换到{(isLocal ? "本地" : "远程")}模式: {GetCurrentBaseUrl()}");
+        //Z_Logger.Log($"[ServerUrls] 切换到{(isLocal ? "本地" : "远程")}模式: {GetCurrentBaseUrl()}");
     }
 
     private static string GetCurrentBaseUrl()

@@ -32,13 +32,13 @@ public class ServerManager : SingletonMono<ServerManager>
     {
         RegisterEvents();
         RegisterServerEvents();
-        Debug.Log("<color=green>[ServerManager] 单机服务器管理器初始化完成</color>");
+        Z_Logger.Log("<color=green>[ServerManager] 单机服务器管理器初始化完成</color>");
     }
 
     public void SetEnabled(bool enabled)
     {
         _isEnabled = enabled;
-        Debug.Log($"<color=orange>[ServerManager] 设置启用状态: {enabled}</color>");
+        Z_Logger.Log($"<color=orange>[ServerManager] 设置启用状态: {enabled}</color>");
     }
 
     private void RegisterEvents()
@@ -64,21 +64,21 @@ public class ServerManager : SingletonMono<ServerManager>
     private void OnTimeSlotChanged(Dictionary<string, object> data)
     {
         if (!_isEnabled) return;
-        Debug.Log("[ServerManager] 转发时间槽变化事件到客户端");
+        Z_Logger.Log("[ServerManager] 转发时间槽变化事件到客户端");
         CommunicateEvent.Modify(CommunicateEvent.EVENT_CLIENT_TIME_SLOT_CHANGED, data);
     }
 
     private void OnWeatherChanged(Dictionary<string, object> data)
     {
         if (!_isEnabled) return;
-        Debug.Log("[ServerManager] 转发天气变化事件到客户端");
+        Z_Logger.Log("[ServerManager] 转发天气变化事件到客户端");
         CommunicateEvent.Modify(CommunicateEvent.EVENT_CLIENT_WEATHER_CHANGED, data);
     }
 
     private void OnGoldChanged(Dictionary<string, object> data)
     {
         if (!_isEnabled) return;
-        Debug.Log("[ServerManager] 转发金币变化事件到客户端");
+        Z_Logger.Log("[ServerManager] 转发金币变化事件到客户端");
         CommunicateEvent.Modify(CommunicateEvent.EVENT_CLIENT_GOLD_CHANGED, data);
     }
 
@@ -86,12 +86,12 @@ public class ServerManager : SingletonMono<ServerManager>
     {
         if (!_isEnabled) return;
 
-        Debug.Log("[ServerManager] 收到金币同步请求");
+        Z_Logger.Log("[ServerManager] 收到金币同步请求");
 
         if (NetServerManager.Instance != null)
         {
             int currentGold = NetServerManager.Instance.GetPlayerGold();
-            Debug.Log($"[ServerManager] 当前金币: {currentGold}");
+            Z_Logger.Log($"[ServerManager] 当前金币: {currentGold}");
 
             var goldData = new Dictionary<string, object>
             {
@@ -107,43 +107,43 @@ public class ServerManager : SingletonMono<ServerManager>
 
     public void NotifyPlayIdleAnimation()
     {
-        Debug.Log("[ServerManager] 通知播放Idle动画");
+        Z_Logger.Log("[ServerManager] 通知播放Idle动画");
         PlayerAniManager.Instance?.PlayIdleAnimation();
     }
 
     public void NotifyPlayLazyAnimation()
     {
-        Debug.Log("[ServerManager] 通知播放Lazy动画");
+        Z_Logger.Log("[ServerManager] 通知播放Lazy动画");
         PlayerAniManager.Instance?.PlayLazyAnimation();
     }
 
     public void NotifyPlayReelAnimation(float struggleTime, System.Action onComplete)
     {
-        Debug.Log($"[ServerManager] 通知播放Reel动画，挣扎时间: {struggleTime}");
+        Z_Logger.Log($"[ServerManager] 通知播放Reel动画，挣扎时间: {struggleTime}");
         PlayerAniManager.Instance?.PlayReelAnimation(struggleTime, onComplete);
     }
 
     public void NotifySyncInventoryFromServer()
     {
-        Debug.Log("[ServerManager] 通知同步背包数据");
+        Z_Logger.Log("[ServerManager] 通知同步背包数据");
         PlayerDataManager.Instance?.SyncInventoryFromServer();
     }
 
     public void NotifyAddFish(int fishId, int quantity)
     {
-        Debug.Log($"[ServerManager] 通知添加鱼: fishId={fishId}, quantity={quantity}");
+        Z_Logger.Log($"[ServerManager] 通知添加鱼: fishId={fishId}, quantity={quantity}");
         CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_FISH_CAUGHT, (fishId, quantity));
     }
 
     public void NotifyRefreshUI()
     {
-        Debug.Log("[ServerManager] 通知刷新UI");
+        Z_Logger.Log("[ServerManager] 通知刷新UI");
         PlayerDataManager.Instance?.RefreshUI();
     }
 
     public void NotifyShowCatchResult(string itemName, float weight, Sprite icon)
     {
-        Debug.Log($"[ServerManager] 通知显示捕获结果: {itemName}");
+        Z_Logger.Log($"[ServerManager] 通知显示捕获结果: {itemName}");
         GameUIManager.Instance?.ShowCatchResult(itemName, weight, icon);
     }
 
@@ -153,14 +153,14 @@ public class ServerManager : SingletonMono<ServerManager>
 
         if (result == null)
         {
-            Debug.LogError("[ServerManager] 收到空的钓鱼结果");
+            Z_Logger.LogError("[ServerManager] 收到空的钓鱼结果");
             return;
         }
 
-        Debug.LogFormat("<color=cyan>[ServerManager] 收到服务器钓鱼结果:</color>");
-        Debug.LogFormat("<color=cyan>  - 第一组数据(检测到): ID={0}</color>", result.detectedFishId);
-        Debug.LogFormat("<color=cyan>  - 第二组数据(实际): ID={0}, 是否垃圾={1}</color>", result.actualItemId, result.isTrash);
-        Debug.LogFormat("<color=cyan>  - 挣扎时间: {0}秒</color>", result.struggleTime);
+        Z_Logger.LogFormat("<color=cyan>[ServerManager] 收到服务器钓鱼结果:</color>");
+        Z_Logger.LogFormat("<color=cyan>  - 第一组数据(检测到): ID={0}</color>", result.detectedFishId);
+        Z_Logger.LogFormat("<color=cyan>  - 第二组数据(实际): ID={0}, 是否垃圾={1}</color>", result.actualItemId, result.isTrash);
+        Z_Logger.LogFormat("<color=cyan>  - 挣扎时间: {0}秒</color>", result.struggleTime);
 
         if (PlayerAniManager.Instance != null)
         {
@@ -172,7 +172,7 @@ public class ServerManager : SingletonMono<ServerManager>
                 struggleTime,
                 result.isTrash,
                 () => {
-                    Debug.Log("[ServerManager] 拉杆动画结束，开始播放MainTile动画并更新鱼篓数据");
+                    Z_Logger.Log("[ServerManager] 拉杆动画结束，开始播放MainTile动画并更新鱼篓数据");
 
                     ShowCatchResult(result.actualItemId);
 
@@ -182,7 +182,7 @@ public class ServerManager : SingletonMono<ServerManager>
                         PlayerDataManager.Instance.RefreshUI();
                     }
 
-                    Debug.Log("[ServerManager] 拉杆动画结束，等待 CheckAndUpdateAnimationState 决定动画");
+                    Z_Logger.Log("[ServerManager] 拉杆动画结束，等待 CheckAndUpdateAnimationState 决定动画");
                 }
             );
         }
@@ -200,7 +200,7 @@ public class ServerManager : SingletonMono<ServerManager>
             int fishId = System.Convert.ToInt32(fishIdObj);
             float struggleTime = System.Convert.ToSingle(struggleTimeObj);
 
-            Debug.LogFormat("<color=cyan>[ServerManager] 收到钓鱼结果: 鱼类ID={0}, 最终物品ID={1}, 挣扎时间={2}秒</color>", fishId, finalId, struggleTime);
+            Z_Logger.LogFormat("<color=cyan>[ServerManager] 收到钓鱼结果: 鱼类ID={0}, 最终物品ID={1}, 挣扎时间={2}秒</color>", fishId, finalId, struggleTime);
 
             ProcessFishingResult(fishId, finalId, struggleTime);
         }
@@ -292,7 +292,7 @@ public class ServerManager : SingletonMono<ServerManager>
             { "type", "heartbeat" }
         };
 
-        Debug.Log($"[ServerManager] 发送心跳包: clientTime={clientTime}");
+        Z_Logger.Log($"[ServerManager] 发送心跳包: clientTime={clientTime}");
     }
 
     private void OnHeartbeatResponse(Dictionary<string, object> data)
@@ -304,7 +304,7 @@ public class ServerManager : SingletonMono<ServerManager>
             lastServerTime = System.Convert.ToInt64(serverTimeObj);
             isConnected = true;
             missedHeartbeats = 0;
-            Debug.Log($"[ServerManager] 收到心跳响应: serverTime={lastServerTime}, isConnected={isConnected}");
+            Z_Logger.Log($"[ServerManager] 收到心跳响应: serverTime={lastServerTime}, isConnected={isConnected}");
         }
     }
 

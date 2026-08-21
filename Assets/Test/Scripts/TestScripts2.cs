@@ -8,7 +8,7 @@ public class TestScripts2 : MonoBehaviour
     void Awake()
     {
         instance = this;
-        Debug.Log("TestScripts2 " + gameObject.name);
+        Z_Logger.Log("TestScripts2 " + gameObject.name);
     }
 
     void Update()

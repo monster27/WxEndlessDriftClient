@@ -103,7 +103,7 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogWarning($"[{LOG_TAG}] aniCtrl.Initialize() 失败: {ex.Message}");
+                    Z_Logger.LogWarning($"[{LOG_TAG}] aniCtrl.Initialize() 失败: {ex.Message}");
                     isInitializing = false;
                     StartCoroutine(DelayedInit());
                     return;
@@ -129,12 +129,12 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
             CheckFishBagStateAndPlayAnimation();
             ExecutePendingActions();
 
-            Debug.Log($"[{LOG_TAG}] ✅ 初始化完成");
+            Z_Logger.Log($"[{LOG_TAG}] ✅ 初始化完成");
         }
         catch (Exception e)
         {
             isInitializing = false;
-            Debug.LogError($"[{LOG_TAG}] ❌ Init() 异常: {e.Message}\n{e.StackTrace}");
+            Z_Logger.LogError($"[{LOG_TAG}] ❌ Init() 异常: {e.Message}\n{e.StackTrace}");
             StartCoroutine(DelayedInit());
         }
     }
@@ -234,18 +234,18 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
                     CheckFishBagStateAndPlayAnimation();
                     ExecutePendingActions();
 
-                    Debug.Log($"[{LOG_TAG}] ✅ 延迟初始化完成 (第 {retryCount} 次尝试)");
+                    Z_Logger.Log($"[{LOG_TAG}] ✅ 延迟初始化完成 (第 {retryCount} 次尝试)");
                     yield break;
                 }
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[{LOG_TAG}] 延迟初始化第 {retryCount} 次失败: {e.Message}");
+                Z_Logger.LogWarning($"[{LOG_TAG}] 延迟初始化第 {retryCount} 次失败: {e.Message}");
             }
         }
 
         isInitializing = false;
-        Debug.LogError($"[{LOG_TAG}] ❌ 延迟初始化超时，请检查 SceneMatCtrl 是否存在于场景中");
+        Z_Logger.LogError($"[{LOG_TAG}] ❌ 延迟初始化超时，请检查 SceneMatCtrl 是否存在于场景中");
     }
 
     private IEnumerator DelayedPlayIdle()
@@ -264,14 +264,14 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
     {
         if (LoadDataManager.Instance == null)
         {
-            Debug.LogWarning($"[{LOG_TAG}] LoadDataManager 未初始化");
+            Z_Logger.LogWarning($"[{LOG_TAG}] LoadDataManager 未初始化");
             return;
         }
 
         var characterConfigs = LoadDataManager.Instance.characters;
         if (characterConfigs == null || characterConfigs.Count == 0)
         {
-            Debug.LogWarning($"[{LOG_TAG}] 没有人物配置数据");
+            Z_Logger.LogWarning($"[{LOG_TAG}] 没有人物配置数据");
             return;
         }
 
@@ -331,7 +331,7 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
         }
 
         characterAniDict[config.id] = aniData;
-        Debug.Log($"[{LOG_TAG}] 加载人物 {config.id} ({config.name}) 动画完成");
+        Z_Logger.Log($"[{LOG_TAG}] 加载人物 {config.id} ({config.name}) 动画完成");
     }
 
     private CharacterConfig GetCharacterConfigFromLoadData(int characterId)
@@ -442,7 +442,7 @@ public class PlayerAniManager : SingletonMonoFromScene<PlayerAniManager>
 
         if (targetTexture == null)
         {
-            Debug.LogWarning($"[{LOG_TAG}] 纹理为空，无法播放 {state}");
+            Z_Logger.LogWarning($"[{LOG_TAG}] 纹理为空，无法播放 {state}");
             return;
         }
 

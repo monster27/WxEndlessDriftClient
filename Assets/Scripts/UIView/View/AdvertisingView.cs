@@ -41,7 +41,7 @@ public class AdvertisingView : MonoBehaviour
 
     public void ShowAd(string info, Action onAction = null, Action onClose = null, string btnText = "确定", string skipText = "跳过")
     {
-        Debug.Log($"[AdvertisingView] ShowAd 开始 - info={info}, btnText={btnText}, skipText={skipText}");
+        Z_Logger.Log($"[AdvertisingView] ShowAd 开始 - info={info}, btnText={btnText}, skipText={skipText}");
         
         if (infoText != null)
         {
@@ -63,12 +63,12 @@ public class AdvertisingView : MonoBehaviour
         onCloseCallback = onClose;
 
         gameObject.SetActive(true);
-        Debug.Log($"[AdvertisingView] ShowAd 完成 - 界面已显示");
+        Z_Logger.Log($"[AdvertisingView] ShowAd 完成 - 界面已显示");
     }
 
     public void ShowAd(string info, Action<bool> onActionWithResult, Action onClose = null, string btnText = "确定", string skipText = "跳过")
     {
-        Debug.Log($"[AdvertisingView] ShowAd (带结果) 开始 - info={info}, btnText={btnText}, skipText={skipText}");
+        Z_Logger.Log($"[AdvertisingView] ShowAd (带结果) 开始 - info={info}, btnText={btnText}, skipText={skipText}");
         
         if (infoText != null)
         {
@@ -90,7 +90,7 @@ public class AdvertisingView : MonoBehaviour
         onCloseCallback = onClose;
 
         gameObject.SetActive(true);
-        Debug.Log($"[AdvertisingView] ShowAd (带结果) 完成 - 界面已显示");
+        Z_Logger.Log($"[AdvertisingView] ShowAd (带结果) 完成 - 界面已显示");
     }
 
     public void ShowAdWithUnlockSkill(string info, int skillId, string btnText = "看广告解锁")
@@ -105,27 +105,27 @@ public class AdvertisingView : MonoBehaviour
 
     private void OnMaskClick()
     {
-        Debug.Log("[AdvertisingView] OnMaskClick - 点击遮罩关闭");
+        Z_Logger.Log("[AdvertisingView] OnMaskClick - 点击遮罩关闭");
         onCloseCallback?.Invoke();
         Close();
     }
 
     private void OnCloseClick()
     {
-        Debug.Log("[AdvertisingView] OnCloseClick - 点击关闭按钮");
+        Z_Logger.Log("[AdvertisingView] OnCloseClick - 点击关闭按钮");
         onCloseCallback?.Invoke();
         Close();
     }
 
     private void OnActionClick()
     {
-        Debug.Log($"[AdvertisingView] OnActionClick - onActionCallback={onActionCallback != null}, onActionCallbackWithResult={onActionCallbackWithResult != null}");
+        Z_Logger.Log($"[AdvertisingView] OnActionClick - onActionCallback={onActionCallback != null}, onActionCallbackWithResult={onActionCallbackWithResult != null}");
         
         // 模拟广告播放结果（实际项目中应该调用广告SDK）
         // 80%成功率模拟
         bool adSuccess = UnityEngine.Random.value < 0.8f;
         
-        Debug.Log($"[AdvertisingView] OnActionClick - 广告播放模拟结果: {(adSuccess ? "成功" : "失败")}");
+        Z_Logger.Log($"[AdvertisingView] OnActionClick - 广告播放模拟结果: {(adSuccess ? "成功" : "失败")}");
         
         if (onActionCallback != null)
         {
@@ -141,21 +141,21 @@ public class AdvertisingView : MonoBehaviour
 
     private void OnSkipClick()
     {
-        Debug.Log($"[AdvertisingView] OnSkipClick - onCloseCallback={onCloseCallback != null}");
+        Z_Logger.Log($"[AdvertisingView] OnSkipClick - onCloseCallback={onCloseCallback != null}");
         onCloseCallback?.Invoke();
         Close();
     }
 
     private void OnUnlockSkillByAd(int skillId)
     {
-        Debug.Log($"[AdvertisingView] OnUnlockSkillByAd - skillId={skillId}, 准备触发事件 Skill_UnlockByAd");
+        Z_Logger.Log($"[AdvertisingView] OnUnlockSkillByAd - skillId={skillId}, 准备触发事件 Skill_UnlockByAd");
         CommunicateEvent.Modify("Skill_UnlockByAd", skillId);
-        Debug.Log($"[AdvertisingView] OnUnlockSkillByAd - 事件 Skill_UnlockByAd 已触发");
+        Z_Logger.Log($"[AdvertisingView] OnUnlockSkillByAd - 事件 Skill_UnlockByAd 已触发");
     }
 
     private void OnUpgradeSkillByAd(int skillId)
     {
-        Debug.Log($"[AdvertisingView] OnUpgradeSkillByAd - skillId={skillId}");
+        Z_Logger.Log($"[AdvertisingView] OnUpgradeSkillByAd - skillId={skillId}");
         
         if (NetServerManager.Instance != null)
         {
@@ -164,13 +164,13 @@ public class AdvertisingView : MonoBehaviour
             {
                 if (success)
                 {
-                    Debug.Log($"[AdvertisingView] 技能升级成功（广告）: skillId={skillId}");
+                    Z_Logger.Log($"[AdvertisingView] 技能升级成功（广告）: skillId={skillId}");
                     CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "升级成功！");
                     CommunicateEvent.Modify("Equipment_Refresh");
                 }
                 else
                 {
-                    Debug.LogWarning($"[AdvertisingView] 技能升级失败（广告）: skillId={skillId}");
+                    Z_Logger.LogWarning($"[AdvertisingView] 技能升级失败（广告）: skillId={skillId}");
                 }
             });
         }

@@ -180,7 +180,7 @@ public class ItemDataEditor : EditorWindow
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[物品编辑器] 读取鱼类岛屿失败: {e.Message}");
+                Z_Logger.LogWarning($"[物品编辑器] 读取鱼类岛屿失败: {e.Message}");
             }
         }
 
@@ -264,7 +264,7 @@ public class ItemDataEditor : EditorWindow
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"[物品编辑器] 读取鱼类数据失败: {e.Message}");
+                Z_Logger.LogWarning($"[物品编辑器] 读取鱼类数据失败: {e.Message}");
             }
         }
 
@@ -533,7 +533,7 @@ public class ItemDataEditor : EditorWindow
 
         if (!File.Exists(fullPath))
         {
-            Debug.LogError($"[物品编辑器] 文件不存在: {fullPath}");
+            Z_Logger.LogError($"[物品编辑器] 文件不存在: {fullPath}");
             items = new List<ItemData>();
             return;
         }
@@ -545,7 +545,7 @@ public class ItemDataEditor : EditorWindow
 
             if (wrapper == null || wrapper.items == null)
             {
-                Debug.LogError($"[物品编辑器] JSON文件解析失败！");
+                Z_Logger.LogError($"[物品编辑器] JSON文件解析失败！");
                 items = new List<ItemData>();
                 return;
             }
@@ -553,11 +553,11 @@ public class ItemDataEditor : EditorWindow
             items = wrapper.items;
             selectedIndex = -1;
 
-            Debug.Log($"[物品编辑器] 加载了 {items.Count} 条物品数据");
+            Z_Logger.Log($"[物品编辑器] 加载了 {items.Count} 条物品数据");
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[物品编辑器] 错误: {e.Message}");
+            Z_Logger.LogError($"[物品编辑器] 错误: {e.Message}");
             items = new List<ItemData>();
         }
         Repaint();
@@ -581,7 +581,7 @@ public class ItemDataEditor : EditorWindow
 
         File.WriteAllText(fullPath, json);
         AssetDatabase.Refresh();
-        Debug.Log($"[物品编辑器] 已保存 {items.Count} 条物品数据");
+        Z_Logger.Log($"[物品编辑器] 已保存 {items.Count} 条物品数据");
     }
 
     [System.Serializable]

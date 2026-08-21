@@ -83,7 +83,7 @@ public class MallItemDetailView : MonoBehaviour
             && PlayerDataManager.Instance.GetItemQuantity(itemId) > 0)
         {
             maxQuantity = 0;
-            Debug.Log($"[MallItemDetailView] 该物品为唯一物品且玩家已拥有，禁止购买: itemId={itemId}");
+            Z_Logger.Log($"[MallItemDetailView] 该物品为唯一物品且玩家已拥有，禁止购买: itemId={itemId}");
         }
 
         quantity = Mathf.Min(1, maxQuantity);
@@ -109,7 +109,7 @@ public class MallItemDetailView : MonoBehaviour
         maxQuantity = Mathf.Min(canAffordCount, stockLimitedCount);
         maxQuantity = Mathf.Max(0, maxQuantity);
 
-        Debug.Log($"[MallItemDetailView] 最大可购买数量: 金币={playerGold}, 单价={mallItemData.price}, 可负担={canAffordCount}, 库存={stockLimitedCount}, 最终={maxQuantity}");
+        Z_Logger.Log($"[MallItemDetailView] 最大可购买数量: 金币={playerGold}, 单价={mallItemData.price}, 可负担={canAffordCount}, 库存={stockLimitedCount}, 最终={maxQuantity}");
     }
 
     private void UpdateDisplay()
@@ -143,7 +143,7 @@ public class MallItemDetailView : MonoBehaviour
             quantitySlider.wholeNumbers = true;
             quantitySlider.value = quantity;
 
-            Debug.Log($"[MallItemDetailView] Slider设置: min=0, max={maxQuantity}, value={quantity}");
+            Z_Logger.Log($"[MallItemDetailView] Slider设置: min=0, max={maxQuantity}, value={quantity}");
         }
     }
 
@@ -157,7 +157,7 @@ public class MallItemDetailView : MonoBehaviour
 
     private void OnAddClick()
     {
-        Debug.Log("[MallItemDetailView] OnAddClick - 点击增加数量");
+        Z_Logger.Log("[MallItemDetailView] OnAddClick - 点击增加数量");
         if (quantity < maxQuantity)
         {
             quantity++;
@@ -171,7 +171,7 @@ public class MallItemDetailView : MonoBehaviour
 
     private void OnSubtractClick()
     {
-        Debug.Log("[MallItemDetailView] OnSubtractClick - 点击减少数量");
+        Z_Logger.Log("[MallItemDetailView] OnSubtractClick - 点击减少数量");
         if (quantity > 0)
         {
             quantity--;
@@ -197,37 +197,37 @@ public class MallItemDetailView : MonoBehaviour
 
     private void OnConfirmClick()
     {
-        Debug.Log("[MallItemDetailView] OnConfirmClick - 点击确认购买");
+        Z_Logger.Log("[MallItemDetailView] OnConfirmClick - 点击确认购买");
 
         if (itemData != null && itemData.isUnique && PlayerDataManager.Instance != null
             && PlayerDataManager.Instance.GetItemQuantity(itemId) > 0)
         {
             GameUIManager.ShowMessage("玩家已拥有");
-            Debug.LogWarning($"[MallItemDetailView] 唯一物品已拥有，购买被拦截: itemId={itemId}");
+            Z_Logger.LogWarning($"[MallItemDetailView] 唯一物品已拥有，购买被拦截: itemId={itemId}");
             return;
         }
 
         if (quantity <= 0)
         {
-            Debug.LogWarning("[MallItemDetailView] 购买数量必须大于0");
+            Z_Logger.LogWarning("[MallItemDetailView] 购买数量必须大于0");
             return;
         }
 
         CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_PURCHASE_MALL_ITEM, (itemId, quantity));
-        Debug.Log($"[MallItemDetailView] 已发送购买请求: itemId={itemId}, quantity={quantity}");
+        Z_Logger.Log($"[MallItemDetailView] 已发送购买请求: itemId={itemId}, quantity={quantity}");
         CommunicateEvent.Modify("Mall_PurchaseSuccess", itemId);
         CloseDetailView();
     }
 
     private void OnCancelClick()
     {
-        Debug.Log("[MallItemDetailView] OnCancelClick - 点击取消");
+        Z_Logger.Log("[MallItemDetailView] OnCancelClick - 点击取消");
         CloseDetailView();
     }
 
     private void OnMaskClick()
     {
-        Debug.Log("[MallItemDetailView] OnMaskClick - 点击遮罩关闭");
+        Z_Logger.Log("[MallItemDetailView] OnMaskClick - 点击遮罩关闭");
         CloseDetailView();
     }
 

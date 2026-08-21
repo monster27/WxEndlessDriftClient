@@ -96,7 +96,7 @@ public class InfoFishEquipView : MonoBehaviour
         int itemId = data.Item2;
         EquipmentSlotType currentSlotType = GetSlotType();
 
-        Debug.Log($"[InfoFishEquipView] OnEquipChanged - slotType={slotType}, itemId={itemId}, currentSlotType={currentSlotType}");
+        Z_Logger.Log($"[InfoFishEquipView] OnEquipChanged - slotType={slotType}, itemId={itemId}, currentSlotType={currentSlotType}");
 
         // ✅ 如果当前显示的装备类型被更改，刷新整个界面
         if ((int)currentSlotType == slotType)
@@ -169,11 +169,11 @@ public class InfoFishEquipView : MonoBehaviour
         {
             int gold = CommunicateEvent.Request<int, int>("VIEW_EVENT_GET_GOLD", 0);
             currentGold = gold;
-            Debug.Log($"[InfoFishEquipView] 同步金币: {currentGold}");
+            Z_Logger.Log($"[InfoFishEquipView] 同步金币: {currentGold}");
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"[InfoFishEquipView] 同步金币失败: {ex.Message}");
+            Z_Logger.LogError($"[InfoFishEquipView] 同步金币失败: {ex.Message}");
         }
     }
 
@@ -444,19 +444,19 @@ public class InfoFishEquipView : MonoBehaviour
 
     private void OnMaskClick()
     {
-        Debug.Log("[InfoFishEquipView] OnMaskClick - 点击遮罩返回");
+        Z_Logger.Log("[InfoFishEquipView] OnMaskClick - 点击遮罩返回");
         callback?.Invoke("Back", new object[] { currentType });
     }
 
     private void OnCloseClick()
     {
-        Debug.Log("[InfoFishEquipView] OnCloseClick - 点击关闭按钮返回");
+        Z_Logger.Log("[InfoFishEquipView] OnCloseClick - 点击关闭按钮返回");
         callback?.Invoke("Back", new object[] { currentType });
     }
 
     private void OnUpgradeClick()
     {
-        Debug.Log($"[InfoFishEquipView] OnUpgradeClick - currentEquipId={currentEquipId}");
+        Z_Logger.Log($"[InfoFishEquipView] OnUpgradeClick - currentEquipId={currentEquipId}");
 
         int level = GetEquipLevel();
         int cost = CalculateUpgradeCost(level);
@@ -465,7 +465,7 @@ public class InfoFishEquipView : MonoBehaviour
         if (currentGold < cost)
         {
             GameUIManager.ShowWarningMessage(LoadDataManager.Instance.GetEquipmentUIText("notEnoughGold"));
-            Debug.LogWarning($"[InfoFishEquipView] 金币不足, 当前: {currentGold}, 需要: {cost}");
+            Z_Logger.LogWarning($"[InfoFishEquipView] 金币不足, 当前: {currentGold}, 需要: {cost}");
             return;
         }
 
@@ -486,14 +486,14 @@ public class InfoFishEquipView : MonoBehaviour
             {
                 if (success)
                 {
-                    Debug.Log($"[InfoFishEquipView] 装备升级成功: {message}");
+                    Z_Logger.Log($"[InfoFishEquipView] 装备升级成功: {message}");
                     UpdateDisplay();
                     string successInfo = componentName != "未知组件" ? $"{componentName} 升级成功！" : "装备升级成功！";
                     CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
                 }
                 else
                 {
-                    Debug.LogWarning($"[InfoFishEquipView] 装备升级失败: {message}");
+                    Z_Logger.LogWarning($"[InfoFishEquipView] 装备升级失败: {message}");
                     string failMessage = string.IsNullOrEmpty(message) ? "装备升级失败！" : message;
                     GameUIManager.ShowWarningMessage(failMessage);
                 }
@@ -507,7 +507,7 @@ public class InfoFishEquipView : MonoBehaviour
 
     private void OnAdUpgradeClick()
     {
-        Debug.Log("[InfoFishEquipView] OnAdUpgradeClick - 点击看广告升级");
+        Z_Logger.Log("[InfoFishEquipView] OnAdUpgradeClick - 点击看广告升级");
         int level = GetEquipLevel();
 
         // 检查是否已经满级（看广告升级有限制）
@@ -522,7 +522,7 @@ public class InfoFishEquipView : MonoBehaviour
         string info = componentName != "未知组件" ? $"看广告升级装备: {componentName}" : "看广告升级装备";
         callback?.Invoke("OpenAd", new object[] { info, currentEquipId, "看广告升级", (System.Action)(() =>
         {
-            Debug.Log($"[InfoFishEquipView] 广告升级完成 - currentEquipId={currentEquipId}");
+            Z_Logger.Log($"[InfoFishEquipView] 广告升级完成 - currentEquipId={currentEquipId}");
             CommunicateEvent.Modify("Equip_UpgradeByAd", currentEquipId);
             UpdateDisplay();
 
@@ -545,12 +545,12 @@ public class InfoFishEquipView : MonoBehaviour
 
     private void OnUnlockClick()
     {
-        Debug.Log("[InfoFishEquipView] OnUnlockClick - 点击看广告解锁");
+        Z_Logger.Log("[InfoFishEquipView] OnUnlockClick - 点击看广告解锁");
         string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
         string info = componentName != "未知组件" ? $"看广告解锁装备: {componentName}" : "看广告解锁装备";
         callback?.Invoke("OpenAdWithResult", new object[] { info, currentEquipId, "看广告解锁", (System.Action<bool>)((bool success) =>
         {
-            Debug.Log($"[InfoFishEquipView] 广告解锁回调 - success={success}, currentEquipId={currentEquipId}");
+            Z_Logger.Log($"[InfoFishEquipView] 广告解锁回调 - success={success}, currentEquipId={currentEquipId}");
 
             if (success)
             {
@@ -583,7 +583,7 @@ public class InfoFishEquipView : MonoBehaviour
 
     private void OnWatchAdClick()
     {
-        Debug.Log($"[InfoFishEquipView] OnWatchAdClick - currentEquipId={currentEquipId}");
+        Z_Logger.Log($"[InfoFishEquipView] OnWatchAdClick - currentEquipId={currentEquipId}");
         string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
         string info = componentName != "未知组件" ? $"看广告获取装备: {componentName}" : "看广告获取装备";
         callback?.Invoke("OpenAd", new object[] { info, currentEquipId, "看广告获取", (System.Action)(() =>
@@ -610,7 +610,7 @@ public class InfoFishEquipView : MonoBehaviour
 
     private void OnEquipClick()
     {
-        Debug.Log($"[InfoFishEquipView] OnEquipClick - currentType={currentType}, currentEquipId={currentEquipId}");
+        Z_Logger.Log($"[InfoFishEquipView] OnEquipClick - currentType={currentType}, currentEquipId={currentEquipId}");
 
         EquipmentSlotType slotType = GetSlotType();
         string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
@@ -623,7 +623,7 @@ public class InfoFishEquipView : MonoBehaviour
             {
                 if (success)
                 {
-                    Debug.Log($"[InfoFishEquipView] 装备成功: {slotType} -> {currentEquipId}");
+                    Z_Logger.Log($"[InfoFishEquipView] 装备成功: {slotType} -> {currentEquipId}");
 
                     // ✅ 刷新显示
                     UpdateDisplay();
@@ -636,7 +636,7 @@ public class InfoFishEquipView : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning($"[InfoFishEquipView] 装备失败: {message}");
+                    Z_Logger.LogWarning($"[InfoFishEquipView] 装备失败: {message}");
                     string failMessage = string.IsNullOrEmpty(message) ? "装备失败！" : message;
                     GameUIManager.ShowWarningMessage(failMessage);
                 }

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using TMPro;
 
@@ -12,7 +12,7 @@ public class EnvMapAnimator : MonoBehaviour {
 
     void Awake()
     {
-        //Debug.Log("Awake() on Script called.");
+        //Z_Logger.Log("Awake() on Script called.");
         m_textMeshPro = GetComponent<TMP_Text>();
         m_material = m_textMeshPro.fontSharedMaterial;
     }

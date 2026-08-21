@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 //using SharedModels;
-using Logger = Utils.Logger;
+//using Z_Logger = Utils.Z_Logger;
 
 public partial class NetServerManager
 {
@@ -80,11 +80,11 @@ public partial class NetServerManager
                         }
                         yield break;
                     }
-                    Logger.LogWarning($"[NetServerManager] 增加窝料时间失败: {resp?.message ?? "未知错误"}");
+                    Z_Logger.LogWarning($"[NetServerManager] 增加窝料时间失败: {resp?.message ?? "未知错误"}");
                     GameUIManager.ShowMessage(resp?.message ?? "操作失败");
                     yield break;
                 }
-                catch (Exception ex) { Logger.LogError($"[NetServerManager] 解析响应失败: {ex.Message}"); }
+                catch (Exception ex) { Z_Logger.LogError($"[NetServerManager] 解析响应失败: {ex.Message}"); }
             }
         }
 
@@ -100,7 +100,7 @@ public partial class NetServerManager
 
             if (request.result != UnityWebRequest.Result.Success)
             {
-                Logger.LogError("[NetServerManager] 进入连续钓鱼模式请求失败: " + request.error);
+                Z_Logger.LogError("[NetServerManager] 进入连续钓鱼模式请求失败: " + request.error);
                 yield break;
             }
 
@@ -120,7 +120,7 @@ public partial class NetServerManager
                     GameUIManager.ShowMessage("窝料不足，无法进入连续钓鱼模式");
                 }
             }
-            catch (Exception ex) { Logger.LogError($"[NetServerManager] 解析响应失败: {ex.Message}"); }
+            catch (Exception ex) { Z_Logger.LogError($"[NetServerManager] 解析响应失败: {ex.Message}"); }
         }
     }
 
@@ -158,7 +158,7 @@ public partial class NetServerManager
         
         if (inventory != null && inventory.Count > 0)
         {
-            Logger.Log($"[NetServerManager] 使用服务器响应中的背包数据更新本地缓存，物品数: {inventory.Count}");
+            Z_Logger.Log($"[NetServerManager] 使用服务器响应中的背包数据更新本地缓存，物品数: {inventory.Count}");
             playerInventory.Clear();
             foreach (var kvp in inventory)
             {
@@ -169,7 +169,7 @@ public partial class NetServerManager
         }
         else
         {
-            Logger.LogWarning("[NetServerManager] 响应中未包含背包数据，回退到同步模式");
+            Z_Logger.LogWarning("[NetServerManager] 响应中未包含背包数据，回退到同步模式");
             PlayerDataManager.Instance?.SyncInventoryFromServer();
             CommunicateEvent.Modify("Bag_RefreshItems");
             CommunicateEvent.Modify("BaitCountChanged");

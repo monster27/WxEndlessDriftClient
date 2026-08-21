@@ -14,7 +14,7 @@ public class IslandDataJsonEditor : EditorWindow
 {
     // ========== 数据路径 ==========
     private const string RELATIVE_PATH = "Addressables/JsonData/Game/SceneTransData/mainTransData.json";
-    private const string FULL_PATH = "Assets/Resources/JsonData/Game/SceneTransData/mainTransData.json";
+    private const string FULL_PATH = "Assets/Addressables/JsonData/Game/SceneTransData/mainTransData.json";
 
     // ========== 数据引用 ==========
     private SceneDataWrapper currentData;
@@ -63,22 +63,22 @@ public class IslandDataJsonEditor : EditorWindow
                 if (currentData == null || currentData.scenes == null)
                 {
                     currentData = new SceneDataWrapper();
-                    Debug.LogWarning("[场景数据编辑器] JSON解析失败，创建新数据");
+                    Z_Logger.LogWarning("[场景数据编辑器] JSON解析失败，创建新数据");
                 }
                 else
                 {
-                    Debug.Log($"[场景数据编辑器] 加载成功，共 {currentData.scenes.Count} 个场景");
+                    Z_Logger.Log($"[场景数据编辑器] 加载成功，共 {currentData.scenes.Count} 个场景");
                 }
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"[场景数据编辑器] 加载失败: {e.Message}");
+                Z_Logger.LogError($"[场景数据编辑器] 加载失败: {e.Message}");
                 currentData = new SceneDataWrapper();
             }
         }
         else
         {
-            Debug.LogWarning($"[场景数据编辑器] 文件不存在: {fullPath}，创建新数据");
+            Z_Logger.LogWarning($"[场景数据编辑器] 文件不存在: {fullPath}，创建新数据");
             currentData = new SceneDataWrapper();
         }
 
@@ -584,7 +584,7 @@ public class IslandDataJsonEditor : EditorWindow
         File.WriteAllText(fullPath, json);
         AssetDatabase.Refresh();
 
-        Debug.Log($"[场景数据编辑器] 数据已保存到: {fullPath}");
+        Z_Logger.Log($"[场景数据编辑器] 数据已保存到: {fullPath}");
         AddLog($"💾 保存成功: {Path.GetFileName(fullPath)}");
     }
 }

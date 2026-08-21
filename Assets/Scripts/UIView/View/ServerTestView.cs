@@ -41,7 +41,7 @@ public class ServerTestView : MonoBehaviour
         {
             outputText.text = text;
         }
-        Debug.Log(text);
+        Z_Logger.Log(text);
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ public class ServerTestView : MonoBehaviour
     /// </summary>
     private void OnClickGetPlayerInfo()
     {
-        Debug.Log("[ServerTestView] OnClickGetPlayerInfo - 点击获取玩家信息");
+        Z_Logger.Log("[ServerTestView] OnClickGetPlayerInfo - 点击获取玩家信息");
         StartCoroutine(GetPlayerInfoCoroutine());
     }
 
@@ -184,7 +184,7 @@ public class ServerTestView : MonoBehaviour
     /// </summary>
     private void OnClickGetNextFishingTime()
     {
-        Debug.Log("[ServerTestView] OnClickGetNextFishingTime - 点击获取下次钓鱼时间");
+        Z_Logger.Log("[ServerTestView] OnClickGetNextFishingTime - 点击获取下次钓鱼时间");
         StartCoroutine(GetNextFishingTimeCoroutine());
     }
 
@@ -273,7 +273,7 @@ public class ServerTestView : MonoBehaviour
     /// </summary>
     private void OnClickStartAutoFishing()
     {
-        Debug.Log("[ServerTestView] OnClickStartAutoFishing - 点击开始自动钓鱼");
+        Z_Logger.Log("[ServerTestView] OnClickStartAutoFishing - 点击开始自动钓鱼");
         StartCoroutine(StartAutoFishingCoroutine());
     }
 
@@ -310,7 +310,7 @@ public class ServerTestView : MonoBehaviour
     /// </summary>
     private void OnClickStopAutoFishing()
     {
-        Debug.Log("[ServerTestView] OnClickStopAutoFishing - 点击停止自动钓鱼");
+        Z_Logger.Log("[ServerTestView] OnClickStopAutoFishing - 点击停止自动钓鱼");
         StartCoroutine(StopAutoFishingCoroutine());
     }
 

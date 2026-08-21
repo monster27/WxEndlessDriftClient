@@ -119,11 +119,11 @@ public class SkillInfoView : MonoBehaviour
         {
             int gold = CommunicateEvent.Request<int, int>("VIEW_EVENT_GET_GOLD", 0);
             currentGold = gold;
-            Debug.Log($"[SkillInfoView] 同步金币: {currentGold}");
+            Z_Logger.Log($"[SkillInfoView] 同步金币: {currentGold}");
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"[SkillInfoView] 同步金币失败: {ex.Message}");
+            Z_Logger.LogError($"[SkillInfoView] 同步金币失败: {ex.Message}");
         }
     }
 
@@ -291,19 +291,19 @@ public class SkillInfoView : MonoBehaviour
 
     private void OnMaskClick()
     {
-        Debug.Log("[SkillInfoView] OnMaskClick - 点击遮罩关闭");
+        Z_Logger.Log("[SkillInfoView] OnMaskClick - 点击遮罩关闭");
         gameObject.SetActive(false);
     }
 
     private void OnCloseClick()
     {
-        Debug.Log("[SkillInfoView] OnCloseClick - 点击关闭按钮");
+        Z_Logger.Log("[SkillInfoView] OnCloseClick - 点击关闭按钮");
         gameObject.SetActive(false);
     }
 
     private void OnUpgradeClick()
     {
-        Debug.Log($"[SkillInfoView] OnUpgradeClick - skillId={currentSkillId}");
+        Z_Logger.Log($"[SkillInfoView] OnUpgradeClick - skillId={currentSkillId}");
         int level = GetSkillLevel();
         if (level >= 10)
         {
@@ -312,10 +312,10 @@ public class SkillInfoView : MonoBehaviour
         }
 
         int cost = CalculateUpgradeCost(level);
-        Debug.Log($"[SkillInfoView] OnUpgradeClick - level={level}, cost={cost}, currentGold={currentGold}");
+        Z_Logger.Log($"[SkillInfoView] OnUpgradeClick - level={level}, cost={cost}, currentGold={currentGold}");
         if (currentGold >= cost)
         {
-            Debug.Log($"[SkillInfoView] OnUpgradeClick - 执行金币升级");
+            Z_Logger.Log($"[SkillInfoView] OnUpgradeClick - 执行金币升级");
 
             if (NetServerManager.Instance != null)
             {
@@ -323,14 +323,14 @@ public class SkillInfoView : MonoBehaviour
                 {
                     if (success)
                     {
-                        Debug.Log($"[SkillInfoView] 技能升级成功");
+                        Z_Logger.Log($"[SkillInfoView] 技能升级成功");
                         UpdateDisplay();
                         CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "升级成功！");
                         callback?.Invoke("RefreshAllViews", null);
                     }
                     else
                     {
-                        Debug.LogWarning($"[SkillInfoView] 技能升级失败");
+                        Z_Logger.LogWarning($"[SkillInfoView] 技能升级失败");
                         GameUIManager.ShowWarningMessage("技能升级失败！");
                     }
                 });
@@ -342,19 +342,19 @@ public class SkillInfoView : MonoBehaviour
         }
         else
         {
-            Debug.Log($"[SkillInfoView] OnUpgradeClick - 金币不足，跳转到看广告升级");
+            Z_Logger.Log($"[SkillInfoView] OnUpgradeClick - 金币不足，跳转到看广告升级");
             OnAdUpgradeClick();
         }
     }
 
     private void OnAdUpgradeClick()
     {
-        Debug.Log($"[SkillInfoView] OnAdUpgradeClick - skillId={currentSkillId}, callback={callback}");
+        Z_Logger.Log($"[SkillInfoView] OnAdUpgradeClick - skillId={currentSkillId}, callback={callback}");
         string componentName = LoadDataManager.Instance.GetComponentName(currentSkillId);
         string info = componentName != "未知组件" ? $"看广告升级技能: {componentName}" : "看广告升级技能";
         callback?.Invoke("OpenAd", new object[] { info, currentSkillId, "看广告升级", (System.Action)(() =>
         {
-            Debug.Log($"[SkillInfoView] OnAdUpgradeClick 广告回调执行 - skillId={currentSkillId}");
+            Z_Logger.Log($"[SkillInfoView] OnAdUpgradeClick 广告回调执行 - skillId={currentSkillId}");
 
             if (NetServerManager.Instance != null)
             {
@@ -363,14 +363,14 @@ public class SkillInfoView : MonoBehaviour
                 {
                     if (success)
                     {
-                        Debug.Log($"[SkillInfoView] 技能升级成功（广告）");
+                        Z_Logger.Log($"[SkillInfoView] 技能升级成功（广告）");
                         UpdateDisplay();
                         CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "升级成功！");
                         callback?.Invoke("RefreshAllViews", null);
                     }
                     else
                     {
-                        Debug.LogWarning($"[SkillInfoView] 技能升级失败（广告）");
+                        Z_Logger.LogWarning($"[SkillInfoView] 技能升级失败（广告）");
                     }
                 });
             }
@@ -379,7 +379,7 @@ public class SkillInfoView : MonoBehaviour
 
     private void OnEquipClick()
     {
-        Debug.Log($"[SkillInfoView] OnEquipClick - skillId={currentSkillId}, currentSkillSlot={currentSkillSlot}");
+        Z_Logger.Log($"[SkillInfoView] OnEquipClick - skillId={currentSkillId}, currentSkillSlot={currentSkillSlot}");
 
         bool isSlotUnlocked = CommunicateEvent.Request<int, bool>("EVENT_IS_SKILL_SLOT_UNLOCKED", currentSkillSlot);
         if (!isSlotUnlocked)
@@ -409,12 +409,12 @@ public class SkillInfoView : MonoBehaviour
 
     private void OnUnlockClick()
     {
-        Debug.Log($"[SkillInfoView] OnUnlockClick - skillId={currentSkillId}, callback={callback}");
+        Z_Logger.Log($"[SkillInfoView] OnUnlockClick - skillId={currentSkillId}, callback={callback}");
         string componentName = LoadDataManager.Instance.GetComponentName(currentSkillId);
         string info = componentName != "未知组件" ? $"看广告获取技能: {componentName}" : "看广告获取技能";
         callback?.Invoke("OpenAdWithResult", new object[] { info, currentSkillId, "看广告获取", (System.Action<bool>)((bool success) =>
         {
-            Debug.Log($"[SkillInfoView] OnUnlockClick 广告回调执行 - skillId={currentSkillId}, success={success}");
+            Z_Logger.Log($"[SkillInfoView] OnUnlockClick 广告回调执行 - skillId={currentSkillId}, success={success}");
             if (success)
             {
                 if (NetServerManager.Instance != null)
@@ -423,7 +423,7 @@ public class SkillInfoView : MonoBehaviour
                     {
                         if (unlockSuccess)
                         {
-                            Debug.Log($"[SkillInfoView] 技能解锁成功（广告）: skillId={currentSkillId}");
+                            Z_Logger.Log($"[SkillInfoView] 技能解锁成功（广告）: skillId={currentSkillId}");
                             CommunicateEvent.Modify("Skill_UnlockByAd", currentSkillId);
                             UpdateDisplay();
                             CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"成功获取 {componentName}！");
@@ -431,7 +431,7 @@ public class SkillInfoView : MonoBehaviour
                         }
                         else
                         {
-                            Debug.LogWarning($"[SkillInfoView] 技能解锁失败（广告）: skillId={currentSkillId}");
+                            Z_Logger.LogWarning($"[SkillInfoView] 技能解锁失败（广告）: skillId={currentSkillId}");
                             CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "解锁失败，请重试");
                         }
                     });

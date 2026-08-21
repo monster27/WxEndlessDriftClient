@@ -33,7 +33,7 @@ public class SetFontTool : EditorWindow
 
         if (selectedObjects == null || selectedObjects.Length == 0)
         {
-            Debug.LogWarning("请先在 Hierarchy 中选择一个或多个游戏对象。");
+            Z_Logger.LogWarning("请先在 Hierarchy 中选择一个或多个游戏对象。");
             return;
         }
 
@@ -94,7 +94,7 @@ public class SetFontTool : EditorWindow
             tmpFontNames[i] = tmpFontAssets[i].name;
         }
 
-        Debug.Log($"找到 {fonts.Length} 个旧版字体，{tmpFontAssets.Length} 个 TMP 字体资源。");
+        Z_Logger.Log($"找到 {fonts.Length} 个旧版字体，{tmpFontAssets.Length} 个 TMP 字体资源。");
     }
 
     private void OnGUI()
@@ -148,7 +148,7 @@ public class SetFontTool : EditorWindow
         {
             if (targetObjects == null || targetObjects.Length == 0)
             {
-                Debug.LogWarning("没有目标对象！请先在 Hierarchy 中选择对象。");
+                Z_Logger.LogWarning("没有目标对象！请先在 Hierarchy 中选择对象。");
                 EditorUtility.DisplayDialog("提示", "请先在 Hierarchy 中选择一个或多个游戏对象。", "确定");
                 return;
             }
@@ -156,7 +156,7 @@ public class SetFontTool : EditorWindow
             TMP_FontAsset selectedTMP = tmpFontAssets[selectedTMPIndex];
             if (selectedTMP == null)
             {
-                Debug.LogError("选中的 TMP 字体资源为空！");
+                Z_Logger.LogError("选中的 TMP 字体资源为空！");
                 EditorUtility.DisplayDialog("错误", "选中的 TMP 字体资源为空，请重新选择。", "确定");
                 return;
             }
@@ -250,13 +250,13 @@ public class SetFontTool : EditorWindow
     {
         if (targetFont == null)
         {
-            Debug.LogError("选择的字体为空！");
+            Z_Logger.LogError("选择的字体为空！");
             return;
         }
 
         if (objects == null || objects.Length == 0)
         {
-            Debug.LogWarning("没有目标对象！");
+            Z_Logger.LogWarning("没有目标对象！");
             return;
         }
 
@@ -279,7 +279,7 @@ public class SetFontTool : EditorWindow
             }
         }
 
-        Debug.Log($"操作完成：共修改 {processedCount} 个 Text 组件");
+        Z_Logger.Log($"操作完成：共修改 {processedCount} 个 Text 组件");
         UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
     }
 
@@ -448,14 +448,14 @@ public class SetFontTool : EditorWindow
     {
         if (targetTMPFont == null)
         {
-            Debug.LogError("选择的 TMP 字体资源为空！");
+            Z_Logger.LogError("选择的 TMP 字体资源为空！");
             EditorUtility.DisplayDialog("错误", "选择的 TMP 字体资源为空，请重新选择。", "确定");
             return;
         }
 
         if (objects == null || objects.Length == 0)
         {
-            Debug.LogWarning("没有目标对象！");
+            Z_Logger.LogWarning("没有目标对象！");
             EditorUtility.DisplayDialog("提示", "请先在 Hierarchy 中选择一个或多个游戏对象。", "确定");
             return;
         }
@@ -528,7 +528,7 @@ public class SetFontTool : EditorWindow
                 }
                 catch (System.Exception e)
                 {
-                    Debug.LogError($"替换 {oldText.gameObject.name} 时发生错误: {e.Message}");
+                    Z_Logger.LogError($"替换 {oldText.gameObject.name} 时发生错误: {e.Message}");
                     errorCount++;
                 }
             }
@@ -586,7 +586,7 @@ public class SetFontTool : EditorWindow
     {
         string log = $"[{System.DateTime.Now:HH:mm:ss}] {message}";
         operationLogs.Add(log);
-        Debug.Log(log);
+        Z_Logger.Log(log);
     }
 
     private class ReferenceInfo

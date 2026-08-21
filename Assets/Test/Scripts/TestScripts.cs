@@ -15,11 +15,11 @@ public class TestScripts : MonoBehaviour
     {
         if (Input.GetKeyUp(KeyCode.A))
         {
-            Debug.Log("A keyUp");
+            Z_Logger.Log("A keyUp");
 
             if (TestScripts2.instance != null)
             {
-                Debug.Log("TestScripts2.instance Name is " + TestScripts2.instance.gameObject.name);
+                Z_Logger.Log("TestScripts2.instance Name is " + TestScripts2.instance.gameObject.name);
             }
         }
 

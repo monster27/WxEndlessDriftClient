@@ -4,8 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-using Utils;
-using Logger = Utils.Logger;
+//using Utils;
+//using Z_Logger = Utils.Z_Logger;
 //using SharedModels;
 using System;
 
@@ -47,14 +47,14 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             }
             DontDestroyOnLoad(gameObject);
             _isPersistent = true;
-            Logger.LogColor("[NetServerManager] 已设置为 DontDestroyOnLoad", "cyan");
+            Z_Logger.LogColor("[NetServerManager] 已设置为 DontDestroyOnLoad", "cyan");
         }
     }
 
     public void SetCurrentPlayerId(int playerId)
     {
         _currentPlayerId = playerId;
-        Logger.Log($"[NetServerManager] 当前玩家ID已更新为: {_currentPlayerId}");
+        Z_Logger.Log($"[NetServerManager] 当前玩家ID已更新为: {_currentPlayerId}");
     }
 
     public int GetCurrentPlayerId()
@@ -66,7 +66,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
     {
         if (_isInitCalled)
         {
-            Logger.Log("[NetServerManager] Init() 已被调用，跳过重复初始化");
+            Z_Logger.Log("[NetServerManager] Init() 已被调用，跳过重复初始化");
             return;
         }
         serverUrl = ServerUrls.GetFullUrl("");
@@ -74,7 +74,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         RegisterServerEvents();
         _isInitCalled = true;
 
-        Logger.LogColor("[NetServerManager] 网络服务器管理器初始化完成，服务器地址: " + serverUrl, "green");
+        Z_Logger.LogColor("[NetServerManager] 网络服务器管理器初始化完成，服务器地址: " + serverUrl, "green");
     }
 
     public void SetEnabled(bool enabled)
@@ -84,14 +84,14 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         if (enabled && networkState == NetUtils.NetworkState.Disconnected)
         {
             // 不自动连接，等待 StartInitialization 调用
-            Logger.Log("[NetServerManager] 网络已启用，等待初始化...");
+            Z_Logger.Log("[NetServerManager] 网络已启用，等待初始化...");
         }
         else if (!enabled)
         {
             Disconnect();
         }
 
-        Logger.LogColor("[NetServerManager] 设置启用状态: " + enabled, "orange");
+        Z_Logger.LogColor("[NetServerManager] 设置启用状态: " + enabled, "orange");
     }
 
     public void StartConnect()
@@ -112,7 +112,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             yield break;
 
         networkState = NetUtils.NetworkState.Connecting;
-        Logger.LogColor("[NetServerManager] 正在连接到服务器: " + serverUrl, "yellow");
+        Z_Logger.LogColor("[NetServerManager] 正在连接到服务器: " + serverUrl, "yellow");
 
         using (UnityWebRequest request = UnityWebRequest.Get(serverUrl + ServerUrls.Heartbeat.Ping))
         {
@@ -121,7 +121,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
             if (request.result == UnityWebRequest.Result.Success)
             {
-                Logger.LogColor("[NetServerManager] 连接服务器成功", "green");
+                Z_Logger.LogColor("[NetServerManager] 连接服务器成功", "green");
                 networkState = NetUtils.NetworkState.Connected;
                 isConnected = true;
                 missedHeartbeats = 0;
@@ -131,7 +131,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             }
             else
             {
-                Logger.LogError("[NetServerManager] 连接服务器失败: " + request.error);
+                Z_Logger.LogError("[NetServerManager] 连接服务器失败: " + request.error);
                 networkState = NetUtils.NetworkState.Disconnected;
                 isConnected = false;
                 GameUIManager.Instance?.ShowTip("无法连接到服务器，请检查网络连接");
@@ -149,7 +149,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         missedHeartbeats = 0;
         StopHeartbeat();
 
-        Logger.LogColor("[NetServerManager] 尝试重新连接...", "orange");
+        Z_Logger.LogColor("[NetServerManager] 尝试重新连接...", "orange");
         StartConnect();
     }
 
@@ -164,13 +164,13 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
         networkState = NetUtils.NetworkState.Disconnected;
         isConnected = false;
         isPlayingReelAnimation = false;
-        Logger.LogColor("[NetServerManager] 已断开连接", "red");
+        Z_Logger.LogColor("[NetServerManager] 已断开连接", "red");
     }
 
     #region Unity生命周期回调
     void OnApplicationPause(bool pause)
     {
-        Logger.Log($"[NetServerManager] OnApplicationPause: {pause}");
+        Z_Logger.Log($"[NetServerManager] OnApplicationPause: {pause}");
 
         if (pause)
         {
@@ -189,7 +189,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             // 避免在启动阶段误触重连
             if (_isEnabled && _isInitCalled && !isConnected)
             {
-                Logger.Log("[NetServerManager] 应用恢复但未连接到服务器，尝试重连");
+                Z_Logger.Log("[NetServerManager] 应用恢复但未连接到服务器，尝试重连");
                 RequestReconnect();
             }
             else if (_isEnabled && isConnected)
@@ -203,7 +203,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
     protected override void OnApplicationQuit()
     {
         base.OnApplicationQuit();  // ✅ 正确调用基类
-        Logger.LogColor("[NetServerManager] OnApplicationQuit - 应用退出", "red");
+        Z_Logger.LogColor("[NetServerManager] OnApplicationQuit - 应用退出", "red");
 
         SendPlayerExit();
         StopHeartbeat();
@@ -213,7 +213,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
     protected override void OnDestroy()
     {
         base.OnDestroy();  // ✅ 正确调用基类
-        Logger.LogColor("[NetServerManager] OnDestroy - 对象销毁", "red");
+        Z_Logger.LogColor("[NetServerManager] OnDestroy - 对象销毁", "red");
 
         if (isConnected)
         {
@@ -248,7 +248,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             if (networkState == NetUtils.NetworkState.Connected)
             {
                 missedHeartbeats++;
-                Logger.Log("[NetServerManager] 等待心跳响应，未收到响应次数: " + missedHeartbeats);
+                Z_Logger.Log("[NetServerManager] 等待心跳响应，未收到响应次数: " + missedHeartbeats);
                 StartCoroutine(SendHeartbeatRequest());
             }
             else if (networkState == NetUtils.NetworkState.Reconnecting)
@@ -258,7 +258,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
             else if (networkState == NetUtils.NetworkState.Disconnected)
             {
                 // 不自动连接，由外部调用 StartInitialization
-                Logger.Log("[NetServerManager] 当前未连接，等待主动初始化");
+                Z_Logger.Log("[NetServerManager] 当前未连接，等待主动初始化");
             }
         }
 
@@ -303,23 +303,23 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
         if (request.result == UnityWebRequest.Result.Success)
         {
-            Logger.LogColor("[NetServerManager] 请求成功: " + endpoint, "cyan");
+            Z_Logger.LogColor("[NetServerManager] 请求成功: " + endpoint, "cyan");
             try
             {
                 string jsonResponse = request.downloadHandler.text;
-                Logger.Log($"[NetServerManager] 原始响应: {jsonResponse}");
+                Z_Logger.Log($"[NetServerManager] 原始响应: {jsonResponse}");
                 T? response = NetUtils.ParseJson<T>(jsonResponse);
                 onSuccess?.Invoke(response);
             }
             catch (System.Exception ex)
             {
-                Logger.LogError("[NetServerManager] 解析响应失败: " + ex.Message);
+                Z_Logger.LogError("[NetServerManager] 解析响应失败: " + ex.Message);
                 onError?.Invoke("解析响应失败");
             }
         }
         else
         {
-            Logger.LogError("[NetServerManager] 请求失败: " + endpoint + ", 错误: " + request.error);
+            Z_Logger.LogError("[NetServerManager] 请求失败: " + endpoint + ", 错误: " + request.error);
             GameUIManager.Instance?.ShowTip("网络请求失败，请检查网络连接");
             onError?.Invoke(request.error);
         }
@@ -329,7 +329,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
     {
         if (!_isEnabled)
         {
-            Logger.LogWarning("[NetServerManager] 网络管理器未启用");
+            Z_Logger.LogWarning("[NetServerManager] 网络管理器未启用");
             return false;
         }
 
@@ -344,7 +344,7 @@ public partial class NetServerManager : SingletonMono<NetServerManager>
 
     private void ShowNetworkError()
     {
-        Logger.LogError("[NetServerManager] 网络连接失败，请检查网络连接后重试");
+        Z_Logger.LogError("[NetServerManager] 网络连接失败，请检查网络连接后重试");
         GameUIManager.Instance?.ShowTip("网络连接失败，请检查网络连接后重试");
     }
 }

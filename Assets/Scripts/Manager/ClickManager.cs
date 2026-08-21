@@ -43,7 +43,7 @@ public class ClickManager : MonoBehaviour
         set
         {
             _isEnabled = value;
-            Debug.Log($"[ClickManager] 功能已{(value ? "启用" : "禁用")}");
+            Z_Logger.Log($"[ClickManager] 功能已{(value ? "启用" : "禁用")}");
         }
     }
 
@@ -56,14 +56,14 @@ public class ClickManager : MonoBehaviour
         // 检查是否点击到了UI元素
         if (EventSystem.current == null)
         {
-            Debug.LogWarning("[ClickManager] EventSystem is null");
+            Z_Logger.LogWarning("[ClickManager] EventSystem is null");
             return false;
         }
 
         // 检查鼠标是否在UI上
         if (EventSystem.current.IsPointerOverGameObject())
         {
-            Debug.Log("[ClickManager] 点击到了UI，忽略物体点击");
+            Z_Logger.Log("[ClickManager] 点击到了UI，忽略物体点击");
             return true;
         }
 
@@ -72,7 +72,7 @@ public class ClickManager : MonoBehaviour
         {
             if (EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
             {
-                Debug.Log("[ClickManager] 触摸到了UI，忽略物体点击");
+                Z_Logger.Log("[ClickManager] 触摸到了UI，忽略物体点击");
                 return true;
             }
         }
@@ -87,7 +87,7 @@ public class ClickManager : MonoBehaviour
     {
         if (!_isEnabled)
         {
-            Debug.Log("[ClickManager] 功能已禁用，忽略点击");
+            Z_Logger.Log("[ClickManager] 功能已禁用，忽略点击");
             return;
         }
 
@@ -97,7 +97,7 @@ public class ClickManager : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[ClickManager] 点击物体: {clickable.objData} (类型: {clickable.objectType})");
+        Z_Logger.Log($"[ClickManager] 点击物体: {clickable.objData} (类型: {clickable.objectType})");
 
         switch (clickable.objectType)
         {
@@ -121,27 +121,27 @@ public class ClickManager : MonoBehaviour
 
     private void HandleNestBaitsPlacementClick(GameObject clickedObject)
     {
-        Debug.Log("[ClickManager] HandleNestBaitsPlacementClick 被调用");
+        Z_Logger.Log("[ClickManager] HandleNestBaitsPlacementClick 被调用");
 
         int currentBait = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_CURRENT_SCENE_BAIT_COUNT, 0);
-        Debug.Log($"[ClickManager] 当前窝料: {currentBait}");
+        Z_Logger.Log($"[ClickManager] 当前窝料: {currentBait}");
 
         if (currentBait > 0)
         {
             CommunicateEvent.Modify(CommunicateEvent.EVENT_CONSUME_BAIT_AND_ENTER_CONTINUOUS_MODE);
-            Debug.Log("[ClickManager] 消耗窝料并进入连续模式（30秒）");
+            Z_Logger.Log("[ClickManager] 消耗窝料并进入连续模式（30秒）");
 
             // 获取点击位置的屏幕坐标
             if (clickedObject != null)
             {
                 Vector3 worldPos = clickedObject.transform.position;
                 CommunicateEvent.Modify<Vector3>(CommunicateEvent.EVENT_SHOW_BAIT_COUNTDOWN_AT_POSITION, worldPos);
-                Debug.Log($"[ClickManager] 发送窝料倒计时显示位置: {worldPos}");
+                Z_Logger.Log($"[ClickManager] 发送窝料倒计时显示位置: {worldPos}");
             }
         }
         else
         {
-            Debug.Log("[ClickManager] 窝料不足，无法使用");
+            Z_Logger.Log("[ClickManager] 窝料不足，无法使用");
             GameUIManager.ShowMessage("窝料不足，无法进入连续钓鱼模式");
         }
     }

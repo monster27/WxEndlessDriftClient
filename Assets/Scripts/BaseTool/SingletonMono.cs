@@ -17,7 +17,7 @@ public class SingletonMono<T> : MonoBehaviour where T : MonoBehaviour
         {
             if (_applicationIsQuitting)
             {
-                Debug.LogWarning($"[Singleton] {typeof(T)} 已经在应用退出时销毁，不再返回实例");
+                Z_Logger.LogWarning($"[Singleton] {typeof(T)} 已经在应用退出时销毁，不再返回实例");
                 return null;
             }
 
@@ -29,18 +29,18 @@ public class SingletonMono<T> : MonoBehaviour where T : MonoBehaviour
 
                     if (_instance == null)
                     {
-                        Debug.LogWarning($"[Singleton] {typeof(T)} 没有实例，重新生成实例");
+                        Z_Logger.LogWarning($"[Singleton] {typeof(T)} 没有实例，重新生成实例");
                         GameObject go = new GameObject(typeof(T).Name);
                         _instance = go.AddComponent<T>();
                         DontDestroyOnLoad(go);
 
                         go.name = $"{typeof(T).Name}(动态创建)";
-                        Debug.Log($"[Singleton] {typeof(T)} 动态创建完成");
+                        Z_Logger.Log($"[Singleton] {typeof(T)} 动态创建完成");
                     }
                     else
                     {
                         _instance.gameObject.name = $"{typeof(T).Name}(场景预制)";
-                        Debug.Log($"[Singleton] {typeof(T)} 找到场景中的实例");
+                        Z_Logger.Log($"[Singleton] {typeof(T)} 找到场景中的实例");
                     }
                 }
 
@@ -53,7 +53,7 @@ public class SingletonMono<T> : MonoBehaviour where T : MonoBehaviour
     {
         if (_instance != null && _instance != this)
         {
-            Debug.LogWarning($"[Singleton] {typeof(T)} 已有实例，销毁重复对象");
+            Z_Logger.LogWarning($"[Singleton] {typeof(T)} 已有实例，销毁重复对象");
             Destroy(gameObject);
             return;
         }
@@ -77,7 +77,7 @@ public class SingletonMono<T> : MonoBehaviour where T : MonoBehaviour
             gameObject.name = $"{typeof(T).Name}(Awake初始化)";
         }
 
-        Debug.Log($"[Singleton] {typeof(T)} Awake完成: {gameObject.name}");
+        Z_Logger.Log($"[Singleton] {typeof(T)} Awake完成: {gameObject.name}");
     }
 
     protected virtual void OnDestroy()
@@ -85,7 +85,7 @@ public class SingletonMono<T> : MonoBehaviour where T : MonoBehaviour
         if (_instance == this)
         {
             _instance = null;
-            Debug.Log($"[Singleton] {typeof(T)} 实例已销毁: {gameObject.name}");
+            Z_Logger.Log($"[Singleton] {typeof(T)} 实例已销毁: {gameObject.name}");
         }
     }
 
@@ -115,7 +115,7 @@ public class SingletonMonoFromScene<T> : MonoBehaviour where T : MonoBehaviour
         {
             if (_applicationIsQuitting)
             {
-                Debug.LogWarning($"[SingletonFromScene] {typeof(T)} 已经在应用退出时销毁，不再返回实例");
+                Z_Logger.LogWarning($"[SingletonFromScene] {typeof(T)} 已经在应用退出时销毁，不再返回实例");
                 return null;
             }
 
@@ -128,14 +128,14 @@ public class SingletonMonoFromScene<T> : MonoBehaviour where T : MonoBehaviour
                     if (_instance != null)
                     {
                         _instance.gameObject.name = $"{typeof(T).Name}(场景预制)";
-                        Debug.Log($"[SingletonFromScene] {typeof(T)} 从场景中找到实例");
+                        Z_Logger.Log($"[SingletonFromScene] {typeof(T)} 从场景中找到实例");
 
                         // 确保已持久化
                         DontDestroyOnLoad(_instance.gameObject);
                     }
                     else
                     {
-                        Debug.LogWarning($"[SingletonFromScene] {typeof(T)} 场景中不存在实例，返回 null");
+                        Z_Logger.LogWarning($"[SingletonFromScene] {typeof(T)} 场景中不存在实例，返回 null");
                     }
                 }
 
@@ -148,7 +148,7 @@ public class SingletonMonoFromScene<T> : MonoBehaviour where T : MonoBehaviour
     {
         if (_instance != null && _instance != this)
         {
-            Debug.LogWarning($"[SingletonFromScene] {typeof(T)} 已有实例，销毁重复对象");
+            Z_Logger.LogWarning($"[SingletonFromScene] {typeof(T)} 已有实例，销毁重复对象");
             Destroy(gameObject);
             return;
         }
@@ -172,7 +172,7 @@ public class SingletonMonoFromScene<T> : MonoBehaviour where T : MonoBehaviour
             gameObject.name = $"{typeof(T).Name}(场景预制)";
         }
 
-        Debug.Log($"[SingletonFromScene] {typeof(T)} Awake完成: {gameObject.name}");
+        Z_Logger.Log($"[SingletonFromScene] {typeof(T)} Awake完成: {gameObject.name}");
     }
 
     protected virtual void OnDestroy()
@@ -180,7 +180,7 @@ public class SingletonMonoFromScene<T> : MonoBehaviour where T : MonoBehaviour
         if (_instance == this)
         {
             _instance = null;
-            Debug.Log($"[SingletonFromScene] {typeof(T)} 实例已销毁: {gameObject.name}");
+            Z_Logger.Log($"[SingletonFromScene] {typeof(T)} 实例已销毁: {gameObject.name}");
         }
     }
 

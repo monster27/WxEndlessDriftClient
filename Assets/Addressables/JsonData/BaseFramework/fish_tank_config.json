@@ -1,0 +1,66 @@
+{
+  "fishTanks": [
+    {
+      "id": 1,
+      "name": "特殊鱼缸",
+      "type": "special",
+      "purchaseCost": 0
+    },
+    {
+      "id": 2,
+      "name": "普通鱼缸1号",
+      "type": "normal",
+      "purchaseCost": 1000
+    },
+    {
+      "id": 3,
+      "name": "普通鱼缸2号",
+      "type": "normal",
+      "purchaseCost": 2000
+    },
+    {
+      "id": 4,
+      "name": "普通鱼缸3号",
+      "type": "normal",
+      "purchaseCost": 4000
+    },
+    {
+      "id": 5,
+      "name": "普通鱼缸4号",
+      "type": "normal",
+      "purchaseCost": 8000
+    }
+  ],
+  "fishTankLevels": [
+    {
+      "level": 1,
+      "maxCount": 10,
+      "upgradeCost": 1000,
+      "bonus": 0.02
+    },
+    {
+      "level": 2,
+      "maxCount": 20,
+      "upgradeCost": 2000,
+      "bonus": 0.04
+    },
+    {
+      "level": 3,
+      "maxCount": 30,
+      "upgradeCost": 4000,
+      "bonus": 0.06
+    },
+    {
+      "level": 4,
+      "maxCount": 40,
+      "upgradeCost": 8000,
+      "bonus": 0.08
+    },
+    {
+      "level": 5,
+      "maxCount": 50,
+      "upgradeCost": 16000,
+      "bonus": 0.10
+    }
+  ]
+}

@@ -97,12 +97,12 @@ public class SceneMatCtrl : MonoBehaviour
     // ========== 初始化 ==========
     protected virtual void Awake()
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.Awake() - ElementId: {elementId}");
+        Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.Awake() - ElementId: {elementId}");
     }
 
     protected virtual void Start()
     {
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.Start() - ElementId: {elementId}, 开始初始化");
+        Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.Start() - ElementId: {elementId}, 开始初始化");
         Initialize();
     }
 
@@ -110,11 +110,11 @@ public class SceneMatCtrl : MonoBehaviour
     {
         if (isInitialized)
         {
-            Debug.Log($"[{LOG_TAG}] {gameObject.name}.Initialize() - 已初始化，跳过");
+            Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.Initialize() - 已初始化，跳过");
             return;
         }
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.Initialize() - 开始初始化, ElementId: {elementId}");
+        Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.Initialize() - 开始初始化, ElementId: {elementId}");
 
         targetRenderer = GetComponent<Renderer>();
         if (targetRenderer == null)
@@ -124,18 +124,18 @@ public class SceneMatCtrl : MonoBehaviour
 
         if (targetRenderer == null)
         {
-            Debug.LogError($"[{LOG_TAG}] {gameObject.name}.Initialize() - 找不到Renderer！");
+            Z_Logger.LogError($"[{LOG_TAG}] {gameObject.name}.Initialize() - 找不到Renderer！");
             return;
         }
 
         material = targetRenderer.sharedMaterial;
         if (material == null)
         {
-            Debug.LogError($"[{LOG_TAG}] {gameObject.name}.Initialize() - 材质为空！");
+            Z_Logger.LogError($"[{LOG_TAG}] {gameObject.name}.Initialize() - 材质为空！");
             return;
         }
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.Initialize() - 获取材质引用成功: {material.name} (实例ID: {material.GetInstanceID()})");
+        Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.Initialize() - 获取材质引用成功: {material.name} (实例ID: {material.GetInstanceID()})");
 
         ReadMaterialProperties();
         ApplyAllProperties();
@@ -144,17 +144,17 @@ public class SceneMatCtrl : MonoBehaviour
         if (manager != null)
         {
             manager.RegisterController(this);
-            Debug.Log($"[{LOG_TAG}] {gameObject.name}.Initialize() - 已注册到SceneMatManager");
+            Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.Initialize() - 已注册到SceneMatManager");
         }
         else
         {
-            Debug.LogWarning($"[{LOG_TAG}] {gameObject.name}.Initialize() - 找不到SceneMatManager");
+            Z_Logger.LogWarning($"[{LOG_TAG}] {gameObject.name}.Initialize() - 找不到SceneMatManager");
         }
 
         UpdateRenderQueue();
 
         isInitialized = true;
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.Initialize() - ✅ 初始化完成");
+        Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.Initialize() - ✅ 初始化完成");
     }
 
     private void ReadMaterialProperties()
@@ -186,7 +186,7 @@ public class SceneMatCtrl : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogWarning($"[{LOG_TAG}] {gameObject.name}.ReadMaterialProperties() - 读取材质属性时出错: {e.Message}");
+            Z_Logger.LogWarning($"[{LOG_TAG}] {gameObject.name}.ReadMaterialProperties() - 读取材质属性时出错: {e.Message}");
         }
     }
 
@@ -223,7 +223,7 @@ public class SceneMatCtrl : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError($"[{LOG_TAG}] {gameObject.name}.ApplyAllProperties() - 应用材质属性失败: {e.Message}");
+            Z_Logger.LogError($"[{LOG_TAG}] {gameObject.name}.ApplyAllProperties() - 应用材质属性失败: {e.Message}");
         }
     }
 
@@ -234,10 +234,11 @@ public class SceneMatCtrl : MonoBehaviour
         SceneMatManager manager = FindObjectOfType<SceneMatManager>();
         if (manager != null)
         {
-            int queueValue = manager.GetRenderQueueValue(renderQueue);
+            // ✅ 使用带元素偏移的版本
+            int queueValue = manager.GetRenderQueueValue(renderQueue, elementId);
             if (material.renderQueue != queueValue)
             {
-                Debug.Log($"[{LOG_TAG}] {gameObject.name}.UpdateRenderQueue() - 📊 设置渲染队列: {renderQueue} -> {queueValue}");
+                Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.UpdateRenderQueue() - 📊 设置渲染队列: {renderQueue} -> {queueValue} (Element={elementId}, Offset={(int)elementId})");
                 material.renderQueue = queueValue;
             }
         }
@@ -245,7 +246,7 @@ public class SceneMatCtrl : MonoBehaviour
         {
             if (material.renderQueue != 3000)
             {
-                Debug.LogWarning($"[{LOG_TAG}] {gameObject.name}.UpdateRenderQueue() - ⚠️ 找不到SceneMatManager，使用默认队列: 3000");
+                Z_Logger.LogWarning($"[{LOG_TAG}] {gameObject.name}.UpdateRenderQueue() - ⚠️ 找不到SceneMatManager，使用默认队列: 3000");
                 material.renderQueue = 3000;
             }
         }
@@ -259,7 +260,7 @@ public class SceneMatCtrl : MonoBehaviour
     {
         if (texture == null || material == null) return;
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTexture() - 🖼️ 设置主纹理: {texture.name}");
+        Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTexture() - 🖼️ 设置主纹理: {texture.name}");
         mainTexture = texture;
         material.SetTexture(MainTex, texture);
         OnMainTextureChanged?.Invoke(texture);
@@ -269,11 +270,11 @@ public class SceneMatCtrl : MonoBehaviour
     {
         if (string.IsNullOrEmpty(path))
         {
-            Debug.LogWarning($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - 路径为空！");
+            Z_Logger.LogWarning($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - 路径为空！");
             return;
         }
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - 📂 加载纹理: {path}");
+        Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - 📂 加载纹理: {path}");
 
         var (texture, handle) = await AssetManager.LoadFromAddressablesAsync<Texture2D>(path);
 
@@ -285,13 +286,13 @@ public class SceneMatCtrl : MonoBehaviour
 
         if (texture == null)
         {
-            Debug.LogError($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - ❌ 无法加载纹理: {path}");
+            Z_Logger.LogError($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - ❌ 无法加载纹理: {path}");
             return;
         }
 
         elementPath = path;
         SetMainTexture(texture);
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - ✅ 纹理加载成功: {path}");
+        Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - ✅ 纹理加载成功: {path}");
     }
 
     public virtual void SetMainTextureSmooth(Texture2D texture, float duration = 0.5f)
@@ -307,7 +308,7 @@ public class SceneMatCtrl : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTextureSmooth() - 🎬 开始平滑切换纹理: {texture.name}, 时长: {duration}秒");
+        Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTextureSmooth() - 🎬 开始平滑切换纹理: {texture.name}, 时长: {duration}秒");
         StartCoroutine(SmoothTextureTransition(texture, duration));
     }
 
@@ -346,7 +347,7 @@ public class SceneMatCtrl : MonoBehaviour
 
         material.SetColor(ColorProp, originalColor);
         OnMainTextureChanged?.Invoke(newTexture);
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.SmoothTextureTransition() - ✅ 平滑切换完成: {newTexture.name}");
+        Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.SmoothTextureTransition() - ✅ 平滑切换完成: {newTexture.name}");
     }
 
     // ==========================================
@@ -414,7 +415,7 @@ public class SceneMatCtrl : MonoBehaviour
     {
         if (!isCanFlip)
         {
-            Debug.Log($"[{LOG_TAG}] {gameObject.name}.SetFlip() - ⛔ {elementId} 不允许镜像翻转");
+            Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.SetFlip() - ⛔ {elementId} 不允许镜像翻转");
             return;
         }
 
@@ -515,7 +516,7 @@ public class SceneMatCtrl : MonoBehaviour
     {
         if (texture == null || material == null)
         {
-            Debug.LogWarning($"[{LOG_TAG}] {gameObject.name}.TransitionTo() - 纹理或材质为空，跳过");
+            Z_Logger.LogWarning($"[{LOG_TAG}] {gameObject.name}.TransitionTo() - 纹理或材质为空，跳过");
             return;
         }
 
@@ -639,25 +640,25 @@ public class SceneMatCtrl : MonoBehaviour
     {
         if (data == null)
         {
-            Debug.LogWarning($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - 数据为空，跳过");
+            Z_Logger.LogWarning($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - 数据为空，跳过");
             return;
         }
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - 📥 从数据加载: ID={data.id}, Name={data.name}");
+        Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - 📥 从数据加载: ID={data.id}, Name={data.name}");
 
         if (data.transform != null)
         {
             Vector3 position = ToUnityVector(data.transform.position);
             Vector3 scale = ToUnityVector(data.transform.scale);
-            Debug.Log($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - 📍 位置: ({position.x:F2}, {position.y:F2}, {position.z:F2}), 大小: ({scale.x:F2}, {scale.y:F2}, {scale.z:F2})");
+            Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - 📍 位置: ({position.x:F2}, {position.y:F2}, {position.z:F2}), 大小: ({scale.x:F2}, {scale.y:F2}, {scale.z:F2})");
             SetTransformData(position, scale);
         }
         else
         {
-            Debug.LogWarning($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - transform数据为空");
+            Z_Logger.LogWarning($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - transform数据为空");
         }
 
-        Debug.Log($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - ✅ 数据加载完成");
+        Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.LoadFromData() - ✅ 数据加载完成");
     }
 
     /// <summary>

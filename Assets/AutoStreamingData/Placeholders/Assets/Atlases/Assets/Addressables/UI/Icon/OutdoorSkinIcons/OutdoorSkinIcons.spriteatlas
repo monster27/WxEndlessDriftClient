@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &1
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: OutdoorSkinIcons
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 0.125
+    packables:
+    - {fileID: 2800000, guid: 2bc89c7afe88c7a458a6a3d75658bedd, type: 3}
+    - {fileID: 2800000, guid: 72ce78bb0c208ed44be1b487f851693a, type: 3}
+    - {fileID: 2800000, guid: 55831e1cc067abe4dba6cb1eb71ea7ec, type: 3}
+    - {fileID: 2800000, guid: f3f0804df51711b47ae17bdd2b89b9ed, type: 3}
+    - {fileID: 2800000, guid: f6ed7c42957e5294d8f27b09553eff7e, type: 3}
+    - {fileID: 2800000, guid: 33f8b004ca1ef0d4d86eed8d01483a87, type: 3}
+    - {fileID: 2800000, guid: f90812fb78203284186b64bd88672109, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys: []
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
+  m_RenderDataMap: {}
+  m_Tag: OutdoorSkinIcons
+  m_IsVariant: 1
+  m_IsPlaceholder: 1

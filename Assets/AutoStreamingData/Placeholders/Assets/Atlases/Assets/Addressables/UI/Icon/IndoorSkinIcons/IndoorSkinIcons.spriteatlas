@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &1
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: IndoorSkinIcons
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 0.125
+    packables:
+    - {fileID: 2800000, guid: c15e9c70c37e6874e9419e2a7a3e5f65, type: 3}
+    - {fileID: 2800000, guid: 5fd109bc979ce6d4b8be86c7b4dbb7d6, type: 3}
+    - {fileID: 2800000, guid: b23745b952c3c0a46af11f76d34ee9d5, type: 3}
+    - {fileID: 2800000, guid: 42dd949ac81ae66449fb4313d711f93d, type: 3}
+    - {fileID: 2800000, guid: 63d3ab829b473924abe314c0e46564fa, type: 3}
+    - {fileID: 2800000, guid: 02295a88bbddef54d9431ad46fb8d948, type: 3}
+    - {fileID: 2800000, guid: 35bf8e58f1b2e4647a1a1f1ece754844, type: 3}
+    - {fileID: 2800000, guid: 44d36af4fad253f4eb30d0a23c42b9e4, type: 3}
+    - {fileID: 2800000, guid: 459b1c29e870dff41aa54b6b69f79e17, type: 3}
+    - {fileID: 2800000, guid: 8dd2694c933a48c4a8de3a77571957cf, type: 3}
+    - {fileID: 2800000, guid: 953099fc48d76ca47ad6e4febd9ec51e, type: 3}
+    - {fileID: 2800000, guid: be0c45dc76fa00344bdc1795bb107fd5, type: 3}
+    - {fileID: 2800000, guid: 0c83017ef543b0a4b8f2679f0028dc8a, type: 3}
+    - {fileID: 2800000, guid: 1807e686845ec0f479d9aedf5d445a9a, type: 3}
+    - {fileID: 2800000, guid: 62291e18224c65745850a9470957eec9, type: 3}
+    - {fileID: 2800000, guid: cf08292d6191c904181c05e356b56155, type: 3}
+    - {fileID: 2800000, guid: 9e3bccd3ad89d6742a3f18411f4636f5, type: 3}
+    - {fileID: 2800000, guid: 8d3667c4980f35c4ebe2bcc04cca44f7, type: 3}
+    - {fileID: 2800000, guid: 9a2cb781dd5f9684b8db2fafeb29b009, type: 3}
+    - {fileID: 2800000, guid: 3cc0f97337680584da4314878f4100d6, type: 3}
+    - {fileID: 2800000, guid: 82b37daf84195694bb30303e90e033da, type: 3}
+    - {fileID: 2800000, guid: ecff2cb293ca71344891c3eb446c3f41, type: 3}
+    - {fileID: 2800000, guid: 4665eaf4c31fa0249a2b90eb0bcbb6b2, type: 3}
+    - {fileID: 2800000, guid: 21aec17e649da7e418bf78c1ba384bc9, type: 3}
+    - {fileID: 2800000, guid: 71ecf62adfd915043b5ed26b61cc22c9, type: 3}
+    - {fileID: 2800000, guid: 64de3bce4f45fd546824ff0d7dc2f7e1, type: 3}
+    - {fileID: 2800000, guid: 2e2e99af2ea9b2f43a4f467cad26eaa8, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys: []
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
+  m_RenderDataMap: {}
+  m_Tag: IndoorSkinIcons
+  m_IsVariant: 1
+  m_IsPlaceholder: 1

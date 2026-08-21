@@ -1,0 +1,441 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: AtlasGroup
+  m_EditorClassIdentifier: 
+  m_GroupName: AtlasGroup
+  m_Data:
+    m_SerializedData: []
+  m_GUID: dd073d4c92e96d84c8d333d96aae6bfa
+  m_SerializeEntries:
+  - m_GUID: 0317d9dde9b8034458ae00646e0a112e
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/UI.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 077fec3473b36fa4089a82a6c259f07d
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/GameScene/Player/Ani/3401/3401.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 07e4203280642a441986994b31eab977
+    m_Address: Assets/Addressables/Atlases/Assets/TextMesh Pro/Sprites/Sprites.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b4ad3837082ab54ea926ed6e5b90a8a
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/WeatherIcon/WeatherIcon.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0caebc1d78cda054da8971a51fa22746
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/FishIcons/102/102.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0e00c3ac4f42aba4ba4326978e148ec8
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/LeftMiddleUI/LeftMiddleUI.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 112b09063d88b234e97adb1839bbac39
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/Equipment/Line/Line.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 118dfe26dfcf1234885730a0e615e915
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0712/fish basket/fish
+      basket.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 155e1893b9a515448a83d4c318402f5d
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/NestBaitIcons/NestBaitIcons.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 17e49d048b25a8e4ab26d8c1c760b63f
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7C7B/\u9CAF\u9CC5/\u9CAF\u9CC5.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21bfc833683ef1b42a904567768b54e9
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/Homepage/bottom icon/bottom
+      icon.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 26012b27a1ceb204c9f297778f136616
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/Common/Common.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 26cb602d65fb35d48bf9ac7942db1777
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/UI/MainPlayScene/MainPlayScene.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 28ae0d0d50993ea40bb9025ac75247a9
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/GameScene/Static/Static.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2a5901fde45d257439ac7781c7fb08b6
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/Ani/Ani.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2b3dff47b536a5a44be11897d71cffd7
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/0712/fish basket/\u5347\u7EA7\u793A\u610F\u56FE/\u5347\u7EA7\u793A\u610F\u56FE.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2bb5b422ce60c9e45bd21997e15a3c64
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/IndoorSkinIcons/IndoorSkinIcons.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2e98be1bf95f85b4ba13cea8fb974a2d
+    m_Address: Assets/Addressables/Atlases/Assets/Assets.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 30407a3e06be66b4cafdb71cfb6fa97c
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/Homepage/weather/weather.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 345945106a1aa5f43aadfc615fbd3d88
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 36f2c6a18a9f90047a32ea22812d263b
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/Equipment/Character/Character.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 38b78ecf77b837d4799575ccd80a2036
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/Common/Common.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 412bcfe5d9b2921488d6383db4f55b3e
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/CollectionIcons/CollectionIcons.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 44733f307d829cb45a282077496fb70f
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/Equipment/Hook/Hook.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4dd701b825a79e14ab14795b5235f995
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/Homepage/Fish icon/Fish
+      icon.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5307a09e29323e0449cd5c763950a71a
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/Homepage/Homepage.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 53e200e23d50f5e4f8edc838109fce0d
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/Character interface/Character
+      interface.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5429f178272e4cd40b9bb11f99523022
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/fish basket/fish
+      basket.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 554b712b4a2cee14f9f2ed6cf4b6fb4b
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7BD3\u754C\u9762/\u9C7C\u7BD3\u754C\u9762.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 599660563c619ac46bd071c12799b4f4
+    m_Address: Assets/Addressables/Atlases/Assets/Plugins/IngameDebugConsole/Sprites/Sprites.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5a9484c3bba07eb4f8b7794792566f99
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7C7B/\u77F3\u6591\u9C7C/\u77F3\u6591\u9C7C.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5ca43f0a67802064e831e16ea70dcce9
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/OutdoorSkinIcons/OutdoorSkinIcons.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 62c24572e53267749b9e2519c11bd548
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/Collection/Collection.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 632a7aed49edf1c49a753aefe94b20d1
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/0722/\u7CD6\u679C/\u7CD6\u679C.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 65960686ca520c0458bdc3766afaf6f8
+    m_Address: Assets/Addressables/Atlases/Assets/TextMesh Pro/Examples & Extras/Sprites/Sprites.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 672a0579fa7bb1f4b98a7f3c1765482c
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/Character interface/Common/Common.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6da7114dad2ea654899b47e422347b31
+    m_Address: Assets/Addressables/Atlases/Assets/Plugins/IngameDebugConsole/Sprites/Unused/Unused.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 74657a37546f5c3448add583223fd8a8
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/TimeIcon/TimeIcon.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7af555487979ff84ca9e92ffc7f8c566
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/IslandInfoIcons/IslandInfoIcons.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7afcc39ca17a6c648a514ea05b46f3ed
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0712/Other/Other.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 820dcd625e388fe48a4e7af66662f7bf
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/fish tank/fish tank.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 83a9dfb7805b88e4797a914b76b6a409
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/Common/Common.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 83c09f9c4dc4bf04a9a511e13fb68798
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7C7B/\u91D1\u67AA\u9C7C/\u91D1\u67AA\u9C7C.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 84c23c355bf59344c838009cf673ec29
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/LeftTopUI/LeftTopUI.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8743f4ab5365e0849a53274663a87cec
+    m_Address: Assets/Addressables/Atlases/Assets/WX-WASM-SDK-V2/Runtime/wechat-default/images/images.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8802eeb95ba488d4ca7c688046ffafd8
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/UI/Common/Common.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8c0385cd2eef61e4da460ad5e0fa48df
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/TrashIcons/TrashIcons.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8dca5095f5ba6684a8c4a8a4fd30caca
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/RarityBackground/RarityBackground.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8dde220499af8324fbc461ed8b706605
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/BaitIcons/BaitIcons.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 93ad13ce8bd878b4ca4ee51e3f8b7a33
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/EquipmentSample/EquipmentSample.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 96c7433e1fcb8954f88c83fbb363d43c
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/GameScene/Scene/102/102.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 97bc352a0b7c8674a9ff9171cfcb1ede
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/FishIcons/FishIcons.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9b9b1280e91dd0a4bab3d04ca18c2589
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/Homepage/Left icon/Left
+      icon.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9c3ff4b9d8aa3034ca49abc4cc0d3288
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/UI/MainPlayScene/Demo/Demo.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a07faca253ba86249ba76e848d6b3a9c
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5927\u56FE\u663E\u793A/\u5927\u56FE\u663E\u793A.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a39e381db29decd43bfed7fc58254e84
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/backpack/backpack.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a426f3a2da0f615498cfe23551875262
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/RightTopUI/RightTopUI.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a55a84529a5965845a6a6a7fd5746b84
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/GameScene/Player/NestBaitsAni/NestBaitsAni.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a8365e75ce6838241a3d866794bc0a8e
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/Env/Env.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aa794cb4582eaec47b190b06581f04bd
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/Homepage/Right icon/Right
+      icon.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: abc3b9e5478964f4c8a41cbac1c2a5b7
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/GameScene/Scene/101/101.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aed908865b927aa43ae0d5f3d1d512fd
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/Equipment/Skill/Skill.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af11d3f53b83f7d47bbf5d0cfc171768
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0605/store/store.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af16a37c85d7f474aa001e8d30f31f02
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/Collection/Collection.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: affa73622dff39442a47f3f3b1b2c60c
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/Equipment/Rod/Rod.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b10040449ff7aa341afd17133e5d378a
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u80CC\u5305\u754C\u9762/\u80CC\u5305\u754C\u9762.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b4485c1aeedc85e499b2aeb3c4162766
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0712/0712.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bdf2d2aebb519974fa52b0c42f5a51bb
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/GameScene/Player/Ani/3402/3402.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c088f4368373ad24483a2e21952d7514
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/MainViewUI.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c98d7f81a363d214395a42a0165638b0
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u4E0A\u9C7C\u9876\u90E8\u5C0F\u5F39\u7A97/\u4E0A\u9C7C\u9876\u90E8\u5C0F\u5F39\u7A97.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d098fd41532700a4b902a7f12945ad24
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u706B\u5C71\u5730\u9762\u7269\u54C1/\u706B\u5C71\u5730\u9762\u7269\u54C1.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d2e8da8dd62f47d4088cf50510762870
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u7194\u5CA9\u706B\u5C71\u5927\u6D77/\u7194\u5CA9\u706B\u5C71\u5927\u6D77.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d420f911a3637f248a4b45a1ca0a6897
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/BottomUI/BottomUI.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: da1b3952736491f4bb00b639997c9c8c
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/0605/Character interface/\u9C7C\u7AFF\u4FE1\u606F\u9875\u9762/\u9C7C\u7AFF\u4FE1\u606F\u9875\u9762.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dc451a227b2e3a9478ff88b132205d01
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/StarRating/StarRating.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e1e64e9eaea99c14faf521b740fc4cb5
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7C7B/\u5F02\u8272\u95EA\u5149\u77F3\u6591/\u5F02\u8272\u95EA\u5149\u77F3\u6591.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e3f1081495c0c2849a15bf27d711ab9c
+    m_Address: Assets/Addressables/Atlases/Assets/Textures/0712/fish finder/fish
+      finder.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ee7d0f2315a948545a2513fec43dfc0d
+    m_Address: Assets/Addressables/Atlases/Assets/Addressables/UI/Icon/Equipment/Level/Level.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: faea809ab327a004f9c63f40f1ff0abd
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/0722/\u9ED8\u8BA4/\u9ED8\u8BA4.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fc156ba8ffa78ba4f81ca5ac0252d6ec
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5546\u57CE\u754C\u9762/\u5546\u57CE\u754C\u9762.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fccabd73629bdf64bb5b11bd3fd81f4b
+    m_Address: "Assets/Addressables/Atlases/Assets/Textures/0605/Character interface/\u9C7C\u94A9\u4FE1\u606F\u9875\u9762/\u9C7C\u94A9\u4FE1\u606F\u9875\u9762.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: febef36012071c444b60cd090d020bb2
+    m_Address: Assets/Addressables/Atlases/Assets/TextMesh Pro/Examples & Extras/Textures/Textures.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 7b2919600158b6847a07d1bbf9854cab, type: 2}
+  m_SchemaSet:
+    m_Schemas: []

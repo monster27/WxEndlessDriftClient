@@ -26,18 +26,26 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         EnvTreasureBox,
         Player,
         Weather,
-        Indoor_Wall = 30,          // 墙壁
-        Indoor_Floor,         // 地板
-        Indoor_Stair,         // 楼梯
-        Indoor_LightStrip,    // 灯带
-        Indoor_HungDecoration,    // 挂饰
-        Indoor_Telescope,     // 望远镜
-        Indoor_InsectRoom,    // 昆虫房
-        Indoor_PetHouse,      // 宠物屋
-        Indoor_FishTank,      // 鱼缸
-        Indoor_Panda,         // 熊猫
-        Indoor_Parrot,        // 鹦鹉
-        Indoor_Table          // 桌子
+        Indoor_Floor = 30,           // 室内装饰-地板
+        Indoor_Wall,                 // 室内装饰-墙壁
+        Indoor_Stair,                // 室内装饰-楼梯
+        Indoor_LightStrip,           // 室内装饰-灯带
+        Indoor_HungDecoration,       // 室内装饰-挂饰
+        Indoor_Telescope,            // 室内装饰-望远镜
+        Indoor_InsectRoom,           // 室内装饰-昆虫房
+        Indoor_FishTank,             // 室内装饰-鱼缸
+        Indoor_PetHouse,             // 室内装饰-宠物屋
+        Indoor_Panda,                // 室内装饰-熊猫
+        Indoor_Parrot,               // 室内装饰-鹦鹉
+        Indoor_Table,                // 室内装饰-桌子
+        FishTank_Backgroundk = 60,   // 鱼缸--装饰_背景 (对应子分类84)
+        FishTank_Bottom,             // 鱼缸--装饰_底面 (对应子分类83)
+        FishTank_Mask,               // 鱼缸--装饰_遮罩 
+        FishTank_Frame,              // 鱼缸--装饰_边框 (对应子分类82)
+        FishTank_Decoration,         // 鱼缸--装饰_摆设 (对应子分类80)
+        FishTank_Hang,               // 鱼缸--装饰_挂饰 (对应子分类81)
+        FishTank_Fish,               // 鱼缸--装饰_鱼类 
+        FishTank_Btn = 70,           // 鱼缸--装饰_按钮
     }
 
     // ========== 渲染队列层级 ==========
@@ -46,7 +54,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         TimeLayer = 0,
         Background = 1,
         GameLayer = 2,
-        EffectLayer = 3
+        UpDefaultUILayer = 3
     }
 
     // ========== 资源基础路径 ==========
@@ -87,34 +95,12 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
     public bool IsInitialized => isInitialized;
 
     // ========== Unity生命周期 ==========
-    //private void Awake()
-    //{
-    //    InitializeRenderQueueMap();
-    //    Debug.Log($"[SceneMatManager] Awake - 渲染队列映射初始化完成");
-    //}
-
-    //private void Start()
-    //{
-    //    if (loadOnStart)
-    //    {
-    //        Debug.Log($"[SceneMatManager] Start - 开始初始化场景系统");
-
-    //        FindAndRegisterAllControllers();
-    //        LoadSceneData();
-    //        ApplySceneData(currentSceneId);
-    //        UpdateAllControllersRenderQueue();
-
-    //        isInitialized = true;
-    //        Debug.Log($"[SceneMatManager] Start - ✅ 场景系统初始化完成");
-    //    }
-    //}
-
-    public async void Init() 
+    public async void Init()
     {
         InitializeRenderQueueMap();
-        Debug.Log($"[SceneMatManager] Awake - 渲染队列映射初始化完成");
+        Z_Logger.Log($"[SceneMatManager] Awake - 渲染队列映射初始化完成");
 
-        Debug.Log($"[SceneMatManager] Start - 开始初始化场景系统");
+        Z_Logger.Log($"[SceneMatManager] Start - 开始初始化场景系统");
 
         FindAndRegisterAllControllers();
         await LoadSceneData();
@@ -122,7 +108,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         UpdateAllControllersRenderQueue();
 
         isInitialized = true;
-        Debug.Log($"[SceneMatManager] Start - ✅ 场景系统初始化完成");
+        Z_Logger.Log($"[SceneMatManager] Start - ✅ 场景系统初始化完成");
     }
 
     public void InitializeRenderQueueMap()
@@ -132,7 +118,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
             { RenderQueueLevel.TimeLayer, timeLayerQueue },
             { RenderQueueLevel.Background, backgroundQueue },
             { RenderQueueLevel.GameLayer, gameLayerQueue },
-            { RenderQueueLevel.EffectLayer, effectLayerQueue }
+            { RenderQueueLevel.UpDefaultUILayer, effectLayerQueue }
         };
     }
 
@@ -144,7 +130,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         if (!sceneControllers.Contains(controller))
         {
             sceneControllers.Add(controller);
-            Debug.Log($"[SceneMatManager] 注册控制器: {controller.ElementId}");
+            Z_Logger.Log($"[SceneMatManager] 注册控制器: {controller.ElementId}");
         }
         controllerDict[controller.ElementId] = controller;
     }
@@ -189,33 +175,37 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
     public async Task LoadSceneData()
     {
 #if UNITY_EDITOR
-        // 编辑器模式：直接从 Addressables 加载
+        // 编辑器模式：直接从本地文件加载
         try
         {
-            var (jsonFile, handle) = await AssetManager.LoadFromAddressablesAsync<TextAsset>(sceneDataPath);
-            if (jsonFile == null)
+            string filePath = Path.Combine(Application.dataPath, "Addressables/", sceneDataPath + ".json");
+
+            if (File.Exists(filePath))
             {
-                Debug.LogWarning($"[SceneMatManager] 无法加载场景数据文件: {sceneDataPath}，创建新数据");
+                string jsonContent = File.ReadAllText(filePath);
+                sceneDataWrapper = JsonUtility.FromJson<SceneDataWrapper>(jsonContent);
+                if (sceneDataWrapper == null || sceneDataWrapper.scenes == null)
+                {
+                    sceneDataWrapper = new SceneDataWrapper();
+                }
+                isDataLoaded = true;
+                Z_Logger.Log($"[SceneMatManager] 从本地文件加载场景数据完成，共 {sceneDataWrapper.scenes.Count} 个场景");
+                return;
+            }
+            else
+            {
+                Z_Logger.LogWarning($"[SceneMatManager] 本地文件不存在: {filePath}，创建新数据");
                 sceneDataWrapper = new SceneDataWrapper();
                 isDataLoaded = true;
                 return;
             }
-
-            sceneDataWrapper = JsonUtility.FromJson<SceneDataWrapper>(jsonFile.text);
-            if (sceneDataWrapper == null || sceneDataWrapper.scenes == null)
-            {
-                Debug.LogWarning("[SceneMatManager] 场景数据解析失败，创建新数据");
-                sceneDataWrapper = new SceneDataWrapper();
-            }
-
-            isDataLoaded = true;
-            Debug.Log($"[SceneMatManager] 加载场景数据完成，共 {sceneDataWrapper.scenes.Count} 个场景");
         }
         catch (Exception e)
         {
-            Debug.LogError($"[SceneMatManager] 加载场景数据异常: {e.Message}");
+            Z_Logger.LogError($"[SceneMatManager] 加载场景数据异常: {e.Message}");
             sceneDataWrapper = new SceneDataWrapper();
             isDataLoaded = true;
+            return;
         }
 #else
         // ✅ 运行模式：从 LoadDataManager 加载
@@ -223,11 +213,11 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         {
             sceneDataWrapper = LoadDataManager.Instance.sceneDataWrapper;
             isDataLoaded = true;
-            Debug.Log($"[SceneMatManager] 从 LoadDataManager 加载场景数据完成，共 {sceneDataWrapper?.scenes?.Count ?? 0} 个场景");
+            Z_Logger.Log($"[SceneMatManager] 从 LoadDataManager 加载场景数据完成，共 {sceneDataWrapper?.scenes?.Count ?? 0} 个场景");
         }
         else
         {
-            Debug.LogWarning("[SceneMatManager] LoadDataManager 场景数据未加载，尝试重新加载");
+            Z_Logger.LogWarning("[SceneMatManager] LoadDataManager 场景数据未加载，尝试重新加载");
             if (LoadDataManager.Instance != null)
             {
                 await LoadDataManager.Instance.LoadSceneData();
@@ -267,13 +257,13 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         SceneData sceneData = GetSceneData(sceneId);
         if (sceneData == null)
         {
-            Debug.LogWarning($"[SceneMatManager] 未找到场景数据: {sceneId}");
+            Z_Logger.LogWarning($"[SceneMatManager] 未找到场景数据: {sceneId}");
             CreateDefaultSceneData(sceneId);
             sceneData = GetSceneData(sceneId);
             if (sceneData == null) return;
         }
 
-        Debug.Log($"[SceneMatManager] 应用场景数据: {sceneId}, 名称: {sceneData.sceneName}, 元素数: {sceneData.elements.Count}");
+        Z_Logger.Log($"[SceneMatManager] 应用场景数据: {sceneId}, 名称: {sceneData.sceneName}, 元素数: {sceneData.elements.Count}");
 
         currentSceneId = sceneId;
         currentSceneName = sceneData.sceneName;
@@ -287,13 +277,12 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
             SceneMatCtrl controller = GetController(elementData.id);
             if (controller == null)
             {
-                Debug.LogWarning($"[SceneMatManager] 未找到控制器: {elementData.id}");
+                Z_Logger.LogWarning($"[SceneMatManager] 未找到控制器: {elementData.id}");
                 continue;
             }
 
             if (elementData.transform != null)
             {
-                // ✅ 从 SerializableVector3 转换为 Unity Vector3
                 Vector3 position = ToUnityVector(elementData.transform.position);
                 Vector3 scale = ToUnityVector(elementData.transform.scale);
                 controller.SetTransformData(position, scale);
@@ -313,13 +302,11 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 
         ApplyStaticParameters();
 
-        Debug.Log($"[SceneMatManager] 应用场景数据完成: {sceneId}, 名称: {currentSceneName}, 镜像: {currentSceneFlip}, 加载元素: {loadedCount} 个");
+        Z_Logger.Log($"[SceneMatManager] 应用场景数据完成: {sceneId}, 名称: {currentSceneName}, 镜像: {currentSceneFlip}, 加载元素: {loadedCount} 个");
 
         AdjustCameraBySceneFlip();
     }
-    /// <summary>
-    /// 转换为Unity Vector3
-    /// </summary>
+
     public UnityEngine.Vector3 ToUnityVector(SerializableVector3 v)
     {
         return new UnityEngine.Vector3(v.x, v.y, v.z);
@@ -329,11 +316,9 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
     {
         if (CameraManager.Instance == null)
         {
-            Debug.LogWarning("[SceneMatManager] CameraManager 未找到");
+            Z_Logger.LogWarning("[SceneMatManager] CameraManager 未找到");
             return;
         }
-
-        //CameraManager.Instance.SetMirrorMode(currentSceneFlip);
 
         if (currentSceneFlip)
         {
@@ -347,7 +332,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 
     private void ApplySceneFlip(bool isFlipped)
     {
-        Debug.Log($"[SceneMatManager] 应用场景镜像: {isFlipped}");
+        Z_Logger.Log($"[SceneMatManager] 应用场景镜像: {isFlipped}");
         foreach (var controller in sceneControllers)
         {
             if (controller == null) continue;
@@ -361,12 +346,13 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
     private void ApplyStaticParameters()
     {
         var staticControllers = GetControllersByParameterType(SceneMatCtrl.ParameterType.StaticParameter);
-        Debug.Log($"[SceneMatManager] 应用静态参数, 共 {staticControllers.Count} 个控制器");
+        Z_Logger.Log($"[SceneMatManager] 应用静态参数, 共 {staticControllers.Count} 个控制器");
         foreach (var controller in staticControllers)
         {
             if (controller != null && controller.IsInitialized)
             {
-                int queueValue = GetRenderQueueValue(controller.RenderQueue);
+                // ✅ 使用带元素偏移的版本
+                int queueValue = GetRenderQueueValue(controller.RenderQueue, controller.ElementId);
                 controller.SetRenderQueueValue(queueValue);
             }
         }
@@ -374,34 +360,35 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 
     public void UpdateAllControllersRenderQueue()
     {
-        Debug.Log($"[SceneMatManager] ===== 开始更新所有控制器渲染队列 =====");
+        Z_Logger.Log($"[SceneMatManager] ===== 开始更新所有控制器渲染队列 =====");
         foreach (var controller in sceneControllers)
         {
             if (controller != null && controller.IsInitialized)
             {
-                int queueValue = GetRenderQueueValue(controller.RenderQueue);
+                // ✅ 使用带元素偏移的版本
+                int queueValue = GetRenderQueueValue(controller.RenderQueue, controller.ElementId);
                 controller.SetRenderQueueValue(queueValue);
             }
         }
-        Debug.Log($"[SceneMatManager] ===== 渲染队列更新完成 =====");
+        Z_Logger.Log($"[SceneMatManager] ===== 渲染队列更新完成 =====");
     }
 
     public void SwitchScene(string sceneId)
     {
         if (string.IsNullOrEmpty(sceneId))
         {
-            Debug.LogError($"[SceneMatManager] 切换场景失败: sceneId为空");
+            Z_Logger.LogError($"[SceneMatManager] 切换场景失败: sceneId为空");
             return;
         }
 
         SceneData targetSceneData = GetSceneData(sceneId);
         if (targetSceneData == null)
         {
-            Debug.LogWarning($"[SceneMatManager] 场景 {sceneId} 不存在，创建默认场景数据");
+            Z_Logger.LogWarning($"[SceneMatManager] 场景 {sceneId} 不存在，创建默认场景数据");
             CreateDefaultSceneData(sceneId);
         }
 
-        Debug.Log($"[SceneMatManager] 切换场景: {currentSceneId} -> {sceneId}");
+        Z_Logger.Log($"[SceneMatManager] 切换场景: {currentSceneId} -> {sceneId}");
         ApplySceneData(sceneId);
         UpdateAllControllersRenderQueue();
     }
@@ -428,7 +415,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
             currentSceneName = newScene.sceneName;
         }
 
-        Debug.Log($"[SceneMatManager] 已创建默认场景数据: {sceneId}");
+        Z_Logger.Log($"[SceneMatManager] 已创建默认场景数据: {sceneId}");
     }
 
     // ========== 场景镜像控制 ==========
@@ -454,13 +441,27 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 
     public int GetRenderQueueValue(RenderQueueLevel level)
     {
-        return renderQueueMap.TryGetValue(level, out int val) ? val : 3000;
+        return renderQueueMap.TryGetValue(level, out int val) ? val : 2999;
+    }
+
+    /// <summary>
+    /// 获取带 RenderElementType 偏移的渲染队列值
+    /// </summary>
+    public int GetRenderQueueValue(RenderQueueLevel level, RenderElementType elementType)
+    {
+        // 1. 获取基础队列值
+        int baseQueue = GetRenderQueueValue(level);
+
+        // 2. 加上元素枚举偏移（跳过 None=0）
+        int offset = elementType == RenderElementType.None ? 0 : (int)elementType;
+
+        return baseQueue + offset;
     }
 
     public void SetControllerRenderQueue(SceneMatCtrl controller, RenderQueueLevel level)
     {
         if (controller == null) return;
-        int queueValue = GetRenderQueueValue(level);
+        int queueValue = GetRenderQueueValue(level, controller.ElementId);
         controller.SetRenderQueueValue(queueValue);
     }
 
@@ -471,7 +472,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         {
             if (controller != null)
             {
-                controller.SetRenderQueueValue(queueValue);
+                controller.SetRenderQueueValue(queueValue + (int)controller.ElementId);
             }
         }
     }
@@ -484,7 +485,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         {
             if (controller != null)
             {
-                controller.SetRenderQueueValue(queueValue);
+                controller.SetRenderQueueValue(queueValue + (int)controller.ElementId);
             }
         }
     }
@@ -498,7 +499,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 
     public void InitializeScene(string sceneId)
     {
-        Debug.Log($"[SceneMatManager] InitializeScene - 场景ID: {sceneId}");
+        Z_Logger.Log($"[SceneMatManager] InitializeScene - 场景ID: {sceneId}");
         FindAndRegisterAllControllers();
 
         foreach (var controller in sceneControllers)
@@ -567,7 +568,6 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
                 name = elementName
             };
 
-            // ✅ 使用 SerializableVector3 存储
             element.transform = new SceneElementTransformData
             {
                 position = SerializableVector3.FromUnityVector(transformData.position.x, transformData.position.y, transformData.position.z),
@@ -579,7 +579,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 
         currentSceneData.isFlipped = currentSceneFlip;
 
-        Debug.Log($"[SceneMatManager] 场景数据更新: {currentSceneData.sceneId}, 元素: {currentSceneData.elements.Count}");
+        Z_Logger.Log($"[SceneMatManager] 场景数据更新: {currentSceneData.sceneId}, 元素: {currentSceneData.elements.Count}");
     }
 
     public string SaveSceneDataToJson()
@@ -605,25 +605,26 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 
             File.WriteAllText(filePath, json);
 
-            // ✅ 同步更新 LoadDataManager
+#if !UNITY_EDITOR
             if (LoadDataManager.Instance != null)
             {
                 LoadDataManager.Instance.sceneDataWrapper = sceneDataWrapper;
                 LoadDataManager.Instance.isSceneDataLoaded = true;
             }
+#endif
 
-            Debug.Log($"[SceneMatManager] 数据已保存到: {filePath}");
+            Z_Logger.Log($"[SceneMatManager] 数据已保存到: {filePath}");
         }
         catch (Exception e)
         {
-            Debug.LogError($"[SceneMatManager] 保存数据失败: {e.Message}");
+            Z_Logger.LogError($"[SceneMatManager] 保存数据失败: {e.Message}");
         }
     }
 
     public void SaveToDefaultPath()
     {
 #if UNITY_EDITOR
-        string fullPath = Path.Combine(Application.dataPath, "Resources", sceneDataPath + ".json");
+        string fullPath = Path.Combine(Application.dataPath, "Addressables", sceneDataPath + ".json");
         SaveSceneDataToFile(fullPath);
         UnityEditor.AssetDatabase.Refresh();
 #else
@@ -632,7 +633,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         {
             LoadDataManager.Instance.sceneDataWrapper = sceneDataWrapper;
             LoadDataManager.Instance.isSceneDataLoaded = true;
-            Debug.Log("[SceneMatManager] 场景数据已保存到 LoadDataManager");
+            Z_Logger.Log("[SceneMatManager] 场景数据已保存到 LoadDataManager");
         }
 #endif
     }
@@ -650,7 +651,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
             RegisterController(controller);
         }
 
-        Debug.Log($"[SceneMatManager] 找到并注册了 {foundControllers.Length} 个控制器");
+        Z_Logger.Log($"[SceneMatManager] 找到并注册了 {foundControllers.Length} 个控制器");
     }
 
     public void RefreshAllControllers()
@@ -668,13 +669,13 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 
     public void LogAllControllerMaterials()
     {
-        Debug.Log($"[SceneMatManager] ===== 所有控制器材质信息 =====");
+        Z_Logger.Log($"[SceneMatManager] ===== 所有控制器材质信息 =====");
         foreach (var controller in sceneControllers)
         {
             if (controller != null)
             {
                 Material mat = controller.Material;
-                Debug.Log($"[SceneMatManager] {controller.ElementId}: 材质={mat?.name ?? "null"}, 渲染队列={mat?.renderQueue ?? 0}");
+                Z_Logger.Log($"[SceneMatManager] {controller.ElementId}: 材质={mat?.name ?? "null"}, 渲染队列={mat?.renderQueue ?? 0}");
             }
         }
     }

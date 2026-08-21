@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using System;
@@ -470,12 +470,12 @@ public class OutdoorSkinDataEditor : EditorWindow
                 if (wrapper != null && wrapper.decorations != null)
                 {
                     decorationList = wrapper.decorations.ToList();
-                    Debug.Log($"成功加载 {decorationList.Count} 条数据");
+                    Z_Logger.Log($"成功加载 {decorationList.Count} 条数据");
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"加载数据失败: {e.Message}");
+                Z_Logger.LogError($"加载数据失败: {e.Message}");
             }
         }
 
@@ -498,7 +498,7 @@ public class OutdoorSkinDataEditor : EditorWindow
         File.WriteAllText(fullPath, json);
 
         AssetDatabase.Refresh();
-        Debug.Log($"保存成功: {fullPath}");
+        Z_Logger.Log($"保存成功: {fullPath}");
     }
 
     private void QuickCreateDecoration()

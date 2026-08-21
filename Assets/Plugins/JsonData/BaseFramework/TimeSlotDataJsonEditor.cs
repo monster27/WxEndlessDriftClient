@@ -1,4 +1,4 @@
-﻿// ==================== TimeSlotDataEditor.cs ====================
+// ==================== TimeSlotDataEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -199,13 +199,13 @@ public class TimeSlotDataEditor : BaseDataEditor<TimeSlotData>
             {
                 var wrapper = JsonUtility.FromJson<TimeSlotListWrapper>(File.ReadAllText(FullPath));
                 dataList = wrapper?.timeSlots ?? new List<TimeSlotData>();
-                if (dataList.Count > 0) Debug.Log($"加载成功，共{dataList.Count}条数据");
+                if (dataList.Count > 0) Z_Logger.Log($"加载成功，共{dataList.Count}条数据");
             }
-            catch (System.Exception e) { Debug.LogError($"加载失败: {e.Message}"); dataList = new List<TimeSlotData>(); }
+            catch (System.Exception e) { Z_Logger.LogError($"加载失败: {e.Message}"); dataList = new List<TimeSlotData>(); }
         }
         else
         {
-            Debug.LogWarning($"文件不存在: {FullPath}，创建空列表");
+            Z_Logger.LogWarning($"文件不存在: {FullPath}，创建空列表");
             dataList = new List<TimeSlotData>();
         }
         Repaint();
@@ -217,7 +217,7 @@ public class TimeSlotDataEditor : BaseDataEditor<TimeSlotData>
         if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
         File.WriteAllText(FullPath, JsonUtility.ToJson(new TimeSlotListWrapper { timeSlots = dataList }, true));
         AssetDatabase.Refresh();
-        Debug.Log($"保存成功: {FullPath}");
+        Z_Logger.Log($"保存成功: {FullPath}");
     }
 
     private void AddNewItem()

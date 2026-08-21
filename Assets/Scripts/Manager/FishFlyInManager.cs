@@ -31,8 +31,9 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
         }
     }
 
-    void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
         AssetManager.ReleaseAddressable(_spriteHandle);
     }
 
@@ -61,7 +62,7 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
     {
         if (!_isInitialized)
         {
-            Debug.LogWarning("[FishFlyInManager] 未初始化，请先调用 Init()!");
+            Z_Logger.LogWarning("[FishFlyInManager] 未初始化，请先调用 Init()!");
             return;
         }
 
@@ -78,7 +79,7 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
                 Texture2D texture = sprite.texture;
                 if (texture == null)
                 {
-                    Debug.LogError($"[FishFlyInManager] 无法获取物品纹理: itemId={itemId}");
+                    Z_Logger.LogError($"[FishFlyInManager] 无法获取物品纹理: itemId={itemId}");
                     return;
                 }
 
@@ -89,7 +90,7 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
             }
             else
             {
-                Debug.LogError($"[FishFlyInManager] 无法加载物品图标: itemId={itemId}");
+                Z_Logger.LogError($"[FishFlyInManager] 无法加载物品图标: itemId={itemId}");
             }
         });
     }
@@ -121,7 +122,7 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
     {
         if (!_isInitialized)
         {
-            Debug.LogError("[FishFlyInManager] 未初始化，请先调用 Init()!");
+            Z_Logger.LogError("[FishFlyInManager] 未初始化，请先调用 Init()!");
             return;
         }
 
@@ -161,7 +162,7 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
     {
         if (_prefab == null)
         {
-            Debug.LogError("[FishFlyInManager] _prefab 未赋值!");
+            Z_Logger.LogError("[FishFlyInManager] _prefab 未赋值!");
             return null;
         }
 
@@ -170,7 +171,7 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
 
         if (ctrl.go == null)
         {
-            Debug.LogError("[FishFlyInManager] 预制体中的 go 未赋值!");
+            Z_Logger.LogError("[FishFlyInManager] 预制体中的 go 未赋值!");
             return ctrl;
         }
 

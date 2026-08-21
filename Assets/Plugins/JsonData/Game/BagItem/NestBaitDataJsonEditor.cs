@@ -1,4 +1,4 @@
-﻿// ==================== NestBaitDataJsonEditor.cs ====================
+// ==================== NestBaitDataJsonEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -242,13 +242,13 @@ public class NestBaitDataJsonEditor : EditorWindow
                 var wrapper = JsonUtility.FromJson<NestBaitListWrapper>(File.ReadAllText(FullPath));
                 dataList = wrapper?.nestBaits != null ? new List<NestBaitData>(wrapper.nestBaits) : new List<NestBaitData>();
                 constants = wrapper?.constants ?? new NestBaitConstants();
-                if (dataList.Count > 0) Debug.Log($"加载成功，共{dataList.Count}条数据");
+                if (dataList.Count > 0) Z_Logger.Log($"加载成功，共{dataList.Count}条数据");
             }
-            catch (System.Exception e) { Debug.LogError($"加载失败: {e.Message}"); dataList = new List<NestBaitData>(); }
+            catch (System.Exception e) { Z_Logger.LogError($"加载失败: {e.Message}"); dataList = new List<NestBaitData>(); }
         }
         else
         {
-            Debug.LogWarning($"文件不存在: {FullPath}，创建空列表");
+            Z_Logger.LogWarning($"文件不存在: {FullPath}，创建空列表");
             dataList = new List<NestBaitData>();
             constants = new NestBaitConstants();
         }
@@ -261,7 +261,7 @@ public class NestBaitDataJsonEditor : EditorWindow
         if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
         File.WriteAllText(FullPath, JsonUtility.ToJson(new NestBaitListWrapper { constants = constants, nestBaits = dataList.ToArray() }, true));
         AssetDatabase.Refresh();
-        Debug.Log("保存成功");
+        Z_Logger.Log("保存成功");
     }
 
     private void AddNewItem()

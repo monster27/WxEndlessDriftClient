@@ -39,7 +39,7 @@ public class MallView : MonoBehaviour
         if (LoadDataManager.Instance != null)
         {
             itemDataMap = LoadDataManager.Instance.GetItemDataMap();
-            Debug.Log($"[MallView] 初始化 itemDataMap，共 {itemDataMap.Count} 个物品");
+            Z_Logger.Log($"[MallView] 初始化 itemDataMap，共 {itemDataMap.Count} 个物品");
         }
     }
 
@@ -52,13 +52,13 @@ public class MallView : MonoBehaviour
 
     private void OnMaskClick()
     {
-        Debug.Log("[MallView] OnMaskClick - 点击遮罩关闭");
+        Z_Logger.Log("[MallView] OnMaskClick - 点击遮罩关闭");
         CloseMall();
     }
 
     private void OnMallItemClicked(int itemId)
     {
-        Debug.Log($"[MallView] OnMallItemClicked - itemId={itemId}");
+        Z_Logger.Log($"[MallView] OnMallItemClicked - itemId={itemId}");
         if (mallItemDetailView != null)
         {
             ItemData itemData = null;
@@ -95,7 +95,7 @@ public class MallView : MonoBehaviour
 
     public void CloseMall()
     {
-        Debug.Log("[MallView] CloseMall - 关闭商城");
+        Z_Logger.Log("[MallView] CloseMall - 关闭商城");
         isMallOpen = false;
         gameObject.SetActive(false);
         CommunicateEvent.Modify("Mall_Close");
@@ -111,11 +111,11 @@ public class MallView : MonoBehaviour
 
     private void OnMallDataChanged(Dictionary<int, MallItemData> newMallData)
     {
-        Debug.Log($"[MallView] OnMallDataChanged - 收到商城数据更新，共 {newMallData?.Count ?? 0} 个商品");
+        Z_Logger.Log($"[MallView] OnMallDataChanged - 收到商城数据更新，共 {newMallData?.Count ?? 0} 个商品");
 
         if (newMallData == null || newMallData.Count == 0)
         {
-            Debug.LogWarning("[MallView] OnMallDataChanged - 收到的数据为空");
+            Z_Logger.LogWarning("[MallView] OnMallDataChanged - 收到的数据为空");
             mallData = newMallData;
             if (isMallOpen)
             {
@@ -137,12 +137,12 @@ public class MallView : MonoBehaviour
                     // ✅ 如果商品从下架变为上架，需要显示
                     if (!oldItem.isOnSale && newItem.isOnSale)
                     {
-                        Debug.Log($"[MallView] 商品 {itemId} 已上架，将显示");
+                        Z_Logger.Log($"[MallView] 商品 {itemId} 已上架，将显示");
                     }
                     // ✅ 如果商品从上架变为下架，需要隐藏
                     else if (oldItem.isOnSale && !newItem.isOnSale)
                     {
-                        Debug.Log($"[MallView] 商品 {itemId} 已下架，将隐藏");
+                        Z_Logger.Log($"[MallView] 商品 {itemId} 已下架，将隐藏");
                         if (mallItemPrefabs.TryGetValue(itemId, out var prefab))
                         {
                             prefab.gameObject.SetActive(false);
@@ -156,28 +156,28 @@ public class MallView : MonoBehaviour
 
         if (isMallOpen)
         {
-            Debug.Log("[MallView] 商城已打开，立即刷新UI");
+            Z_Logger.Log("[MallView] 商城已打开，立即刷新UI");
             UpdateMallItems();
         }
         else
         {
-            Debug.Log("[MallView] 商城未打开，数据已缓存，下次打开时生效");
+            Z_Logger.Log("[MallView] 商城未打开，数据已缓存，下次打开时生效");
         }
     }
 
     public void RefreshMallData()
     {
-        Debug.Log("[MallView] RefreshMallData - 从服务器请求最新商城数据");
+        Z_Logger.Log("[MallView] RefreshMallData - 从服务器请求最新商城数据");
         mallData = CommunicateEvent.Request<int, Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_GET_MALL_ITEMS, 0);
 
         if (mallData != null && mallData.Count > 0)
         {
-            Debug.Log($"[MallView] 从服务器获取到 {mallData.Count} 个商品");
+            Z_Logger.Log($"[MallView] 从服务器获取到 {mallData.Count} 个商品");
             UpdateMallItems();
         }
         else
         {
-            Debug.LogWarning("[MallView] 从服务器获取商城数据失败或为空");
+            Z_Logger.LogWarning("[MallView] 从服务器获取商城数据失败或为空");
             ClearAllItems();
         }
     }
@@ -211,7 +211,7 @@ public class MallView : MonoBehaviour
     {
         if (mallData == null || mallData.Count == 0)
         {
-            Debug.LogWarning("[MallView] UpdateMallItems - mallData 为空");
+            Z_Logger.LogWarning("[MallView] UpdateMallItems - mallData 为空");
             ClearAllItems();
             return;
         }
@@ -221,11 +221,11 @@ public class MallView : MonoBehaviour
             if (LoadDataManager.Instance != null)
             {
                 itemDataMap = LoadDataManager.Instance.GetItemDataMap();
-                Debug.Log($"[MallView] 延迟初始化 itemDataMap，共 {itemDataMap.Count} 个物品");
+                Z_Logger.Log($"[MallView] 延迟初始化 itemDataMap，共 {itemDataMap.Count} 个物品");
             }
             if (itemDataMap == null || itemDataMap.Count == 0)
             {
-                Debug.LogWarning("[MallView] itemDataMap 为空，无法更新商城物品");
+                Z_Logger.LogWarning("[MallView] itemDataMap 为空，无法更新商城物品");
                 return;
             }
         }
@@ -278,7 +278,7 @@ public class MallView : MonoBehaviour
 
             if (!itemDataMap.TryGetValue(itemId, out ItemData itemData))
             {
-                Debug.LogWarning($"[MallView] 未找到物品数据: itemId={itemId}");
+                Z_Logger.LogWarning($"[MallView] 未找到物品数据: itemId={itemId}");
                 continue;
             }
 
@@ -290,7 +290,7 @@ public class MallView : MonoBehaviour
                 prefab.UpdateDisplay(itemData, mallItem);
                 prefab.gameObject.SetActive(true);
                 updatedCount++;
-                Debug.Log($"[MallView] 更新商品: itemId={itemId}, stock={mallItem.stock}, isOnSale={mallItem.isOnSale}");
+                Z_Logger.Log($"[MallView] 更新商品: itemId={itemId}, stock={mallItem.stock}, isOnSale={mallItem.isOnSale}");
             }
             else
             {
@@ -302,14 +302,14 @@ public class MallView : MonoBehaviour
         // ✅ 清理不在当前列表中的预制体（已隐藏的）
         ReturnUnusedToPool();
 
-        Debug.Log($"[MallView] UpdateMallItems 完成，更新了 {updatedCount} 个商品，隐藏了 {hiddenCount} 个未上架商品，移除了 {removedCount} 个已下架商品");
+        Z_Logger.Log($"[MallView] UpdateMallItems 完成，更新了 {updatedCount} 个商品，隐藏了 {hiddenCount} 个未上架商品，移除了 {removedCount} 个已下架商品");
     }
 
     private void CreateMallItemPrefab(int itemId, ItemData itemData, MallItemData mallItem)
     {
         if (mallItemPrefab == null)
         {
-            Debug.LogError("[MallView] mallItemPrefab is not assigned");
+            Z_Logger.LogError("[MallView] mallItemPrefab is not assigned");
             return;
         }
 
@@ -319,7 +319,7 @@ public class MallView : MonoBehaviour
         if (mallPrefab == null)
         {
             Destroy(itemObj);
-            Debug.LogError("[MallView] UI_MallPrefab component not found");
+            Z_Logger.LogError("[MallView] UI_MallPrefab component not found");
             return;
         }
 
@@ -327,7 +327,7 @@ public class MallView : MonoBehaviour
         mallPrefab.gameObject.SetActive(true);
         mallItemPrefabs[itemId] = mallPrefab;
 
-        Debug.Log($"[MallView] 创建商品预制体: itemId={itemId}, stock={mallItem.stock}, isOnSale={mallItem.isOnSale}");
+        Z_Logger.Log($"[MallView] 创建商品预制体: itemId={itemId}, stock={mallItem.stock}, isOnSale={mallItem.isOnSale}");
     }
 
     private void ReturnUnusedToPool()
@@ -364,7 +364,7 @@ public class MallView : MonoBehaviour
                 if (itemDataMap.TryGetValue(itemId, out ItemData itemData))
                 {
                     mallItemPrefabs[itemId].UpdateDisplay(itemData, mallItem);
-                    Debug.Log($"[MallView] 更新商品库存: itemId={itemId}, stock={mallItem.stock}");
+                    Z_Logger.Log($"[MallView] 更新商品库存: itemId={itemId}, stock={mallItem.stock}");
                 }
             }
         }
@@ -381,7 +381,7 @@ public class MallView : MonoBehaviour
     /// </summary>
     public void ForceRefresh()
     {
-        Debug.Log("[MallView] ForceRefresh - 强制刷新商城");
+        Z_Logger.Log("[MallView] ForceRefresh - 强制刷新商城");
         if (isMallOpen)
         {
             RefreshMallData();

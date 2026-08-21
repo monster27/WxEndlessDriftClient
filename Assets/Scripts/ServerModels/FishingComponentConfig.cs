@@ -133,18 +133,18 @@
 //        var (textAsset, handle) = await AssetManager.LoadFromAddressablesAsync<TextAsset>(path);
 //        if (textAsset == null)
 //        {
-//            Debug.LogError($"[CompleteFishingSkillConfig] 加载失败: {path}");
+//            Z_Logger.LogError($"[CompleteFishingSkillConfig] 加载失败: {path}");
 //            return null;
 //        }
 
 //        var config = JsonUtility.FromJson<CompleteFishingSkillConfig>(textAsset.text);
 //        if (config == null)
 //        {
-//            Debug.LogError($"[CompleteFishingSkillConfig] 解析失败: {path}");
+//            Z_Logger.LogError($"[CompleteFishingSkillConfig] 解析失败: {path}");
 //            return null;
 //        }
 
-//        Debug.Log($"[CompleteFishingSkillConfig] 加载成功，路径: {path}");
+//        Z_Logger.Log($"[CompleteFishingSkillConfig] 加载成功，路径: {path}");
 //        return config;
 //    }
 
@@ -154,18 +154,18 @@
 //        TextAsset textAsset = Resources.Load<TextAsset>(path);
 //        if (textAsset == null)
 //        {
-//            Debug.LogError($"[CompleteFishingSkillConfig] 加载失败: {path}");
+//            Z_Logger.LogError($"[CompleteFishingSkillConfig] 加载失败: {path}");
 //            return null;
 //        }
 
 //        var config = JsonUtility.FromJson<CompleteFishingSkillConfig>(textAsset.text);
 //        if (config == null)
 //        {
-//            Debug.LogError($"[CompleteFishingSkillConfig] 解析失败: {path}");
+//            Z_Logger.LogError($"[CompleteFishingSkillConfig] 解析失败: {path}");
 //            return null;
 //        }
 
-//        Debug.Log($"[CompleteFishingSkillConfig] 加载成功，路径: {path}");
+//        Z_Logger.Log($"[CompleteFishingSkillConfig] 加载成功，路径: {path}");
 //        return config;
 //    }
 //}

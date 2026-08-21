@@ -204,12 +204,12 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     {
         if (data == null || !data.ContainsKey("sceneId"))
         {
-            Debug.LogWarning("[GameUIManager] 场景切换请求数据无效");
+            Z_Logger.LogWarning("[GameUIManager] 场景切换请求数据无效");
             return;
         }
 
         int sceneId = (int)data["sceneId"];
-        Debug.Log($"[GameUIManager] 收到场景切换请求: {sceneId}");
+        Z_Logger.Log($"[GameUIManager] 收到场景切换请求: {sceneId}");
 
         CommunicateEvent.Modify<int>("Server_SceneSwitch", sceneId);
     }

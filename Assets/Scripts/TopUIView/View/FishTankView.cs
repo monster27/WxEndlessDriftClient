@@ -191,7 +191,7 @@ public class FishTankView : BaseView
     {
         if (fishPrefab == null)
         {
-            Debug.LogError("[FishTankView] fishPrefab 为空");
+            Z_Logger.LogError("[FishTankView] fishPrefab 为空");
             return;
         }
 

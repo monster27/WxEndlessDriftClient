@@ -46,7 +46,7 @@ namespace View.Detail
         {
             if (itemData == null)
             {
-                Debug.LogWarning($"[UI_BagPrefab] UpdateDisplay - itemData为null，itemId={itemId}");
+                Z_Logger.LogWarning($"[UI_BagPrefab] UpdateDisplay - itemData为null，itemId={itemId}");
                 if (nameText != null) nameText.text = "";
                 if (quantityText != null) quantityText.text = "";
                 if (iconImage != null) iconImage.sprite = null;
@@ -78,7 +78,7 @@ namespace View.Detail
             if (equippedMarker != null)
             {
                 equippedMarker.gameObject.SetActive(isEquipped);
-                Debug.Log($"[UI_BagPrefab] 更新装备标记 - itemId={itemId}, name={itemData.name}, isEquipped={isEquipped}");
+                Z_Logger.Log($"[UI_BagPrefab] 更新装备标记 - itemId={itemId}, name={itemData.name}, isEquipped={isEquipped}");
             }
         }
 
@@ -86,7 +86,7 @@ namespace View.Detail
         {
             if (string.IsNullOrEmpty(itemData?.iconPath))
             {
-                Debug.LogError($"[UI_BagPrefab] 图标路径为空 - 物品ID: {itemId}");
+                Z_Logger.LogError($"[UI_BagPrefab] 图标路径为空 - 物品ID: {itemId}");
                 iconImage.sprite = null;
                 iconImage.color = Color.gray;
                 return;
@@ -103,7 +103,7 @@ namespace View.Detail
                 }
                 else
                 {
-                    Debug.LogError($"[UI_BagPrefab] 图标加载失败 - 物品ID: {itemId}, 路径: {itemData.iconPath}");
+                    Z_Logger.LogError($"[UI_BagPrefab] 图标加载失败 - 物品ID: {itemId}, 路径: {itemData.iconPath}");
                     iconImage.sprite = null;
                     iconImage.color = Color.gray;
                 }
@@ -112,7 +112,7 @@ namespace View.Detail
 
         private void OnItemClick()
         {
-            Debug.Log($"[UI_BagPrefab] 点击物品: ID={itemId}, 名称={itemData.name}, 数量={quantity}, 是否已装备={isEquipped}");
+            Z_Logger.Log($"[UI_BagPrefab] 点击物品: ID={itemId}, 名称={itemData.name}, 数量={quantity}, 是否已装备={isEquipped}");
 
             if (itemData != null && itemData.itemType == 2)
             {
@@ -136,7 +136,7 @@ namespace View.Detail
             if (itemData == null) return;
 
             int slotType = itemData.categoryId;
-            Debug.Log($"[UI_BagPrefab] 装备皮肤: itemId={itemId}, slotType={slotType}, name={itemData.name}");
+            Z_Logger.Log($"[UI_BagPrefab] 装备皮肤: itemId={itemId}, slotType={slotType}, name={itemData.name}");
 
             NetServerManager.Instance?.RequestEquipSkin(slotType, itemId);
 
@@ -149,21 +149,21 @@ namespace View.Detail
             if (itemId == 0)
             {
                 CommunicateEvent.Modify<EquipmentSlotType>(CommunicateEvent.EVENT_UNEQUIP_BAIT, EquipmentSlotType.Bait);
-                Debug.Log($"[UI_BagPrefab] 已发送卸下鱼饵请求（选择无鱼饵）");
+                Z_Logger.Log($"[UI_BagPrefab] 已发送卸下鱼饵请求（选择无鱼饵）");
                 isEquipped = true;
                 UpdateDisplay();
             }
             else if (isEquipped)
             {
                 CommunicateEvent.Modify<EquipmentSlotType>(CommunicateEvent.EVENT_UNEQUIP_BAIT, EquipmentSlotType.Bait);
-                Debug.Log($"[UI_BagPrefab] 已发送卸下鱼饵请求: {itemData?.name}");
+                Z_Logger.Log($"[UI_BagPrefab] 已发送卸下鱼饵请求: {itemData?.name}");
                 isEquipped = false;
                 UpdateDisplay();
             }
             else
             {
                 CommunicateEvent.Modify<int>(CommunicateEvent.EVENT_EQUIP_BAIT, itemId);
-                Debug.Log($"[UI_BagPrefab] 已发送装备鱼饵请求: {itemData?.name}");
+                Z_Logger.Log($"[UI_BagPrefab] 已发送装备鱼饵请求: {itemData?.name}");
                 isEquipped = true;
                 UpdateDisplay();
             }
@@ -177,7 +177,7 @@ namespace View.Detail
                 return;
             }
 
-            Debug.Log($"[UI_BagPrefab] 使用窝料: {itemData?.name}, 剩余数量: {quantity}");
+            Z_Logger.Log($"[UI_BagPrefab] 使用窝料: {itemData?.name}, 剩余数量: {quantity}");
             CommunicateEvent.Modify(CommunicateEvent.EVENT_CONSUME_BAIT_AND_ENTER_CONTINUOUS_MODE);
         }
 

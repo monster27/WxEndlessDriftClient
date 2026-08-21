@@ -64,7 +64,7 @@ public class FishingEquipView : MonoBehaviour
     /// </summary>
     private void OnEquipmentRefresh()
     {
-        Debug.Log("[FishingEquipView] 收到装备刷新事件，更新显示");
+        Z_Logger.Log("[FishingEquipView] 收到装备刷新事件，更新显示");
         UpdateDisplay();
     }
 
@@ -199,13 +199,13 @@ public class FishingEquipView : MonoBehaviour
 
                 // ✅ 获取装备等级
                 int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, equipId);
-                Debug.Log($"[FishingEquipView] 获取装备等级 - equipId={equipId}, level={level}");
+                Z_Logger.Log($"[FishingEquipView] 获取装备等级 - equipId={equipId}, level={level}");
 
                 item.SetData(currentType, equipId, icon, name, state, OnEquipItemClick, OnEquipAction, OnWatchAd, level);
                 item.gameObject.SetActive(true);
 
                 // ✅ 添加日志调试
-                Debug.Log($"[FishingEquipView] 更新装备项: ID={equipId}, Name={name}, State={state}, Level={level}");
+                Z_Logger.Log($"[FishingEquipView] 更新装备项: ID={equipId}, Name={name}, State={state}, Level={level}");
             }
             else
             {
@@ -295,19 +295,19 @@ public class FishingEquipView : MonoBehaviour
 
     private void OnMaskClick()
     {
-        Debug.Log("[FishingEquipView] OnMaskClick - 点击遮罩返回");
+        Z_Logger.Log("[FishingEquipView] OnMaskClick - 点击遮罩返回");
         callback?.Invoke("Back", null);
     }
 
     private void OnCloseClick()
     {
-        Debug.Log("[FishingEquipView] OnCloseClick - 点击关闭按钮返回");
+        Z_Logger.Log("[FishingEquipView] OnCloseClick - 点击关闭按钮返回");
         callback?.Invoke("Back", null);
     }
 
     private void OnLeftClick()
     {
-        Debug.Log("[FishingEquipView] OnLeftClick - 点击左箭头翻页");
+        Z_Logger.Log("[FishingEquipView] OnLeftClick - 点击左箭头翻页");
         List<int> currentIds = GetCurrentIds();
         int totalPages = Mathf.CeilToInt((float)currentIds.Count / itemsPerPage);
         if (totalPages <= 1) return;
@@ -323,7 +323,7 @@ public class FishingEquipView : MonoBehaviour
 
     private void OnRightClick()
     {
-        Debug.Log("[FishingEquipView] OnRightClick - 点击右箭头翻页");
+        Z_Logger.Log("[FishingEquipView] OnRightClick - 点击右箭头翻页");
         List<int> currentIds = GetCurrentIds();
         int totalPages = Mathf.CeilToInt((float)currentIds.Count / itemsPerPage);
         if (totalPages <= 1) return;
@@ -344,13 +344,13 @@ public class FishingEquipView : MonoBehaviour
 
     private void OnEquipAction(FishingEquipType type, int equipId)
     {
-        Debug.Log($"[FishingEquipView] OnEquipAction - type={type}, equipId={equipId}");
+        Z_Logger.Log($"[FishingEquipView] OnEquipAction - type={type}, equipId={equipId}");
         callback?.Invoke("EquipAction", new object[] { type, equipId });
     }
 
     private void OnWatchAd(FishingEquipType type, int equipId)
     {
-        Debug.Log($"[FishingEquipView] OnWatchAd - type={type}, equipId={equipId}");
+        Z_Logger.Log($"[FishingEquipView] OnWatchAd - type={type}, equipId={equipId}");
         string componentName = LoadDataManager.Instance.GetComponentName(equipId);
         string info = componentName != "未知组件" ? $"看广告解锁装备: {componentName}" : "看广告解锁装备";
         callback?.Invoke("OpenAd", new object[] { info, equipId, "看广告解锁", (System.Action)(() =>

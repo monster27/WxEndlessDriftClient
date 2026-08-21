@@ -5,12 +5,12 @@ using UnityEngine.UI;
 using System.Text;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
-//using SharedModels;
 
 namespace View.Detail
 {
     public class UI_FishBagPrefab : MonoBehaviour
     {
+        // ==================== 现有字段 ====================
         public Image iconImage;
         public Text quantityText;
         public Text nameText;
@@ -33,11 +33,11 @@ namespace View.Detail
         private bool isSold = false;
         private FishDetailData fishDetail;
 
-        // AA 句柄
         private AsyncOperationHandle<Sprite> _iconHandle;
         private AsyncOperationHandle<Sprite> _rarityHandle;
         private AsyncOperationHandle<Sprite> _starHandle;
 
+        // ==================== 现有属性 ====================
         public int ItemId => itemId;
         public int Quantity => quantity;
         public bool IsSelected => isSelected;
@@ -68,6 +68,8 @@ namespace View.Detail
         }
 
         public event System.Action<UI_FishBagPrefab> OnSelectionChanged;
+
+        // ==================== 现有方法 ====================
 
         void Start()
         {
@@ -102,6 +104,8 @@ namespace View.Detail
             UpdateDisplay();
             UpdateNewCatchStatus(isNewCatchFlag);
             UpdateSelectedVisual();
+
+            Z_Logger.Log($"[UI_FishBagPrefab] Init 完成 - ItemId={itemId}, Name={data?.name}, Quantity={qty}, IsShiny={fishDetail?.isShiny ?? false}");
         }
 
         public void SetSelectionCallback(System.Action<UI_FishBagPrefab> callback)
@@ -114,6 +118,7 @@ namespace View.Detail
             isSold = true;
             isSelected = false;
             gameObject.SetActive(false);
+            Z_Logger.Log($"[UI_FishBagPrefab] MarkAsSold - ItemId={itemId}");
         }
 
         private void UpdateDisplay()
@@ -174,6 +179,8 @@ namespace View.Detail
             if (rarityId <= 0) rarityId = 0;
 
             string path = $"UI/Icon/RarityBackground/{rarityId}";
+            Z_Logger.Log($"[UI_FishBagPrefab] 🔄 开始加载稀有度背景: {path}, ItemId={itemId}");
+
             AssetManager.LoadFromAddressables<Sprite>(path, (sprite, handle) =>
             {
                 _rarityHandle = handle;
@@ -182,28 +189,28 @@ namespace View.Detail
                     rarityBackgroundImage.sprite = sprite;
                     rarityBackgroundImage.gameObject.SetActive(true);
                     rarityBackgroundImage.color = Color.white;
+                    Z_Logger.Log($"[UI_FishBagPrefab] ✅ 稀有度背景加载成功: {path}, ItemId={itemId}");
                 }
                 else
                 {
-                    if (rarityId != 0)
+                    Z_Logger.LogWarning($"[UI_FishBagPrefab] ⚠️ 稀有度背景加载失败: {path}, ItemId={itemId}, 尝试加载默认背景");
+
+                    AssetManager.LoadFromAddressables<Sprite>("UI/Icon/RarityBackground/0", (defaultSprite, defaultHandle) =>
                     {
-                        AssetManager.LoadFromAddressables<Sprite>("UI/Icon/RarityBackground/0", (defaultSprite, defaultHandle) =>
+                        _rarityHandle = defaultHandle;
+                        if (defaultSprite != null)
                         {
-                            _rarityHandle = defaultHandle;
-                            if (defaultSprite != null)
-                            {
-                                rarityBackgroundImage.sprite = defaultSprite;
-                                rarityBackgroundImage.gameObject.SetActive(true);
-                                rarityBackgroundImage.color = Color.white;
-                                return;
-                            }
+                            rarityBackgroundImage.sprite = defaultSprite;
+                            rarityBackgroundImage.gameObject.SetActive(true);
+                            rarityBackgroundImage.color = Color.white;
+                            Z_Logger.Log($"[UI_FishBagPrefab] ✅ 默认稀有度背景加载成功: UI/Icon/RarityBackground/0, ItemId={itemId}");
+                        }
+                        else
+                        {
                             rarityBackgroundImage.gameObject.SetActive(false);
-                        });
-                    }
-                    else
-                    {
-                        rarityBackgroundImage.gameObject.SetActive(false);
-                    }
+                            Z_Logger.LogError($"[UI_FishBagPrefab] ❌ 默认稀有度背景加载失败: UI/Icon/RarityBackground/0, ItemId={itemId}");
+                        }
+                    });
                 }
             });
         }
@@ -214,6 +221,10 @@ namespace View.Detail
             if (shinyIconImage != null)
             {
                 shinyIconImage.gameObject.SetActive(isShiny);
+                if (isShiny)
+                {
+                    Z_Logger.Log($"[UI_FishBagPrefab] ✨ 闪亮图标显示: ItemId={itemId}");
+                }
             }
         }
 
@@ -223,6 +234,10 @@ namespace View.Detail
             if (lockIcon != null)
             {
                 lockIcon.gameObject.SetActive(isLocked);
+                if (isLocked)
+                {
+                    Z_Logger.Log($"[UI_FishBagPrefab] 🔒 锁定图标显示: ItemId={itemId}");
+                }
             }
         }
 
@@ -244,6 +259,8 @@ namespace View.Detail
                 if (starRatingId > 0)
                 {
                     string path = $"UI/Icon/StarRating/star_{starRatingId}";
+                    Z_Logger.Log($"[UI_FishBagPrefab] 🔄 开始加载星级图标: {path}, ItemId={itemId}");
+
                     AssetManager.LoadFromAddressables<Sprite>(path, (sprite, handle) =>
                     {
                         _starHandle = handle;
@@ -253,10 +270,12 @@ namespace View.Detail
                             starRatingImage.gameObject.SetActive(true);
                             starRatingImage.color = Color.white;
                             starRatingImage.enabled = true;
+                            Z_Logger.Log($"[UI_FishBagPrefab] ✅ 星级图标加载成功: {path}, ItemId={itemId}");
                         }
                         else
                         {
                             starRatingImage.gameObject.SetActive(false);
+                            Z_Logger.LogWarning($"[UI_FishBagPrefab] ⚠️ 星级图标加载失败: {path}, ItemId={itemId}");
                         }
                     });
                 }
@@ -301,6 +320,7 @@ namespace View.Detail
         public void UpdateQuantity(int newQuantity)
         {
             quantity = newQuantity;
+            Z_Logger.Log($"[UI_FishBagPrefab] UpdateQuantity - ItemId={itemId}, NewQuantity={newQuantity}");
         }
 
         public void UpdateNewCatchStatus(bool isNew)
@@ -309,6 +329,10 @@ namespace View.Detail
             if (newCatchImage != null)
             {
                 newCatchImage.gameObject.SetActive(isNew);
+            }
+            if (isNew)
+            {
+                Z_Logger.Log($"[UI_FishBagPrefab] 🆕 新捕获标记: ItemId={itemId}");
             }
         }
 
@@ -322,11 +346,12 @@ namespace View.Detail
             isSelected = selected;
             UpdateSelectedVisual();
             OnSelectionChanged?.Invoke(this);
+            Z_Logger.Log($"[UI_FishBagPrefab] SetSelection - ItemId={itemId}, IsSelected={selected}");
         }
 
         private void OnSelectButtonClick()
         {
-            Debug.Log($"[UI_FishBagPrefab] OnSelectButtonClick - itemId={itemId}, isSelected={isSelected}");
+            Z_Logger.Log($"[UI_FishBagPrefab] OnSelectButtonClick - ItemId={itemId}, IsSelected={isSelected}");
             if (isNewCatch)
             {
                 UpdateNewCatchStatus(false);
@@ -334,7 +359,7 @@ namespace View.Detail
 
             isSelected = !isSelected;
             UpdateSelectedVisual();
-            Debug.Log($"[UI_FishBagPrefab] 点击选择: itemId={itemId}, isSelected={isSelected}");
+            Z_Logger.Log($"[UI_FishBagPrefab] ✅ 选择切换完成 - ItemId={itemId}, IsSelected={isSelected}");
             OnSelectionChanged?.Invoke(this);
         }
 
@@ -350,54 +375,69 @@ namespace View.Detail
         {
             if (string.IsNullOrEmpty(itemData?.iconPath))
             {
-                Debug.LogError($"[UI_FishBagPrefab] 图标路径为空 - 物品ID: {itemId}");
-                iconImage.sprite = null;
-                iconImage.color = Color.gray;
+                Z_Logger.LogError($"[UI_FishBagPrefab] ❌ 图标路径为空 - ItemId={itemId}");
+                if (iconImage != null)
+                {
+                    iconImage.sprite = null;
+                    iconImage.color = Color.gray;
+                }
                 return;
             }
 
             bool isShiny = fishDetail?.isShiny ?? false;
             string basePath = itemData.iconPath;
+            string loadPath = isShiny ? basePath + "_s" : basePath;
 
-            if (isShiny)
-            {
-                string shinyPath = basePath + "_s";
-                AssetManager.LoadFromAddressables<Sprite>(shinyPath, (sprite, handle) =>
-                {
-                    _iconHandle = handle;
-                    if (sprite != null)
-                    {
-                        iconImage.sprite = sprite;
-                        iconImage.color = Color.white;
-                    }
-                    else
-                    {
-                        // 回退到普通图标
-                        LoadFallbackIcon(basePath);
-                    }
-                });
-            }
-            else
-            {
-                LoadFallbackIcon(basePath);
-            }
-        }
+            Z_Logger.Log($"[UI_FishBagPrefab] 🔄 开始加载图标 - ItemId={itemId}, Path={loadPath}, IsShiny={isShiny}");
 
-        private void LoadFallbackIcon(string path)
-        {
-            AssetManager.LoadFromAddressables<Sprite>(path, (sprite, handle) =>
+            AssetManager.LoadFromAddressables<Sprite>(loadPath, (sprite, handle) =>
             {
                 _iconHandle = handle;
                 if (sprite != null)
                 {
                     iconImage.sprite = sprite;
                     iconImage.color = Color.white;
+                    Z_Logger.Log($"[UI_FishBagPrefab] ✅ 图标加载成功 - ItemId={itemId}, Path={loadPath}");
                 }
                 else
                 {
-                    Debug.LogError($"[UI_FishBagPrefab] 图标加载失败: {path}, 物品ID: {itemId}");
-                    iconImage.sprite = null;
-                    iconImage.color = Color.gray;
+                    Z_Logger.LogWarning($"[UI_FishBagPrefab] ⚠️ 图标加载失败: {loadPath}, ItemId={itemId}, 尝试回退到普通图标");
+
+                    if (isShiny)
+                    {
+                        // 回退到普通图标
+                        string fallbackPath = basePath;
+                        Z_Logger.Log($"[UI_FishBagPrefab] 🔄 尝试回退加载: {fallbackPath}, ItemId={itemId}");
+
+                        AssetManager.LoadFromAddressables<Sprite>(fallbackPath, (fallbackSprite, fallbackHandle) =>
+                        {
+                            _iconHandle = fallbackHandle;
+                            if (fallbackSprite != null)
+                            {
+                                iconImage.sprite = fallbackSprite;
+                                iconImage.color = Color.white;
+                                Z_Logger.Log($"[UI_FishBagPrefab] ✅ 回退图标加载成功 - ItemId={itemId}, Path={fallbackPath}");
+                            }
+                            else
+                            {
+                                Z_Logger.LogError($"[UI_FishBagPrefab] ❌ 回退图标也加载失败 - ItemId={itemId}, Path={fallbackPath}");
+                                if (iconImage != null)
+                                {
+                                    iconImage.sprite = null;
+                                    iconImage.color = Color.gray;
+                                }
+                            }
+                        });
+                    }
+                    else
+                    {
+                        Z_Logger.LogError($"[UI_FishBagPrefab] ❌ 图标加载失败 - ItemId={itemId}, Path={loadPath}");
+                        if (iconImage != null)
+                        {
+                            iconImage.sprite = null;
+                            iconImage.color = Color.gray;
+                        }
+                    }
                 }
             });
         }

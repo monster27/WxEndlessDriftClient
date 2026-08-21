@@ -48,18 +48,18 @@ public class ItemDataManager : SingletonMono<ItemDataManager>
         {
             if (LoadDataManager.Instance.bagCategories.Count == 0)
             {
-                Debug.Log("ItemDataManager: LoadDataManager数据为空，触发重新加载");
+                Z_Logger.Log("ItemDataManager: LoadDataManager数据为空，触发重新加载");
                 LoadDataManager.Instance.LoadAllData();
                 LoadDataManager.Instance.PrintAllData();
             }
         }
         else
         {
-            Debug.LogError("ItemDataManager: LoadDataManager.Instance为NULL");
+            Z_Logger.LogError("ItemDataManager: LoadDataManager.Instance为NULL");
         }
         
         // 强制重新初始化分类映射
-        Debug.Log("ItemDataManager: 强制重新初始化分类映射");
+        Z_Logger.Log("ItemDataManager: 强制重新初始化分类映射");
         InitCategoryMappings();
         
         // 初始化所有物品数据
@@ -67,7 +67,7 @@ public class ItemDataManager : SingletonMono<ItemDataManager>
         
         // 收集并打印所有流程数据
         string processLog = CollectProcessData();
-        Debug.Log("\n" + processLog);
+        Z_Logger.Log("\n" + processLog);
     }
 
     private void InitCategoryMappings()
@@ -84,7 +84,7 @@ public class ItemDataManager : SingletonMono<ItemDataManager>
         {
             if (LoadDataManager.Instance.bagCategories.Count == 0)
             {
-                Debug.Log("ItemDataManager: 分类数据为空，触发LoadDataManager重新加载");
+                Z_Logger.Log("ItemDataManager: 分类数据为空，触发LoadDataManager重新加载");
                 LoadDataManager.Instance.LoadAllData();
             }
             
@@ -108,7 +108,7 @@ public class ItemDataManager : SingletonMono<ItemDataManager>
         }
         else
         {
-            Debug.LogError("ItemDataManager: LoadDataManager.Instance为NULL");
+            Z_Logger.LogError("ItemDataManager: LoadDataManager.Instance为NULL");
         }
     }
 
@@ -487,7 +487,7 @@ public class ItemDataManager : SingletonMono<ItemDataManager>
         InitAllItems();
         
         string processLog = CollectProcessData();
-        Debug.Log("\nItemDataManager: 数据重新初始化完成\n" + processLog);
+        Z_Logger.Log("\nItemDataManager: 数据重新初始化完成\n" + processLog);
     }
 
     // ==================== 调试方法 ====================
@@ -497,14 +497,14 @@ public class ItemDataManager : SingletonMono<ItemDataManager>
         if (Input.GetKeyUp(KeyCode.Q))
         {
             string processLog = CollectProcessData();
-            Debug.Log("\n" + processLog);
+            Z_Logger.Log("\n" + processLog);
         }
     }
 
     public void PrintCategoryMappings()
     {
         string processLog = CollectProcessData();
-        Debug.Log("\n" + processLog);
+        Z_Logger.Log("\n" + processLog);
     }
 
     private string GetItemInfo(object item)

@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 //using SharedModels;
-using Logger = Utils.Logger;
+////using Z_Logger = Utils.Z_Logger;
 
 public partial class NetServerManager
 {
@@ -13,12 +13,12 @@ public partial class NetServerManager
     private void OnPurchaseMallItem((int itemId, int quantity) request)
     {
         var (itemId, quantity) = request;
-        Logger.Log($"[NetServerManager] OnPurchaseMallItem - itemId={itemId}, quantity={quantity}");
+        Z_Logger.Log($"[NetServerManager] OnPurchaseMallItem - itemId={itemId}, quantity={quantity}");
         PurchaseMallItem(itemId, quantity, (success, message) =>
         {
             if (success)
             {
-                Logger.Log($"[NetServerManager] 购买成功: {message}");
+                Z_Logger.Log($"[NetServerManager] 购买成功: {message}");
 
                 global::ItemData itemData = LoadDataManager.Instance?.GetItemById(itemId);
                 if (itemData != null && itemData.itemType == 7)
@@ -27,18 +27,18 @@ public partial class NetServerManager
                     {
                         if (infoSuccess)
                         {
-                            Logger.Log($"[NetServerManager] 图鉴情报页面 {itemId} 购买记录成功");
+                            Z_Logger.Log($"[NetServerManager] 图鉴情报页面 {itemId} 购买记录成功");
                         }
                         else
                         {
-                            Logger.LogWarning($"[NetServerManager] 图鉴情报页面 {itemId} 购买记录失败（可能已购买）");
+                            Z_Logger.LogWarning($"[NetServerManager] 图鉴情报页面 {itemId} 购买记录失败（可能已购买）");
                         }
                     });
                 }
             }
             else
             {
-                Logger.LogWarning($"[NetServerManager] 购买失败: {message}");
+                Z_Logger.LogWarning($"[NetServerManager] 购买失败: {message}");
                 GameUIManager.ShowMessage(message);
             }
         });
@@ -56,7 +56,7 @@ public partial class NetServerManager
     {
         // ✅ 添加 playerId 参数
         string url = serverUrl + ServerUrls.Player.MallItems + $"?playerId={_currentPlayerId}";
-        Logger.Log($"[NetServerManager] 同步商城物品列表: {url}");
+        Z_Logger.Log($"[NetServerManager] 同步商城物品列表: {url}");
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
@@ -68,7 +68,7 @@ public partial class NetServerManager
                 try
                 {
                     string json = request.downloadHandler.text;
-                    Logger.Log("[NetServerManager] 商城物品列表响应: " + json);
+                    Z_Logger.Log("[NetServerManager] 商城物品列表响应: " + json);
 
                     var response = JsonUtility.FromJson<MallItemsResponse>(json);
                     if (response != null && response.success && response.items != null)
@@ -94,7 +94,7 @@ public partial class NetServerManager
                                 isNew = item.isNew ?? false
                             };
 
-                            Logger.Log($"[NetServerManager] 商城物品: ID={item.itemId}, 价格={item.price}, 库存={item.stock}, 上架={item.isOnSale}");
+                            Z_Logger.Log($"[NetServerManager] 商城物品: ID={item.itemId}, 价格={item.price}, 库存={item.stock}, 上架={item.isOnSale}");
                         }
 
                         int onSaleCount = 0;
@@ -102,25 +102,25 @@ public partial class NetServerManager
                         {
                             if (kvp.Value.isOnSale) onSaleCount++;
                         }
-                        Logger.Log($"[NetServerManager] 同步商城物品列表完成，共 {mallItems.Count} 个商品（已上架 {onSaleCount} 个）");
+                        Z_Logger.Log($"[NetServerManager] 同步商城物品列表完成，共 {mallItems.Count} 个商品（已上架 {onSaleCount} 个）");
 
                         CommunicateEvent.Modify<Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_MALL_DATA_CHANGED, mallItems);
                     }
                     else
                     {
-                        Logger.LogWarning("[NetServerManager] 商城物品列表响应失败或为空");
+                        Z_Logger.LogWarning("[NetServerManager] 商城物品列表响应失败或为空");
                         mallItems.Clear();
                         CommunicateEvent.Modify<Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_MALL_DATA_CHANGED, mallItems);
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Logger.LogError($"[NetServerManager] 解析商城物品列表失败: {ex.Message}");
+                    Z_Logger.LogError($"[NetServerManager] 解析商城物品列表失败: {ex.Message}");
                 }
             }
             else
             {
-                Logger.LogError($"[NetServerManager] 获取商城物品列表失败: {request.error}");
+                Z_Logger.LogError($"[NetServerManager] 获取商城物品列表失败: {request.error}");
             }
         }
     }
@@ -145,7 +145,7 @@ public partial class NetServerManager
         string url = serverUrl + ServerUrls.Player.MallPurchase;
         string jsonData = $"{{\"PlayerId\":{_currentPlayerId},\"ItemId\":{itemId},\"Quantity\":{quantity}}}";
 
-        Logger.Log($"[NetServerManager] 购买商城物品请求: {jsonData}");
+        Z_Logger.Log($"[NetServerManager] 购买商城物品请求: {jsonData}");
 
         using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
         {
@@ -160,14 +160,14 @@ public partial class NetServerManager
             if (request.result == UnityWebRequest.Result.Success)
             {
                 string responseText = request.downloadHandler.text;
-                Logger.Log($"[NetServerManager] 购买商城物品响应: {responseText}");
+                Z_Logger.Log($"[NetServerManager] 购买商城物品响应: {responseText}");
 
                 try
                 {
                     var response = JsonUtility.FromJson<PurchaseMallItemResponse>(responseText);
                     if (response != null && response.success)
                     {
-                        Logger.Log($"[NetServerManager] 成功购买物品 {itemId}, 数量 {quantity}, 总价 {response.totalPrice}, 剩余金币 {response.remainingGold}");
+                        Z_Logger.Log($"[NetServerManager] 成功购买物品 {itemId}, 数量 {quantity}, 总价 {response.totalPrice}, 剩余金币 {response.remainingGold}");
 
                         playerGold = response.remainingGold;
 
@@ -184,12 +184,12 @@ public partial class NetServerManager
                         if (playerInventory.ContainsKey(itemId))
                         {
                             playerInventory[itemId] += quantity;
-                            Logger.Log($"[NetServerManager] 本地背包数据更新: ItemId={itemId}, 新数量={playerInventory[itemId]}");
+                            Z_Logger.Log($"[NetServerManager] 本地背包数据更新: ItemId={itemId}, 新数量={playerInventory[itemId]}");
                         }
                         else
                         {
                             playerInventory[itemId] = quantity;
-                            Logger.Log($"[NetServerManager] 本地背包数据新增: ItemId={itemId}, 数量={quantity}");
+                            Z_Logger.Log($"[NetServerManager] 本地背包数据新增: ItemId={itemId}, 数量={quantity}");
                         }
 
                         PlayerDataManager.Instance?.SyncInventoryFromServer();
@@ -202,7 +202,7 @@ public partial class NetServerManager
                         if (isNestBait)
                         {
                             CommunicateEvent.Modify("BaitCountChanged");
-                            Logger.Log("[NetServerManager] 发送窝料数量更新事件");
+                            Z_Logger.Log("[NetServerManager] 发送窝料数量更新事件");
                             StartCoroutine(SyncContinuousModeStatusCoroutine());
                         }
 
@@ -210,7 +210,7 @@ public partial class NetServerManager
                         {
                             CommunicateEvent.Modify("BaitCountChanged");
                             CommunicateEvent.Modify("BaitDataUpdated");
-                            Logger.Log($"[NetServerManager] 发送鱼饵数量更新事件: itemId={itemId}");
+                            Z_Logger.Log($"[NetServerManager] 发送鱼饵数量更新事件: itemId={itemId}");
                         }
 
                         SyncMallItemsFromServer();
@@ -221,21 +221,21 @@ public partial class NetServerManager
                     }
                     else
                     {
-                        Logger.LogWarning($"[NetServerManager] 购买商城物品失败: {response?.message ?? "未知错误"}");
+                        Z_Logger.LogWarning($"[NetServerManager] 购买商城物品失败: {response?.message ?? "未知错误"}");
                         callback?.Invoke(false, response?.message ?? "购买失败");
                         GameUIManager.Instance?.ShowTip($"购买失败：{response?.message ?? "未知错误"}");
                     }
                 }
                 catch (System.Exception ex)
                 {
-                    Logger.LogError($"[NetServerManager] 解析购买商城物品响应失败: {ex.Message}");
+                    Z_Logger.LogError($"[NetServerManager] 解析购买商城物品响应失败: {ex.Message}");
                     callback?.Invoke(false, "解析响应失败");
                     GameUIManager.Instance?.ShowTip("购买失败，请重试");
                 }
             }
             else
             {
-                Logger.LogError($"[NetServerManager] 购买商城物品请求失败: {request.error}");
+                Z_Logger.LogError($"[NetServerManager] 购买商城物品请求失败: {request.error}");
                 callback?.Invoke(false, request.error);
                 GameUIManager.Instance?.ShowTip("网络请求失败，请检查网络");
             }

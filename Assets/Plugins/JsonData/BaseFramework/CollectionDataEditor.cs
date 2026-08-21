@@ -1,4 +1,4 @@
-﻿// ==================== CollectionDataEditor.cs ====================
+// ==================== CollectionDataEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -561,12 +561,12 @@ public class CollectionDataEditor : EditorWindow
                                 page.entries = new List<int>();
                         }
                     }
-                    Debug.Log($"加载成功，共 {categories.Count} 个分类");
+                    Z_Logger.Log($"加载成功，共 {categories.Count} 个分类");
                 }
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"加载失败: {e.Message}");
+                Z_Logger.LogError($"加载失败: {e.Message}");
                 categories = new List<CollectionCategory>();
             }
         }
@@ -592,7 +592,7 @@ public class CollectionDataEditor : EditorWindow
 
         File.WriteAllText(fullPath, JsonUtility.ToJson(wrapper, true));
         AssetDatabase.Refresh();
-        Debug.Log($"保存成功: {fullPath}");
+        Z_Logger.Log($"保存成功: {fullPath}");
     }
 
     private void AddDefaultData()
@@ -850,7 +850,7 @@ public class CollectionDataEditor : EditorWindow
         catch (System.Exception e)
         {
             EditorUtility.DisplayDialog("错误", $"解析鱼类数据失败: {e.Message}", "确定");
-            Debug.LogError($"AddFishesByIsland error: {e}");
+            Z_Logger.LogError($"AddFishesByIsland error: {e}");
         }
     }
 

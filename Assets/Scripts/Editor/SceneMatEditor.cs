@@ -20,9 +20,14 @@ public class SceneMatEditor : Editor
 
     private string operationLog = "";
 
-    private void OnEnable()
+    private async void OnEnable()
     {
         manager = (SceneMatManager)target;
+
+        // ✅ 先异步加载数据
+        await manager.LoadSceneData();
+
+        // ✅ 再刷新 UI
         LoadSceneOptions();
     }
 
@@ -45,12 +50,13 @@ public class SceneMatEditor : Editor
         DrawOperationLog();
     }
 
+    // ========== 修改1：只从内存加载，不从文件加载 ==========
     private void LoadSceneOptions()
     {
         if (manager == null) return;
 
-        manager.LoadSceneData();
-
+        // ❌ 删除 await manager.LoadSceneData();
+        // ✅ 直接使用内存中的数据
         var scenes = manager.GetAllSceneData();
         if (scenes == null || scenes.Count == 0)
         {
@@ -85,12 +91,8 @@ public class SceneMatEditor : Editor
 
         if (sceneOptions == null || sceneOptions.Length == 0)
         {
-            LoadSceneOptions();
-            if (sceneOptions == null || sceneOptions.Length == 0)
-            {
-                EditorGUILayout.HelpBox("请先加载场景数据", MessageType.Warning);
-                return;
-            }
+            EditorGUILayout.HelpBox("请先加载场景数据", MessageType.Warning);
+            return;
         }
 
         int newIndex = EditorGUILayout.Popup("选择场景", selectedSceneIndex, sceneOptions);
@@ -174,10 +176,18 @@ public class SceneMatEditor : Editor
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("刷新场景列表（重新读取JSON）"))
         {
-            LoadSceneOptions();
+            // ✅ 这个按钮保留 LoadSceneData()，因为用户明确要重新从文件读取
+            LoadSceneDataAndRefresh();
             AddLog("🔄 已重新读取JSON数据，刷新场景列表");
         }
         EditorGUILayout.EndHorizontal();
+    }
+
+    // ========== 新增：从文件重新加载 ==========
+    private async void LoadSceneDataAndRefresh()
+    {
+        await manager.LoadSceneData();
+        LoadSceneOptions();
     }
 
     private void DrawElementItem(SceneElementData element, int index)
@@ -229,11 +239,7 @@ public class SceneMatEditor : Editor
         {
             if (selectedScene != null)
             {
-                manager.CollectDataFromControllers();
-                manager.LoadSceneData();
-                LoadSceneOptions();
-                AddLog($"📥 已从当前场景加载数据: {selectedScene.sceneId}");
-                EditorUtility.DisplayDialog("加载完成", $"已从场景 {selectedScene.sceneId} 加载数据", "确定");
+                LoadFromCurrentScene();
             }
             else
             {
@@ -243,12 +249,27 @@ public class SceneMatEditor : Editor
         EditorGUILayout.EndHorizontal();
     }
 
+    // ========== 从当前场景加载 ==========
+    private void LoadFromCurrentScene()
+    {
+        if (selectedScene == null) return;
+
+        // ✅ 直接从场景收集数据到内存，不加载文件
+        manager.CollectDataFromControllers();
+
+        // ✅ 刷新 UI
+        LoadSceneOptions();
+
+        AddLog($"📥 已从当前场景加载数据: {selectedScene.sceneId}");
+        EditorUtility.DisplayDialog("加载完成", $"已从场景 {selectedScene.sceneId} 加载数据", "确定");
+    }
+
     private void DrawSaveButton()
     {
         EditorGUILayout.Space(10);
         EditorGUILayout.LabelField("=== 保存 ===", EditorStyles.boldLabel);
 
-        string defaultPath = Path.Combine("Assets/Resources", manager.sceneDataPath + ".json");
+        string defaultPath = Path.Combine("Assets/Addressables/", manager.sceneDataPath + ".json");
         EditorGUILayout.LabelField($"默认保存路径: {defaultPath}", EditorStyles.miniLabel);
 
         EditorGUILayout.BeginHorizontal();
@@ -273,8 +294,8 @@ public class SceneMatEditor : Editor
             manager.SaveToDefaultPath();
             AssetDatabase.Refresh();
 
-            manager.LoadSceneData();
-            LoadSceneOptions();
+            // ✅ 保存后从文件重新加载，确认数据正确
+            LoadSceneDataAndRefresh();
 
             string sceneInfo = "";
             if (selectedScene != null)
@@ -344,8 +365,7 @@ public class SceneMatEditor : Editor
             manager.SaveSceneDataToFile(path);
             AssetDatabase.Refresh();
 
-            manager.LoadSceneData();
-            LoadSceneOptions();
+            LoadSceneDataAndRefresh();
 
             AddLog($"💾 另存为: {path} ({sceneInfo})");
             EditorUtility.DisplayDialog("保存成功", $"数据已保存到:\n{path}\n\n{sceneInfo}", "确定");

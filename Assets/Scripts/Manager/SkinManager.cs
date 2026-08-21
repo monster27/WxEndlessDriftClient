@@ -71,14 +71,14 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
     {
         if (isSkinInitialized)
         {
-            Debug.Log("[SkinManager] 已初始化，跳过重复调用");
+            Z_Logger.Log("[SkinManager] 已初始化，跳过重复调用");
             return;
         }
         isSkinInitialized = true;
 
         // 用默认皮肤初始化equippedSkins，确保在服务器数据未返回前皮肤也显示为"已装备"
         equippedSkins = new Dictionary<int, int>(DefaultSkins);
-        Debug.Log($"[SkinManager] Init: 用默认皮肤初始化，共 {equippedSkins.Count} 个");
+        Z_Logger.Log($"[SkinManager] Init: 用默认皮肤初始化，共 {equippedSkins.Count} 个");
 
         RegisterEvents();
         CheckAndApplySkins();
@@ -88,7 +88,7 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
     {
         if (equippedSkins.Count > 0 && SceneMatManager.Instance != null && SceneMatManager.Instance.IsInitialized)
         {
-            Debug.Log("[SkinManager] Awake时发现已有皮肤数据，立即应用");
+            Z_Logger.Log("[SkinManager] Awake时发现已有皮肤数据，立即应用");
             ApplyAllSkins();
         }
     }
@@ -107,7 +107,7 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
 
     private void OnAllLoadingComplete(string message)
     {
-        Debug.Log("[SkinManager] 收到所有加载完成事件，开始应用皮肤");
+        Z_Logger.Log("[SkinManager] 收到所有加载完成事件，开始应用皮肤");
         isSceneMatReady = true;
 
         // ✅ 主动从 NetServerManager 同步皮肤数据（降级方案，不依赖 EVENT_SKIN_DATA_UPDATED 事件）
@@ -135,14 +135,14 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
     {
         if (NetServerManager.Instance == null)
         {
-            Debug.LogWarning("[SkinManager] SyncSkinsFromNetServer - NetServerManager 为空，跳过");
+            Z_Logger.LogWarning("[SkinManager] SyncSkinsFromNetServer - NetServerManager 为空，跳过");
             return;
         }
 
         var skinsData = NetServerManager.Instance.GetEquippedSkinsData();
         if (skinsData == null || skinsData.Count == 0)
         {
-            Debug.LogWarning("[SkinManager] SyncSkinsFromNetServer - 服务器皮肤数据为空，保持默认值");
+            Z_Logger.LogWarning("[SkinManager] SyncSkinsFromNetServer - 服务器皮肤数据为空，保持默认值");
             return;
         }
 
@@ -157,7 +157,7 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
                 serverOverrideCount++;
             }
         }
-        Debug.Log($"[SkinManager] SyncSkinsFromNetServer - 主动同步成功，服务器覆盖 {serverOverrideCount} 个，合并后共 {equippedSkins.Count} 个皮肤");
+        Z_Logger.Log($"[SkinManager] SyncSkinsFromNetServer - 主动同步成功，服务器覆盖 {serverOverrideCount} 个，合并后共 {equippedSkins.Count} 个皮肤");
     }
 
     public void SwitchToIndoorScene()
@@ -170,7 +170,7 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
         {
             outdoorSceneObj.SetActive(false);
         }
-        Debug.Log("[SkinManager] 切换到室内场景");
+        Z_Logger.Log("[SkinManager] 切换到室内场景");
     }
 
     public void SwitchToOutdoorScene()
@@ -183,13 +183,13 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
         {
             indoorSceneObj.SetActive(false);
         }
-        Debug.Log("[SkinManager] 切换到室外场景");
+        Z_Logger.Log("[SkinManager] 切换到室外场景");
     }
 
     public void EquipSkin(int slotType, int skinId)
     {
         equippedSkins[slotType] = skinId;
-        Debug.Log($"[SkinManager] 装备皮肤: slotType={slotType}, skinId={skinId}");
+        Z_Logger.Log($"[SkinManager] 装备皮肤: slotType={slotType}, skinId={skinId}");
         ApplySkinRender(slotType, skinId);
     }
 
@@ -219,7 +219,7 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
 
     public void ApplyAllSkins()
     {
-        Debug.Log($"[SkinManager] 开始应用所有皮肤，已装备 {equippedSkins.Count} 个");
+        Z_Logger.Log($"[SkinManager] 开始应用所有皮肤，已装备 {equippedSkins.Count} 个");
 
         // 合并已装备皮肤和默认皮肤：已装备的优先，未装备的使用默认值
         var allSkins = new Dictionary<int, int>(DefaultSkins);
@@ -253,7 +253,7 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
                 serverOverrideCount++;
             }
         }
-        Debug.Log($"[SkinManager] 皮肤数据更新，服务器返回 {skins.Count} 个，覆盖默认 {serverOverrideCount} 个，合并后共 {equippedSkins.Count} 个皮肤");
+        Z_Logger.Log($"[SkinManager] 皮肤数据更新，服务器返回 {skins.Count} 个，覆盖默认 {serverOverrideCount} 个，合并后共 {equippedSkins.Count} 个皮肤");
 
         if (isSceneMatReady && SceneMatManager.Instance != null && SceneMatManager.Instance.IsInitialized)
         {
@@ -262,7 +262,7 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
         else
         {
             hasPendingSkins = true;
-            Debug.Log("[SkinManager] SceneMatManager尚未就绪，延迟应用皮肤");
+            Z_Logger.Log("[SkinManager] SceneMatManager尚未就绪，延迟应用皮肤");
         }
     }
 
@@ -270,31 +270,31 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
     {
         if (!slotTypeToRenderType.TryGetValue(slotType, out SceneMatManager.RenderElementType renderType))
         {
-            Debug.LogWarning($"[SkinManager] 未找到slotType={slotType}对应的渲染类型");
+            Z_Logger.LogWarning($"[SkinManager] 未找到slotType={slotType}对应的渲染类型");
             return;
         }
 
         if (SceneMatManager.Instance == null)
         {
-            Debug.LogWarning("[SkinManager] SceneMatManager未找到");
+            Z_Logger.LogWarning("[SkinManager] SceneMatManager未找到");
             return;
         }
 
         if (!SceneMatManager.Instance.IsInitialized)
         {
-            Debug.LogWarning("[SkinManager] SceneMatManager尚未初始化");
+            Z_Logger.LogWarning("[SkinManager] SceneMatManager尚未初始化");
             return;
         }
 
         SceneMatCtrl controller = SceneMatManager.Instance.GetController(renderType);
         if (controller == null)
         {
-            Debug.LogWarning($"[SkinManager] 未找到渲染类型{renderType}对应的控制器");
+            Z_Logger.LogWarning($"[SkinManager] 未找到渲染类型{renderType}对应的控制器");
             return;
         }
 
         string skinPath = GetSkinPath(slotType, skinId);
-        Debug.Log($"[SkinManager] 应用皮肤: slotType={slotType}, skinId={skinId}, renderType={renderType}, path={skinPath}");
+        Z_Logger.Log($"[SkinManager] 应用皮肤: slotType={slotType}, skinId={skinId}, renderType={renderType}, path={skinPath}");
 
         controller.SetMainTextureByPath(skinPath);
     }

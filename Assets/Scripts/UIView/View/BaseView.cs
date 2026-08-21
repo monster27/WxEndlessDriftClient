@@ -87,7 +87,7 @@ public class BaseView : MonoBehaviour
 
     protected virtual void OnCloseButtonClick()
     {
-        Debug.Log($"[{GetType().Name}] OnCloseButtonClick");
+        Z_Logger.Log($"[{GetType().Name}] OnCloseButtonClick");
         HideView();
     }
 
@@ -98,7 +98,7 @@ public class BaseView : MonoBehaviour
     {
         PreShow();
         gameObject.SetActive(true);
-        Debug.Log($"[{GetType().Name}] ShowView");
+        Z_Logger.Log($"[{GetType().Name}] ShowView");
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ public class BaseView : MonoBehaviour
     {
         PreHide();
         gameObject.SetActive(false);
-        Debug.Log($"[{GetType().Name}] HideView");
+        Z_Logger.Log($"[{GetType().Name}] HideView");
     }
 
     /// <summary>

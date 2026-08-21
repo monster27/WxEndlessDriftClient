@@ -8,13 +8,13 @@ public class UI_MapPrefab : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private Text islandNameText;
     [SerializeField] private Button clickButton;
-    [SerializeField] private Image islandIcon;
-    [SerializeField] private string iconAddressPrefix = "UI/Icon/IslandInfoIcons/";
+    // [SerializeField] private Image islandIcon;  // 已注释
+    // [SerializeField] private string iconAddressPrefix = "UI/Icon/IslandInfoIcons/";  // 已注释
 
     private int islandId;
     private string islandName;
     private System.Action onClickCallback;
-    private AsyncOperationHandle<Sprite> _iconHandle;
+    // private AsyncOperationHandle<Sprite> _iconHandle;  // 已注释
 
     void Awake()
     {
@@ -32,7 +32,7 @@ public class UI_MapPrefab : MonoBehaviour
 
     void OnDestroy()
     {
-        AssetManager.ReleaseAddressable(_iconHandle);
+        // AssetManager.ReleaseAddressable(_iconHandle);  // 已注释
     }
 
     public void SetIslandInfo(int id, string name)
@@ -45,17 +45,17 @@ public class UI_MapPrefab : MonoBehaviour
             islandNameText.text = name;
         }
 
-        // ✅ 异步加载岛屿图标
-        string iconPath = $"{iconAddressPrefix}{id}";
-        AssetManager.LoadFromAddressables<Sprite>(iconPath, (sprite, handle) =>
-        {
-            _iconHandle = handle;
-            if (islandIcon != null && sprite != null)
-            {
-                islandIcon.sprite = sprite;
-                islandIcon.color = Color.white;
-            }
-        });
+        // ✅ 异步加载岛屿图标（已注释）
+        // string iconPath = $"{iconAddressPrefix}{id}";
+        // AssetManager.LoadFromAddressables<Sprite>(iconPath, (sprite, handle) =>
+        // {
+        //     _iconHandle = handle;
+        //     if (islandIcon != null && sprite != null)
+        //     {
+        //         islandIcon.sprite = sprite;
+        //         islandIcon.color = Color.white;
+        //     }
+        // });
     }
 
     public void SetIslandName(string name)
@@ -79,7 +79,7 @@ public class UI_MapPrefab : MonoBehaviour
 
     private void OnButtonClick()
     {
-        Debug.Log($"[UI_MapPrefab] 点击岛屿: {islandName} (ID: {islandId})");
+        Z_Logger.Log($"[UI_MapPrefab] 点击岛屿: {islandName} (ID: {islandId})");
         onClickCallback?.Invoke();
     }
 

@@ -1,0 +1,135 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: fish basket
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 9d93cc59500489d48ae33f421dc8f3d2, type: 3}
+    - {fileID: 2800000, guid: 8db22bd4799b5254f9c1697adf6c2758, type: 3}
+    - {fileID: 2800000, guid: f0ac99b0a74e144438a40e72e6be0c3a, type: 3}
+    - {fileID: 2800000, guid: 4c4f15706fc949a44ad1bfce6f396a20, type: 3}
+    - {fileID: 2800000, guid: c306c8f01c9cd0b40ae93267680d2301, type: 3}
+    - {fileID: 2800000, guid: fd41142cafc6aa345a6d0eb8f397f3ad, type: 3}
+    - {fileID: 2800000, guid: 23ae75cd35fa86440851dd1ffea237af, type: 3}
+    - {fileID: 2800000, guid: e0facfab120470249b798e56f65a62dc, type: 3}
+    - {fileID: 2800000, guid: a993a48c37596a94ab63f98f54551adc, type: 3}
+    - {fileID: 2800000, guid: 33324bb9daba65a4e8546257441c804c, type: 3}
+    - {fileID: 2800000, guid: 392106782f38dfe44ac5efe099bff033, type: 3}
+    - {fileID: 2800000, guid: 328b982ce17c0ec43bbeae96dcc35a93, type: 3}
+    - {fileID: 2800000, guid: a91abff61b8605b45bde99f087f2e995, type: 3}
+    - {fileID: 2800000, guid: e77b9d674ee021441890cd4dbe618ae1, type: 3}
+    - {fileID: 2800000, guid: 1c4b572bf295f854cb0595762624863b, type: 3}
+    - {fileID: 2800000, guid: 5305b77488d35f449a25acc27512e711, type: 3}
+    - {fileID: 2800000, guid: 7bcb6bf79915fb349b99c989ef4ed01a, type: 3}
+    - {fileID: 2800000, guid: 4ed895802f86c9e499dbff1a806ef92f, type: 3}
+    - {fileID: 2800000, guid: 4dfc40b0d4aa9dd4089de1f9f13b0cae, type: 3}
+    - {fileID: 2800000, guid: a00c9d39c7a05994f85ded1f0425dc56, type: 3}
+    - {fileID: 2800000, guid: 09a4e46eab6dcac49bfcab7ac188c1b3, type: 3}
+    - {fileID: 2800000, guid: 9c5d05dddcc3592469ea41efd0499c27, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - 4c4f15706fc949a44ad1bfce6f396a20: 21300000
+    - 4ed895802f86c9e499dbff1a806ef92f: 21300000
+    - 4dfc40b0d4aa9dd4089de1f9f13b0cae: 21300000
+    - f0ac99b0a74e144438a40e72e6be0c3a: 21300000
+    - c306c8f01c9cd0b40ae93267680d2301: 21300000
+    - 5305b77488d35f449a25acc27512e711: 21300000
+    - 8db22bd4799b5254f9c1697adf6c2758: 21300000
+    - a91abff61b8605b45bde99f087f2e995: 21300000
+    - e77b9d674ee021441890cd4dbe618ae1: 21300000
+    - 7bcb6bf79915fb349b99c989ef4ed01a: 21300000
+    - 392106782f38dfe44ac5efe099bff033: 21300000
+    - a00c9d39c7a05994f85ded1f0425dc56: 21300000
+    - 9d93cc59500489d48ae33f421dc8f3d2: 21300000
+    - 33324bb9daba65a4e8546257441c804c: 21300000
+    - 1c4b572bf295f854cb0595762624863b: 21300000
+    - e0facfab120470249b798e56f65a62dc: 21300000
+    - fd41142cafc6aa345a6d0eb8f397f3ad: 21300000
+    - 328b982ce17c0ec43bbeae96dcc35a93: 21300000
+    - a993a48c37596a94ab63f98f54551adc: 21300000
+    - 23ae75cd35fa86440851dd1ffea237af: 21300000
+    - 9c5d05dddcc3592469ea41efd0499c27: 21300000
+    - 09a4e46eab6dcac49bfcab7ac188c1b3: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 4c4f15706fc949a44ad1bfce6f396a20, type: 3}
+  - {fileID: 21300000, guid: 4ed895802f86c9e499dbff1a806ef92f, type: 3}
+  - {fileID: 21300000, guid: 4dfc40b0d4aa9dd4089de1f9f13b0cae, type: 3}
+  - {fileID: 21300000, guid: f0ac99b0a74e144438a40e72e6be0c3a, type: 3}
+  - {fileID: 21300000, guid: c306c8f01c9cd0b40ae93267680d2301, type: 3}
+  - {fileID: 21300000, guid: 5305b77488d35f449a25acc27512e711, type: 3}
+  - {fileID: 21300000, guid: 8db22bd4799b5254f9c1697adf6c2758, type: 3}
+  - {fileID: 21300000, guid: a91abff61b8605b45bde99f087f2e995, type: 3}
+  - {fileID: 21300000, guid: e77b9d674ee021441890cd4dbe618ae1, type: 3}
+  - {fileID: 21300000, guid: 7bcb6bf79915fb349b99c989ef4ed01a, type: 3}
+  - {fileID: 21300000, guid: 392106782f38dfe44ac5efe099bff033, type: 3}
+  - {fileID: 21300000, guid: a00c9d39c7a05994f85ded1f0425dc56, type: 3}
+  - {fileID: 21300000, guid: 9d93cc59500489d48ae33f421dc8f3d2, type: 3}
+  - {fileID: 21300000, guid: 33324bb9daba65a4e8546257441c804c, type: 3}
+  - {fileID: 21300000, guid: 1c4b572bf295f854cb0595762624863b, type: 3}
+  - {fileID: 21300000, guid: e0facfab120470249b798e56f65a62dc, type: 3}
+  - {fileID: 21300000, guid: fd41142cafc6aa345a6d0eb8f397f3ad, type: 3}
+  - {fileID: 21300000, guid: 328b982ce17c0ec43bbeae96dcc35a93, type: 3}
+  - {fileID: 21300000, guid: a993a48c37596a94ab63f98f54551adc, type: 3}
+  - {fileID: 21300000, guid: 23ae75cd35fa86440851dd1ffea237af, type: 3}
+  - {fileID: 21300000, guid: 9c5d05dddcc3592469ea41efd0499c27, type: 3}
+  - {fileID: 21300000, guid: 09a4e46eab6dcac49bfcab7ac188c1b3, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - 4
+  - Select icon
+  - Selling icons
+  - 3
+  - brown
+  - refresh time
+  - 2
+  - Purple
+  - Rarity icon
+  - Select all icons
+  - orange
+  - Sequential icon
+  - 1
+  - Heterochromatic grouper
+  - red
+  - flash
+  - Capacity background icon
+  - Page background
+  - Gold Coin Icon
+  - cyan
+  - "\u9C7C\u7BD3\u9875\u9762\u793A\u610F\u56FE"
+  - Weight icon
+  m_RenderDataMap: {}
+  m_Tag: fish basket
+  m_IsVariant: 0
+  m_IsPlaceholder: 0

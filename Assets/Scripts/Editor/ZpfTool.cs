@@ -27,11 +27,11 @@ public class ZpfTool : Editor
         {
             string filePath = GetCacheFilePath();
             File.WriteAllText(filePath, scenePath);
-            Debug.Log($"🔵 [SaveScenePath] 已保存场景路径: {scenePath}");
+            Z_Logger.Log($"🔵 [SaveScenePath] 已保存场景路径: {scenePath}");
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"🔴 [SaveScenePath] 保存失败: {ex.Message}");
+            Z_Logger.LogError($"🔴 [SaveScenePath] 保存失败: {ex.Message}");
         }
     }
 
@@ -45,19 +45,19 @@ public class ZpfTool : Editor
                 string scenePath = File.ReadAllText(filePath);
                 if (!string.IsNullOrEmpty(scenePath) && File.Exists(scenePath))
                 {
-                    Debug.Log($"🔵 [LoadScenePath] 读取成功: {scenePath}");
+                    Z_Logger.Log($"🔵 [LoadScenePath] 读取成功: {scenePath}");
                     return scenePath;
                 }
                 else
                 {
-                    Debug.Log("🔵 [LoadScenePath] 缓存文件内容无效，删除缓存");
+                    Z_Logger.Log("🔵 [LoadScenePath] 缓存文件内容无效，删除缓存");
                     File.Delete(filePath);
                 }
             }
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"🔴 [LoadScenePath] 读取失败: {ex.Message}");
+            Z_Logger.LogError($"🔴 [LoadScenePath] 读取失败: {ex.Message}");
         }
         return "";
     }
@@ -70,19 +70,19 @@ public class ZpfTool : Editor
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
-                Debug.Log("🔵 [ClearScenePath] 缓存已清除");
+                Z_Logger.Log("🔵 [ClearScenePath] 缓存已清除");
             }
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"🔴 [ClearScenePath] 清除失败: {ex.Message}");
+            Z_Logger.LogError($"🔴 [ClearScenePath] 清除失败: {ex.Message}");
         }
     }
 
     [MenuItem("Tools/场景相关/切换到第一个场景", priority = 1)]
     public static void RunScene0()
     {
-        Debug.Log("🔵 [RunScene0] 开始执行...");
+        Z_Logger.Log("🔵 [RunScene0] 开始执行...");
 
         EditorBuildSettingsScene[] scenes = EditorBuildSettings.scenes;
 
@@ -101,22 +101,22 @@ public class ZpfTool : Editor
 
         if (!confirm)
         {
-            Debug.Log("🔵 [RunScene0] 用户取消切换");
+            Z_Logger.Log("🔵 [RunScene0] 用户取消切换");
             return;
         }
 
         if (UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
         {
-            Debug.Log("🔵 [RunScene0] 当前场景已保存");
+            Z_Logger.Log("🔵 [RunScene0] 当前场景已保存");
         }
         else
         {
-            Debug.LogWarning("🔵 [RunScene0] 用户取消了保存，继续切换");
+            Z_Logger.LogWarning("🔵 [RunScene0] 用户取消了保存，继续切换");
         }
 
         UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scenes[0].path);
 
-        Debug.Log($"✅ 已切换到场景: {Path.GetFileNameWithoutExtension(scenes[0].path)}");
+        Z_Logger.Log($"✅ 已切换到场景: {Path.GetFileNameWithoutExtension(scenes[0].path)}");
     }
 
     private static string GetGameScenePath()
@@ -127,7 +127,7 @@ public class ZpfTool : Editor
             string sceneName = Path.GetFileNameWithoutExtension(scene.path);
             if (sceneName.Equals("GameScene", System.StringComparison.OrdinalIgnoreCase))
             {
-                Debug.Log($"🔵 [GetGameScenePath] 在Build Settings中找到GameScene: {scene.path}");
+                Z_Logger.Log($"🔵 [GetGameScenePath] 在Build Settings中找到GameScene: {scene.path}");
                 return scene.path;
             }
         }
@@ -136,11 +136,11 @@ public class ZpfTool : Editor
         if (guids.Length > 0)
         {
             string path = AssetDatabase.GUIDToAssetPath(guids[0]);
-            Debug.Log($"🔵 [GetGameScenePath] 在Assets中找到GameScene: {path}");
+            Z_Logger.Log($"🔵 [GetGameScenePath] 在Assets中找到GameScene: {path}");
             return path;
         }
 
-        Debug.LogWarning("🔴 [GetGameScenePath] 未找到GameScene！");
+        Z_Logger.LogWarning("🔴 [GetGameScenePath] 未找到GameScene！");
         return "";
     }
 
@@ -152,18 +152,18 @@ public class ZpfTool : Editor
 
             string gameScenePath = LoadScenePathFromCache();
 
-            Debug.Log($"🔵 [CheckPlayModeEnd] 从缓存读取到场景路径: '{gameScenePath}'");
+            Z_Logger.Log($"🔵 [CheckPlayModeEnd] 从缓存读取到场景路径: '{gameScenePath}'");
 
             if (!string.IsNullOrEmpty(gameScenePath) && File.Exists(gameScenePath))
             {
-                Debug.Log($"📌 正在切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}");
+                Z_Logger.Log($"📌 正在切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}");
                 UnityEditor.SceneManagement.EditorSceneManager.OpenScene(gameScenePath);
-                Debug.Log("✅ 已切换到GameScene！");
+                Z_Logger.Log("✅ 已切换到GameScene！");
                 ClearScenePathCache();
             }
             else
             {
-                Debug.Log("ℹ️ 没有可切换的GameScene，当前停留在目标场景。");
+                Z_Logger.Log("ℹ️ 没有可切换的GameScene，当前停留在目标场景。");
             }
         }
     }
@@ -184,26 +184,26 @@ public class ZpfTool : Editor
 
             if (!confirm)
             {
-                Debug.Log("🔵 [SwitchToGameScene] 用户取消切换");
+                Z_Logger.Log("🔵 [SwitchToGameScene] 用户取消切换");
                 return;
             }
 
             if (UnityEditor.SceneManagement.EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
             {
-                Debug.Log("🔵 [SwitchToGameScene] 当前场景已保存");
+                Z_Logger.Log("🔵 [SwitchToGameScene] 当前场景已保存");
             }
             else
             {
-                Debug.LogWarning("🔵 [SwitchToGameScene] 用户取消了保存，继续切换");
+                Z_Logger.LogWarning("🔵 [SwitchToGameScene] 用户取消了保存，继续切换");
             }
 
-            Debug.Log($"📌 手动切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}");
+            Z_Logger.Log($"📌 手动切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}");
             UnityEditor.SceneManagement.EditorSceneManager.OpenScene(gameScenePath);
-            Debug.Log($"✅ 已切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}");
+            Z_Logger.Log($"✅ 已切换到GameScene: {Path.GetFileNameWithoutExtension(gameScenePath)}");
         }
         else
         {
-            Debug.Log("ℹ️ 未找到GameScene。");
+            Z_Logger.Log("ℹ️ 未找到GameScene。");
             EditorUtility.DisplayDialog("提示",
                 "未找到GameScene！\n\n请确保场景文件名为 'GameScene' 或已添加到Build Settings中。",
                 "确定");
@@ -370,7 +370,7 @@ public class ZpfTool : Editor
             }
             catch (System.Exception ex)
             {
-                Debug.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
+                Z_Logger.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
             }
         }
 
@@ -439,7 +439,7 @@ public class ZpfTool : Editor
             }
             catch (System.Exception ex)
             {
-                Debug.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
+                Z_Logger.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
             }
         }
 
@@ -463,7 +463,7 @@ public class ZpfTool : Editor
 
         EditorUtility.DisplayDialog("获取完成", message, "确定");
 
-        Debug.Log($"✅ 找到 {sortedFiles.Count} 个编辑器工具脚本，总大小 {FormatFileSize(totalSize)}，内容已复制到粘贴板。");
+        Z_Logger.Log($"✅ 找到 {sortedFiles.Count} 个编辑器工具脚本，总大小 {FormatFileSize(totalSize)}，内容已复制到粘贴板。");
     }
 
     // ============================================================
@@ -539,7 +539,7 @@ public class ZpfTool : Editor
 
         EditorUtility.DisplayDialog("合并完成", message, "确定");
 
-        Debug.Log($"已合并 {fileCount} 个NetServerManager partial文件，内容已复制到粘贴板。");
+        Z_Logger.Log($"已合并 {fileCount} 个NetServerManager partial文件，内容已复制到粘贴板。");
     }
 
     [MenuItem("Tools/获取脚本/获取合并服务器代码")]
@@ -735,7 +735,7 @@ public class ZpfTool : Editor
             }
             catch (System.Exception ex)
             {
-                Debug.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
+                Z_Logger.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
             }
         }
 
@@ -791,8 +791,8 @@ public class ZpfTool : Editor
 
         EditorUtility.DisplayDialog("合并完成", message, "确定");
 
-        Debug.Log($"✅ 已合并 {totalFiles} 个服务器文件（{csFileCount}个C# + {jsonFileCount}个JSON），内容已复制到粘贴板。");
-        Debug.Log($"📁 服务器路径: {serverProjectPath}");
+        Z_Logger.Log($"✅ 已合并 {totalFiles} 个服务器文件（{csFileCount}个C# + {jsonFileCount}个JSON），内容已复制到粘贴板。");
+        Z_Logger.Log($"📁 服务器路径: {serverProjectPath}");
     }
 
     private static void GetAllFiles(string directory, List<string> csFiles, List<string> jsonFiles, string[] excludeFolders, string[] excludeExtensions)
@@ -834,7 +834,7 @@ public class ZpfTool : Editor
         }
         catch (System.Exception ex)
         {
-            Debug.LogWarning($"访问目录失败: {directory}, 错误: {ex.Message}");
+            Z_Logger.LogWarning($"访问目录失败: {directory}, 错误: {ex.Message}");
         }
     }
 
@@ -921,7 +921,7 @@ public class ZpfTool : Editor
         }
         catch (System.Exception ex)
         {
-            Debug.LogWarning($"获取相对路径失败: basePath={basePath}, fullPath={fullPath}, 错误: {ex.Message}");
+            Z_Logger.LogWarning($"获取相对路径失败: basePath={basePath}, fullPath={fullPath}, 错误: {ex.Message}");
             return fullPath;
         }
     }
@@ -932,7 +932,7 @@ public class ZpfTool : Editor
         if (EditorPrefs.HasKey(SERVER_PATH_KEY))
         {
             EditorPrefs.DeleteKey(SERVER_PATH_KEY);
-            Debug.Log("✅ 已清除保存的服务器路径");
+            Z_Logger.Log("✅ 已清除保存的服务器路径");
             EditorUtility.DisplayDialog("提示", "已清除保存的服务器路径！", "确定");
         }
         else
@@ -994,7 +994,7 @@ public class ZpfTool : Editor
             }
             catch (System.Exception ex)
             {
-                Debug.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
+                Z_Logger.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
             }
         }
 
@@ -1022,7 +1022,7 @@ public class ZpfTool : Editor
 
         EditorUtility.DisplayDialog("获取完成", message, "确定");
 
-        Debug.Log($"✅ 已获取 {sortedFiles.Count} 个 C# 脚本，总大小 {FormatFileSize(totalSize)}，内容已复制到粘贴板。");
+        Z_Logger.Log($"✅ 已获取 {sortedFiles.Count} 个 C# 脚本，总大小 {FormatFileSize(totalSize)}，内容已复制到粘贴板。");
     }
 
     private static string FormatFileSize(long bytes)
@@ -1084,7 +1084,7 @@ public class ZpfTool : Editor
             }
             catch (System.Exception ex)
             {
-                Debug.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
+                Z_Logger.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
             }
         }
 
@@ -1144,7 +1144,7 @@ public class ZpfTool : Editor
             }
             catch (System.Exception ex)
             {
-                Debug.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
+                Z_Logger.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
             }
         }
 
@@ -1178,7 +1178,7 @@ public class ZpfTool : Editor
 
         EditorUtility.DisplayDialog("查找完成", message, "确定");
 
-        Debug.Log($"✅ 找到 {sortedFiles.Count} 个使用 Resources.Load 相关方法的脚本，总大小 {FormatFileSize(totalSize)}，内容已复制到粘贴板。");
+        Z_Logger.Log($"✅ 找到 {sortedFiles.Count} 个使用 Resources.Load 相关方法的脚本，总大小 {FormatFileSize(totalSize)}，内容已复制到粘贴板。");
     }
 }
 #endif

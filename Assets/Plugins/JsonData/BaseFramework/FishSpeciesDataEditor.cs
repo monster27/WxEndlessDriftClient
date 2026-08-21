@@ -1,4 +1,4 @@
-﻿// ==================== FishSpeciesDataEditor.cs ====================
+// ==================== FishSpeciesDataEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -289,13 +289,13 @@ public class FishSpeciesDataEditor : BaseDataEditor<FishSpeciesData>
             {
                 var wrapper = JsonUtility.FromJson<FishSpeciesListWrapper>(File.ReadAllText(FullPath));
                 dataList = wrapper?.fishSpecies ?? new List<FishSpeciesData>();
-                if (dataList.Count > 0) Debug.Log($"加载成功，共{dataList.Count}条数据");
+                if (dataList.Count > 0) Z_Logger.Log($"加载成功，共{dataList.Count}条数据");
             }
-            catch (System.Exception e) { Debug.LogError($"加载失败: {e.Message}"); dataList = new List<FishSpeciesData>(); }
+            catch (System.Exception e) { Z_Logger.LogError($"加载失败: {e.Message}"); dataList = new List<FishSpeciesData>(); }
         }
         else
         {
-            Debug.LogWarning($"文件不存在: {FullPath}，创建空列表");
+            Z_Logger.LogWarning($"文件不存在: {FullPath}，创建空列表");
             dataList = new List<FishSpeciesData>();
         }
         Repaint();
@@ -307,7 +307,7 @@ public class FishSpeciesDataEditor : BaseDataEditor<FishSpeciesData>
         if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
         File.WriteAllText(FullPath, JsonUtility.ToJson(new FishSpeciesListWrapper { fishSpecies = dataList }, true));
         AssetDatabase.Refresh();
-        Debug.Log($"保存成功: {FullPath}");
+        Z_Logger.Log($"保存成功: {FullPath}");
     }
 
     private void AddNewItem()

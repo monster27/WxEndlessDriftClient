@@ -67,11 +67,11 @@ public class MapView : BaseView
     {
         allIslands.Clear();
 
-        Debug.Log($"[MapView] === LoadAllIslandsFromConfig ===");
+        Z_Logger.Log($"[MapView] === LoadAllIslandsFromConfig ===");
 
         if (LoadDataManager.Instance != null && LoadDataManager.Instance.islands != null)
         {
-            Debug.Log($"[MapView] LoadDataManager 中岛屿数量: {LoadDataManager.Instance.islands.Count}");
+            Z_Logger.Log($"[MapView] LoadDataManager 中岛屿数量: {LoadDataManager.Instance.islands.Count}");
 
             foreach (var island in LoadDataManager.Instance.islands)
             {
@@ -80,32 +80,32 @@ public class MapView : BaseView
                     id = island.id,
                     name = island.name
                 });
-                Debug.Log($"[MapView] 加载岛屿: ID={island.id}, Name={island.name}");
+                Z_Logger.Log($"[MapView] 加载岛屿: ID={island.id}, Name={island.name}");
             }
         }
         else
         {
-            Debug.LogWarning("[MapView] LoadDataManager.Instance 或 islands 为 null");
+            Z_Logger.LogWarning("[MapView] LoadDataManager.Instance 或 islands 为 null");
         }
 
         if (allIslands.Count == 0)
         {
-            Debug.LogWarning("[MapView] 未加载到岛屿配置，使用默认配置");
+            Z_Logger.LogWarning("[MapView] 未加载到岛屿配置，使用默认配置");
             allIslands.Add(new IslandInfo { id = 101, name = "融冠岛" });
             allIslands.Add(new IslandInfo { id = 102, name = "珊瑚环心岛" });
-            Debug.Log("[MapView] 使用默认岛屿: 101(融冠岛), 102(珊瑚环心岛)");
+            Z_Logger.Log("[MapView] 使用默认岛屿: 101(融冠岛), 102(珊瑚环心岛)");
         }
 
-        Debug.Log($"[MapView] 最终 allIslands 数量: {allIslands.Count}");
-        Debug.Log($"[MapView] allIslands 列表: {string.Join(", ", allIslands.Select(i => $"{i.id}({i.name})"))}");
-        Debug.Log($"[MapView] ==========================================");
+        Z_Logger.Log($"[MapView] 最终 allIslands 数量: {allIslands.Count}");
+        Z_Logger.Log($"[MapView] allIslands 列表: {string.Join(", ", allIslands.Select(i => $"{i.id}({i.name})"))}");
+        Z_Logger.Log($"[MapView] ==========================================");
     }
 
     private void RequestPlayerIslandInfo()
     {
         if (NetServerManager.Instance == null)
         {
-            Debug.LogWarning("[MapView] NetServerManager 未初始化");
+            Z_Logger.LogWarning("[MapView] NetServerManager 未初始化");
             unlockedIslandIds = new List<int> { 101 };
             BuildMapButtons();
             isLoading = false;
@@ -115,31 +115,31 @@ public class MapView : BaseView
         int playerId = NetServerManager.Instance.GetCurrentPlayerId();
         if (playerId <= 0)
         {
-            Debug.LogWarning("[MapView] 玩家ID无效");
+            Z_Logger.LogWarning("[MapView] 玩家ID无效");
             unlockedIslandIds = new List<int> { 101 };
             BuildMapButtons();
             isLoading = false;
             return;
         }
 
-        Debug.Log($"[MapView] 请求玩家岛屿情报: PlayerId={playerId}");
+        Z_Logger.Log($"[MapView] 请求玩家岛屿情报: PlayerId={playerId}");
         NetServerManager.Instance.FetchPlayerIslandInfo(OnIslandInfoReceived);
     }
 
     private void OnIslandInfoReceived(List<int> islandIds)
     {
-        Debug.Log($"[MapView] ========================================");
-        Debug.Log($"[MapView] === OnIslandInfoReceived 回调 ===");
-        Debug.Log($"[MapView] 原始数据是否为null: {islandIds == null}");
+        Z_Logger.Log($"[MapView] ========================================");
+        Z_Logger.Log($"[MapView] === OnIslandInfoReceived 回调 ===");
+        Z_Logger.Log($"[MapView] 原始数据是否为null: {islandIds == null}");
 
         if (islandIds != null)
         {
-            Debug.Log($"[MapView] 原始数据数量: {islandIds.Count}");
-            Debug.Log($"[MapView] 原始数据列表: {string.Join(", ", islandIds)}");
+            Z_Logger.Log($"[MapView] 原始数据数量: {islandIds.Count}");
+            Z_Logger.Log($"[MapView] 原始数据列表: {string.Join(", ", islandIds)}");
         }
         else
         {
-            Debug.LogWarning("[MapView] 服务器返回的岛屿列表为null，使用默认值");
+            Z_Logger.LogWarning("[MapView] 服务器返回的岛屿列表为null，使用默认值");
         }
 
         unlockedIslandIds = islandIds ?? new List<int> { 101 };
@@ -147,12 +147,12 @@ public class MapView : BaseView
         // 确保101始终存在
         if (!unlockedIslandIds.Contains(101))
         {
-            Debug.Log("[MapView] 添加默认岛屿 101");
+            Z_Logger.Log("[MapView] 添加默认岛屿 101");
             unlockedIslandIds.Add(101);
         }
 
-        Debug.Log($"[MapView] 最终解锁列表: {string.Join(", ", unlockedIslandIds)}");
-        Debug.Log($"[MapView] ========================================");
+        Z_Logger.Log($"[MapView] 最终解锁列表: {string.Join(", ", unlockedIslandIds)}");
+        Z_Logger.Log($"[MapView] ========================================");
 
         BuildMapButtons();
         isLoading = false;
@@ -163,31 +163,31 @@ public class MapView : BaseView
         ClearButtons();
 
         // ✅ 详细日志 - 打印所有数据
-        Debug.Log($"[MapView] ========================================");
-        Debug.Log($"[MapView] === BuildMapButtons 开始 ===");
-        Debug.Log($"[MapView] unlockedIslandIds 数量: {unlockedIslandIds.Count}");
-        Debug.Log($"[MapView] unlockedIslandIds 列表: {string.Join(", ", unlockedIslandIds)}");
-        Debug.Log($"[MapView] allIslands 数量: {allIslands.Count}");
-        Debug.Log($"[MapView] allIslands 列表: {string.Join(", ", allIslands.Select(i => $"{i.id}({i.name})"))}");
-        Debug.Log($"[MapView] ========================================");
+        Z_Logger.Log($"[MapView] ========================================");
+        Z_Logger.Log($"[MapView] === BuildMapButtons 开始 ===");
+        Z_Logger.Log($"[MapView] unlockedIslandIds 数量: {unlockedIslandIds.Count}");
+        Z_Logger.Log($"[MapView] unlockedIslandIds 列表: {string.Join(", ", unlockedIslandIds)}");
+        Z_Logger.Log($"[MapView] allIslands 数量: {allIslands.Count}");
+        Z_Logger.Log($"[MapView] allIslands 列表: {string.Join(", ", allIslands.Select(i => $"{i.id}({i.name})"))}");
+        Z_Logger.Log($"[MapView] ========================================");
 
         var unlockedIslands = allIslands
             .Where(island => unlockedIslandIds.Contains(island.id))
             .ToList();
 
-        Debug.Log($"[MapView] 构建地图按钮: 已解锁 {unlockedIslands.Count}/{allIslands.Count} 个岛屿");
+        Z_Logger.Log($"[MapView] 构建地图按钮: 已解锁 {unlockedIslands.Count}/{allIslands.Count} 个岛屿");
 
         // 打印匹配到的岛屿
         foreach (var island in unlockedIslands)
         {
-            Debug.Log($"[MapView]   ✅ 匹配岛屿: {island.name} (ID: {island.id})");
+            Z_Logger.Log($"[MapView]   ✅ 匹配岛屿: {island.name} (ID: {island.id})");
         }
 
         // 打印未匹配的岛屿（已解锁但不在allIslands中）
         var unmatchedIds = unlockedIslandIds.Where(id => !allIslands.Any(i => i.id == id)).ToList();
         if (unmatchedIds.Count > 0)
         {
-            Debug.LogWarning($"[MapView]   ⚠️ 未匹配的ID: {string.Join(", ", unmatchedIds)}");
+            Z_Logger.LogWarning($"[MapView]   ⚠️ 未匹配的ID: {string.Join(", ", unmatchedIds)}");
         }
 
         if (titleText != null)
@@ -206,8 +206,8 @@ public class MapView : BaseView
 
         if (unlockedIslands.Count == 0)
         {
-            Debug.LogWarning("[MapView] 没有已解锁的岛屿，不创建按钮");
-            Debug.Log($"[MapView] ========================================");
+            Z_Logger.LogWarning("[MapView] 没有已解锁的岛屿，不创建按钮");
+            Z_Logger.Log($"[MapView] ========================================");
             return;
         }
 
@@ -216,21 +216,21 @@ public class MapView : BaseView
             CreateIslandButton(island);
         }
 
-        Debug.Log($"[MapView] 创建了 {unlockedIslands.Count} 个岛屿按钮");
-        Debug.Log($"[MapView] ========================================");
+        Z_Logger.Log($"[MapView] 创建了 {unlockedIslands.Count} 个岛屿按钮");
+        Z_Logger.Log($"[MapView] ========================================");
     }
 
     private void CreateIslandButton(IslandInfo island)
     {
         if (mapButtonPrefab == null)
         {
-            Debug.LogError("[MapView] mapButtonPrefab 未设置!");
+            Z_Logger.LogError("[MapView] mapButtonPrefab 未设置!");
             return;
         }
 
         if (buttonParent == null)
         {
-            Debug.LogError("[MapView] buttonParent 未设置!");
+            Z_Logger.LogError("[MapView] buttonParent 未设置!");
             return;
         }
 
@@ -261,7 +261,7 @@ public class MapView : BaseView
             }
         }
 
-        Debug.Log($"[MapView] 创建岛屿按钮: {island.name} (ID: {island.id})");
+        Z_Logger.Log($"[MapView] 创建岛屿按钮: {island.name} (ID: {island.id})");
     }
 
     private void ClearButtons()
@@ -276,11 +276,11 @@ public class MapView : BaseView
 
     private void OnIslandButtonClick(int islandId)
     {
-        Debug.Log($"[MapView] 点击岛屿: {islandId}");
+        Z_Logger.Log($"[MapView] 点击岛屿: {islandId}");
 
         if (!unlockedIslandIds.Contains(islandId))
         {
-            Debug.LogWarning($"[MapView] 未解锁岛屿 {islandId}");
+            Z_Logger.LogWarning($"[MapView] 未解锁岛屿 {islandId}");
             GameUIManager.ShowMessage("尚未解锁该岛屿的情报");
             return;
         }
@@ -302,13 +302,13 @@ public class MapView : BaseView
 
         if (success)
         {
-            Debug.Log($"[MapView] 场景切换成功: {sceneId}");
+            Z_Logger.Log($"[MapView] 场景切换成功: {sceneId}");
             HideView();
         }
         else
         {
             string message = data.ContainsKey("message") ? (string)data["message"] : "切换失败";
-            Debug.LogWarning($"[MapView] 场景切换失败: {message}");
+            Z_Logger.LogWarning($"[MapView] 场景切换失败: {message}");
             GameUIManager.ShowMessage(message);
         }
     }
@@ -316,7 +316,7 @@ public class MapView : BaseView
     private void OnIslandInfoUpdated(List<int> islandIds)
     {
         unlockedIslandIds = islandIds;
-        Debug.Log($"[MapView] 岛屿情报已更新: {islandIds.Count} 个岛屿");
+        Z_Logger.Log($"[MapView] 岛屿情报已更新: {islandIds.Count} 个岛屿");
         BuildMapButtons();
     }
 

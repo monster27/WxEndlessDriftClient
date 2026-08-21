@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -339,13 +339,13 @@ public class AbilityDataJsonEditor : BaseDataEditor<AbilityData>
             {
                 var wrapper = JsonUtility.FromJson<AbilityListWrapper>(File.ReadAllText(FullPath));
                 dataList = wrapper?.abilities ?? new List<AbilityData>();
-                if (dataList.Count > 0) Debug.Log($"[AbilityDataJsonEditor] 加载成功，共{dataList.Count}条数据");
+                if (dataList.Count > 0) Z_Logger.Log($"[AbilityDataJsonEditor] 加载成功，共{dataList.Count}条数据");
             }
-            catch (System.Exception ex) { Debug.LogError($"[AbilityDataJsonEditor] 加载失败: {ex.Message}"); dataList = new List<AbilityData>(); }
+            catch (System.Exception ex) { Z_Logger.LogError($"[AbilityDataJsonEditor] 加载失败: {ex.Message}"); dataList = new List<AbilityData>(); }
         }
         else
         {
-            Debug.LogWarning($"[AbilityDataJsonEditor] 文件不存在: {FullPath}，创建空列表");
+            Z_Logger.LogWarning($"[AbilityDataJsonEditor] 文件不存在: {FullPath}，创建空列表");
             dataList = new List<AbilityData>();
         }
         Repaint();
@@ -358,7 +358,7 @@ public class AbilityDataJsonEditor : BaseDataEditor<AbilityData>
 
         File.WriteAllText(FullPath, JsonUtility.ToJson(new AbilityListWrapper { abilities = dataList }, true));
         AssetDatabase.Refresh();
-        Debug.Log($"[AbilityDataJsonEditor] 保存成功: {FullPath}");
+        Z_Logger.Log($"[AbilityDataJsonEditor] 保存成功: {FullPath}");
     }
 
     private void AddNewItem()

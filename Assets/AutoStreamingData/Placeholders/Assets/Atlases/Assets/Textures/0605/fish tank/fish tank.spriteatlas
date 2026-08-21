@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &1
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: fish tank
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 0.125
+    packables:
+    - {fileID: 2800000, guid: c143de204960bf04f9fa2dbb3180bf82, type: 3}
+    - {fileID: 2800000, guid: 084122a839864f64c90e1ff597f30a29, type: 3}
+    - {fileID: 2800000, guid: 78ef35ca33679d64e9c707db5138bca6, type: 3}
+    - {fileID: 2800000, guid: 715cd69c7a8bbb44691df577028e23ec, type: 3}
+    - {fileID: 2800000, guid: 2d5ef9375f29dcd47a640695c8ffea9e, type: 3}
+    - {fileID: 2800000, guid: ea2eccba61bc5f543bad94a710c04e55, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys: []
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
+  m_RenderDataMap: {}
+  m_Tag: fish tank
+  m_IsVariant: 1
+  m_IsPlaceholder: 1

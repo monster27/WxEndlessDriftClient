@@ -77,7 +77,7 @@ public class MainTile : MonoBehaviour
         rectTransform = GetComponent<RectTransform>();
         if (rectTransform == null)
         {
-            Debug.LogError("[MainTile] RectTransform component not found!");
+            Z_Logger.LogError("[MainTile] RectTransform component not found!");
         }
 
         // 获取父容器的 RectTransform
@@ -145,7 +145,7 @@ public class MainTile : MonoBehaviour
     {
         CatchData data = new CatchData(itemName, weight, icon);
         catchQueue.Enqueue(data);
-        Debug.Log($"[MainTile] 入队成功：{itemName}, 当前队列长度：{catchQueue.Count}");
+        Z_Logger.Log($"[MainTile] 入队成功：{itemName}, 当前队列长度：{catchQueue.Count}");
 
         if (currentState == TileState.Idle)
         {
@@ -159,7 +159,7 @@ public class MainTile : MonoBehaviour
     public void ClearQueue()
     {
         catchQueue.Clear();
-        Debug.Log("[MainTile] 队列已清空");
+        Z_Logger.Log("[MainTile] 队列已清空");
     }
 
     /// <summary>
@@ -173,7 +173,7 @@ public class MainTile : MonoBehaviour
         }
 
         CatchData data = catchQueue.Dequeue();
-        Debug.Log($"[MainTile] 开始播放动画，剩余队列长度：{catchQueue.Count}");
+        Z_Logger.Log($"[MainTile] 开始播放动画，剩余队列长度：{catchQueue.Count}");
 
         // 设置图标
         if (iconImage != null)

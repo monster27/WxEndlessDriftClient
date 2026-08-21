@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &1
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: BottomUI
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 0.125
+    packables:
+    - {fileID: 2800000, guid: f4c4a363463fc1b428ffca760efb4715, type: 3}
+    - {fileID: 2800000, guid: cfc449dc0d5a06d4a8c15fc1e68f0d4b, type: 3}
+    - {fileID: 2800000, guid: 6623ba16dccc21345aa7cf46aae98048, type: 3}
+    - {fileID: 2800000, guid: c127c54feab270c468eac86a0c465c9a, type: 3}
+    - {fileID: 2800000, guid: 2bbf31f11be812b47871c3bc911ab031, type: 3}
+    - {fileID: 2800000, guid: 83ab54572f944eb47829e3b1eac13537, type: 3}
+    - {fileID: 2800000, guid: 69a7d6faf5deb414eadfd5e26846e2f9, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys: []
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
+  m_RenderDataMap: {}
+  m_Tag: BottomUI
+  m_IsVariant: 1
+  m_IsPlaceholder: 1

@@ -40,7 +40,7 @@ public static class CharacterConfigListExtensions
             var (textAsset, handle) = await AssetManager.LoadFromAddressablesAsync<TextAsset>(path);
             if (textAsset == null)
             {
-                Debug.LogError($"[CharacterConfigList] 加载失败: {path}");
+                Z_Logger.LogError($"[CharacterConfigList] 加载失败: {path}");
                 return null;
             }
 
@@ -49,11 +49,11 @@ public static class CharacterConfigListExtensions
 
             if (_cachedConfig == null)
             {
-                Debug.LogError($"[CharacterConfigList] 解析失败: {path}");
+                Z_Logger.LogError($"[CharacterConfigList] 解析失败: {path}");
                 return null;
             }
 
-            Debug.Log($"[CharacterConfigList] 加载成功，路径: {path}，共 {_cachedConfig.characters?.Count ?? 0} 个人物");
+            Z_Logger.Log($"[CharacterConfigList] 加载成功，路径: {path}，共 {_cachedConfig.characters?.Count ?? 0} 个人物");
 
             // 触发所有等待的回调
             foreach (var cb in _pendingCallbacks)
@@ -82,7 +82,7 @@ public static class CharacterConfigListExtensions
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"[CharacterConfigList] 加载异常: {ex.Message}");
+            Z_Logger.LogError($"[CharacterConfigList] 加载异常: {ex.Message}");
             return false;
         }
     }
@@ -108,16 +108,16 @@ public static class CharacterConfigListExtensions
         TextAsset textAsset = Resources.Load<TextAsset>(path);
         if (textAsset == null)
         {
-            Debug.LogError($"[CharacterConfigList] 加载失败: {path}");
+            Z_Logger.LogError($"[CharacterConfigList] 加载失败: {path}");
             return null;
         }
         var config = JsonUtility.FromJson<CharacterConfigList>(textAsset.text);
         if (config == null)
         {
-            Debug.LogError($"[CharacterConfigList] 解析失败: {path}");
+            Z_Logger.LogError($"[CharacterConfigList] 解析失败: {path}");
             return null;
         }
-        Debug.Log($"[CharacterConfigList] 加载成功，路径: {path}");
+        Z_Logger.Log($"[CharacterConfigList] 加载成功，路径: {path}");
         return config;
     }
 }

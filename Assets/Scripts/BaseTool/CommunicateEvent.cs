@@ -8,7 +8,7 @@ public static partial class CommunicateEvent
     // === 带参数注册 ===
     public static void Register<T>(string eventName, Action<T> callback)
     {
-        Debug.Log($"[CommunicateEvent] Register - 注册事件: {eventName}, 类型: {typeof(T).Name}");
+        Z_Logger.Log($"[CommunicateEvent] Register - 注册事件: {eventName}, 类型: {typeof(T).Name}");
         
         if (!eventTable.ContainsKey(eventName))
             eventTable[eventName] = new Dictionary<Type, Delegate>();
@@ -21,7 +21,7 @@ public static partial class CommunicateEvent
 
         typeTable[dataType] = (Action<T>)typeTable[dataType] + callback;
         
-        Debug.Log($"[CommunicateEvent] Register - 事件 {eventName} 注册完成");
+        Z_Logger.Log($"[CommunicateEvent] Register - 事件 {eventName} 注册完成");
     }
 
     // === 无参数注册 ===
@@ -56,7 +56,7 @@ public static partial class CommunicateEvent
     {
         if (!eventTable.ContainsKey(eventName))
         {
-            Debug.LogWarning($"[CommunicateEvent] Modify - 事件 {eventName} 未注册任何监听器");
+            Z_Logger.LogWarning($"[CommunicateEvent] Modify - 事件 {eventName} 未注册任何监听器");
             return;
         }
         
@@ -65,17 +65,17 @@ public static partial class CommunicateEvent
 
         if (!typeTable.ContainsKey(dataType))
         {
-            Debug.LogWarning($"[CommunicateEvent] Modify - 事件 {eventName} 未注册类型 {dataType.Name} 的监听器");
+            Z_Logger.LogWarning($"[CommunicateEvent] Modify - 事件 {eventName} 未注册类型 {dataType.Name} 的监听器");
             return;
         }
         
         if (typeTable[dataType] == null)
         {
-            Debug.LogWarning($"[CommunicateEvent] Modify - 事件 {eventName} 的 {dataType.Name} 监听器为空");
+            Z_Logger.LogWarning($"[CommunicateEvent] Modify - 事件 {eventName} 的 {dataType.Name} 监听器为空");
             return;
         }
         
-        Debug.Log($"[CommunicateEvent] 触发事件: {eventName}, 数据: {newData}");
+        Z_Logger.Log($"[CommunicateEvent] 触发事件: {eventName}, 数据: {newData}");
         ((Action<T>)typeTable[dataType])(newData);
     }
 
@@ -101,7 +101,7 @@ public static partial class CommunicateEvent
                 return response;
             }
         }
-        Debug.LogWarning($"[CommunicateEvent] Request - requestName={requestName} 未找到处理器");
+        Z_Logger.LogWarning($"[CommunicateEvent] Request - requestName={requestName} 未找到处理器");
         return default(TResponse);
     }
 
@@ -133,7 +133,7 @@ public static partial class CommunicateEvent
         }
         else
         {
-            Debug.LogWarning($"[CommunicateEvent] OnCallback - id={callbackId} 未找到");
+            Z_Logger.LogWarning($"[CommunicateEvent] OnCallback - id={callbackId} 未找到");
         }
     }
 
@@ -151,7 +151,7 @@ public static partial class CommunicateEvent
         }
         else
         {
-            Debug.LogWarning($"[CommunicateEvent] OnCallback - id={callbackId} 未找到");
+            Z_Logger.LogWarning($"[CommunicateEvent] OnCallback - id={callbackId} 未找到");
         }
     }
 

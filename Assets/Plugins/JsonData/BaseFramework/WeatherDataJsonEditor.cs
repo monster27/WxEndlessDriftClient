@@ -1,4 +1,4 @@
-﻿// ==================== WeatherDataEditor.cs ====================
+// ==================== WeatherDataEditor.cs ====================
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
@@ -282,7 +282,7 @@ public class WeatherDataEditor : EditorWindow
 
         if (totalWeight <= 0)
         {
-            Debug.LogWarning("[WeatherDataEditor] 总权重为0，无法计算概率");
+            Z_Logger.LogWarning("[WeatherDataEditor] 总权重为0，无法计算概率");
             return;
         }
 
@@ -297,14 +297,14 @@ public class WeatherDataEditor : EditorWindow
         SaveData();
         LoadData();
 
-        Debug.Log($"[WeatherDataEditor] 已自动计算 {weathers.Count} 个天气的概率，总权重={totalWeight}");
+        Z_Logger.Log($"[WeatherDataEditor] 已自动计算 {weathers.Count} 个天气的概率，总权重={totalWeight}");
 
         // 验证概率总和
         int sum = 0;
         foreach (var w in weathers) sum += w.percentage;
         if (sum != 100)
         {
-            Debug.LogWarning($"[WeatherDataEditor] 概率总和为 {sum}%，可能因四舍五入导致不精确");
+            Z_Logger.LogWarning($"[WeatherDataEditor] 概率总和为 {sum}%，可能因四舍五入导致不精确");
         }
     }
 
@@ -317,13 +317,13 @@ public class WeatherDataEditor : EditorWindow
             {
                 var wrapper = JsonUtility.FromJson<WeatherListWrapper>(File.ReadAllText(fullPath));
                 weathers = wrapper?.weathers ?? new List<WeatherData>();
-                if (weathers.Count > 0) Debug.Log($"加载成功，共{weathers.Count}条数据");
+                if (weathers.Count > 0) Z_Logger.Log($"加载成功，共{weathers.Count}条数据");
             }
-            catch (System.Exception e) { Debug.LogError($"加载失败: {e.Message}"); weathers = new List<WeatherData>(); }
+            catch (System.Exception e) { Z_Logger.LogError($"加载失败: {e.Message}"); weathers = new List<WeatherData>(); }
         }
         else
         {
-            Debug.LogWarning($"文件不存在: {fullPath}，创建空列表");
+            Z_Logger.LogWarning($"文件不存在: {fullPath}，创建空列表");
             weathers = new List<WeatherData>();
         }
         Repaint();
@@ -336,7 +336,7 @@ public class WeatherDataEditor : EditorWindow
         if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
         File.WriteAllText(fullPath, JsonUtility.ToJson(new WeatherListWrapper { weathers = weathers }, true));
         AssetDatabase.Refresh();
-        Debug.Log("保存成功");
+        Z_Logger.Log("保存成功");
     }
 
     private void AddNewItem()

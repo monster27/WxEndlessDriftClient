@@ -9,8 +9,6 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 /// <summary>
 /// 统一资源管理器
-/// - Resources 方法：同步，从主包加载（保持原有行为）
-/// - Addressables 方法：异步，从 CDN 加载（支持热更）
 /// </summary>
 public class AssetManager : MonoBehaviour
 {
@@ -64,17 +62,43 @@ public class AssetManager : MonoBehaviour
 
     public static T LoadFromResources<T>(string path) where T : UnityEngine.Object
     {
-        return Resources.Load<T>(path);
+        T result = Resources.Load<T>(path);
+        if (result != null)
+        {
+            Z_Logger.Log($"[AssetManager] ✅ Resources 加载成功: {path} (类型: {typeof(T).Name})");
+        }
+        else
+        {
+            Z_Logger.LogWarning($"[AssetManager] ⚠️ Resources 加载失败: {path} (类型: {typeof(T).Name})");
+        }
+        return result;
     }
 
     public static T[] LoadAllFromResources<T>(string path) where T : UnityEngine.Object
     {
-        return Resources.LoadAll<T>(path);
+        T[] result = Resources.LoadAll<T>(path);
+        if (result != null && result.Length > 0)
+        {
+            Z_Logger.Log($"[AssetManager] ✅ Resources 加载成功 {result.Length} 个资源: {path}");
+        }
+        else
+        {
+            Z_Logger.LogWarning($"[AssetManager] ⚠️ Resources 加载失败或为空: {path}");
+        }
+        return result;
     }
 
     public static void LoadFromResourcesAsync<T>(string path, Action<T> onLoaded) where T : UnityEngine.Object
     {
         T result = Resources.Load<T>(path);
+        if (result != null)
+        {
+            Z_Logger.Log($"[AssetManager] ✅ Resources 异步加载成功: {path}");
+        }
+        else
+        {
+            Z_Logger.LogWarning($"[AssetManager] ⚠️ Resources 异步加载失败: {path}");
+        }
         onLoaded?.Invoke(result);
     }
 
@@ -82,15 +106,11 @@ public class AssetManager : MonoBehaviour
     //  ☁️ Addressables 方法（异步，从 CDN 加载，支持热更）
     // ============================================================
 
-    /// <summary>
-    /// 根据路径所在的文件夹推断文件后缀
-    /// </summary>
     private static string InferFileExtension(string path)
     {
         if (string.IsNullOrEmpty(path))
             return "";
 
-        // 如果已经有后缀，返回空
         string[] knownExtensions = { ".json", ".txt", ".ttf", ".png", ".jpg", ".jpeg",
                                      ".asset", ".prefab", ".mat", ".fbx", ".mp3", ".wav",
                                      ".mp4", ".avi", ".unity", ".anim" };
@@ -100,7 +120,6 @@ public class AssetManager : MonoBehaviour
                 return "";
         }
 
-        // 根据文件夹路径推断后缀
         foreach (var kvp in FolderExtensionMap)
         {
             if (path.Contains(kvp.Key))
@@ -112,9 +131,6 @@ public class AssetManager : MonoBehaviour
         return "";
     }
 
-    /// <summary>
-    /// 获取文件扩展名（如果有）
-    /// </summary>
     private static string GetFileExtension(string path)
     {
         if (string.IsNullOrEmpty(path))
@@ -131,11 +147,6 @@ public class AssetManager : MonoBehaviour
         return "";
     }
 
-    /// <summary>
-    /// 规范化 Addressables Key：
-    /// 1. 确保以 Assets/Addressables/ 开头
-    /// 2. 确保有正确的扩展名
-    /// </summary>
     private static string NormalizeAddressableKey(string key)
     {
         if (string.IsNullOrEmpty(key))
@@ -143,7 +154,6 @@ public class AssetManager : MonoBehaviour
 
         string result = key;
 
-        // 1. 移除开头的 Assets/ 或 Assets/Addressables/（如果有），统一重新添加
         if (result.StartsWith("Assets/Addressables/"))
         {
             result = result.Substring("Assets/Addressables/".Length);
@@ -153,57 +163,52 @@ public class AssetManager : MonoBehaviour
             result = result.Substring("Assets/".Length);
         }
 
-        // 移除开头的斜杠
         if (result.StartsWith("/"))
         {
             result = result.Substring(1);
         }
 
-        // 2. 获取当前扩展名和推断扩展名
         string currentExt = GetFileExtension(result);
         string inferredExt = InferFileExtension(result);
 
-        // 3. 如果没有扩展名，添加推断的扩展名
         if (string.IsNullOrEmpty(currentExt) && !string.IsNullOrEmpty(inferredExt))
         {
             result = result + inferredExt;
-            Debug.Log($"[AssetManager] 自动添加扩展名: {key} -> {result}");
+            Z_Logger.Log($"[AssetManager] 🔄 自动添加扩展名: {key} -> {result}");
         }
 
-        // 4. 添加 Assets/Addressables/ 前缀
         string finalKey = "Assets/Addressables/" + result;
-        Debug.Log($"[AssetManager] 规范化 Key: {key} -> {finalKey}");
+        Z_Logger.Log($"[AssetManager] 🔄 规范化 Key: {key} -> {finalKey}");
 
         return finalKey;
     }
 
     /// <summary>
-    /// 从 Addressables 异步加载（回调方式）
+    /// 从 Addressables 异步加载（回调方式）- 带详细日志
     /// </summary>
     public static void LoadFromAddressables<T>(string key, Action<T, AsyncOperationHandle<T>> onLoaded) where T : UnityEngine.Object
     {
         if (string.IsNullOrEmpty(key))
         {
-            Debug.LogError("[AssetManager] Addressables key 为空");
+            Z_Logger.LogError($"[AssetManager] ❌ Addressables key 为空");
             onLoaded?.Invoke(null, default);
             return;
         }
 
         string normalizedKey = NormalizeAddressableKey(key);
-
-        Debug.Log($"[AssetManager] 加载: {normalizedKey}");
+        Z_Logger.Log($"[AssetManager] 📥 开始加载 Addressables: {normalizedKey} (类型: {typeof(T).Name})");
 
         var handle = Addressables.LoadAssetAsync<T>(normalizedKey);
         handle.Completed += (op) =>
         {
             if (op.Status == AsyncOperationStatus.Succeeded)
             {
-                Debug.Log($"[AssetManager] ✅ 加载成功: {normalizedKey}");
+                Z_Logger.Log($"[AssetManager] ✅✅✅ 加载成功: {normalizedKey} (类型: {typeof(T).Name})");
                 onLoaded?.Invoke(op.Result, op);
             }
             else
             {
-                Debug.LogError($"[AssetManager] ❌ 加载失败: {normalizedKey}, 错误: {op.OperationException?.Message}");
+                Z_Logger.LogError($"[AssetManager] ❌❌❌ 加载失败: {normalizedKey}, 错误: {op.OperationException?.Message}");
                 onLoaded?.Invoke(null, default);
             }
         };
@@ -216,25 +221,25 @@ public class AssetManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(key))
         {
-            Debug.LogError("[AssetManager] Addressables key 为空");
+            Z_Logger.LogError("[AssetManager] Addressables key 为空");
             onLoaded?.Invoke(null, default);
             yield break;
         }
 
         string normalizedKey = NormalizeAddressableKey(key);
-        Debug.Log($"[AssetManager] 协程加载: {normalizedKey}");
+        Z_Logger.Log($"[AssetManager] 📥 协程开始加载: {normalizedKey}");
 
         var handle = Addressables.LoadAssetAsync<T>(normalizedKey);
         yield return handle;
 
         if (handle.Status == AsyncOperationStatus.Succeeded)
         {
-            Debug.Log($"[AssetManager] 协程加载成功: {normalizedKey}");
+            Z_Logger.Log($"[AssetManager] ✅✅✅ 协程加载成功: {normalizedKey}");
             onLoaded?.Invoke(handle.Result, handle);
         }
         else
         {
-            Debug.LogError($"[AssetManager] 协程加载失败: {normalizedKey}, 错误: {handle.OperationException?.Message}");
+            Z_Logger.LogError($"[AssetManager] ❌❌❌ 协程加载失败: {normalizedKey}, 错误: {handle.OperationException?.Message}");
             onLoaded?.Invoke(null, default);
         }
     }
@@ -246,12 +251,12 @@ public class AssetManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(key))
         {
-            Debug.LogError("[AssetManager] Addressables key 为空");
+            Z_Logger.LogError("[AssetManager] Addressables key 为空");
             return (null, default);
         }
 
         string normalizedKey = NormalizeAddressableKey(key);
-        Debug.Log($"[AssetManager] Async 加载: {normalizedKey}");
+        Z_Logger.Log($"[AssetManager] 📥 Async 开始加载: {normalizedKey} (类型: {typeof(T).Name})");
 
         try
         {
@@ -260,18 +265,18 @@ public class AssetManager : MonoBehaviour
 
             if (handle.Status == AsyncOperationStatus.Succeeded)
             {
-                Debug.Log($"[AssetManager] Async 加载成功: {normalizedKey}");
+                Z_Logger.Log($"[AssetManager] ✅✅✅ Async 加载成功: {normalizedKey} (类型: {typeof(T).Name})");
                 return (handle.Result, handle);
             }
             else
             {
-                Debug.LogError($"[AssetManager] Async 加载失败: {normalizedKey}, 错误: {handle.OperationException?.Message}");
+                Z_Logger.LogError($"[AssetManager] ❌❌❌ Async 加载失败: {normalizedKey}, 错误: {handle.OperationException?.Message}");
                 return (null, default);
             }
         }
         catch (Exception ex)
         {
-            Debug.LogError($"[AssetManager] Async 加载异常: {normalizedKey}, {ex.Message}");
+            Z_Logger.LogError($"[AssetManager] ❌❌❌ Async 加载异常: {normalizedKey}, {ex.Message}");
             return (null, default);
         }
     }
@@ -283,25 +288,25 @@ public class AssetManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(key))
         {
-            Debug.LogError("[AssetManager] Addressables key 为空");
+            Z_Logger.LogError("[AssetManager] Addressables key 为空");
             onInstantiated?.Invoke(null, default);
             return;
         }
 
         string normalizedKey = NormalizeAddressableKey(key);
-        Debug.Log($"[AssetManager] 实例化: {normalizedKey}");
+        Z_Logger.Log($"[AssetManager] 📥 开始实例化: {normalizedKey}");
 
         var handle = Addressables.InstantiateAsync(normalizedKey);
         handle.Completed += (op) =>
         {
             if (op.Status == AsyncOperationStatus.Succeeded)
             {
-                Debug.Log($"[AssetManager] 实例化成功: {normalizedKey}");
+                Z_Logger.Log($"[AssetManager] ✅✅✅ 实例化成功: {normalizedKey}");
                 onInstantiated?.Invoke(op.Result as T, op);
             }
             else
             {
-                Debug.LogError($"[AssetManager] 实例化失败: {normalizedKey}, 错误: {op.OperationException?.Message}");
+                Z_Logger.LogError($"[AssetManager] ❌❌❌ 实例化失败: {normalizedKey}, 错误: {op.OperationException?.Message}");
                 onInstantiated?.Invoke(null, default);
             }
         };
@@ -316,6 +321,7 @@ public class AssetManager : MonoBehaviour
         if (handle.IsValid())
         {
             Addressables.Release(handle);
+            Z_Logger.Log($"[AssetManager] 🔓 释放资源: {handle}");
         }
     }
 
@@ -324,6 +330,7 @@ public class AssetManager : MonoBehaviour
         if (handle.IsValid())
         {
             Addressables.Release(handle);
+            Z_Logger.Log($"[AssetManager] 🔓 释放资源: {handle}");
         }
     }
 
@@ -332,6 +339,7 @@ public class AssetManager : MonoBehaviour
         if (instance != null)
         {
             Addressables.ReleaseInstance(instance);
+            Z_Logger.Log($"[AssetManager] 🔓 释放实例: {instance.name}");
         }
     }
 
@@ -344,14 +352,14 @@ public class AssetManager : MonoBehaviour
 #if !UNITY_WEBGL || UNITY_EDITOR
         if (UnityEngine.Caching.ClearCache())
         {
-            Debug.Log("[AssetManager] Addressables 缓存已清空");
+            Z_Logger.Log("[AssetManager] 🧹 Addressables 缓存已清空");
         }
         else
         {
-            Debug.LogWarning("[AssetManager] 清空缓存失败，可能有正在使用的资源");
+            Z_Logger.LogWarning("[AssetManager] ⚠️ 清空缓存失败，可能有正在使用的资源");
         }
 #else
-        Debug.LogWarning("[AssetManager] WebGL 平台不支持清空缓存");
+        Z_Logger.LogWarning("[AssetManager] ⚠️ WebGL 平台不支持清空缓存");
 #endif
     }
 
@@ -368,18 +376,16 @@ public class AssetManager : MonoBehaviour
             handle.WaitForCompletion();
             bool exists = handle.Status == AsyncOperationStatus.Succeeded;
             Addressables.Release(handle);
+            Z_Logger.Log($"[AssetManager] 🔍 检查资源存在: {normalizedKey} -> {exists}");
             return exists;
         }
         catch (Exception ex)
         {
-            Debug.LogWarning($"[AssetManager] 检查资源失败: {normalizedKey}, {ex.Message}");
+            Z_Logger.LogWarning($"[AssetManager] ⚠️ 检查资源失败: {normalizedKey}, {ex.Message}");
             return false;
         }
     }
 
-    /// <summary>
-    /// 获取所有 Addressables 资源 Key（用于调试）
-    /// </summary>
     public static void LogAllAddressableKeys()
     {
         var allKeys = new List<string>();
@@ -394,16 +400,16 @@ public class AssetManager : MonoBehaviour
                 if (!allKeys.Contains(keyStr))
                 {
                     allKeys.Add(keyStr);
-                    Debug.Log($"Addressables Key: {keyStr}");
+                    Z_Logger.Log($"Addressables Key: {keyStr}");
                 }
             }
         }
-        Debug.Log($"共找到 {allKeys.Count} 个 Addressables Key");
+        Z_Logger.Log($"共找到 {allKeys.Count} 个 Addressables Key");
     }
 #else
     public static bool AddressableExists(string key)
     {
-        Debug.LogWarning("[AssetManager] AddressableExists 仅在编辑器下可用");
+        Z_Logger.LogWarning("[AssetManager] AddressableExists 仅在编辑器下可用");
         return false;
     }
 #endif

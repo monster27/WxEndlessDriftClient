@@ -55,7 +55,7 @@ public class BagView : BaseView
     private void RegisterEvents()
     {
         CommunicateEvent.Register(CommunicateEvent.EVENT_REFRESH_BAG, OnBagRefresh);
-        Debug.Log("[BagView] 注册背包刷新事件监听");
+        Z_Logger.Log("[BagView] 注册背包刷新事件监听");
     }
 
     private void OnDestroy()
@@ -65,7 +65,7 @@ public class BagView : BaseView
 
     private void OnBagRefresh()
     {
-        Debug.Log("[BagView] 收到背包刷新事件，调用 RefreshItems");
+        Z_Logger.Log("[BagView] 收到背包刷新事件，调用 RefreshItems");
         // ✅ 保险：确保刷新前 SkinManager 已同步最新皮肤数据
         if (SkinManager.Instance != null)
         {
@@ -150,7 +150,7 @@ public class BagView : BaseView
         {
             outdoorSkinObj.SetActive(false);
         }
-        Debug.Log("[BagView] 切换到室内皮肤");
+        Z_Logger.Log("[BagView] 切换到室内皮肤");
     }
 
     private void ShowOutdoorSkin()
@@ -163,7 +163,7 @@ public class BagView : BaseView
         {
             indoorSkinObj.SetActive(false);
         }
-        Debug.Log("[BagView] 切换到室外皮肤");
+        Z_Logger.Log("[BagView] 切换到室外皮肤");
     }
 
     private void OnCategoryToggle(CategoryConfig config)
@@ -215,7 +215,7 @@ public class BagView : BaseView
 
     public void OpenBag()
     {
-        Debug.Log("[BagView] OpenBag - 打开背包");
+        Z_Logger.Log("[BagView] OpenBag - 打开背包");
 
         // ✅ 确保初始化已完成（首次打开时 Start() 可能还未执行，导致 RegisterEvents 未调用）
         if (!isInitialized)
@@ -243,7 +243,7 @@ public class BagView : BaseView
     /// </summary>
     private void RefreshVisibleCategory()
     {
-        Debug.Log("[BagView] RefreshVisibleCategory - 只刷新可见分类");
+        Z_Logger.Log("[BagView] RefreshVisibleCategory - 只刷新可见分类");
 
         if (PlayerDataManager.Instance != null && LoadDataManager.Instance != null)
         {
@@ -257,7 +257,7 @@ public class BagView : BaseView
                 // ✅ 确认装备缓存已就绪
                 if (NetServerManager.Instance != null)
                 {
-                    Debug.Log($"[BagView] RefreshVisibleCategory - 物品定义数: {itemDataMap.Count}, 背包物品数: {inventory.Count}, 装备缓存就绪: true");
+                    Z_Logger.Log($"[BagView] RefreshVisibleCategory - 物品定义数: {itemDataMap.Count}, 背包物品数: {inventory.Count}, 装备缓存就绪: true");
                 }
 
                 // 只更新当前选中的分类
@@ -284,7 +284,7 @@ public class BagView : BaseView
         }
 
         // 降级：数据管理器未就绪
-        Debug.LogWarning("[BagView] RefreshVisibleCategory - 数据管理器未就绪，降级为事件刷新");
+        Z_Logger.LogWarning("[BagView] RefreshVisibleCategory - 数据管理器未就绪，降级为事件刷新");
         CommunicateEvent.Modify("Bag_RefreshItems");
     }
 
@@ -316,17 +316,17 @@ public class BagView : BaseView
 
     public void UpdateBagItems(Dictionary<int, int> inventory, Dictionary<int, ItemData> itemDataMap)
     {
-        Debug.Log($"[BagView] UpdateBagItems - 物品数: {inventory?.Count ?? 0}");
+        Z_Logger.Log($"[BagView] UpdateBagItems - 物品数: {inventory?.Count ?? 0}");
 
         if (inventory == null || inventory.Count == 0)
         {
-            Debug.LogWarning("[BagView] UpdateBagItems - 数据为空");
+            Z_Logger.LogWarning("[BagView] UpdateBagItems - 数据为空");
             return;
         }
 
         foreach (var item in inventory)
         {
-            Debug.Log($"[BagView] UpdateBagItems - 物品ID: {item.Key}, 数量: {item.Value}");
+            Z_Logger.Log($"[BagView] UpdateBagItems - 物品ID: {item.Key}, 数量: {item.Value}");
         }
 
         UpdateAllBagDetails(inventory, itemDataMap);
@@ -386,7 +386,7 @@ public class BagView : BaseView
 
     public void RefreshItems()
     {
-        Debug.Log("[BagView] RefreshItems 被调用");
+        Z_Logger.Log("[BagView] RefreshItems 被调用");
 
         // ✅ 优先直接获取数据并更新（不依赖事件链，修复首次打开时装备状态显示异常）
         if (PlayerDataManager.Instance != null && LoadDataManager.Instance != null)
@@ -396,7 +396,7 @@ public class BagView : BaseView
 
             if (inventory != null && itemDataMap != null)
             {
-                Debug.Log($"[BagView] RefreshItems - 直接更新，物品数: {inventory.Count}");
+                Z_Logger.Log($"[BagView] RefreshItems - 直接更新，物品数: {inventory.Count}");
                 UpdateBagItems(inventory, itemDataMap);
                 // 通知其他模块（EquipPlayerView 等）
                 CommunicateEvent.Modify("Bag_RefreshItems");
@@ -405,7 +405,7 @@ public class BagView : BaseView
         }
 
         // 降级：数据管理器未就绪，通过事件让 LoadDataManager 间接处理
-        Debug.LogWarning("[BagView] RefreshItems - 数据管理器未就绪，降级为事件刷新");
+        Z_Logger.LogWarning("[BagView] RefreshItems - 数据管理器未就绪，降级为事件刷新");
         CommunicateEvent.Modify("Bag_RefreshItems");
     }
 

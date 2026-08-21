@@ -60,7 +60,7 @@ public class NestAniCtrl : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[BaitAnimationController] 未找到Renderer组件！");
+            Z_Logger.LogWarning("[BaitAnimationController] 未找到Renderer组件！");
         }
     }
 
@@ -71,7 +71,7 @@ public class NestAniCtrl : MonoBehaviour
     {
         if (baitSheet == null)
         {
-            Debug.LogWarning("[BaitAnimationController] 窝料序列帧图片未设置！");
+            Z_Logger.LogWarning("[BaitAnimationController] 窝料序列帧图片未设置！");
             return;
         }
 
@@ -80,7 +80,7 @@ public class NestAniCtrl : MonoBehaviour
             InitializeRenderer();
             if (baitMaterial == null)
             {
-                Debug.LogWarning("[BaitAnimationController] 材质初始化失败！");
+                Z_Logger.LogWarning("[BaitAnimationController] 材质初始化失败！");
                 return;
             }
         }

@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Logger = Utils.Logger;
+//using Z_Logger = Utils.Z_Logger;
 
 public partial class NetServerManager
 {
@@ -56,7 +56,7 @@ public partial class NetServerManager
         _weatherCache = new Dictionary<int, WeatherData>();
         foreach (var w in wrapper.weathers)
             _weatherCache[w.id] = w;
-        Logger.Log($"[NetServerManager] 从 Addressables 加载天气数据: {_weatherCache.Count} 条");
+        Z_Logger.Log($"[NetServerManager] 从 Addressables 加载天气数据: {_weatherCache.Count} 条");
     }
 
     private async Task LoadTimeSlotsFromAddressables()
@@ -69,7 +69,7 @@ public partial class NetServerManager
         _timeSlotCache = new Dictionary<int, TimeSlotData>();
         foreach (var t in wrapper.timeSlots)
             _timeSlotCache[t.id] = t;
-        Logger.Log($"[NetServerManager] 从 Addressables 加载时段数据: {_timeSlotCache.Count} 条");
+        Z_Logger.Log($"[NetServerManager] 从 Addressables 加载时段数据: {_timeSlotCache.Count} 条");
     }
 
     // ========== 查询接口 ==========
@@ -142,7 +142,7 @@ public partial class NetServerManager
             {
                 currentWeatherId = response.weatherId;
                 currentWeatherName = GetWeatherNameById(response.weatherId);
-                Debug.Log($"[NetServerManager] 获取当前天气: ID={currentWeatherId}, 名称={currentWeatherName}");
+                Z_Logger.Log($"[NetServerManager] 获取当前天气: ID={currentWeatherId}, 名称={currentWeatherName}");
 
                 CommunicateEvent.Modify<Dictionary<string, object>>(CommunicateEvent.EVENT_CLIENT_WEATHER_CHANGED, new Dictionary<string, object>
                 {

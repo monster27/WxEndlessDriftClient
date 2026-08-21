@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using System;
@@ -210,13 +210,13 @@ namespace TMPro
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            //Debug.Log("OnPointerEnter()");
+            //Z_Logger.Log("OnPointerEnter()");
         }
 
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            //Debug.Log("OnPointerExit()");
+            //Z_Logger.Log("OnPointerExit()");
         }
 
 

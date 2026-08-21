@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
-using Utils;
+//using Utils;
 
 public partial class NetServerManager
 {
@@ -17,12 +17,12 @@ public partial class NetServerManager
         int playerId = _currentPlayerId;
         if (playerId <= 0)
         {
-            Debug.LogWarning("[NetServerManager] 请求皮肤数据失败：玩家ID无效");
+            Z_Logger.LogWarning("[NetServerManager] 请求皮肤数据失败：玩家ID无效");
             yield break;
         }
 
         string url = $"{serverUrl}/api/Player/skins/{playerId}";
-        Utils.Logger.Log($"[NetServerManager] 请求皮肤数据: {url}");
+        Z_Logger.Log($"[NetServerManager] 请求皮肤数据: {url}");
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
@@ -36,21 +36,21 @@ public partial class NetServerManager
                 try
                 {
                     string json = request.downloadHandler.text;
-                    Utils.Logger.Log($"[NetServerManager] 皮肤数据响应原始JSON: {json}");
+                    Z_Logger.Log($"[NetServerManager] 皮肤数据响应原始JSON: {json}");
                     
                     var response = JsonUtility.FromJson<SkinResponse>(json);
-                    Utils.Logger.Log($"[NetServerManager] 皮肤数据解析成功: success={response.success}, message={response.message}, dataCount={response.data?.Count ?? 0}");
+                    Z_Logger.Log($"[NetServerManager] 皮肤数据解析成功: success={response.success}, message={response.message}, dataCount={response.data?.Count ?? 0}");
                     
                     ParsePlayerSkinsResponse(response);
                 }
                 catch (System.Exception e)
                 {
-                    Utils.Logger.LogError("[NetServerManager] 解析皮肤数据失败: " + e.Message);
+                    Z_Logger.LogError("[NetServerManager] 解析皮肤数据失败: " + e.Message);
                 }
             }
             else
             {
-                Utils.Logger.LogError("[NetServerManager] 获取皮肤数据失败: " + request.error);
+                Z_Logger.LogError("[NetServerManager] 获取皮肤数据失败: " + request.error);
             }
         }
     }
@@ -59,7 +59,7 @@ public partial class NetServerManager
     {
         if (response == null || !response.success)
         {
-            Utils.Logger.LogWarning("[NetServerManager] 皮肤数据为空或失败: " + (response?.message ?? "未知错误"));
+            Z_Logger.LogWarning("[NetServerManager] 皮肤数据为空或失败: " + (response?.message ?? "未知错误"));
             return;
         }
 
@@ -69,11 +69,11 @@ public partial class NetServerManager
             foreach (var skin in response.data)
             {
                 skins[skin.slotType] = skin.skinId;
-                Utils.Logger.Log($"[NetServerManager] 解析皮肤: slotType={skin.slotType}, skinId={skin.skinId}");
+                Z_Logger.Log($"[NetServerManager] 解析皮肤: slotType={skin.slotType}, skinId={skin.skinId}");
             }
         }
 
-        Utils.Logger.Log($"[NetServerManager] 解析皮肤数据完成，共 {skins.Count} 个皮肤");
+        Z_Logger.Log($"[NetServerManager] 解析皮肤数据完成，共 {skins.Count} 个皮肤");
 
         // ✅ 关键：先把皮肤数据同步到 NetServerManager.equippedSkinsData，
         //    确保 IsItemEquipped 不依赖 SkinManager.Instance 即可正确判断装备状态
@@ -82,7 +82,7 @@ public partial class NetServerManager
         CommunicateEvent.Modify<Dictionary<int, int>>(CommunicateEvent.EVENT_SKIN_DATA_UPDATED, skins);
 
         // ✅ 移除EVENT_REFRESH_BAG，等待初始化完成统一刷新
-        Utils.Logger.Log("[NetServerManager] 皮肤数据已更新到 NetServerManager，等待初始化完成统一刷新");
+        Z_Logger.Log("[NetServerManager] 皮肤数据已更新到 NetServerManager，等待初始化完成统一刷新");
     }
 
     // ✅ 防重复请求：记录上次装备请求的槽位、皮肤ID和时间
@@ -97,7 +97,7 @@ public partial class NetServerManager
         if (slotType == _lastEquipSkinSlot && skinId == _lastEquipSkinId
             && Time.time - _lastEquipSkinTime < EQUIP_SKIN_COOLDOWN)
         {
-            Utils.Logger.Log($"[NetServerManager] 装备皮肤请求被防重复拦截: slotType={slotType}, skinId={skinId}（{EQUIP_SKIN_COOLDOWN}s内重复）");
+            Z_Logger.Log($"[NetServerManager] 装备皮肤请求被防重复拦截: slotType={slotType}, skinId={skinId}（{EQUIP_SKIN_COOLDOWN}s内重复）");
             return;
         }
 
@@ -113,12 +113,12 @@ public partial class NetServerManager
         int playerId = _currentPlayerId;
         if (playerId <= 0)
         {
-            Debug.LogWarning("[NetServerManager] 装备皮肤失败：玩家ID无效");
+            Z_Logger.LogWarning("[NetServerManager] 装备皮肤失败：玩家ID无效");
             yield break;
         }
 
         string url = $"{serverUrl}/api/Player/skins/{playerId}/equip";
-        Utils.Logger.Log($"[NetServerManager] 请求装备皮肤: {url}, slotType={slotType}, skinId={skinId}");
+        Z_Logger.Log($"[NetServerManager] 请求装备皮肤: {url}, slotType={slotType}, skinId={skinId}");
 
         var body = new Dictionary<string, object>
         {
@@ -128,7 +128,7 @@ public partial class NetServerManager
 
         string jsonBody = NetUtils.SerializeToJson(body);
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
-        Utils.Logger.Log($"[NetServerManager] 装备皮肤请求体: {jsonBody}");
+        Z_Logger.Log($"[NetServerManager] 装备皮肤请求体: {jsonBody}");
 
         using (var request = new UnityWebRequest(url, "POST"))
         {
@@ -144,21 +144,21 @@ public partial class NetServerManager
                 try
                 {
                     string json = request.downloadHandler.text;
-                    Utils.Logger.Log($"[NetServerManager] 装备皮肤响应原始JSON: {json}");
+                    Z_Logger.Log($"[NetServerManager] 装备皮肤响应原始JSON: {json}");
                     
                     var response = JsonUtility.FromJson<SkinResponse>(json);
-                    Utils.Logger.Log($"[NetServerManager] 装备皮肤解析成功: success={response.success}, message={response.message}, dataCount={response.data?.Count ?? 0}");
+                    Z_Logger.Log($"[NetServerManager] 装备皮肤解析成功: success={response.success}, message={response.message}, dataCount={response.data?.Count ?? 0}");
                     
                     ParseEquipSkinResponse(response);
                 }
                 catch (System.Exception e)
                 {
-                    Utils.Logger.LogError("[NetServerManager] 解析装备皮肤响应失败: " + e.Message);
+                    Z_Logger.LogError("[NetServerManager] 解析装备皮肤响应失败: " + e.Message);
                 }
             }
             else
             {
-                Utils.Logger.LogError("[NetServerManager] 装备皮肤失败: " + request.error);
+                Z_Logger.LogError("[NetServerManager] 装备皮肤失败: " + request.error);
             }
         }
     }
@@ -167,7 +167,7 @@ public partial class NetServerManager
     {
         if (response == null || !response.success)
         {
-            Utils.Logger.LogWarning("[NetServerManager] 装备皮肤失败: " + (response?.message ?? "未知错误"));
+            Z_Logger.LogWarning("[NetServerManager] 装备皮肤失败: " + (response?.message ?? "未知错误"));
             return;
         }
 
@@ -177,11 +177,11 @@ public partial class NetServerManager
             foreach (var skin in response.data)
             {
                 skins[skin.slotType] = skin.skinId;
-                Utils.Logger.Log($"[NetServerManager] 装备皮肤后: slotType={skin.slotType}, skinId={skin.skinId}");
+                Z_Logger.Log($"[NetServerManager] 装备皮肤后: slotType={skin.slotType}, skinId={skin.skinId}");
             }
         }
 
-        Utils.Logger.Log($"[NetServerManager] 装备皮肤成功");
+        Z_Logger.Log($"[NetServerManager] 装备皮肤成功");
 
         // ✅ 同步到 NetServerManager.equippedSkinsData，保证 IsItemEquipped 数据正确
         UpdateEquippedSkinsData(skins);
@@ -189,7 +189,7 @@ public partial class NetServerManager
         CommunicateEvent.Modify<Dictionary<int, int>>(CommunicateEvent.EVENT_SKIN_DATA_UPDATED, skins);
 
         CommunicateEvent.Modify(CommunicateEvent.EVENT_REFRESH_BAG);
-        Utils.Logger.Log("[NetServerManager] 装备皮肤成功，触发背包刷新事件");
+        Z_Logger.Log("[NetServerManager] 装备皮肤成功，触发背包刷新事件");
     }
 
     [Serializable] private class SkinResponse

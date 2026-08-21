@@ -220,11 +220,11 @@ public class FishBagSelectPanel : BaseView
             {
                 if (success)
                 {
-                    Debug.Log("[FishBagSelectPanel] 鱼篓筛选配置已同步到服务器");
+                    Z_Logger.Log("[FishBagSelectPanel] 鱼篓筛选配置已同步到服务器");
                 }
                 else
                 {
-                    Debug.LogError("[FishBagSelectPanel] 鱼篓筛选配置同步失败");
+                    Z_Logger.LogError("[FishBagSelectPanel] 鱼篓筛选配置同步失败");
                 }
             });
         }
@@ -258,7 +258,7 @@ public class FishBagSelectPanel : BaseView
                     PlayerPrefs.SetInt("FishBag_SkipSelected", skipSelectedTog.isOn ? 1 : 0);
                     PlayerPrefs.Save();
 
-                    Debug.Log("[FishBagSelectPanel] 从服务器获取鱼篓筛选配置成功");
+                    Z_Logger.Log("[FishBagSelectPanel] 从服务器获取鱼篓筛选配置成功");
                 }
             });
         }

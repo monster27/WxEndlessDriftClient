@@ -218,11 +218,11 @@ public class PlayerAniCtrl : MonoBehaviour
         if (playerRenderer != null)
         {
             playerMaterial = playerRenderer.material;
-            Debug.Log("[PlayerAniCtrl] EnsureMaterialInitialized - 材质已初始化");
+            Z_Logger.Log("[PlayerAniCtrl] EnsureMaterialInitialized - 材质已初始化");
         }
         else
         {
-            Debug.LogWarning("[PlayerAniCtrl] EnsureMaterialInitialized - playerRenderer 为 null");
+            Z_Logger.LogWarning("[PlayerAniCtrl] EnsureMaterialInitialized - playerRenderer 为 null");
         }
     }
 
@@ -235,7 +235,7 @@ public class PlayerAniCtrl : MonoBehaviour
         lazyColumns = lazyCols;
         lazySpeed = lazySpd;
         isAnimationInitialized = true;
-        Debug.Log($"[PlayerAniCtrl] 动画参数已更新 - idle: {idleColumns}x{idleSpeed}, reel: {reelColumns}x{reelSpeed}, lazy: {lazyColumns}x{lazySpeed}");
+        Z_Logger.Log($"[PlayerAniCtrl] 动画参数已更新 - idle: {idleColumns}x{idleSpeed}, reel: {reelColumns}x{reelSpeed}, lazy: {lazyColumns}x{lazySpeed}");
     }
 
     public PlayerAnimationState GetCurrentState()

@@ -54,7 +54,7 @@ public class AutoSetTextureToSprite : AssetPostprocessor
         // 重新导入
         importer.SaveAndReimport();
 
-        Debug.Log($"✅ [自动设置Sprite] {Path.GetFileName(assetPath)} 已设置为Sprite");
+        Z_Logger.Log($"✅ [自动设置Sprite] {Path.GetFileName(assetPath)} 已设置为Sprite");
     }
 
     /// <summary>

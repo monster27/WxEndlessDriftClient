@@ -13,8 +13,8 @@ SpriteAtlas:
     textureSettings:
       serializedVersion: 3
       anisoLevel: 1
-      compressionQuality: 50
-      maxTextureSize: 2048
+      compressionQuality: 0
+      maxTextureSize: 0
       textureCompression: 0
       filterMode: 0
       generateMipMaps: 0
@@ -26,10 +26,10 @@ SpriteAtlas:
     packingSettings:
       serializedVersion: 2
       padding: 4
-      blockOffset: 1
+      blockOffset: 0
       allowAlphaSplitting: 0
-      enableRotation: 1
-      enableTightPacking: 1
+      enableRotation: 0
+      enableTightPacking: 0
       enableAlphaDilation: 0
     secondaryTextureSettings: {}
     variantMultiplier: 0.125
@@ -55,7 +55,7 @@ SpriteAtlas:
     isAtlasV2: 0
     cachedData: {fileID: 0}
     packedSpriteRenderDataKeys: []
-  m_MasterAtlas: {fileID: 4343727234628468602, guid: 445098c3f50b4a14f9e02f1a704c0155, type: 2}
+  m_MasterAtlas: {fileID: 0}
   m_PackedSprites: []
   m_PackedSpriteNamesToIndex: []
   m_RenderDataMap: {}

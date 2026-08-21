@@ -19,7 +19,7 @@ namespace JsonData
             var (textAsset, handle) = await AssetManager.LoadFromAddressablesAsync<TextAsset>(path);
             if (textAsset == null)
             {
-                Debug.LogError($"[CharacterLevelUpConfig] 加载失败: {path}");
+                Z_Logger.LogError($"[CharacterLevelUpConfig] 加载失败: {path}");
                 return null;
             }
             return ParseFromJson(textAsset.text);
@@ -46,11 +46,11 @@ namespace JsonData
                         config.levelUpExpRequirements[item.rangeKey] = item.expRequired;
                     }
                 }
-                Debug.Log(debugInfo.ToString());
+                Z_Logger.Log(debugInfo.ToString());
             }
             catch (Exception e)
             {
-                Debug.LogError($"[CharacterLevelUpConfig] ParseFromJson failed: {e.Message}");
+                Z_Logger.LogError($"[CharacterLevelUpConfig] ParseFromJson failed: {e.Message}");
             }
 
             return config;
@@ -72,7 +72,7 @@ namespace JsonData
                 debugInfo.AppendLine($"    {kvp.Key}: {kvp.Value} 经验");
             }
 
-            Debug.Log(debugInfo.ToString());
+            Z_Logger.Log(debugInfo.ToString());
         }
 
         // ===== 同步版本（仅编辑器工具使用） =====
@@ -81,7 +81,7 @@ namespace JsonData
             TextAsset textAsset = Resources.Load<TextAsset>(path);
             if (textAsset == null)
             {
-                Debug.LogError($"[CharacterLevelUpConfig] 加载失败: {path}");
+                Z_Logger.LogError($"[CharacterLevelUpConfig] 加载失败: {path}");
                 return null;
             }
             return ParseFromJson(textAsset.text);

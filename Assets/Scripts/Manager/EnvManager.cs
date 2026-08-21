@@ -100,7 +100,7 @@ public class EnvManager : SingletonMono<EnvManager>
 
         int sceneId = data.ContainsKey("sceneId") ? (int)data["sceneId"] : currentSceneId;
 
-        Debug.Log($"[EnvManager] 场景切换成功: {sceneId}");
+        Z_Logger.Log($"[EnvManager] 场景切换成功: {sceneId}");
 
         // ✅ 显示切换成功提示
         string sceneName = GetSceneName(sceneId);
@@ -133,10 +133,10 @@ public class EnvManager : SingletonMono<EnvManager>
     /// </summary>
     private void OnTimeSlotChanged(Dictionary<string, object> eventData)
     {
-        Debug.Log($"[EnvManager] OnTimeSlotChanged 收到事件: {eventData.Count} 个参数");
+        Z_Logger.Log($"[EnvManager] OnTimeSlotChanged 收到事件: {eventData.Count} 个参数");
         foreach (var kvp in eventData)
         {
-            Debug.Log($"  - {kvp.Key}: {kvp.Value}");
+            Z_Logger.Log($"  - {kvp.Key}: {kvp.Value}");
         }
         
         if (eventData.TryGetValue("timeStatus", out object statusObj) &&
@@ -147,28 +147,28 @@ public class EnvManager : SingletonMono<EnvManager>
             string timeName = nameObj.ToString();
             int weatherId = System.Convert.ToInt32(weatherObj);
 
-            Debug.Log($"[EnvManager] 处理时间段变化: status={status}, 名称={timeName}, 天气={weatherId}");
+            Z_Logger.Log($"[EnvManager] 处理时间段变化: status={status}, 名称={timeName}, 天气={weatherId}");
 
             UpdateTimeStatus(status, timeName, weatherId);
 
             int timeSlotId = 401 + (int)status;
-            Debug.Log($"[EnvManager] 切换时段环境: timeSlotId={timeSlotId}");
+            Z_Logger.Log($"[EnvManager] 切换时段环境: timeSlotId={timeSlotId}");
             EnvironmentRenderManager.Instance?.SwitchTimeEnvironment(timeSlotId);
             
             // 通知UI更新
             if (GameUIManager.Instance != null && GameUIManager.Instance.mainGameView != null)
             {
-                Debug.Log("[EnvManager] 调用 UIManager.UpdateMainViewTimee 更新UI");
+                Z_Logger.Log("[EnvManager] 调用 UIManager.UpdateMainViewTimee 更新UI");
                 GameUIManager.Instance.UpdateMainViewTimee(status, timeName);
             }
             else
             {
-                Debug.LogWarning($"[EnvManager] UIManager 或 mainGameView 为 null，无法更新UI");
+                Z_Logger.LogWarning($"[EnvManager] UIManager 或 mainGameView 为 null，无法更新UI");
             }
         }
         else
         {
-            Debug.LogWarning("[EnvManager] 事件数据格式不正确，缺少必要字段");
+            Z_Logger.LogWarning("[EnvManager] 事件数据格式不正确，缺少必要字段");
         }
     }
     
@@ -177,10 +177,10 @@ public class EnvManager : SingletonMono<EnvManager>
     /// </summary>
     private void OnWeatherChanged(Dictionary<string, object> eventData)
     {
-        Debug.Log($"[EnvManager] OnWeatherChanged 收到事件: {eventData.Count} 个参数");
+        Z_Logger.Log($"[EnvManager] OnWeatherChanged 收到事件: {eventData.Count} 个参数");
         foreach (var kvp in eventData)
         {
-            Debug.Log($"  - {kvp.Key}: {kvp.Value}");
+            Z_Logger.Log($"  - {kvp.Key}: {kvp.Value}");
         }
         
         if (eventData.TryGetValue("weatherId", out object idObj) &&
@@ -189,26 +189,26 @@ public class EnvManager : SingletonMono<EnvManager>
             int weatherId = System.Convert.ToInt32(idObj);
             string weatherName = nameObj.ToString();
 
-            Debug.Log($"[EnvManager] 处理天气变化: ID={weatherId}, 名称={weatherName}");
+            Z_Logger.Log($"[EnvManager] 处理天气变化: ID={weatherId}, 名称={weatherName}");
 
             this.currentWeatherId = weatherId;
             this.currentWeatherName = weatherName;
 
             if (GameUIManager.Instance != null && GameUIManager.Instance.mainGameView != null)
             {
-                Debug.Log("[EnvManager] 调用 UIManager.UpdateMainViewWeather 更新UI");
+                Z_Logger.Log("[EnvManager] 调用 UIManager.UpdateMainViewWeather 更新UI");
                 GameUIManager.Instance.UpdateMainViewWeather(weatherId, weatherName);
             }
             else
             {
-                Debug.LogWarning($"[EnvManager] UIManager 或 mainGameView 为 null，无法更新UI");
+                Z_Logger.LogWarning($"[EnvManager] UIManager 或 mainGameView 为 null，无法更新UI");
             }
 
             EnvironmentRenderManager.Instance?.SwitchWeatherEnvironment(weatherId);
         }
         else
         {
-            Debug.LogWarning("[EnvManager] 天气事件数据格式不正确，缺少必要字段");
+            Z_Logger.LogWarning("[EnvManager] 天气事件数据格式不正确，缺少必要字段");
         }
     }
 
@@ -264,17 +264,17 @@ public class EnvManager : SingletonMono<EnvManager>
             this.currentWeatherName = LoadDataManager.Instance.GetWeatherName(weatherId);
         }
         
-        Debug.Log($"[EnvManager] UpdateTimeStatus - timeStatus={timeStatus}, timeName={timeName}, weatherId={weatherId}, weatherName={currentWeatherName}");
+        Z_Logger.Log($"[EnvManager] UpdateTimeStatus - timeStatus={timeStatus}, timeName={timeName}, weatherId={weatherId}, weatherName={currentWeatherName}");
         
         if (GameUIManager.Instance != null && GameUIManager.Instance.mainGameView != null)
         {
-            Debug.Log("[EnvManager] 调用 UIManager 更新时间和天气");
+            Z_Logger.Log("[EnvManager] 调用 UIManager 更新时间和天气");
             GameUIManager.Instance.UpdateMainViewTimee(timeStatus, timeName);
             GameUIManager.Instance.UpdateMainViewWeather(currentWeatherId, currentWeatherName);
         }
         else
         {
-            Debug.LogWarning("[EnvManager] UIManager 或 mainGameView 为 null，无法更新UI");
+            Z_Logger.LogWarning("[EnvManager] UIManager 或 mainGameView 为 null，无法更新UI");
         }
     }
 

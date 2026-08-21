@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:yousandi.cn,2023:
+--- !u!687078895 &1
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: RightTopUI
+  serializedVersion: 2
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 3
+      anisoLevel: 1
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      webStreaming: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 0.125
+    packables:
+    - {fileID: 2800000, guid: 5e5cb9f69f5b06d4f9101796377b8e55, type: 3}
+    - {fileID: 2800000, guid: ac0394384bae77f478dd02066b698e13, type: 3}
+    - {fileID: 2800000, guid: bc57d794160636a42bd794b13b814bf8, type: 3}
+    - {fileID: 2800000, guid: fcbecae136de8744ba2271f49e0baa89, type: 3}
+    - {fileID: 2800000, guid: 0a38da4bd40b33041b14daaad56a612a, type: 3}
+    - {fileID: 2800000, guid: 1ec445997a2fa2b4e98bb458631c68c9, type: 3}
+    - {fileID: 2800000, guid: 77bb9595bcb5ac64ea16ea9e46b9e276, type: 3}
+    - {fileID: 2800000, guid: 4fb305436913e7840b78fe5f809d72d3, type: 3}
+    - {fileID: 2800000, guid: e9a350268fb53c14fbb0792f7072dd80, type: 3}
+    - {fileID: 2800000, guid: 7fdcc1bf1b8095845a4dbd0163e24858, type: 3}
+    - {fileID: 2800000, guid: cee1a03b086b74740991fe63437327e9, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys: []
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites: []
+  m_PackedSpriteNamesToIndex: []
+  m_RenderDataMap: {}
+  m_Tag: RightTopUI
+  m_IsVariant: 1
+  m_IsPlaceholder: 1
