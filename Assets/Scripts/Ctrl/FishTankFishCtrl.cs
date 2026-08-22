@@ -1,12 +1,20 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+
+public enum FishTankFishState
+{
+    Normal,      // 正常状态（蓄力/恢复/冲刺）
+    BaitChasing  // 追逐鱼饵状态
+}
 
 public class FishTankFishCtrl : MonoBehaviour
 {
     private string _uniqueId;
 
-    [SerializeField] private FishSpeciesData speciesData;
-    [SerializeField] private FishSpeciesType speciesType;
+    [SerializeField] private FishTankFishSpeciesData speciesData;
+    [SerializeField] private FishTankFishSpeciesType speciesType;
 
     [SerializeField] private GameObject renderGo;
     private MeshRenderer _renderer;
@@ -79,17 +87,29 @@ public class FishTankFishCtrl : MonoBehaviour
     private float _directionChangeTimer = 0f;
     private float _directionChangeInterval = 3f;
 
+    // ===== 鱼饵追逐状态 =====
+    private FishTankFishState _fishState = FishTankFishState.Normal;
+    private bool _isChasingBait = false;
+    private Vector3 _baitTargetPosition;        // 鱼饵位置（用于判断鱼饵是否被吃掉）
+    private Vector3 _baitInfiniteTarget;        // 无限延伸目标点（固定方向，鱼一直朝这个点游）
+    private float _chaseDuration = 0f;
+    private float _chaseSpeedMultiplier = 2.5f;
+    private bool _hasLoggedStart = false;
+
     // ===== 公共属性 =====
     public string UniqueId => _uniqueId;
-    public FishSpeciesType SpeciesType => speciesType;
+    public FishTankFishSpeciesType SpeciesType => speciesType;
     public float UniformScale { get => uniformScale; set => uniformScale = value; }
     public bool EnableDebugLog { get => enableDebugLog; set => enableDebugLog = value; }
     public float GetCurrentMoveSpeed() => _currentSpeed;
     public float GetCurrentDirection() => _currentDirection;
+    public bool IsChasingBait => _isChasingBait;
+    public FishTankFishState CurrentFishState => _fishState;
 
     // ============================================================
     // 外部设置
     // ============================================================
+
     public void SetBaseHeight(float height) { baseHeight = height; }
 
     public void SetPhysicsParams(
@@ -124,7 +144,8 @@ public class FishTankFishCtrl : MonoBehaviour
     // ============================================================
     // 初始化
     // ============================================================
-    public void Init(FishSpeciesData data, Shader shader)
+
+    public void Init(FishTankFishSpeciesData data, Shader shader)
     {
         _uniqueId = Guid.NewGuid().ToString();
         gameObject.name = $"FishTankFishCtrl_{_uniqueId}";
@@ -180,7 +201,14 @@ public class FishTankFishCtrl : MonoBehaviour
 
         _isVerticalMoving = UnityEngine.Random.value < verticalMoveProbability;
 
+        _fishState = FishTankFishState.Normal;
+        _isChasingBait = false;
+        _hasLoggedStart = false;
+
         ApplyUniformScale();
+
+        if (enableDebugLog)
+             if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 初始化完成，状态: {_swimState}");
     }
 
     private Mesh CreateQuadMesh()
@@ -213,21 +241,22 @@ public class FishTankFishCtrl : MonoBehaviour
         return mesh;
     }
 
-    private FishSpeciesType GetSpeciesType(string type)
+    private FishTankFishSpeciesType GetSpeciesType(string type)
     {
         switch (type)
         {
-            case "FullScreenSwim": return FishSpeciesType.FullScreenSwim;
-            case "FullScreenStatic": return FishSpeciesType.FullScreenStatic;
-            case "BottomSwim": return FishSpeciesType.BottomSwim;
-            case "BottomStatic": return FishSpeciesType.BottomStatic;
-            default: return FishSpeciesType.FullScreenStatic;
+            case "FullScreenSwim": return FishTankFishSpeciesType.FullScreenSwim;
+            case "FullScreenStatic": return FishTankFishSpeciesType.FullScreenStatic;
+            case "BottomSwim": return FishTankFishSpeciesType.BottomSwim;
+            case "BottomStatic": return FishTankFishSpeciesType.BottomStatic;
+            default: return FishTankFishSpeciesType.FullScreenStatic;
         }
     }
 
     // ============================================================
     // 贴图设置
     // ============================================================
+
     public void SetTexture(Texture2D tex)
     {
         if (_material != null && tex != null)
@@ -258,8 +287,9 @@ public class FishTankFishCtrl : MonoBehaviour
     }
 
     // ============================================================
-    // ⭐ 身体形状控制（平滑过渡）
+    // 身体形状控制
     // ============================================================
+
     private void ApplyShapeToRenderer()
     {
         float currentDir = Mathf.Sign(renderGo.transform.localScale.x);
@@ -269,20 +299,17 @@ public class FishTankFishCtrl : MonoBehaviour
 
     private void UpdateShape(float progress)
     {
-        // progress: 0→1 表示从正常到完全压缩
         float eased = SmoothStep01(progress);
         float targetX = _baseSize.x * (1f + (chargeScaleX - 1f) * eased);
         float targetY = _baseSize.y * (1f + (chargeScaleY - 1f) * eased);
         _shapeTarget = new Vector2(targetX, targetY);
 
-        // ⭐ 平滑趋近目标
         _currentShape = Vector2.Lerp(_currentShape, _shapeTarget, Time.deltaTime * 12f);
         ApplyShapeToRenderer();
     }
 
     private void ResetShape()
     {
-        // ⭐ 平滑恢复到正常形状
         _shapeTarget = _baseSize;
         _currentShape = Vector2.Lerp(_currentShape, _shapeTarget, Time.deltaTime * 10f);
         ApplyShapeToRenderer();
@@ -306,6 +333,7 @@ public class FishTankFishCtrl : MonoBehaviour
     // ============================================================
     // 强制进入蓄力状态
     // ============================================================
+
     private void ForceCharge()
     {
         _swimState = SwimState.Charging;
@@ -323,12 +351,13 @@ public class FishTankFishCtrl : MonoBehaviour
         }
 
         if (enableDebugLog)
-            Debug.Log($"[FishTankFishCtrl] {_uniqueId} 🔄 进入蓄力状态, 时长: {_chargeDuration:F2}s");
+             if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 进入蓄力状态, 速度: {_currentSpeed:F2}, 时长: {_chargeDuration:F2}s");
     }
 
     // ============================================================
     // 行为设置
     // ============================================================
+
     public void SetFullScreenSwim(
         float speedMin, float speedMax,
         float dirMin, float dirMax,
@@ -365,6 +394,13 @@ public class FishTankFishCtrl : MonoBehaviour
         _shapeTarget = _baseSize;
         ApplyShapeToRenderer();
         UpdateDirection(_currentDirection);
+
+        _fishState = FishTankFishState.Normal;
+        _isChasingBait = false;
+        _hasLoggedStart = false;
+
+        if (enableDebugLog)
+             if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} SetFullScreenSwim 完成，位置: ({customPos.x:F2}, {customPos.y:F2}), 状态: {_swimState}");
     }
 
     public void SetFullScreenStatic()
@@ -383,6 +419,10 @@ public class FishTankFishCtrl : MonoBehaviour
         _shapeTarget = _baseSize;
         ApplyShapeToRenderer();
         UpdateDirection(_currentDirection);
+
+        _fishState = FishTankFishState.Normal;
+        _isChasingBait = false;
+        _hasLoggedStart = false;
     }
 
     public void SetBottomSwim(
@@ -423,6 +463,10 @@ public class FishTankFishCtrl : MonoBehaviour
         _shapeTarget = _baseSize;
         ApplyShapeToRenderer();
         UpdateDirection(_currentDirection);
+
+        _fishState = FishTankFishState.Normal;
+        _isChasingBait = false;
+        _hasLoggedStart = false;
     }
 
     public void SetBottomStatic()
@@ -441,21 +485,262 @@ public class FishTankFishCtrl : MonoBehaviour
         _shapeTarget = _baseSize;
         ApplyShapeToRenderer();
         UpdateDirection(_currentDirection);
+
+        _fishState = FishTankFishState.Normal;
+        _isChasingBait = false;
+        _hasLoggedStart = false;
+    }
+
+    // ============================================================
+    // 鱼饵追逐系统
+    // ============================================================
+
+    public void StartChasingBait(Vector3 baitPosition, float chaseDuration, float speedMultiplier = 2.5f)
+    {
+         if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} StartChasingBait 被调用, 当前追逐状态: {_isChasingBait}");
+
+        // 如果已经在追逐中，先重置再开始新的追逐
+        if (_isChasingBait)
+        {
+             if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 已在追逐中，先重置再开始新追逐");
+            _isChasingBait = false;
+            _fishState = FishTankFishState.Normal;
+        }
+
+        _fishState = FishTankFishState.BaitChasing;
+        _isChasingBait = true;
+        _baitTargetPosition = baitPosition;
+        _chaseDuration = chaseDuration;
+        _chaseSpeedMultiplier = speedMultiplier;
+        _stateTimer = 0f;
+        _hasLoggedStart = true;
+
+        // 计算方向朝向鱼饵
+        Vector3 directionToBait = baitPosition - _transform.position;
+        if (directionToBait.x != 0)
+        {
+            _currentDirection = directionToBait.x > 0 ? 1 : -1;
+            UpdateDirection(_currentDirection);
+        }
+
+        // 🔥 关键修改：计算无限延伸目标点（从鱼的位置沿鱼饵方向延伸到无穷远）
+        // 这样鱼会一直朝这个方向游，永远不会停止
+        directionToBait.Normalize();
+        _baitInfiniteTarget = _transform.position + directionToBait * 100000f;
+
+         if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 开始追逐鱼饵! 鱼饵位置: ({baitPosition.x:F2}, {baitPosition.y:F2}), " +
+                  $"无限目标点: ({_baitInfiniteTarget.x:F2}, {_baitInfiniteTarget.y:F2}), " +
+                  $"方向: {(_currentDirection > 0 ? "→" : "←")}");
+
+        // 设置高速移动
+        _maxSpeed = UnityEngine.Random.Range(moveSpeedMin, moveSpeedMax) * _personality * _chaseSpeedMultiplier;
+        _targetSpeed = _maxSpeed;
+        _currentSpeed = _maxSpeed * 0.8f;
+    }
+
+    private void UpdateBaitChasing()
+    {
+        // 追逐状态更新 - 只根据时间和速度判断结束
+        if (!_isChasingBait || !gameObject.activeSelf) return;
+
+        _stateTimer += Time.deltaTime;
+
+        // 获取当前位置
+        Vector3 pos = _transform.position;
+
+        // 🔥 使用初始化时计算的固定无限目标点
+        // 方向始终指向同一个无限远点，保证鱼沿直线前进
+        Vector3 directionToTarget = (_baitInfiniteTarget - pos).normalized;
+
+        // 水平方向更新（基于方向向量）
+        if (Mathf.Abs(directionToTarget.x) > 0.1f)
+        {
+            _currentDirection = directionToTarget.x > 0 ? 1 : -1;
+            UpdateDirection(_currentDirection);
+        }
+
+        // ===== 速度物理 =====
+        // 加速阶段：快速达到目标速度
+        if (_currentSpeed < _targetSpeed)
+        {
+            _currentSpeed += acceleration * 2f * Time.deltaTime;
+            if (_currentSpeed > _targetSpeed) _currentSpeed = _targetSpeed;
+        }
+
+        // 持续阻力：在移动过程中始终受到阻力影响
+        if (_currentSpeed > 0)
+        {
+            _currentSpeed -= dragForce * Time.deltaTime;
+            if (_currentSpeed < 0) _currentSpeed = 0;
+        }
+
+        // 保证速度不低于最小速度（蓄力速度）
+        float minSpeed = _maxSpeed * chargeSpeedRatio;
+        if (_currentSpeed < minSpeed)
+        {
+            _currentSpeed = minSpeed;
+        }
+
+        // ===== 位置移动 =====
+        // 始终向固定的无限目标点移动
+        pos += directionToTarget * _currentSpeed * Time.deltaTime;
+        pos.z = 0;
+        _transform.position = pos;
+
+        // ===== 边界检测 =====
+        CheckBoundaries(ref pos);
+
+        // ============================================================
+        // 检查结束条件
+        // ============================================================
+
+        // 条件1: 追逐时间结束
+        if (_stateTimer > _chaseDuration)
+        {
+            if (enableDebugLog)
+                 if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 结束追逐! 原因: 时间结束, 当前速度: {_currentSpeed:F2}, 用时: {_stateTimer:F2}s");
+            EndBaitChasing();
+            return;
+        }
+
+        // 条件2: 速度降到最小速度（触发蓄力状态的速度）
+        if (_currentSpeed <= minSpeed * 1.05f && _stateTimer > 0.3f)
+        {
+            if (enableDebugLog)
+                 if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 结束追逐! 原因: 速度降到最小速度, 当前速度: {_currentSpeed:F2}, 用时: {_stateTimer:F2}s");
+            EndBaitChasing();
+            return;
+        }
+
+        // 条件3: 边界碰撞时中断追逐（在 CheckBoundaries 中处理）
+    }
+    private void CheckBoundaries(ref Vector3 pos)
+    {
+        // 边界检测（追逐状态专用）
+        if (_boundaryLockTimer > 0)
+        {
+            _boundaryLockTimer -= Time.deltaTime;
+        }
+
+        if (_boundaryLockTimer <= 0)
+        {
+            // 左右边界
+            if (pos.x < totalAreaRect.xMin + _boundaryMargin)
+            {
+                pos.x = totalAreaRect.xMin + _boundaryPushBack;
+                _currentDirection = 1;
+                _boundaryLockTimer = BOUNDARY_LOCK_DURATION;
+                UpdateDirection(_currentDirection);
+
+                // 边界碰撞时中断追逐，回到蓄力状态
+                if (_isChasingBait)
+                {
+                    if (enableDebugLog)
+                         if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 追逐时撞到左边界，结束追逐!");
+                    EndBaitChasing();
+                }
+            }
+            else if (pos.x > totalAreaRect.xMax - _boundaryMargin)
+            {
+                pos.x = totalAreaRect.xMax - _boundaryPushBack;
+                _currentDirection = -1;
+                _boundaryLockTimer = BOUNDARY_LOCK_DURATION;
+                UpdateDirection(_currentDirection);
+
+                // 边界碰撞时中断追逐，回到蓄力状态
+                if (_isChasingBait)
+                {
+                    if (enableDebugLog)
+                         if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 追逐时撞到右边界，结束追逐!");
+                    EndBaitChasing();
+                }
+            }
+        }
+
+        // 上下边界
+        if (pos.y < totalAreaRect.yMin + _boundaryMargin)
+        {
+            pos.y = totalAreaRect.yMin + _boundaryMargin;
+            if (_isChasingBait)
+            {
+                if (enableDebugLog)
+                     if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 追逐时撞到上边界，结束追逐!");
+                EndBaitChasing();
+            }
+        }
+        else if (pos.y > totalAreaRect.yMax - _boundaryMargin)
+        {
+            pos.y = totalAreaRect.yMax - _boundaryMargin;
+            if (_isChasingBait)
+            {
+                if (enableDebugLog)
+                     if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 追逐时撞到下边界，结束追逐!");
+                EndBaitChasing();
+            }
+        }
+    }
+
+    private void EndBaitChasing()
+    {
+        // 结束追逐鱼饵
+        if (!_isChasingBait) return;
+
+        float finalSpeed = _currentSpeed;
+        _isChasingBait = false;
+        _fishState = FishTankFishState.Normal;
+        _hasLoggedStart = false;
+
+        // 回到正常状态 - 强制蓄力
+        ForceCharge();
+
+         if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 结束追逐鱼饵! 最终速度: {finalSpeed:F2} -> 蓄力速度: {_currentSpeed:F2}");
+    }
+
+    public void ResetFishState()
+    {
+         if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} ResetFishState 被调用");
+
+        if (_isChasingBait)
+        {
+             if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 正在追逐中，强制重置");
+        }
+
+        _isChasingBait = false;
+        _fishState = FishTankFishState.Normal;
+        _stateTimer = 0f;
+        _hasLoggedStart = false;
+        ForceCharge();
+    }
+
+    public Vector3 GetBaitTargetPosition()
+    {
+        return _baitTargetPosition;
+    }
+
+    public string GetCurrentSwimState()
+    {
+        return _swimState.ToString();
     }
 
     // ============================================================
     // 更新逻辑
     // ============================================================
+
     public void UpdateFullScreenSwim(float dirMin, float dirMax)
     {
         if (!gameObject.activeSelf) return;
+
+        if (_isChasingBait)
+        {
+            UpdateBaitChasing();
+            return;
+        }
 
         if (_boundaryLockTimer > 0)
         {
             _boundaryLockTimer -= Time.deltaTime;
         }
 
-        // ===== 方向变化（随机转向） =====
         if (_boundaryLockTimer <= 0 && (_swimState == SwimState.Sprinting || _swimState == SwimState.Recovering))
         {
             _directionChangeTimer += Time.deltaTime;
@@ -478,22 +763,18 @@ public class FishTankFishCtrl : MonoBehaviour
 
         Vector3 pos = _transform.position;
 
-        // ===== 状态机 =====
         switch (_swimState)
         {
             case SwimState.Charging:
                 _stateTimer += Time.deltaTime;
                 float chargeProgress = Mathf.Clamp01(_stateTimer / _halfChargeDuration);
 
-                // 身体压缩
                 UpdateShape(chargeProgress);
 
-                // 速度 = 极慢
                 float minSpeed = _maxSpeed * chargeSpeedRatio;
                 _currentSpeed = minSpeed;
                 _targetSpeed = _maxSpeed;
 
-                // 蓄力阶段结束 → 进入恢复阶段
                 if (_stateTimer >= _halfChargeDuration)
                 {
                     _swimState = SwimState.Recovering;
@@ -501,7 +782,7 @@ public class FishTankFishCtrl : MonoBehaviour
                     _currentSpeed = minSpeed;
 
                     if (enableDebugLog)
-                        Debug.Log($"[FishTankFishCtrl] {_uniqueId} 🔄 蓄力完成, 开始恢复");
+                         if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 蓄力完成, 开始恢复");
                 }
                 break;
 
@@ -509,7 +790,6 @@ public class FishTankFishCtrl : MonoBehaviour
                 _stateTimer += Time.deltaTime;
                 float recoverProgress = Mathf.Clamp01(_stateTimer / _halfChargeDuration);
 
-                // ⭐ 身体恢复（从压缩平滑回到正常）
                 float easedRecover = 1f - SmoothStep01(recoverProgress);
                 float targetX = _baseSize.x * (1f + (chargeScaleX - 1f) * easedRecover);
                 float targetY = _baseSize.y * (1f + (chargeScaleY - 1f) * easedRecover);
@@ -517,7 +797,6 @@ public class FishTankFishCtrl : MonoBehaviour
                 _currentShape = Vector2.Lerp(_currentShape, _shapeTarget, Time.deltaTime * 12f);
                 ApplyShapeToRenderer();
 
-                // 恢复的同时开始加速
                 float minSpeed2 = _maxSpeed * chargeSpeedRatio;
                 if (_currentSpeed < _targetSpeed)
                 {
@@ -525,24 +804,21 @@ public class FishTankFishCtrl : MonoBehaviour
                     if (_currentSpeed > _targetSpeed) _currentSpeed = _targetSpeed;
                 }
 
-                // 恢复阶段结束 → 进入冲刺阶段
                 if (_stateTimer >= _halfChargeDuration)
                 {
                     _swimState = SwimState.Sprinting;
                     _stateTimer = 0f;
 
                     if (enableDebugLog)
-                        Debug.Log($"[FishTankFishCtrl] {_uniqueId} ⚡ 恢复完成, 进入冲刺! 加速度={acceleration:F1}");
+                         if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 恢复完成, 进入冲刺! 加速度={acceleration:F1}");
                 }
                 break;
 
             case SwimState.Sprinting:
                 _stateTimer += Time.deltaTime;
 
-                // ⭐ 身体持续平滑恢复到正常
                 ResetShape();
 
-                // 目标速度：正弦波起伏
                 float progress = Mathf.Clamp01(_stateTimer / _sprintDuration);
                 float speedMod = 0.7f + 0.3f * Mathf.Sin(progress * Mathf.PI * 1.2f);
                 _targetSpeed = _maxSpeed * speedMod;
@@ -550,7 +826,6 @@ public class FishTankFishCtrl : MonoBehaviour
                 float minSpeed3 = _maxSpeed * chargeSpeedRatio;
                 if (_targetSpeed < minSpeed3) _targetSpeed = minSpeed3;
 
-                // 加速/减速
                 if (_currentSpeed < _targetSpeed)
                 {
                     _currentSpeed += acceleration * Time.deltaTime;
@@ -562,7 +837,6 @@ public class FishTankFishCtrl : MonoBehaviour
                     if (_currentSpeed < _targetSpeed) _currentSpeed = _targetSpeed;
                 }
 
-                // 持续阻力
                 if (_stateTimer > 0.3f)
                 {
                     _currentSpeed -= dragForce * 0.3f * Time.deltaTime;
@@ -570,11 +844,10 @@ public class FishTankFishCtrl : MonoBehaviour
 
                 if (_currentSpeed < minSpeed3) _currentSpeed = minSpeed3;
 
-                // 力竭判断
                 if (_currentSpeed <= minSpeed3 * 1.05f && _stateTimer > 0.3f)
                 {
                     if (enableDebugLog)
-                        Debug.Log($"[FishTankFishCtrl] {_uniqueId} 🔄 力竭, 重新蓄力");
+                         if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 力竭, 重新蓄力");
 
                     _swimState = SwimState.Charging;
                     _stateTimer = 0f;
@@ -591,11 +864,10 @@ public class FishTankFishCtrl : MonoBehaviour
                     }
                 }
 
-                // 冲刺超时保护
                 if (_stateTimer > _sprintDuration * 1.5f)
                 {
                     if (enableDebugLog)
-                        Debug.Log($"[FishTankFishCtrl] {_uniqueId} ⏰ 冲刺超时, 强制蓄力");
+                         if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 冲刺超时, 强制蓄力");
 
                     _swimState = SwimState.Charging;
                     _stateTimer = 0f;
@@ -608,13 +880,10 @@ public class FishTankFishCtrl : MonoBehaviour
                 break;
         }
 
-        // ===== 位置计算 =====
         Vector3 targetPos = pos;
 
-        // 水平移动
         targetPos.x += _currentSpeed * _currentDirection * Time.deltaTime;
 
-        // 垂直移动
         if (_isVerticalMoving)
         {
             float verticalSpeed = _currentSpeed * verticalSpeedRatio;
@@ -623,7 +892,6 @@ public class FishTankFishCtrl : MonoBehaviour
 
         _targetPosition = targetPos;
 
-        // ===== 边界检测 =====
         if (_boundaryLockTimer <= 0)
         {
             if (targetPos.x < totalAreaRect.xMin + _boundaryMargin)
@@ -643,7 +911,7 @@ public class FishTankFishCtrl : MonoBehaviour
                 ForceCharge();
 
                 if (enableDebugLog)
-                    Debug.Log($"[FishTankFishCtrl] {_uniqueId} 🧱 左边界!");
+                     if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 左边界!");
             }
             else if (targetPos.x > totalAreaRect.xMax - _boundaryMargin)
             {
@@ -662,11 +930,10 @@ public class FishTankFishCtrl : MonoBehaviour
                 ForceCharge();
 
                 if (enableDebugLog)
-                    Debug.Log($"[FishTankFishCtrl] {_uniqueId} 🧱 右边界!");
+                     if (enableDebugLog) Debug.Log($"[FishTankFishCtrl] {_uniqueId} 右边界!");
             }
         }
 
-        // 垂直边界
         if (targetPos.y < totalAreaRect.yMin + _boundaryMargin)
         {
             targetPos.y = totalAreaRect.yMin + _boundaryMargin;
@@ -698,6 +965,12 @@ public class FishTankFishCtrl : MonoBehaviour
     public void UpdateBottomSwim(float dirMin, float dirMax)
     {
         if (!gameObject.activeSelf) return;
+
+        if (_isChasingBait)
+        {
+            UpdateBaitChasing();
+            return;
+        }
 
         if (_boundaryLockTimer > 0)
         {

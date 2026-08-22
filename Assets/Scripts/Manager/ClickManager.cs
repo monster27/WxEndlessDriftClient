@@ -14,6 +14,7 @@ public enum ClickableType
     NestBaitsPlacement,   // 窝料
     Tent,                 // 帐篷
     Table = 20,           // 桌子
+    FishTank
 }
 
 /// <summary>

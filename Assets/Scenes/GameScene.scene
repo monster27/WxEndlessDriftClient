@@ -19564,7 +19564,7 @@ GameObject:
   - component: {fileID: 487708669}
   m_Layer: 0
   m_HasEditorInfo: 1
-  m_Name: Fish
+  m_Name: FishContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -33290,6 +33290,15 @@ MonoBehaviour:
   chargeSpeedRatio: 0.15
   sprintDurationMin: 1.5
   sprintDurationMax: 3.5
+  fishTankBaitPrefab: {fileID: 1764492124191270354, guid: 3cb3f3a04ef00504eb8466645696972b, type: 3}
+  fishTankBaitContainer: {fileID: 1831775695}
+  fishTankBaitTriggerRadius: 2
+  fishTankBaitFallSpeed: 0.5
+  fishTankBaitChaseDurationMin: 0.5
+  fishTankBaitChaseDurationMax: 0.5
+  fishTankBaitChaseSpeedMultiplier: 5
+  fishTankBaitMaxQueueSize: 50
+  fishTankBaitScale: 0.5
 --- !u!1 &863968036
 GameObject:
   m_ObjectHideFlags: 0
@@ -70544,6 +70553,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 487708669}
+  - {fileID: 1831775695}
   - {fileID: 1624273047}
   - {fileID: 235099289}
   - {fileID: 1557948966}
@@ -70866,6 +70876,38 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1830280065}
   m_CullTransparentMesh: 1
+--- !u!1 &1831775694
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 1831775695}
+  m_Layer: 0
+  m_HasEditorInfo: 1
+  m_Name: BaitContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1831775695
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1831775694}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.19999999}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1821315516}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1832214538
 GameObject:
   m_ObjectHideFlags: 0
