@@ -33292,10 +33292,10 @@ MonoBehaviour:
   sprintDurationMax: 3.5
   fishTankBaitPrefab: {fileID: 1764492124191270354, guid: 3cb3f3a04ef00504eb8466645696972b, type: 3}
   fishTankBaitContainer: {fileID: 1831775695}
-  fishTankBaitTriggerRadius: 2
+  fishTankBaitTriggerRadius: 1.5
   fishTankBaitFallSpeed: 0.5
   fishTankBaitChaseDurationMin: 0.5
-  fishTankBaitChaseDurationMax: 0.5
+  fishTankBaitChaseDurationMax: 0.8
   fishTankBaitChaseSpeedMultiplier: 5
   fishTankBaitMaxQueueSize: 50
   fishTankBaitScale: 0.5
