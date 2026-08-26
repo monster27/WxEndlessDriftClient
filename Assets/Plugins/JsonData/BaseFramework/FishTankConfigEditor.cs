@@ -11,7 +11,7 @@ public class FishTankConfigEditor : EditorWindow
 {
     private List<FishTankData> fishTanks = new List<FishTankData>();
     private List<FishTankLevelData> fishTankLevels = new List<FishTankLevelData>();
-    private string savePath = "Assets/Addressables/JsonData/BaseFramework/fish_tank_config.json";
+    private string savePath = "Assets/Addressables/JsonData/BaseFramework/fishTankConfig.json";
     private Vector2 scrollPosition;
     private Vector2 levelScrollPosition;
 
@@ -334,32 +334,5 @@ public class FishTankConfigEditor : EditorWindow
             $"加成: 0.02 = 2%，最高 0.10 = 10%",
             MessageType.Info);
     }
-}
-
-// ==================== 数据结构 ====================
-
-[System.Serializable]
-public class FishTankData
-{
-    public int id;
-    public string name;
-    public string type;      // normal / special
-    public int purchaseCost;
-}
-
-[System.Serializable]
-public class FishTankLevelData
-{
-    public int level;
-    public int maxCount;
-    public int upgradeCost;
-    public float bonus;
-}
-
-[System.Serializable]
-public class FishTankConfigWrapper
-{
-    public List<FishTankData> fishTanks = new List<FishTankData>();
-    public List<FishTankLevelData> fishTankLevels = new List<FishTankLevelData>();
 }
 #endif

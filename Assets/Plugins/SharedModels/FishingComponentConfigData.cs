@@ -18,7 +18,6 @@ public enum FishingComponentCategory
 /// <summary>
 /// 钓鱼组件参数数据
 /// </summary>
-[Serializable]
 public class FishingComponentParam
 {
     public int paramId;
@@ -28,7 +27,6 @@ public class FishingComponentParam
 /// <summary>
 /// 钓鱼组件等级数据
 /// </summary>
-[Serializable]
 public class FishingComponentLevelData
 {
     public int level;
@@ -59,7 +57,6 @@ public enum FishingComponentEquipStatus
 /// <summary>
 /// 钓鱼组件配置类
 /// </summary>
-[Serializable]
 public class FishingComponentConfig
 {
     public int id;
@@ -106,7 +103,6 @@ public class FishingComponentConfig
 /// <summary>
 /// 完整钓鱼技能配置
 /// </summary>
-[Serializable]
 public class CompleteFishingSkillConfig
 {
     public string version;
@@ -134,7 +130,6 @@ public class CompleteFishingSkillConfig
 /// <summary>
 /// 钓鱼组件配置列表包装器
 /// </summary>
-[Serializable]
 public class FishingComponentListWrapper
 {
     public List<FishingComponentConfig> fishingComponents = new List<FishingComponentConfig>();
@@ -143,7 +138,6 @@ public class FishingComponentListWrapper
 /// <summary>
 /// 钓鱼组件配置数组包装类
 /// </summary>
-[Serializable]
 public class FishingComponentConfigArray
 {
     public FishingComponentConfig[] items;
@@ -152,7 +146,6 @@ public class FishingComponentConfigArray
 /// <summary>
 /// 玩家装备信息
 /// </summary>
-[Serializable]
 public class PlayerEquipmentInfo
 {
     public int rodId;

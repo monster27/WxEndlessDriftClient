@@ -147,4 +147,34 @@ public static class ServerUrls
         public const string Upgrade = "/api/player/skills/upgrade";
         public const string UnlockSlot = "/api/player/skills/unlock-slot";
     }
+
+    public static class FishTank
+    {
+        /// <summary>获取玩家所有鱼缸列表</summary>
+        public static string List(int playerId) => $"/api/fishtank/list/{playerId}";
+
+        /// <summary>获取指定鱼缸状态</summary>
+        public static string Status(int playerId, int tankId) => $"/api/fishtank/status/{playerId}/{tankId}";
+
+        /// <summary>获取鱼缸升级信息</summary>
+        public static string UpgradeInfo(int playerId, int tankId) => $"/api/fishtank/upgrade-info/{playerId}/{tankId}";
+
+        /// <summary>解锁指定鱼缸</summary>
+        public static string Unlock(int playerId, int tankId) => $"/api/fishtank/unlock/{playerId}/{tankId}";
+
+        /// <summary>升级指定鱼缸</summary>
+        public static string Upgrade(int playerId, int tankId) => $"/api/fishtank/upgrade/{playerId}/{tankId}";
+
+        /// <summary>从鱼篓放入鱼缸</summary>
+        public const string MoveBagToTank = "/api/fishtank/move/bag-to-tank";
+
+        /// <summary>从鱼缸取出到鱼篓</summary>
+        public const string MoveTankToBag = "/api/fishtank/move/tank-to-bag";
+
+        /// <summary>批量从鱼篓放入鱼缸</summary>
+        public const string BatchMoveBagToTank = "/api/fishtank/move/batch/bag-to-tank";
+
+        /// <summary>从鱼缸转移到另一个鱼缸</summary>
+        public const string MoveTankToTank = "/api/fishtank/move/tank-to-tank";
+    }
 }

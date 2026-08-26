@@ -15,14 +15,14 @@ public struct CollectionFishData
     public int collectionLevel;
 }
 
-public class PlayerDataManager : SingletonMono<PlayerDataManager>
+public partial class PlayerDataManager : SingletonMono<PlayerDataManager>
 {
     private Dictionary<int, int> playerInventory = new Dictionary<int, int>();
     private Dictionary<int, int> fishInventory = new Dictionary<int, int>();
     private Dictionary<int, List<FishDetailData>> fishDetailData = new Dictionary<int, List<FishDetailData>>();
     private Dictionary<int, CollectionFishData> collectionData = new Dictionary<int, CollectionFishData>();
 
-    private int fishBagCapacity = 20;
+    public int fishBagCapacity = 20;
     private int gold = 0;
 
     private bool _isInitialized = false;
@@ -355,6 +355,32 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         }
     }
 
+    public List<FishDetailData> GetAllFishDetailData()
+    {
+        var result = new List<FishDetailData>();
+
+        // ✅ 鱼篓数据（来自 fishDetailData）
+        if (fishDetailData != null)
+        {
+            foreach (var kvp in fishDetailData)
+            {
+                result.AddRange(kvp.Value);
+            }
+        }
+
+        //foreach (var kvp in _fishBagData)
+        //{
+        //    result.Add(kvp.Value);
+        //}
+
+        // ✅ 鱼缸数据（来自 _fishTankData，包含正确的 location 和 tankId）
+        foreach (var kvp in _fishTankData)
+        {
+            result.AddRange(kvp.Value);
+        }
+
+        return result;
+    }
     public void CheckAndUpdateAnimationState()
     {
         if (NetServerManager.Instance == null)
@@ -395,6 +421,87 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
         {
             Z_Logger.Log("[PlayerDataManager] CheckAndUpdateAnimationState - 鱼篓未满，请求播放Idle动画");
             NetServerManager.Instance.NotifyPlayIdleAnimation();
+        }
+    }
+    // 鱼篓和鱼缸
+
+    /// <summary>
+    /// 从鱼详情列表更新数据（从服务器获取的完整列表）
+    /// </summary>
+    public void UpdateFishDetailDataFromList(List<FishDetailData> fishList)
+    {
+        if (fishList == null)
+        {
+            fishDetailData = new Dictionary<int, List<FishDetailData>>();
+            return;
+        }
+
+        // 按 fishId 分组
+        fishDetailData = fishList
+            .GroupBy(f => f.fishId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.ToList()
+            );
+
+        // 更新 fishInventory 汇总
+        fishInventory.Clear();
+        foreach (var kvp in fishDetailData)
+        {
+            fishInventory[kvp.Key] = kvp.Value.Count;
+        }
+
+        Z_Logger.Log($"[PlayerDataManager] UpdateFishDetailDataFromList: {fishList.Count} 条鱼, {fishDetailData.Count} 种");
+    }
+
+    /// <summary>
+    /// 从鱼篓中移除指定鱼（by FishItemId）
+    /// </summary>
+    public void RemoveFishFromBagById(int fishItemId)
+    {
+        // 从 fishDetailData 中移除
+        int fishIdToRemove = -1;
+        FishDetailData fishToRemove = null;
+
+        foreach (var kvp in fishDetailData)
+        {
+            fishToRemove = kvp.Value.FirstOrDefault(f => f.id == fishItemId);
+            if (fishToRemove != null)
+            {
+                fishIdToRemove = kvp.Key;
+                break;
+            }
+        }
+
+        if (fishToRemove != null && fishIdToRemove > 0)
+        {
+            fishDetailData[fishIdToRemove].Remove(fishToRemove);
+            if (fishDetailData[fishIdToRemove].Count == 0)
+            {
+                fishDetailData.Remove(fishIdToRemove);
+            }
+
+            // 更新 fishInventory
+            fishInventory.Clear();
+            foreach (var kvp in fishDetailData)
+            {
+                fishInventory[kvp.Key] = kvp.Value.Count;
+            }
+
+            Z_Logger.Log($"[PlayerDataManager] 从鱼篓移除了鱼: FishItemId={fishItemId}");
+            CommunicateEvent.Modify("FishBagDataUpdated");
+        }
+    }
+
+    /// <summary>
+    /// 更新鱼篓容量
+    /// </summary>
+    public void UpdateFishBagCapacity(int capacity)
+    {
+        if (capacity > 0)
+        {
+            fishBagCapacity = capacity;
+            Z_Logger.Log($"[PlayerDataManager] 鱼篓容量更新: {capacity}");
         }
     }
 
@@ -745,6 +852,8 @@ public class PlayerDataManager : SingletonMono<PlayerDataManager>
 
         Z_Logger.Log($"[PlayerDataManager] UI数据更新完成 - 金币:{gold}, 鱼篓:{totalCount}/{fishBagCapacity}, 窝料:{baitCount}");
     }
+
+
 
     private void OnDestroy()
     {

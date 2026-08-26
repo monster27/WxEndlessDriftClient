@@ -175,16 +175,18 @@ public class LastCatchInfo
 [Serializable]
 public class FishDetailData
 {
-    public int id;  // 数据库记录ID（用于锁定/解锁操作）
-    public int fishId;
-    public float weight;
-    public int starRatingId;
-    public int calculatedPrice;
-    public long caughtTimestamp;
-    public bool isShiny;  // 是否闪光鱼
-    public bool isLocked; // 是否锁定
-    public int catchCount; // 钓获次数
-    public float maxWeight; // 钓到的最大重量
+    public int id;              // 数据库记录ID（用于锁定/解锁操作）
+    public int fishId;          // 鱼配置ID
+    public float weight;        // 重量
+    public int starRatingId;    // 星级ID
+    public int calculatedPrice; // 计算后的价格
+    public long caughtTimestamp;// 捕获时间戳
+    public bool isShiny;        // 是否闪光鱼
+    public bool isLocked;       // 是否锁定
+    public int catchCount;      // 钓获次数
+    public float maxWeight;     // 钓到的最大重量
+    public int location;        // 0=鱼篓, 1=鱼缸
+    public int tankId;          // 所在鱼缸ID（location=1时有效）
 }
 
 [Serializable]

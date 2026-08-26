@@ -23,7 +23,8 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     private string charactersJsonPath = "JsonData/BaseFramework/characters";
     private string uiTextsJsonPath = "JsonData/Game/GameFramework/uiTexts";
     private string sceneDataPath = "JsonData/Game/SceneTransData/mainTransData";
-    private string fishTankDecorationsJsonPath = "JsonData/Game/BagItem/fishTankDec";  
+    private string fishTankDecorationsJsonPath = "JsonData/Game/BagItem/fishTankDec";
+    private string fishTankConfigJsonPath = "JsonData/BaseFramework/fishTankConfig";
 
     // 数据存储
     public List<IslandData> islands = new List<IslandData>();
@@ -45,7 +46,9 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     public UITextsConfig uiTextsConfig;
     public SceneDataWrapper sceneDataWrapper = new SceneDataWrapper();
     public bool isSceneDataLoaded = false;
-    public List<FishTankDecData> fishTankDecorations = new List<FishTankDecData>();  
+    public List<FishTankDecData> fishTankDecorations = new List<FishTankDecData>();
+    public List<FishTankData> fishTanks = new List<FishTankData>(); 
+    public List<FishTankLevelData> fishTankLevels = new List<FishTankLevelData>();
 
     private StringBuilder dataLog = new StringBuilder();
     public bool isDataLoaded = false;
@@ -99,7 +102,8 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         await LoadCharactersData();
         await LoadSceneData();
         await LoadUITextsData();
-        await LoadFishTankDecorationData();  // ✅ 新增
+        await LoadFishTankDecorationData();
+        await LoadFishTankConfigData(); 
 
         dataLog.AppendLine("===================================");
         isDataLoaded = true;
@@ -389,7 +393,6 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         dataLog.AppendLine($"✗ UI文本配置: 加载失败");
     }
 
-    // ✅ 新增：加载鱼缸装饰数据
     private async Task LoadFishTankDecorationData()
     {
         string json = await RWJsonData.LoadJson(fishTankDecorationsJsonPath);
@@ -407,6 +410,27 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         }
         dataLog.AppendLine($"✗ 鱼缸装饰数据: 加载失败");
     }
+    private async Task LoadFishTankConfigData()
+    {
+        string json = await RWJsonData.LoadJson(fishTankConfigJsonPath);
+        if (!string.IsNullOrEmpty(json))
+        {
+            var wrapper = JsonUtility.FromJson<FishTankConfigWrapper>(json);
+            if (wrapper != null)
+            {
+                fishTanks = wrapper.fishTanks ?? new List<FishTankData>();
+                fishTankLevels = wrapper.fishTankLevels ?? new List<FishTankLevelData>();
+                dataLog.AppendLine($"✓ 鱼缸配置数据: 成功加载 {fishTanks.Count} 个鱼缸, {fishTankLevels.Count} 个等级");
+                foreach (var item in fishTanks)
+                    dataLog.AppendLine($"    - ID: {item.id}, 名称: {item.name}, 类型: {item.type}, 价格: {item.purchaseCost}");
+                foreach (var item in fishTankLevels)
+                    dataLog.AppendLine($"    - 等级: {item.level}, 上限: {item.maxCount}, 升级费: {item.upgradeCost}, 加成: {item.bonus:P0}");
+                return;
+            }
+        }
+        dataLog.AppendLine($"✗ 鱼缸配置数据: 加载失败或文件不存在");
+    }
+
 
     public async Task LoadSceneData()
     {
@@ -743,6 +767,78 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         return item?.name ?? "未知装饰";
     }
 
+    /// <summary>
+    /// 根据ID获取鱼缸数据
+    /// </summary>
+    public FishTankData GetFishTankById(int id)
+    {
+        foreach (var item in fishTanks) if (item.id == id) return item;
+        return null;
+    }
+
+    /// <summary>
+    /// 获取所有鱼缸数据
+    /// </summary>
+    public List<FishTankData> GetAllFishTanks()
+    {
+        return new List<FishTankData>(fishTanks);
+    }
+
+    /// <summary>
+    /// 获取特殊鱼缸（type = "special"）
+    /// </summary>
+    public FishTankData GetSpecialFishTank()
+    {
+        foreach (var item in fishTanks) if (item.type == "special") return item;
+        return null;
+    }
+
+    /// <summary>
+    /// 获取普通鱼缸列表
+    /// </summary>
+    public List<FishTankData> GetNormalFishTanks()
+    {
+        var result = new List<FishTankData>();
+        foreach (var item in fishTanks) if (item.type == "normal") result.Add(item);
+        return result;
+    }
+
+    /// <summary>
+    /// 根据等级获取鱼缸等级数据
+    /// </summary>
+    public FishTankLevelData GetFishTankLevel(int level)
+    {
+        foreach (var item in fishTankLevels) if (item.level == level) return item;
+        return null;
+    }
+
+    /// <summary>
+    /// 获取所有等级数据
+    /// </summary>
+    public List<FishTankLevelData> GetAllFishTankLevels()
+    {
+        return new List<FishTankLevelData>(fishTankLevels);
+    }
+
+    /// <summary>
+    /// 获取鱼缸名称
+    /// </summary>
+    public string GetFishTankName(int id)
+    {
+        var item = GetFishTankById(id);
+        return item?.name ?? "未知鱼缸";
+    }
+
+    /// <summary>
+    /// 获取最大等级
+    /// </summary>
+    public int GetMaxFishTankLevel()
+    {
+        int max = 0;
+        foreach (var item in fishTankLevels) if (item.level > max) max = item.level;
+        return max;
+    }
+
     // ==================== 事件处理 ====================
 
     public void HandleBagOpenEvent()
@@ -814,4 +910,58 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
             Z_Logger.LogWarning("[LoadDataManager] 鱼篓刷新失败: UIManager或PlayerDataManager未初始化");
         }
     }
+
+    // ============================================================
+    // 在 LoadDataManager.cs 文件末尾，所有方法之后，最后一个 } 之前
+    // ============================================================
+
+    // ==================== 鱼缸配置查询方法（兼容旧接口） ====================
+
+    /// <summary>
+    /// 获取鱼缸配置
+    /// </summary>
+    public FishTankConfig GetFishTankConfig(int tankId)
+    {
+        var tank = GetFishTankById(tankId);
+        if (tank == null) return null;
+
+        return new FishTankConfig
+        {
+            id = tank.id,
+            name = tank.name,
+            type = tank.type,
+            purchaseCost = tank.purchaseCost,
+            defaultCapacity = GetFishTankLevel(1)?.maxCount ?? 10
+        };
+    }
+
+    /// <summary>
+    /// 获取所有鱼缸配置
+    /// </summary>
+    public List<FishTankConfig> GetAllFishTankConfigs()
+    {
+        var result = new List<FishTankConfig>();
+        foreach (var tank in fishTanks)
+        {
+            result.Add(new FishTankConfig
+            {
+                id = tank.id,
+                name = tank.name,
+                type = tank.type,
+                purchaseCost = tank.purchaseCost,
+                defaultCapacity = GetFishTankLevel(1)?.maxCount ?? 10
+            });
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// 获取鱼缸购买价格
+    /// </summary>
+    public int GetFishTankPurchaseCost(int tankId)
+    {
+        var tank = GetFishTankById(tankId);
+        return tank?.purchaseCost ?? 0;
+    }
+
 }

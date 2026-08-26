@@ -268,7 +268,6 @@ public class Res2AAPathTool : EditorWindow
             return;
         }
 
-        // ✅ 刷新设置
         settings.SetDirty(AddressableAssetSettings.ModificationEvent.BatchModification, null, true, true);
         AssetDatabase.SaveAssets();
 
@@ -283,37 +282,61 @@ public class Res2AAPathTool : EditorWindow
         string[] allFiles = Directory.GetFiles(fullPath, "*.*", SearchOption.AllDirectories);
 
         List<string> assetPaths = new List<string>();
+        int skippedCount = 0;
+
         foreach (string file in allFiles)
         {
             string relativePath = file.Replace(Application.dataPath, "Assets").Replace('\\', '/');
 
+            // 跳过 .meta 文件
             if (file.EndsWith(".meta"))
+            {
+                skippedCount++;
                 continue;
-            if (file.EndsWith(".cs"))
-                continue;
-            if (file.EndsWith(".shader"))
-                continue;
-            if (file.EndsWith(".asmdef"))
-                continue;
-            if (file.EndsWith(".json"))
-                continue;
-            if (file.EndsWith(".txt"))
-                continue;
-            if (file.EndsWith(".md"))
-                continue;
-            if (file.EndsWith(".DS_Store"))
-                continue;
+            }
 
+            // ⚠️ 只跳过脚本和程序集定义文件，不跳过 .json
+            if (file.EndsWith(".cs"))
+            {
+                skippedCount++;
+                continue;
+            }
+            if (file.EndsWith(".asmdef"))
+            {
+                skippedCount++;
+                continue;
+            }
+            if (file.EndsWith(".asmref"))
+            {
+                skippedCount++;
+                continue;
+            }
+            if (file.EndsWith(".DS_Store"))
+            {
+                skippedCount++;
+                continue;
+            }
+
+            // ✅ 其他所有文件（包括 .json）都尝试标记
             Object obj = AssetDatabase.LoadAssetAtPath<Object>(relativePath);
             if (obj != null)
             {
                 assetPaths.Add(relativePath);
             }
+            else
+            {
+                skippedCount++;
+                Debug.LogWarning($"[Addressable标记] ⚠️ 无法加载: {relativePath}");
+            }
         }
 
         if (assetPaths.Count == 0)
         {
-            EditorUtility.DisplayDialog("提示", "未找到可标记的资源文件！", "确定");
+            EditorUtility.DisplayDialog("提示",
+                $"未找到可标记的资源文件！\n\n" +
+                $"总文件数: {allFiles.Length}\n" +
+                $"跳过的文件: {skippedCount} (包括 .meta、脚本等)",
+                "确定");
             return;
         }
 
@@ -326,7 +349,6 @@ public class Res2AAPathTool : EditorWindow
             group = settings.CreateGroup("Default Local Group", false, false, true, null);
         }
 
-        // ✅ 再刷新一次设置
         settings.SetDirty(AddressableAssetSettings.ModificationEvent.BatchModification, null, true, true);
 
         for (int i = 0; i < assetPaths.Count; i++)
@@ -340,7 +362,6 @@ public class Res2AAPathTool : EditorWindow
                 (float)i / assetPaths.Count
             );
 
-            // ✅ 使用 GUID 查找
             AddressableAssetEntry existingEntry = settings.FindAssetEntry(guid);
             if (existingEntry != null)
             {
@@ -349,12 +370,11 @@ public class Res2AAPathTool : EditorWindow
                 continue;
             }
 
-            Debug.Log($"[Addressable标记] 新增: {assetPath}");
+            Debug.Log($"[Addressable标记] ✅ 新增: {assetPath}");
             settings.CreateOrMoveEntry(guid, group, false, false);
             addedCount++;
         }
 
-        // ✅ 保存并刷新
         settings.SetDirty(AddressableAssetSettings.ModificationEvent.BatchModification, null, true, true);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -364,12 +384,14 @@ public class Res2AAPathTool : EditorWindow
         string msg = $"✅ 标记完成！\n\n" +
                      $"📁 {folderPath}\n" +
                      $"📄 新增标记: {addedCount} 个资源\n" +
-                     $"📄 已存在: {existingCount} 个资源\n";
+                     $"📄 已存在: {existingCount} 个资源\n" +
+                     $"⏭️ 跳过: {skippedCount} 个文件\n";
 
         Debug.Log($"[Addressable标记] ===== 完成 =====\n" +
                   $"  文件夹: {folderPath}\n" +
                   $"  新增: {addedCount} 个\n" +
-                  $"  已存在: {existingCount} 个");
+                  $"  已存在: {existingCount} 个\n" +
+                  $"  跳过: {skippedCount} 个");
 
         EditorUtility.DisplayDialog("标记完成", msg, "确定");
     }
@@ -508,7 +530,7 @@ public class Res2AAPathTool : EditorWindow
         EditorGUILayout.HelpBox(
             "📌 右键菜单说明：\n" +
             "• 路径替换 Resources→Addressables：替换脚本中的路径字符串\n" +
-            "• 标记文件夹为 Addressable：将文件夹内所有资源标记为 Addressable",
+            "• 标记文件夹为 Addressable：将文件夹内所有资源标记为 Addressable（包含 .json）",
             MessageType.Info
         );
     }

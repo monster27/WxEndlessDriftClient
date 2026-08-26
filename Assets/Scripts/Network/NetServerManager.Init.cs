@@ -102,7 +102,7 @@ public partial class NetServerManager
 
         playerInventory.Clear();
         fishInventory.Clear();
-        fishDetailData.Clear();
+        fishBagDetailData.Clear();
         unlockedCharacters.Clear();
         unlockedEquipment.Clear();
         mallItems.Clear();
@@ -266,8 +266,7 @@ public partial class NetServerManager
         _initSteps.Add(new InitStep("加载场景数据", FetchPlayerSceneDataCoroutine, 1.0f));
         _initSteps.Add(new InitStep("加载连续模式状态", FetchContinuousModeStatusCoroutine, 0.5f));
         _initSteps.Add(new InitStep("加载窝料数量", FetchBaitCountCoroutine, 0.5f));
-        // ❌ 删除 EnsureBasicCharacterCoroutine - 服务器已保证数据一致性
-        // _initSteps.Add(new InitStep("确保基础人物", EnsureBasicCharacterCoroutine, 1.0f));
+        _initSteps.Add(new InitStep("加载鱼缸数据", FetchFishTankDataCoroutine, 1.0f));
     }
 
     // ========== 各个步骤的 Coroutine ==========
@@ -369,6 +368,53 @@ public partial class NetServerManager
         }, "窝料数量");
     }
 
-    // ❌ 已删除 EnsureBasicCharacterCoroutine
-    // 服务器已在 AuthController 中保证数据一致性
+    /// <summary>
+    /// 获取所有鱼缸数据（登录时调用）
+    /// </summary>
+    /// <summary>
+    /// 获取所有鱼缸数据（登录时调用）
+    /// </summary>
+    private IEnumerator FetchFishTankDataCoroutine()
+    {
+        bool success = false;
+        yield return StartCoroutine(FetchAllFishTanksCoroutine(result => success = result));
+
+        if (success)
+        {
+            Z_Logger.Log("[NetServerManager] 初始化 - 鱼缸数据加载完成");
+        }
+        else
+        {
+            Z_Logger.LogWarning("[NetServerManager] 初始化 - 鱼缸数据加载失败，使用默认值");
+
+            // ✅ 使用 PlayerDataManager 作为唯一数据源
+            if (PlayerDataManager.Instance != null)
+            {
+                var defaultTanks = new List<FishTankStatusResponse>
+            {
+                new FishTankStatusResponse
+                {
+                    success = true,
+                    tankId = 1,
+                    Name = "特殊鱼缸",
+                    Type = "special",
+                    PurchaseCost = 0,
+                    isUnlocked = false,
+                    level = 1,
+                    capacity = 10,
+                    currentCount = 0,
+                    remainingSpace = 10,
+                    items = new List<FishDetailData>()
+                }
+            };
+
+                PlayerDataManager.Instance.UpdateFishTankFromResponse(defaultTanks);
+                Z_Logger.Log("[NetServerManager] 初始化 - 使用默认鱼缸数据");
+            }
+            else
+            {
+                Z_Logger.LogWarning("[NetServerManager] 初始化 - PlayerDataManager 不可用，无法设置默认鱼缸数据");
+            }
+        }
+    }
 }

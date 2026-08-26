@@ -12,7 +12,7 @@ public partial class NetServerManager
     // 玩家数据
     private Dictionary<int, int> playerInventory = new Dictionary<int, int>();
     private Dictionary<int, int> fishInventory = new Dictionary<int, int>();
-    private int fishBagCapacity = 20;
+    public int fishBagCapacity = 9;
     private int playerGold = 0;
 
     // ===== 皮肤数据（存储在NetServerManager中，确保IsItemEquipped不依赖SkinManager） =====
@@ -145,7 +145,7 @@ public partial class NetServerManager
 
     private Dictionary<int, int> GetPlayerInventory() => playerInventory;
     private Dictionary<int, int> GetPlayerFishInventory() => fishInventory;
-    private int GetFishBagCapacity() => fishBagCapacity;
+    public int GetFishBagCapacity() => fishBagCapacity;
     public int GetPlayerGold() => playerGold;
 
     /// <summary>
@@ -264,9 +264,9 @@ public partial class NetServerManager
     private int GetTotalFishCount()
     {
         int total = 0;
-        if (fishDetailData != null)
+        if (fishBagDetailData != null)
         {
-            foreach (var list in fishDetailData.Values)
+            foreach (var list in fishBagDetailData.Values)
             {
                 if (list != null)
                 {
@@ -380,47 +380,48 @@ public partial class NetServerManager
         }, "装备数据");
     }
 
+    // NetServerManager.PlayerData.cs - FetchPlayerFishInventoryCoroutine
+
     private IEnumerator FetchPlayerFishInventoryCoroutine()
     {
         yield return FetchGetJson<InventoryResponse>(ServerUrls.Player.FishBagById(_currentPlayerId), data =>
         {
             if (data?.items == null) return;
 
-            // 清空旧数据
             fishInventory.Clear();
-            fishDetailData.Clear();
+            fishBagDetailData.Clear();
 
             foreach (var item in data.items)
             {
-                // item.key = fishId, item.value = 1 (因为每条鱼是独立的)
                 if (!fishInventory.ContainsKey(item.key))
                     fishInventory[item.key] = 0;
                 fishInventory[item.key] += item.value;
 
-                // 存储每条鱼的详细信息
-                if (!fishDetailData.ContainsKey(item.key))
+                if (!fishBagDetailData.ContainsKey(item.key))
                 {
-                    fishDetailData[item.key] = new List<FishDetailData>();
+                    fishBagDetailData[item.key] = new List<FishDetailData>();
                 }
-                fishDetailData[item.key].Add(new FishDetailData
+
+                // ✅ 注意：这里 item 来自鱼篓 API，location = 0
+                fishBagDetailData[item.key].Add(new FishDetailData
                 {
                     id = item.id,
                     fishId = item.key,
                     weight = item.weight,
                     starRatingId = item.starRatingId,
-                    calculatedPrice = item.calculatedPrice,  // ✅ 使用服务器返回的价格
+                    calculatedPrice = item.calculatedPrice,
                     caughtTimestamp = item.caughtTimestamp,
                     isShiny = item.isShiny,
-                    isLocked = item.isLocked
+                    isLocked = item.isLocked,
+                    location = 0,      // ✅ 鱼篓
+                    tankId = 0         // ✅ 鱼篓无 tankId
                 });
             }
 
-            // ✅ 重新计算鱼篓状态
             int total = GetTotalFishCount();
             isFishBagFull = total >= fishBagCapacity;
 
-            // 更新 PlayerDataManager
-            PlayerDataManager.Instance?.UpdateFishDetailData(fishDetailData);
+            PlayerDataManager.Instance?.UpdateFishDetailData(fishBagDetailData);
 
             Z_Logger.Log($"[NetServerManager] 鱼篓数据加载完成: {fishInventory.Count} 种鱼，总数量: {total}，容量: {fishBagCapacity}，已满: {isFishBagFull}");
         }, "鱼篓数据");
@@ -542,18 +543,18 @@ public partial class NetServerManager
         {
             if (data?.items == null) return;
             fishInventory.Clear();
-            fishDetailData.Clear();
+            fishBagDetailData.Clear();
             foreach (var item in data.items)
             {
                 if (!fishInventory.ContainsKey(item.key))
                     fishInventory[item.key] = 0;
                 fishInventory[item.key] += item.value;
 
-                if (!fishDetailData.ContainsKey(item.key))
+                if (!fishBagDetailData.ContainsKey(item.key))
                 {
-                    fishDetailData[item.key] = new List<FishDetailData>();
+                    fishBagDetailData[item.key] = new List<FishDetailData>();
                 }
-                fishDetailData[item.key].Add(new FishDetailData
+                fishBagDetailData[item.key].Add(new FishDetailData
                 {
                     id = item.id,
                     fishId = item.key,
@@ -567,8 +568,8 @@ public partial class NetServerManager
             }
             int total = GetTotalFishCount();
             isFishBagFull = total >= fishBagCapacity;
-            PlayerDataManager.Instance?.UpdateFishDetailData(fishDetailData);
-            Z_Logger.Log("[NetServerManager] 更新玩家鱼篓: " + fishInventory.Count + " 种鱼，总数量: " + total + "，详细数据: " + fishDetailData.Count + " 种");
+            PlayerDataManager.Instance?.UpdateFishDetailData(fishBagDetailData);
+            Z_Logger.Log("[NetServerManager] 更新玩家鱼篓: " + fishInventory.Count + " 种鱼，总数量: " + total + "，详细数据: " + fishBagDetailData.Count + " 种");
         }, "鱼篓数据");
     }
 
@@ -968,11 +969,11 @@ public partial class NetServerManager
         public List<CollectionReward> claimedRewards;
     }
 
-    private Dictionary<int, List<FishDetailData>> fishDetailData = new Dictionary<int, List<FishDetailData>>();
+    private Dictionary<int, List<FishDetailData>> fishBagDetailData = new Dictionary<int, List<FishDetailData>>();
     private Dictionary<int, PlayerFishCollectionData> playerCollectionData = new Dictionary<int, PlayerFishCollectionData>();
     private List<PlayerCollectionProgress> playerCollectionProgress = new List<PlayerCollectionProgress>();
 
-    public Dictionary<int, List<FishDetailData>> GetFishDetailData() => fishDetailData;
+    public Dictionary<int, List<FishDetailData>> GetFishDetailData() => fishBagDetailData;
 
     public int GetFishCollectionCatchCount(int fishId)
     {
@@ -1374,30 +1375,30 @@ public partial class NetServerManager
                     if (response.fishItems != null && response.fishItems.Count > 0)
                     {
                         fishInventory.Clear();
-                        fishDetailData.Clear();
+                        fishBagDetailData.Clear();
                         foreach (var item in response.fishItems)
                         {
                             if (!fishInventory.ContainsKey(item.key))
                                 fishInventory[item.key] = 0;
                             fishInventory[item.key] += item.value;
 
-                            if (!fishDetailData.ContainsKey(item.key))
+                            if (!fishBagDetailData.ContainsKey(item.key))
                             {
-                                fishDetailData[item.key] = new List<FishDetailData>();
+                                fishBagDetailData[item.key] = new List<FishDetailData>();
                             }
-                            fishDetailData[item.key].Add(new FishDetailData
+                            fishBagDetailData[item.key].Add(new FishDetailData
                             {
                                 id = item.id,
                                 fishId = item.key,
                                 weight = item.weight,
                                 starRatingId = item.starRatingId,
-                                calculatedPrice = 0,
+                                calculatedPrice = item.calculatedPrice,
                                 caughtTimestamp = item.caughtTimestamp,
                                 isShiny = item.isShiny,
                                 isLocked = item.isLocked
                             });
                         }
-                        PlayerDataManager.Instance?.UpdateFishDetailData(fishDetailData);
+                        PlayerDataManager.Instance?.UpdateFishDetailData(fishBagDetailData);
                         Z_Logger.Log($"[NetServerManager] 自动出售状态切换后同步鱼篓数据: {fishInventory.Count} 种鱼");
                     }
                 }

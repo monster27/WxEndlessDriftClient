@@ -117,6 +117,9 @@ public class ClickManager : MonoBehaviour
             case ClickableType.Tent:
                 CommunicateEvent.Modify("UI_ToggleScene");
                 break;
+            case ClickableType.FishTank:
+                CommunicateEvent.Modify("UI_OpenFishTank");
+                break;
         }
     }
 

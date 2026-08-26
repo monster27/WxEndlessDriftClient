@@ -25,7 +25,9 @@ public class ExportTool : EditorWindow
         [InspectorName("仅列出文件")]
         ListOnly,
         [InspectorName("删除已有文件")]
-        DeleteRedundant
+        DeleteRedundant,
+        [InspectorName("删除其他文件")]
+        DeleteOther
     }
 
     private ExportMode currentMode = ExportMode.Client;
@@ -160,17 +162,17 @@ public class ExportTool : EditorWindow
         Z_Logger.Log($"[ExportTool] ========== 刷新服务器导出列表 ==========");
         Z_Logger.Log($"[ExportTool] 服务器Shared路径: {serverSharedPath}");
 
-        // 1. 获取客户端Resources目录下的JSON数据
-        string resourcesPath = Path.Combine(Application.dataPath, "Resources");
-        if (Directory.Exists(resourcesPath))
+        // 1. 获取客户端Addressables目录下的JSON数据
+        string AddressablesPath = Path.Combine(Application.dataPath, "Addressables");
+        if (Directory.Exists(AddressablesPath))
         {
-            Z_Logger.Log($"[ExportTool] 扫描Resources目录: {resourcesPath}");
-            foreach (string file in Directory.GetFiles(resourcesPath, "*.json", SearchOption.AllDirectories))
+            Z_Logger.Log($"[ExportTool] 扫描Addressables目录: {AddressablesPath}");
+            foreach (string file in Directory.GetFiles(AddressablesPath, "*.json", SearchOption.AllDirectories))
             {
                 if (file.Contains("ProjectSettings") || file.Contains("Packages"))
                     continue;
 
-                string relativePath = file.Replace(resourcesPath, "").TrimStart('/', '\\');
+                string relativePath = file.Replace(AddressablesPath, "").TrimStart('/', '\\');
                 exportFiles.Add(new ExportFileInfo
                 {
                     sourcePath = file,
@@ -185,7 +187,7 @@ public class ExportTool : EditorWindow
         }
         else
         {
-            Z_Logger.LogWarning($"[ExportTool] Resources目录不存在: {resourcesPath}");
+            Z_Logger.LogWarning($"[ExportTool] Addressables目录不存在: {AddressablesPath}");
         }
 
         // 2. 获取客户端数据结构（导出到服务器Shared/Structures）
@@ -281,11 +283,11 @@ public class ExportTool : EditorWindow
 
         Z_Logger.Log($"[ExportTool] 目标项目根目录: {exportToPath}");
 
-        string resourcesPath = Path.Combine(Application.dataPath, "Resources");
-        if (Directory.Exists(resourcesPath))
+        string AddressablesPath = Path.Combine(Application.dataPath, "Addressables");
+        if (Directory.Exists(AddressablesPath))
         {
-            Z_Logger.Log($"[ExportTool] 扫描Resources目录: {resourcesPath}");
-            foreach (string file in Directory.GetFiles(resourcesPath, "*.json", SearchOption.AllDirectories))
+            Z_Logger.Log($"[ExportTool] 扫描Addressables目录: {AddressablesPath}");
+            foreach (string file in Directory.GetFiles(AddressablesPath, "*.json", SearchOption.AllDirectories))
             {
                 if (file.Contains("ProjectSettings") || file.Contains("Packages") || file.Contains("Library"))
                     continue;
@@ -305,7 +307,7 @@ public class ExportTool : EditorWindow
         }
         else
         {
-            Z_Logger.LogWarning($"[ExportTool] Resources目录不存在: {resourcesPath}");
+            Z_Logger.LogWarning($"[ExportTool] Addressables目录不存在: {AddressablesPath}");
         }
 
         Z_Logger.Log($"[ExportTool] 客户端导出列表刷新完成，共 {exportToFiles.Count} 个文件");
@@ -378,16 +380,16 @@ public class ExportTool : EditorWindow
         EditorGUILayout.EndScrollView();
     }
 
-    // ==================== 新增：带时间戳的导出模式 ====================
+    // ==================== 带时间戳的导出模式 ====================
     private void DrawClientWithTimestampMode()
     {
         EditorGUILayout.LabelField("📁 一键导出(带时间戳)", EditorStyles.boldLabel);
         GUILayout.Space(5);
 
         EditorGUILayout.HelpBox(
-            "一键将 Resources 目录中的 JSON 文件导出到带时间戳的文件夹。\n" +
+            "一键将 Addressables 目录中的 JSON 文件导出到带时间戳的文件夹。\n" +
             "文件夹格式: json资源(2026-08-13_14-30-25)\n" +
-            "包含完整的 Assets/Resources/ 目录结构。",
+            "包含完整的 Assets/Addressables/ 目录结构。",
             MessageType.Info
         );
 
@@ -458,7 +460,7 @@ public class ExportTool : EditorWindow
         }
         else if (exportToFiles.Count == 0)
         {
-            EditorGUILayout.HelpBox("⚠️ 未找到JSON文件！请检查 Resources 目录。", MessageType.Warning);
+            EditorGUILayout.HelpBox("⚠️ 未找到JSON文件！请检查 Addressables 目录。", MessageType.Warning);
         }
         else
         {
@@ -469,7 +471,7 @@ public class ExportTool : EditorWindow
         }
     }
 
-    // ==================== 新增：带时间戳的导出方法 ====================
+    // ==================== 带时间戳的导出方法 ====================
     private void ExportJsonWithTimestamp()
     {
         if (string.IsNullOrEmpty(exportToPath))
@@ -501,7 +503,7 @@ public class ExportTool : EditorWindow
 
         if (exportToFiles.Count == 0)
         {
-            EditorUtility.DisplayDialog("提示", "当前项目 Resources 目录中没有找到JSON文件！", "确定");
+            EditorUtility.DisplayDialog("提示", "当前项目 Addressables 目录中没有找到JSON文件！", "确定");
             return;
         }
 
@@ -540,7 +542,7 @@ public class ExportTool : EditorWindow
             {
                 try
                 {
-                    // 目标路径：根目录/时间戳文件夹/Assets/Resources/...
+                    // 目标路径：根目录/时间戳文件夹/Assets/Addressables/...
                     string targetFilePath = Path.Combine(fullExportPath, fileInfo.destinationPath);
                     string targetDir = Path.GetDirectoryName(targetFilePath);
 
@@ -606,19 +608,20 @@ public class ExportTool : EditorWindow
         GUILayout.Box("", GUILayout.Height(2), GUILayout.ExpandWidth(true));
         GUILayout.Space(8);
 
-        EditorGUILayout.LabelField("🧹 清除已有文件", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("🧹 清除文件", EditorStyles.boldLabel);
         GUILayout.Space(3);
 
         EditorGUILayout.HelpBox(
             "扫描目标目录，按文件名对比：\n" +
-            "• 已有文件：与源目录文件名相同的文件（可删除）\n" +
-            "• 其他文件：目标目录中多出的其他文件（仅显示）",
+            "• 已有文件：与源目录文件名相同的文件\n" +
+            "• 其他文件：目标目录中多出的其他文件\n" +
+            "可选择删除其中一类或仅查看。",
             MessageType.Info
         );
 
         GUILayout.Space(5);
 
-        string[] cleanModeNames = { "仅列出文件", "删除已有文件" };
+        string[] cleanModeNames = { "仅列出文件", "删除已有文件", "删除其他文件" };
         int cleanSelected = (int)cleanMode;
         int cleanNew = EditorGUILayout.Popup("清除模式", cleanSelected, cleanModeNames);
         cleanMode = (CleanMode)cleanNew;
@@ -681,7 +684,34 @@ public class ExportTool : EditorWindow
                     EditorGUILayout.LabelField("✅ 没有已有文件需要删除", EditorStyles.miniLabel);
                 }
             }
-            else
+            else if (cleanMode == CleanMode.DeleteOther)
+            {
+                if (otherCount > 0)
+                {
+                    GUI.backgroundColor = new Color(1f, 0.7f, 0.2f);
+                    if (GUILayout.Button($"🗑️ 删除 {otherCount} 个其他文件", GUILayout.Height(30)))
+                    {
+                        bool confirm = EditorUtility.DisplayDialog(
+                            "⚠️ 确认删除其他文件",
+                            $"将删除 {otherCount} 个其他文件。\n\n" +
+                            $"这些文件在源目录中不存在，可能是手动创建或旧版本遗留。\n\n" +
+                            $"⚠️ 此操作不可恢复！",
+                            "确定删除",
+                            "取消"
+                        );
+                        if (confirm)
+                        {
+                            DeleteOtherFiles(basePath);
+                        }
+                    }
+                    GUI.backgroundColor = Color.white;
+                }
+                else
+                {
+                    EditorGUILayout.LabelField("✅ 没有其他文件需要删除", EditorStyles.miniLabel);
+                }
+            }
+            else // ListOnly
             {
                 GUI.backgroundColor = new Color(0.5f, 0.8f, 0.5f);
                 if (GUILayout.Button($"📋 打印完整报告到控制台", GUILayout.Height(25)))
@@ -719,8 +749,8 @@ public class ExportTool : EditorWindow
 
             foreach (var group in grouped)
             {
-                string statusName = group.Key == FileStatus.Redundant ? "🔄 已有文件 (可删除)" : "📄 其他文件 (仅显示)";
-                Color statusColor = group.Key == FileStatus.Redundant ? new Color(1f, 0.4f, 0.3f) : new Color(0.3f, 0.6f, 1f);
+                string statusName = group.Key == FileStatus.Redundant ? "🔄  已有文件" : "📄 其他文件";
+                Color statusColor = group.Key == FileStatus.Redundant ? new Color(1f, 0.4f, 0.3f) : new Color(1f, 0.7f, 0.2f);
 
                 GUILayout.Space(3);
                 GUI.color = statusColor;
@@ -732,7 +762,7 @@ public class ExportTool : EditorWindow
                     GUILayout.BeginHorizontal();
                     GUILayout.Space(20);
 
-                    string icon = result.status == FileStatus.Redundant ? "🗑️" : "📄";
+                    string icon = result.status == FileStatus.Redundant ? "🔄" : "📄";
                     GUILayout.Label($"{icon} {result.fileName}", EditorStyles.miniLabel);
                     if (result.status == FileStatus.Other)
                     {
@@ -785,8 +815,8 @@ public class ExportTool : EditorWindow
 
             if (currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp)
             {
-                string resourcesPath = Path.Combine(Application.dataPath, "Resources");
-                Z_Logger.Log($"[ExportTool] 源目录(客户端Resources): {resourcesPath}");
+                string AddressablesPath = Path.Combine(Application.dataPath, "Addressables");
+                Z_Logger.Log($"[ExportTool] 源目录(客户端Addressables): {AddressablesPath}");
 
                 if (exportToFiles != null && exportToFiles.Count > 0)
                 {
@@ -796,10 +826,10 @@ public class ExportTool : EditorWindow
                         sourceFileNames.Add(fileInfo.fileName);
                     }
                 }
-                else if (Directory.Exists(resourcesPath))
+                else if (Directory.Exists(AddressablesPath))
                 {
-                    Z_Logger.Log($"[ExportTool] 导出列表为空，直接从Resources目录读取");
-                    foreach (string file in Directory.GetFiles(resourcesPath, "*", SearchOption.AllDirectories))
+                    Z_Logger.Log($"[ExportTool] 导出列表为空，直接从Addressables目录读取");
+                    foreach (string file in Directory.GetFiles(AddressablesPath, "*", SearchOption.AllDirectories))
                     {
                         if (file.Contains("ProjectSettings") || file.Contains("Packages"))
                             continue;
@@ -810,7 +840,7 @@ public class ExportTool : EditorWindow
                 }
                 else
                 {
-                    Z_Logger.LogWarning($"[ExportTool] Resources目录不存在: {resourcesPath}");
+                    Z_Logger.LogWarning($"[ExportTool] Addressables目录不存在: {AddressablesPath}");
                 }
             }
             else
@@ -828,7 +858,7 @@ public class ExportTool : EditorWindow
                     Z_Logger.Log($"[ExportTool] 导出列表为空，尝试从源目录读取");
 
                     string[] sourceDirs = {
-                        Path.Combine(Application.dataPath, "Resources"),
+                        Path.Combine(Application.dataPath, "Addressables"),
                         Path.Combine(Application.dataPath, "Plugins", "Json"),
                         Path.Combine(Application.dataPath, "Plugins", "SharedModels"),
                         Path.Combine(Application.dataPath, "Scripts", "BaseTool")
@@ -867,15 +897,15 @@ public class ExportTool : EditorWindow
             string[] scanDirs;
             if (currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp)
             {
-                string resourcesDir = Path.Combine(actualBasePath, "Resources");
-                if (Directory.Exists(resourcesDir))
+                string AddressablesDir = Path.Combine(actualBasePath, "Addressables");
+                if (Directory.Exists(AddressablesDir))
                 {
-                    scanDirs = new string[] { resourcesDir };
-                    Z_Logger.Log($"[ExportTool] 客户端模式: 只扫描 Resources 目录: {resourcesDir}");
+                    scanDirs = new string[] { AddressablesDir };
+                    Z_Logger.Log($"[ExportTool] 客户端模式: 只扫描 Addressables 目录: {AddressablesDir}");
                 }
                 else
                 {
-                    Z_Logger.LogWarning($"[ExportTool] 客户端模式: Resources 目录不存在: {resourcesDir}");
+                    Z_Logger.LogWarning($"[ExportTool] 客户端模式: Addressables 目录不存在: {AddressablesDir}");
                     scanDirs = new string[] { actualBasePath };
                 }
             }
@@ -958,6 +988,9 @@ public class ExportTool : EditorWindow
         }
     }
 
+    /// <summary>
+    /// 删除已有文件（文件名与源目录相同的文件）
+    /// </summary>
     private void DeleteRedundantFiles(string basePath)
     {
         var redundantFiles = scanResults.Where(r => r.status == FileStatus.Redundant).ToList();
@@ -1036,6 +1069,89 @@ public class ExportTool : EditorWindow
         }
     }
 
+    /// <summary>
+    /// 删除其他文件（文件名不在源目录中的文件）
+    /// </summary>
+    private void DeleteOtherFiles(string basePath)
+    {
+        var otherFiles = scanResults.Where(r => r.status == FileStatus.Other).ToList();
+
+        if (otherFiles.Count == 0)
+        {
+            EditorUtility.DisplayDialog("提示", "没有其他文件需要删除！", "确定");
+            return;
+        }
+
+        int deletedCount = 0;
+        int failCount = 0;
+        List<string> deletedList = new List<string>();
+
+        Z_Logger.Log($"[ExportTool] ========== 开始删除其他文件 ==========");
+        Z_Logger.Log($"[ExportTool] 目标目录: {basePath}");
+        Z_Logger.Log($"[ExportTool] 待删除文件数: {otherFiles.Count}");
+
+        try
+        {
+            foreach (var result in otherFiles)
+            {
+                string fullPath = result.fullPath;
+                if (File.Exists(fullPath))
+                {
+                    try
+                    {
+                        // 创建备份（以防误删）
+                        string backupPath = fullPath + ".backup";
+                        if (!File.Exists(backupPath))
+                        {
+                            File.Copy(fullPath, backupPath);
+                            Z_Logger.Log($"[ExportTool]   💾 备份: {backupPath}");
+                        }
+
+                        File.Delete(fullPath);
+                        deletedCount++;
+                        deletedList.Add($"{result.fileName} ({result.relativePath})");
+                        Z_Logger.Log($"[ExportTool]   🗑️ 已删除: {result.relativePath} (完整路径: {fullPath})");
+                    }
+                    catch (System.Exception ex)
+                    {
+                        failCount++;
+                        Z_Logger.LogError($"[ExportTool]   ❌ 删除失败 {result.relativePath}: {ex.Message}");
+                    }
+                }
+            }
+
+            int deletedDirs = DeleteEmptyExportDirectories(basePath);
+
+            string resultMsg = $"🧹 清除其他文件完成！\n\n";
+            resultMsg += $"✅ 已删除: {deletedCount} 个文件\n";
+            resultMsg += $"📁 已删除空目录: {deletedDirs} 个\n";
+            if (failCount > 0)
+            {
+                resultMsg += $"❌ 删除失败: {failCount} 个\n\n";
+            }
+            if (deletedList.Count > 0)
+            {
+                resultMsg += $"已删除文件:\n{string.Join("\n", deletedList.Take(20))}";
+                if (deletedList.Count > 20)
+                {
+                    resultMsg += $"\n... 共 {deletedList.Count} 个";
+                }
+            }
+
+            Z_Logger.Log($"[ExportTool] 清除完成：删除 {deletedCount} 个文件，{deletedDirs} 个空目录");
+            Z_Logger.Log($"[ExportTool] =============================================");
+
+            EditorUtility.DisplayDialog("清除完成", resultMsg, "确定");
+
+            ScanTargetDirectory(basePath);
+        }
+        catch (System.Exception ex)
+        {
+            EditorUtility.DisplayDialog("清除失败", $"清除过程中发生错误：\n{ex.Message}", "确定");
+            Z_Logger.LogError($"[ExportTool] 清除其他文件错误: {ex}");
+        }
+    }
+
     private int DeleteEmptyExportDirectories(string rootPath)
     {
         int deletedCount = 0;
@@ -1094,11 +1210,11 @@ public class ExportTool : EditorWindow
         Z_Logger.Log($"[ExportTool] 📅 扫描时间: {System.DateTime.Now}");
         Z_Logger.Log($"[ExportTool] 当前模式: {(currentMode == ExportMode.Client || currentMode == ExportMode.ClientWithTimestamp ? "客户端导出" : "服务器导出")}");
         Z_Logger.Log($"[ExportTool] ");
-        Z_Logger.Log($"[ExportTool] 🔄 已有文件 ({redundantFiles.Count} 个) - 文件名与源目录相同，建议删除");
+        Z_Logger.Log($"[ExportTool] 🔄 已有文件 ({redundantFiles.Count} 个) - 文件名与源目录相同");
         Z_Logger.Log($"[ExportTool] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         foreach (var file in redundantFiles)
         {
-            Z_Logger.Log($"[ExportTool]    🗑️ 相对路径: {file.relativePath}");
+            Z_Logger.Log($"[ExportTool]    🔄 相对路径: {file.relativePath}");
             Z_Logger.Log($"[ExportTool]        完整路径: {file.fullPath}");
         }
 
@@ -1134,12 +1250,12 @@ public class ExportTool : EditorWindow
 
     private void DrawClientMode()
     {
-        EditorGUILayout.LabelField("📦 客户端导出 - 导出Resources中的JSON", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("📦 客户端导出 - 导出Addressables中的JSON", EditorStyles.boldLabel);
         GUILayout.Space(5);
 
         EditorGUILayout.HelpBox(
-            "将当前Unity项目 Resources 目录中的所有JSON文件导出到另一个目录，\n" +
-            "并保持相同的 Assets/Resources/ 目录结构。",
+            "将当前Unity项目 Addressables 目录中的所有JSON文件导出到另一个目录，\n" +
+            "并保持相同的 Assets/Addressables/ 目录结构。",
             MessageType.Info
         );
 
@@ -1207,7 +1323,7 @@ public class ExportTool : EditorWindow
         GUILayout.Space(5);
 
         EditorGUILayout.HelpBox(
-            "将客户端的数据结构、共享模型、Resources中的JSON配置等导出到服务器Shared目录。",
+            "将客户端的数据结构、共享模型、Addressables中的JSON配置等导出到服务器Shared目录。",
             MessageType.Info
         );
 
@@ -1235,7 +1351,7 @@ public class ExportTool : EditorWindow
 
         GUILayout.BeginVertical("Box");
         EditorGUILayout.LabelField("🔍 检索文件夹路径", EditorStyles.boldLabel);
-        EditorGUILayout.LabelField($"• JSON数据: Assets/Resources", EditorStyles.miniLabel);
+        EditorGUILayout.LabelField($"• JSON数据: Assets/Addressables", EditorStyles.miniLabel);
         EditorGUILayout.LabelField($"• 数据结构: Assets/Plugins/Json", EditorStyles.miniLabel);
         EditorGUILayout.LabelField($"• 共享模型: Assets/Plugins/SharedModels", EditorStyles.miniLabel);
         EditorGUILayout.LabelField($"• 事件常量: Assets/Scripts/BaseTool", EditorStyles.miniLabel);
@@ -1363,7 +1479,7 @@ public class ExportTool : EditorWindow
 
         if (exportToFiles.Count == 0)
         {
-            EditorUtility.DisplayDialog("提示", "当前项目 Resources 目录中没有找到JSON文件！", "确定");
+            EditorUtility.DisplayDialog("提示", "当前项目 Addressables 目录中没有找到JSON文件！", "确定");
             return;
         }
 
@@ -1598,16 +1714,16 @@ public class ExportTool : EditorWindow
         Z_Logger.Log($"[ExportTool] ========== 数据一致性验证详情 ==========");
         Z_Logger.Log($"[ExportTool] 服务器Shared路径: {serverSharedPath}");
 
-        string resourcesPath = Path.Combine(Application.dataPath, "Resources");
-        if (Directory.Exists(resourcesPath))
+        string AddressablesPath = Path.Combine(Application.dataPath, "Addressables");
+        if (Directory.Exists(AddressablesPath))
         {
-            Z_Logger.Log($"[ExportTool] 检查Resources目录: {resourcesPath}");
-            foreach (string clientFile in Directory.GetFiles(resourcesPath, "*.json", SearchOption.AllDirectories))
+            Z_Logger.Log($"[ExportTool] 检查Addressables目录: {AddressablesPath}");
+            foreach (string clientFile in Directory.GetFiles(AddressablesPath, "*.json", SearchOption.AllDirectories))
             {
                 if (clientFile.Contains("ProjectSettings") || clientFile.Contains("Packages"))
                     continue;
 
-                string relativePath = clientFile.Replace(resourcesPath, "").TrimStart('/', '\\');
+                string relativePath = clientFile.Replace(AddressablesPath, "").TrimStart('/', '\\');
                 string serverFile = Path.Combine(serverSharedPath, "Data", relativePath);
 
                 totalFiles++;
@@ -1640,7 +1756,7 @@ public class ExportTool : EditorWindow
         }
         else
         {
-            Z_Logger.LogWarning($"[ExportTool] Resources目录不存在: {resourcesPath}");
+            Z_Logger.LogWarning($"[ExportTool] Addressables目录不存在: {AddressablesPath}");
         }
 
         string clientSharedModelsPath = Path.Combine(Application.dataPath, "Plugins", "SharedModels");

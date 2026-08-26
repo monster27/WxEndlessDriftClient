@@ -647,6 +647,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21b582ddfde1db44ba0f41c66c81682f
+    m_Address: Assets/Addressables/Prefabs/Game_FishTankFishPrefab.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 220907a079532da4b8adc1a6d3d6dc81
     m_Address: Assets/Textures/0605/Homepage/Right icon/help.png
     m_ReadOnly: 0
@@ -890,6 +895,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2fe7a20169277b64fb899e9ed563ce4f
+    m_Address: Assets/Addressables/JsonData/BaseFramework/fishTankConfig.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3044f6def99a1b54f87f893364cd31d9
     m_Address: Assets/Addressables/UI/Icon/BaitIcons/2002.png
     m_ReadOnly: 0
@@ -1081,6 +1091,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3cb3f3a04ef00504eb8466645696972b
+    m_Address: Assets/Addressables/Prefabs/Game_FishTankBaitPrefab.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3cc0f97337680584da4314878f4100d6
     m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5401.png
@@ -1924,7 +1939,7 @@ MonoBehaviour:
     - default
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7058c74b77dc81b4a9771d4f0cb0970e
-    m_Address: Assets/Addressables/JsonData/Game/BagItem/fishTankDecorations.json
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/fishTankDec.json
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -2181,6 +2196,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7fad74dc1ee16ab4f95f6b164bca0198
+    m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8401.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7fdcc1bf1b8095845a4dbd0163e24858
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/RightTopUI/SettingIcon.png"

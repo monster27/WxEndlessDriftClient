@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
-//using SharedModels;
 
 public class GameUIManager : SingletonMonoFromScene<GameUIManager>
 {
@@ -18,10 +17,13 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     public DialogView dialogView;
     public CollectionView collectionView;
 
+    public FishTankView fishTankView;
+
     private AsyncOperationHandle<GameObject> _adPrefabHandle;
 
-    void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
         AssetManager.ReleaseAddressable(_adPrefabHandle);
     }
 
@@ -57,6 +59,11 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
             collectionView.BaseViewInit();
         }
 
+        if (fishTankView != null)
+        {
+            fishTankView.BaseViewInit();
+        }
+
         RegisterEvents();
     }
 
@@ -68,11 +75,16 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         CommunicateEvent.Register("UI_OpenEquipment", OpenEquipment);
         CommunicateEvent.Register("UI_OpenMap", OpenMap);
         CommunicateEvent.Register("UI_OpenCollection", OpenCollection);
+        CommunicateEvent.Register("UI_OpenFishTank", OpenFishTankView);
+
+        CommunicateEvent.Register("UI_CloseFishTank", CloseFishTankView);
 
         CommunicateEvent.Register<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, ShowTip);
         CommunicateEvent.Register<CommunicateEvent.AdvertisingRequest>(CommunicateEvent.EVENT_UI_SHOW_ADVERTISING, OnShowAdvertisingRequest);
 
         CommunicateEvent.Register<Dictionary<string, object>>("SceneSwitchRequest", OnSceneSwitchRequest);
+
+        CommunicateEvent.Register("FishTankDataUpdated", OnFishTankDataUpdated);
     }
 
     private void OnShowAdvertisingRequest(CommunicateEvent.AdvertisingRequest request)
@@ -197,6 +209,58 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         if (collectionView != null)
         {
             collectionView.CloseCollection();
+        }
+    }
+
+    public void OpenFishTankView()
+    {
+        if (fishTankView != null)
+        {
+            fishTankView.OpenFishTank();
+        }
+    }
+
+    public void CloseFishTankView()
+    {
+        if (fishTankView != null)
+        {
+            fishTankView.CloseFishTank();
+        }
+    }
+
+    public FishTankView GetFishTankView()
+    {
+        return fishTankView;
+    }
+
+
+    /// <summary>
+    /// 刷新鱼缸数据（由网络层调用）
+    /// </summary>
+    public void RefreshFishTankData()
+    {
+        Z_Logger.Log("[GameUIManager] RefreshFishTankData 被调用");
+        if (fishTankView != null)
+        {
+            fishTankView.RefreshAll();  // ✅ 改为 RefreshAll()
+            Z_Logger.Log("[GameUIManager] RefreshFishTankData 完成");
+        }
+        else
+        {
+            Z_Logger.LogWarning("[GameUIManager] RefreshFishTankData: fishTankView 为空");
+        }
+    }
+
+    // ============================================================
+    // OnFishTankDataUpdated 也改为调用 RefreshAll()
+    // ============================================================
+    private void OnFishTankDataUpdated()
+    {
+        Z_Logger.Log("[GameUIManager] 收到鱼缸数据更新事件");
+        if (fishTankView != null)
+        {
+            fishTankView.RefreshAll();  // ✅ 改为 RefreshAll()
+            Z_Logger.Log("[GameUIManager] RefreshFishTankData 完成");
         }
     }
 

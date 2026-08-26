@@ -13,8 +13,8 @@ public class FishTankFishCtrl : MonoBehaviour
 {
     private string _uniqueId;
 
-    [SerializeField] private FishTankFishSpeciesData speciesData;
-    [SerializeField] private FishTankFishSpeciesType speciesType;
+    [SerializeField] private FishSpeciesData speciesData;
+    [SerializeField] private FishSpeciesType speciesType;
 
     [SerializeField] private GameObject renderGo;
     private MeshRenderer _renderer;
@@ -101,7 +101,7 @@ public class FishTankFishCtrl : MonoBehaviour
     // ============================================================
 
     public string UniqueId => _uniqueId;
-    public FishTankFishSpeciesType SpeciesType => speciesType;
+    public FishSpeciesType SpeciesType => speciesType;
     public float UniformScale { get => uniformScale; set => uniformScale = value; }
     public bool EnableDebugLog { get => enableDebugLog; set => enableDebugLog = value; }
     public float GetCurrentMoveSpeed() => _currentSpeed;
@@ -162,7 +162,7 @@ public class FishTankFishCtrl : MonoBehaviour
     // 初始化
     // ============================================================
 
-    public void Init(FishTankFishSpeciesData data, Shader shader)
+    public void Init(FishSpeciesData data, Shader shader)
     {
         _uniqueId = Guid.NewGuid().ToString();
         gameObject.name = $"FishTankFishCtrl_{_uniqueId}";
@@ -266,15 +266,15 @@ public class FishTankFishCtrl : MonoBehaviour
         return mesh;
     }
 
-    private FishTankFishSpeciesType GetSpeciesType(string type)
+    private FishSpeciesType GetSpeciesType(string type)
     {
         switch (type)
         {
-            case "FullScreenSwim": return FishTankFishSpeciesType.FullScreenSwim;
-            case "FullScreenStatic": return FishTankFishSpeciesType.FullScreenStatic;
-            case "BottomSwim": return FishTankFishSpeciesType.BottomSwim;
-            case "BottomStatic": return FishTankFishSpeciesType.BottomStatic;
-            default: return FishTankFishSpeciesType.FullScreenStatic;
+            case "FullScreenSwim": return FishSpeciesType.FullScreenSwim;
+            case "FullScreenStatic": return FishSpeciesType.FullScreenStatic;
+            case "BottomSwim": return FishSpeciesType.BottomSwim;
+            case "BottomStatic": return FishSpeciesType.BottomStatic;
+            default: return FishSpeciesType.FullScreenStatic;
         }
     }
 

@@ -2,122 +2,117 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
-public enum FishTankFishSpeciesType
-{
-    FullScreenSwim,      // 全屏游动类型
-    FullScreenStatic,    // 全屏静止类型
-    BottomSwim,          // 底部游动类型
-    BottomStatic         // 底部静止类型
-}
-
-[System.Serializable]
-public class FishTankFishSpeciesData
-{
-    public int id;          // 鱼种ID
-    public string name;     // 鱼种名称
-    public string type;     // 鱼种类型字符串
-}
-
+/// <summary>
+/// 鱼缸管理器 - 负责3D鱼缸中鱼的显示和动画（纯渲染层）
+/// 职责：只负责渲染，不管理数据版本，不做数据比较
+/// </summary>
 public class FishTankManager : MonoBehaviour
 {
-    [Header("鱼缸区域(绑定Quad)")]
-    [SerializeField] private Transform totalArea;   // 全屏区域（鱼的活动范围）
-    [SerializeField] private Transform bottomArea;  // 底部区域
+    [SerializeField] private GameObject fishTankGo;
+    [Header("===== 鱼缸区域(绑定Quad) =====")]
+    [SerializeField] private Transform totalArea;
+    [SerializeField] private Transform bottomArea;
 
-    [Header("鱼容器")]
-    [SerializeField] private GameObject fishContainer;  // 鱼的父容器
+    [Header("===== 鱼容器 =====")]
+    [SerializeField] private GameObject fishContainer;
 
-    [Header("四个行为类型列表")]
-    [SerializeField] private List<FishTankFishCtrl> fullScreenSwimList = new List<FishTankFishCtrl>();    // 全屏游动鱼列表
-    [SerializeField] private List<FishTankFishCtrl> fullScreenStaticList = new List<FishTankFishCtrl>();  // 全屏静止鱼列表
-    [SerializeField] private List<FishTankFishCtrl> bottomSwimList = new List<FishTankFishCtrl>();        // 底部游动鱼列表
-    [SerializeField] private List<FishTankFishCtrl> bottomStaticList = new List<FishTankFishCtrl>();      // 底部静止鱼列表
+    [Header("===== 四个行为类型列表 =====")]
+    [SerializeField] private List<FishTankFishCtrl> fullScreenSwimList = new List<FishTankFishCtrl>();
+    [SerializeField] private List<FishTankFishCtrl> fullScreenStaticList = new List<FishTankFishCtrl>();
+    [SerializeField] private List<FishTankFishCtrl> bottomSwimList = new List<FishTankFishCtrl>();
+    [SerializeField] private List<FishTankFishCtrl> bottomStaticList = new List<FishTankFishCtrl>();
 
-    [Header("临时图片列表")]
-    [SerializeField] private List<Texture2D> tempFullScreenSwimTextures = new List<Texture2D>();    // 全屏游动鱼贴图
-    [SerializeField] private List<Texture2D> tempFullScreenStaticTextures = new List<Texture2D>();  // 全屏静止鱼贴图
-    [SerializeField] private List<Texture2D> tempBottomSwimTextures = new List<Texture2D>();        // 底部游动鱼贴图
-    [SerializeField] private List<Texture2D> tempBottomStaticTextures = new List<Texture2D>();      // 底部静止鱼贴图
+    [Header("===== 鱼预制体 =====")]
+    [SerializeField] private GameObject fishPrefab;
 
-    [Header("鱼预制体")]
-    [SerializeField] private GameObject fishPrefab;  // 鱼预制体
-
-    [Header("Shader(用于创建独立材质)")]
-    [SerializeField] private Shader fishShader;      // 鱼使用的Shader
+    [Header("===== Shader =====")]
+    [SerializeField] private Shader fishShader;
 
     [Header("===== 大小参数 =====")]
-    [SerializeField] private float baseHeight = 0.5f;          // 鱼的基础高度
-    [SerializeField] private float uniformScale = 1f;          // 鱼的统一缩放比例
+    [SerializeField] private float baseHeight = 0.5f;
+    [SerializeField] private float uniformScale = 1f;
 
     [Header("===== 方向变化间隔(秒) =====")]
-    [SerializeField] private float directionChangeIntervalMin = 4f;   // 方向变化最短间隔
-    [SerializeField] private float directionChangeIntervalMax = 20f;  // 方向变化最长间隔
+    [SerializeField] private float directionChangeIntervalMin = 4f;
+    [SerializeField] private float directionChangeIntervalMax = 20f;
 
     [Header("===== 全屏移动鱼类生成范围 =====")]
     [Range(0.1f, 1f)]
-    [SerializeField] private float fullScreenSwimSpawnRange = 0.7f;   // 全屏游动鱼生成范围（0-1，0.7表示在顶部70%区域）
+    [SerializeField] private float fullScreenSwimSpawnRange = 0.7f;
 
     [Header("===== 渲染队列 =====")]
-    [SerializeField] private int renderQueue = 3110;      // 渲染队列值，控制渲染顺序
+    [SerializeField] private int renderQueue = 3110;
 
     [Header("===== 调试 =====")]
-    [SerializeField] private bool enableDebugLog = false; // 是否启用调试日志
+    [SerializeField] private bool enableDebugLog = false;
 
     // ============================================================
     // 鱼游动物理参数
     // ============================================================
 
     [Header("===== 水平移动(左右) =====")]
-    [SerializeField] private float moveSpeedMin = 0.35f;   // 水平移动最小速度（单位/秒）
-    [SerializeField] private float moveSpeedMax = 1.2f;    // 水平移动最大速度（单位/秒）
+    [SerializeField] private float moveSpeedMin = 0.35f;
+    [SerializeField] private float moveSpeedMax = 1.2f;
 
     [Header("===== 垂直移动(上下) =====")]
-    [SerializeField] private float verticalSpeedRatio = 0.4f;           // 垂直速度占水平速度的比例（0.3~0.6）
+    [SerializeField] private float verticalSpeedRatio = 0.4f;
     [Range(0f, 1f)]
-    [SerializeField] private float verticalMoveProbability = 0.2f;      // 转向时触发垂直移动的概率
+    [SerializeField] private float verticalMoveProbability = 0.2f;
 
     [Header("===== 物理参数 =====")]
-    [SerializeField] private float accelerationMin = 2.5f;   // 加速度最小值，值越大加速越快
-    [SerializeField] private float accelerationMax = 5.0f;   // 加速度最大值，值越大加速越快
-    [SerializeField] private float dragForce = 0.8f;         // 阻力强度，值越大减速越快（建议0.3~3）
+    [SerializeField] private float accelerationMin = 2.5f;
+    [SerializeField] private float accelerationMax = 5.0f;
+    [SerializeField] private float dragForce = 0.8f;
 
     [Header("===== 蓄力参数 =====")]
-    [SerializeField] private float chargeDurationMin = 0.4f;   // 蓄力最短时间（秒）
-    [SerializeField] private float chargeDurationMax = 1f;     // 蓄力最长时间（秒）
-    [SerializeField] private float chargeScaleX = 0.6f;        // 蓄力时X轴缩放比例（0.3~0.6），值越小压得越扁
-    [SerializeField] private float chargeScaleY = 1.35f;       // 蓄力时Y轴缩放比例（1.5~2.5），值越大拉得越长
-    [SerializeField] private float chargeSpeedRatio = 0.15f;   // 蓄力速度为最大速度的百分比（0.1~0.3）
+    [SerializeField] private float chargeDurationMin = 0.4f;
+    [SerializeField] private float chargeDurationMax = 1f;
+    [SerializeField] private float chargeScaleX = 0.6f;
+    [SerializeField] private float chargeScaleY = 1.35f;
+    [SerializeField] private float chargeSpeedRatio = 0.15f;
 
     [Header("===== 冲刺参数 =====")]
-    [SerializeField] private float sprintDurationMin = 1.5f;   // 冲刺最短时间（秒）
-    [SerializeField] private float sprintDurationMax = 3.5f;   // 冲刺最长时间（秒）
+    [SerializeField] private float sprintDurationMin = 1.5f;
+    [SerializeField] private float sprintDurationMax = 3.5f;
 
     // ============================================================
     // 鱼饵系统（对象池）
     // ============================================================
 
     [Header("===== 鱼饵系统 =====")]
-    [SerializeField] private GameObject fishTankBaitPrefab;                    // 鱼饵预制体
-    [SerializeField] private Transform fishTankBaitContainer;                  // 鱼饵容器
-    [SerializeField] private float fishTankBaitTriggerRadius = 1.5f;           // 鱼饵触发范围半径（圆形检测）
-    [SerializeField] private float fishTankBaitFallSpeed = 0.5f;               // 鱼饵下落速度（单位/秒）
-    [SerializeField] private float fishTankBaitChaseDurationMin = 0.5f;        // 鱼追逐鱼饵的最短时间（秒）
-    [SerializeField] private float fishTankBaitChaseDurationMax = 0.8f;        // 鱼追逐鱼饵的最长时间（秒）
-    [SerializeField] private float fishTankBaitChaseSpeedMultiplier = 5f;      // 鱼追逐鱼饵的速度倍数（基础速度 × 该值）
-    [SerializeField] private int fishTankBaitMaxQueueSize = 50;                // 鱼饵队列最大容量
-    [SerializeField] private float fishTankBaitScale = 0.5f;                   // 鱼饵大小缩放
-    [SerializeField] private int fishTankBaitPoolInitSize = 5;                 // 对象池初始大小（预创建数量）
+    [SerializeField] private GameObject fishTankBaitPrefab;
+    [SerializeField] private Transform fishTankBaitContainer;
+    [SerializeField] private float fishTankBaitTriggerRadius = 1.5f;
+    [SerializeField] private float fishTankBaitFallSpeed = 0.5f;
+    [SerializeField] private float fishTankBaitChaseDurationMin = 0.5f;
+    [SerializeField] private float fishTankBaitChaseDurationMax = 0.8f;
+    [SerializeField] private float fishTankBaitChaseSpeedMultiplier = 5f;
+    [SerializeField] private int fishTankBaitMaxQueueSize = 50;
+    [SerializeField] private float fishTankBaitScale = 0.5f;
+    [SerializeField] private int fishTankBaitPoolInitSize = 5;
 
-    // 对象池
-    private Queue<GameObject> _baitPool = new Queue<GameObject>();      // 空闲鱼饵池
-    private Queue<GameObject> _activeBaits = new Queue<GameObject>();   // 活跃鱼饵队列
+    // 鱼饵对象池
+    private Queue<GameObject> _baitPool = new Queue<GameObject>();
+    private Queue<GameObject> _activeBaits = new Queue<GameObject>();
+
+    // ============================================================
+    // 核心状态管理（纯渲染状态）
+    // ============================================================
 
     private bool _isInitialized;
     private Coroutine _updateCoroutine;
-
     private Rect _totalRect;
     private Rect _bottomRect;
+
+    // 当前正在显示的鱼列表（用于判断是否需要重建）
+    private List<FishDetailData> _currentDisplayingFish = new List<FishDetailData>();
+
+    // ============================================================
+    // 属性
+    // ============================================================
 
     public bool IsInitialized => _isInitialized;
     public int TotalFishCount => fullScreenSwimList.Count + fullScreenStaticList.Count +
@@ -125,18 +120,44 @@ public class FishTankManager : MonoBehaviour
     public bool EnableDebugLog => enableDebugLog;
     public int BaitCount => _activeBaits.Count;
     public int PoolCount => _baitPool.Count;
+    public Rect TotalRect => _totalRect;
+    public Rect BottomRect => _bottomRect;
+
+    // 公共参数访问
+    public float DirectionChangeIntervalMin => directionChangeIntervalMin;
+    public float DirectionChangeIntervalMax => directionChangeIntervalMax;
+    public float FullScreenSwimSpawnRange => fullScreenSwimSpawnRange;
+    public float MoveSpeedMin => moveSpeedMin;
+    public float MoveSpeedMax => moveSpeedMax;
+    public float VerticalSpeedRatio => verticalSpeedRatio;
+    public float VerticalMoveProbability => verticalMoveProbability;
+    public float AccelerationMin => accelerationMin;
+    public float AccelerationMax => accelerationMax;
+    public float DragForce => dragForce;
+    public float ChargeDurationMin => chargeDurationMin;
+    public float ChargeDurationMax => chargeDurationMax;
+    public float ChargeScaleX => chargeScaleX;
+    public float ChargeScaleY => chargeScaleY;
+    public float ChargeSpeedRatio => chargeSpeedRatio;
+    public float SprintDurationMin => sprintDurationMin;
+    public float SprintDurationMax => sprintDurationMax;
+
+    public float BaitTriggerRadius => fishTankBaitTriggerRadius;
+    public float BaitFallSpeed => fishTankBaitFallSpeed;
+    public float BaitChaseDurationMin => fishTankBaitChaseDurationMin;
+    public float BaitChaseDurationMax => fishTankBaitChaseDurationMax;
+    public float BaitChaseSpeedMultiplier => fishTankBaitChaseSpeedMultiplier;
+    public float BaitScale => fishTankBaitScale;
 
     // ============================================================
     // 日志辅助方法
     // ============================================================
 
-    /// <summary>调试日志（受 enableDebugLog 控制）</summary>
     private void LogDebug(string message)
     {
         if (enableDebugLog) Z_Logger.Log($"[FishTankManager] {message}");
     }
 
-    /// <summary>关键日志（直接打印）</summary>
     private void LogInfo(string message)
     {
         Z_Logger.Log($"[FishTankManager] {message}");
@@ -154,9 +175,6 @@ public class FishTankManager : MonoBehaviour
         InitAreas();
         InitBaitSystem();
         UpdateRects();
-        CreateAllFish();
-
-        // 预创建鱼饵对象池（初始数量 = fishTankBaitPoolInitSize）
         PreCreateBaits();
 
         if (_updateCoroutine == null)
@@ -164,9 +182,8 @@ public class FishTankManager : MonoBehaviour
             _updateCoroutine = StartCoroutine(UpdateLoop());
         }
 
-        LogFishCount();
         _isInitialized = true;
-        LogInfo("初始化完成");
+        LogInfo("鱼缸管理器初始化完成");
     }
 
     private void InitContainer()
@@ -216,10 +233,9 @@ public class FishTankManager : MonoBehaviour
     }
 
     // ============================================================
-    // 对象池核心方法
+    // 鱼饵对象池
     // ============================================================
 
-    /// <summary>预创建鱼饵到对象池（初始创建 fishTankBaitPoolInitSize 个）</summary>
     private void PreCreateBaits()
     {
         for (int i = 0; i < fishTankBaitPoolInitSize; i++)
@@ -228,10 +244,9 @@ public class FishTankManager : MonoBehaviour
             bait.SetActive(false);
             _baitPool.Enqueue(bait);
         }
-        LogDebug($"预创建 {fishTankBaitPoolInitSize} 个鱼饵到对象池（初始大小）");
+        LogDebug($"预创建 {fishTankBaitPoolInitSize} 个鱼饵到对象池");
     }
 
-    /// <summary>创建一个鱼饵实例（不激活）</summary>
     private GameObject CreateBaitInstance()
     {
         if (fishTankBaitPrefab == null)
@@ -243,31 +258,27 @@ public class FishTankManager : MonoBehaviour
         GameObject bait = Instantiate(fishTankBaitPrefab, fishTankBaitContainer);
         bait.transform.localScale = Vector3.one * fishTankBaitScale;
 
-        FishTankBaitComponent baitComp = bait.GetComponent<FishTankBaitComponent>();
+        FishTankBaitCtrl baitComp = bait.GetComponent<FishTankBaitCtrl>();
         if (baitComp == null)
         {
-            baitComp = bait.AddComponent<FishTankBaitComponent>();
+            baitComp = bait.AddComponent<FishTankBaitCtrl>();
         }
         baitComp.Init(this, _totalRect, fishTankBaitFallSpeed, fishTankBaitScale);
 
         return bait;
     }
 
-    /// <summary>从对象池获取鱼饵（池空则动态创建）</summary>
     private GameObject GetBaitFromPool(Vector3 position)
     {
         GameObject bait = null;
 
-        // 从池中取出
         if (_baitPool.Count > 0)
         {
             bait = _baitPool.Dequeue();
-            LogDebug($"从对象池取出鱼饵，剩余空闲: {_baitPool.Count}");
         }
         else
         {
-            // 池为空，动态创建新的鱼饵（按需扩展）
-            LogDebug($"对象池为空，动态创建新鱼饵（当前活跃: {_activeBaits.Count}/{fishTankBaitMaxQueueSize}）");
+            LogDebug($"对象池为空，动态创建新鱼饵");
             bait = CreateBaitInstance();
         }
 
@@ -276,7 +287,7 @@ public class FishTankManager : MonoBehaviour
             bait.SetActive(true);
             bait.transform.position = position;
 
-            FishTankBaitComponent baitComp = bait.GetComponent<FishTankBaitComponent>();
+            FishTankBaitCtrl baitComp = bait.GetComponent<FishTankBaitCtrl>();
             if (baitComp != null)
             {
                 baitComp.ResetBait(position);
@@ -286,13 +297,11 @@ public class FishTankManager : MonoBehaviour
         return bait;
     }
 
-    /// <summary>将鱼饵归还到对象池（池满则销毁）</summary>
     private void ReturnBaitToPool(GameObject bait)
     {
         if (bait == null) return;
 
-        // 重置鱼饵状态
-        FishTankBaitComponent baitComp = bait.GetComponent<FishTankBaitComponent>();
+        FishTankBaitCtrl baitComp = bait.GetComponent<FishTankBaitCtrl>();
         if (baitComp != null)
         {
             baitComp.Deactivate();
@@ -300,19 +309,19 @@ public class FishTankManager : MonoBehaviour
 
         bait.SetActive(false);
 
-        // 检查池是否已满（池满则销毁，避免内存无限增长）
         if (_baitPool.Count < fishTankBaitMaxQueueSize)
         {
             _baitPool.Enqueue(bait);
-            LogDebug($"鱼饵归还到池，当前池大小: {_baitPool.Count}/{fishTankBaitMaxQueueSize}");
         }
         else
         {
-            // 池已满，销毁多余的鱼饵
             Destroy(bait);
-            LogDebug($"对象池已满（{fishTankBaitMaxQueueSize}），销毁多余鱼饵");
         }
     }
+
+    // ============================================================
+    // 区域更新
+    // ============================================================
 
     private void UpdateRects()
     {
@@ -323,9 +332,6 @@ public class FishTankManager : MonoBehaviour
             float width = scale.x;
             float height = scale.y;
             _totalRect = new Rect(pos.x - width / 2f, pos.y - height / 2f, width, height);
-
-            if (enableDebugLog)
-                Z_Logger.Log($"[FishTankManager] TotalArea: X:[{_totalRect.xMin:F2}, {_totalRect.xMax:F2}], Y:[{_totalRect.yMin:F2}, {_totalRect.yMax:F2}]");
         }
 
         if (bottomArea != null)
@@ -335,9 +341,6 @@ public class FishTankManager : MonoBehaviour
             float width = scale.x;
             float height = scale.y;
             _bottomRect = new Rect(pos.x - width / 2f, pos.y - height / 2f, width, height);
-
-            if (enableDebugLog)
-                Z_Logger.Log($"[FishTankManager] BottomArea: X:[{_bottomRect.xMin:F2}, {_bottomRect.xMax:F2}], Y:[{_bottomRect.yMin:F2}, {_bottomRect.yMax:F2}]");
         }
 
         foreach (var fish in fullScreenSwimList) SetFishParams(fish);
@@ -369,31 +372,201 @@ public class FishTankManager : MonoBehaviour
         );
     }
 
-    private void CreateAllFish()
+    // ============================================================
+    // ✅ 核心渲染方法（纯渲染，不做数据判断）
+    // ============================================================
+
+    /// <summary>
+    /// 显示鱼 - 纯渲染入口，由View调用
+    /// </summary>
+    public void ShowFish(List<FishDetailData> fishList)
     {
+        LogInfo($"ShowFish: 接收 {fishList?.Count ?? 0} 条鱼");
+
+        // 如果数据为空，清空显示
+        if (fishList == null || fishList.Count == 0)
+        {
+            ClearFish();
+            return;
+        }
+
+        // 比较是否和当前显示的数据相同（只比较ID，不做版本管理）
+        if (IsSameFishList(fishList, _currentDisplayingFish))
+        {
+            LogDebug("鱼列表与当前显示相同，跳过重建");
+            return;
+        }
+
+        // 更新当前显示列表
+        _currentDisplayingFish = new List<FishDetailData>(fishList);
+
+        // 清空旧鱼
         ClearAllFish();
 
-        foreach (var tex in tempFullScreenSwimTextures)
-            if (tex != null) CreateFish(tex, FishTankFishSpeciesType.FullScreenSwim);
-
-        foreach (var tex in tempFullScreenStaticTextures)
-            if (tex != null) CreateFish(tex, FishTankFishSpeciesType.FullScreenStatic);
-
-        foreach (var tex in tempBottomSwimTextures)
-            if (tex != null) CreateFish(tex, FishTankFishSpeciesType.BottomSwim);
-
-        foreach (var tex in tempBottomStaticTextures)
-            if (tex != null) CreateFish(tex, FishTankFishSpeciesType.BottomStatic);
-
-        LogFishCount();
+        // 创建新鱼
+        StartCoroutine(CreateFishCoroutine(fishList));
     }
 
-    private void CreateFish(Texture2D texture, FishTankFishSpeciesType type)
+    /// <summary>
+    /// 比较两个鱼列表是否相同
+    /// </summary>
+    private bool IsSameFishList(List<FishDetailData> list1, List<FishDetailData> list2)
+    {
+        if (list1 == null && list2 == null) return true;
+        if (list1 == null || list2 == null) return false;
+        if (list1.Count != list2.Count) return false;
+
+        // 比较ID集合
+        var ids1 = new HashSet<int>();
+        foreach (var f in list1) if (f != null) ids1.Add(f.id);
+
+        var ids2 = new HashSet<int>();
+        foreach (var f in list2) if (f != null) ids2.Add(f.id);
+
+        return ids1.SetEquals(ids2);
+    }
+
+    /// <summary>
+    /// 清空所有鱼
+    /// </summary>
+    public void ClearFish()
+    {
+        LogInfo("清空鱼缸");
+        ClearAllFish();
+        _currentDisplayingFish.Clear();
+    }
+
+    /// <summary>
+    /// 隐藏鱼（不销毁，只隐藏）
+    /// </summary>
+    public void HideFish()
+    {
+        if (fishTankGo != null)
+            fishTankGo.SetActive(false);
+    }
+
+    // ============================================================
+    // 协程创建鱼
+    // ============================================================
+
+    private IEnumerator CreateFishCoroutine(List<FishDetailData> fishList)
+    {
+        List<FishTankFishCtrl> createdFish = new List<FishTankFishCtrl>();
+
+        foreach (var fishDetail in fishList)
+        {
+            if (fishDetail == null) continue;
+
+            var fishData = LoadDataManager.Instance?.GetFishById(fishDetail.fishId);
+            if (fishData == null)
+            {
+                LogDebug($"跳过鱼: 找不到鱼类数据 ID={fishDetail.fishId}");
+                continue;
+            }
+
+            int speciesId = fishData.fishSpeciesId;
+            FishSpeciesType speciesType = GetFishSpeciesTypeById(speciesId);
+
+            yield return LoadFishTextureCoroutine(fishDetail, speciesType, createdFish);
+        }
+
+        // 更新所有鱼的位置参数
+        UpdateRects();
+        LogInfo($"鱼创建完成，共 {TotalFishCount} 条鱼");
+    }
+
+    private IEnumerator LoadFishTextureCoroutine(
+        FishDetailData fishDetail,
+        FishSpeciesType speciesType,
+        List<FishTankFishCtrl> createdFish)
+    {
+        var itemData = LoadDataManager.Instance?.GetItemById(fishDetail.fishId);
+        if (itemData == null)
+        {
+            LogDebug($"跳过鱼: 找不到物品数据 ID={fishDetail.fishId}");
+            yield break;
+        }
+
+        string iconPath = itemData.iconPath;
+        if (string.IsNullOrEmpty(iconPath))
+        {
+            LogDebug($"跳过鱼: 图标路径为空 ID={fishDetail.fishId}");
+            yield break;
+        }
+
+        string loadPath = fishDetail.isShiny ? iconPath + "_s" : iconPath;
+        LogDebug($"加载鱼贴图: {loadPath}, 类型: {speciesType}");
+
+        bool isLoaded = false;
+        Texture2D loadedTexture = null;
+
+        AssetManager.LoadFromAddressables<Texture2D>(loadPath, (texture, handle) =>
+        {
+            if (texture != null)
+            {
+                loadedTexture = texture;
+                LogDebug($"鱼贴图加载成功: {loadPath}");
+            }
+            else
+            {
+                // 降级加载普通纹理
+                LogDebug($"鱼贴图加载失败: {loadPath}, 尝试回退");
+                AssetManager.LoadFromAddressables<Texture2D>(iconPath, (fallbackTexture, fallbackHandle) =>
+                {
+                    if (fallbackTexture != null)
+                    {
+                        loadedTexture = fallbackTexture;
+                        LogDebug($"回退鱼贴图加载成功: {iconPath}");
+                    }
+                    else
+                    {
+                        LogDebug($"回退鱼贴图也加载失败: {iconPath}");
+                    }
+                    isLoaded = true;
+                });
+                return;
+            }
+            isLoaded = true;
+        });
+
+        while (!isLoaded)
+        {
+            yield return null;
+        }
+
+        if (loadedTexture != null)
+        {
+            FishTankFishCtrl fish = CreateFishFromTexture(loadedTexture, speciesType);
+            if (fish != null)
+            {
+                createdFish.Add(fish);
+            }
+        }
+    }
+
+    // ============================================================
+    // 鱼创建和类型判断
+    // ============================================================
+
+    private FishSpeciesType GetFishSpeciesTypeById(int speciesId)
+    {
+        if (LoadDataManager.Instance != null)
+        {
+            var speciesData = LoadDataManager.Instance.GetFishSpeciesById(speciesId);
+            if (speciesData != null)
+            {
+                return LoadDataManager.Instance.GetFishSpeciesType(speciesData.type);
+            }
+        }
+        return FishSpeciesType.FullScreenSwim;
+    }
+
+    private FishTankFishCtrl CreateFishFromTexture(Texture2D texture, FishSpeciesType speciesType)
     {
         if (fishPrefab == null)
         {
             Z_Logger.LogError("[FishTankManager] fishPrefab 为空");
-            return;
+            return null;
         }
 
         GameObject go = Instantiate(fishPrefab, fishContainer.transform);
@@ -403,11 +576,11 @@ public class FishTankManager : MonoBehaviour
         FishTankFishCtrl fish = go.GetComponent<FishTankFishCtrl>();
         if (fish == null) fish = go.AddComponent<FishTankFishCtrl>();
 
-        FishTankFishSpeciesData data = new FishTankFishSpeciesData
+        FishSpeciesData data = new FishSpeciesData
         {
-            id = (int)type,
-            name = type.ToString(),
-            type = type.ToString()
+            id = (int)speciesType,
+            name = speciesType.ToString(),
+            type = speciesType.ToString()
         };
 
         float acceleration = UnityEngine.Random.Range(accelerationMin, accelerationMax);
@@ -429,8 +602,38 @@ public class FishTankManager : MonoBehaviour
         fish.SetTexture(texture);
         SetFishParams(fish);
         SetBehavior(fish);
+        AddToList(fish, speciesType);
 
-        AddToList(fish, type);
+        return fish;
+    }
+
+    private void SetBehavior(FishTankFishCtrl fish)
+    {
+        if (fish == null) return;
+
+        switch (fish.SpeciesType)
+        {
+            case FishSpeciesType.FullScreenSwim:
+                Vector2 swimPos = GetRandomPosInRectWithRange(_totalRect, fullScreenSwimSpawnRange);
+                fish.SetFullScreenSwim(
+                    moveSpeedMin, moveSpeedMax,
+                    directionChangeIntervalMin, directionChangeIntervalMax,
+                    swimPos
+                );
+                break;
+            case FishSpeciesType.FullScreenStatic:
+                fish.SetFullScreenStatic();
+                break;
+            case FishSpeciesType.BottomSwim:
+                fish.SetBottomSwim(
+                    moveSpeedMin * 0.5f, moveSpeedMax * 0.6f,
+                    directionChangeIntervalMin, directionChangeIntervalMax
+                );
+                break;
+            case FishSpeciesType.BottomStatic:
+                fish.SetBottomStatic();
+                break;
+        }
     }
 
     private Vector2 GetRandomPosInRectWithRange(Rect rect, float range)
@@ -444,41 +647,14 @@ public class FishTankManager : MonoBehaviour
         return new Vector2(x, y);
     }
 
-    private void SetBehavior(FishTankFishCtrl fish)
-    {
-        switch (fish.SpeciesType)
-        {
-            case FishTankFishSpeciesType.FullScreenSwim:
-                Vector2 swimPos = GetRandomPosInRectWithRange(_totalRect, fullScreenSwimSpawnRange);
-                fish.SetFullScreenSwim(
-                    moveSpeedMin, moveSpeedMax,
-                    directionChangeIntervalMin, directionChangeIntervalMax,
-                    swimPos
-                );
-                break;
-            case FishTankFishSpeciesType.FullScreenStatic:
-                fish.SetFullScreenStatic();
-                break;
-            case FishTankFishSpeciesType.BottomSwim:
-                fish.SetBottomSwim(
-                    moveSpeedMin * 0.5f, moveSpeedMax * 0.6f,
-                    directionChangeIntervalMin, directionChangeIntervalMax
-                );
-                break;
-            case FishTankFishSpeciesType.BottomStatic:
-                fish.SetBottomStatic();
-                break;
-        }
-    }
-
-    private void AddToList(FishTankFishCtrl fish, FishTankFishSpeciesType type)
+    private void AddToList(FishTankFishCtrl fish, FishSpeciesType type)
     {
         switch (type)
         {
-            case FishTankFishSpeciesType.FullScreenSwim: fullScreenSwimList.Add(fish); break;
-            case FishTankFishSpeciesType.FullScreenStatic: fullScreenStaticList.Add(fish); break;
-            case FishTankFishSpeciesType.BottomSwim: bottomSwimList.Add(fish); break;
-            case FishTankFishSpeciesType.BottomStatic: bottomStaticList.Add(fish); break;
+            case FishSpeciesType.FullScreenSwim: fullScreenSwimList.Add(fish); break;
+            case FishSpeciesType.FullScreenStatic: fullScreenStaticList.Add(fish); break;
+            case FishSpeciesType.BottomSwim: bottomSwimList.Add(fish); break;
+            case FishSpeciesType.BottomStatic: bottomStaticList.Add(fish); break;
         }
     }
 
@@ -494,6 +670,20 @@ public class FishTankManager : MonoBehaviour
         bottomSwimList.Clear();
         bottomStaticList.Clear();
     }
+
+    private void LogFishCount()
+    {
+        int total = TotalFishCount;
+        if (enableDebugLog) Z_Logger.Log($"[FishTankManager] 鱼数量: {total} | " +
+                  $"全屏游动: {fullScreenSwimList.Count}, " +
+                  $"全屏静止: {fullScreenStaticList.Count}, " +
+                  $"底部游动: {bottomSwimList.Count}, " +
+                  $"底部静止: {bottomStaticList.Count}");
+    }
+
+    // ============================================================
+    // 更新循环
+    // ============================================================
 
     private IEnumerator UpdateLoop()
     {
@@ -517,9 +707,7 @@ public class FishTankManager : MonoBehaviour
                 var fish = fullScreenSwimList[0];
                 if (fish != null && fish.gameObject.activeSelf)
                 {
-                    Z_Logger.Log($"[FishTankManager] 鱼位置: ({fish.transform.position.x:F1}, {fish.transform.position.y:F1}), " +
-                              $"速度: {fish.GetCurrentMoveSpeed():F1}, 方向: {(fish.GetCurrentDirection() > 0 ? "→" : "←")}, " +
-                              $"追逐状态: {fish.IsChasingBait}, 鱼饵数量: {_activeBaits.Count}");
+                    Z_Logger.Log($"[FishTankManager] 鱼位置: ({fish.transform.position.x:F1}, {fish.transform.position.y:F1})");
                 }
             }
         }
@@ -527,170 +715,52 @@ public class FishTankManager : MonoBehaviour
 
     private void Update()
     {
-        // F5刷新
-        if (Input.GetKeyDown(KeyCode.F5))
+        if (Input.GetMouseButtonDown(0))
         {
-            Refresh();
-        }
+            Vector3 worldPos = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10f));
 
-        // 鼠标点击生成鱼饵
-        // 适配微信小游戏的触摸事件
-        if (Input.GetMouseButtonDown(0) || Input.touchCount > 0)
-        {
-            Vector3 clickPosition = Vector3.zero;
-            bool isValidClick = false;
-
-            // 检测鼠标点击
-            if (Input.GetMouseButtonDown(0))
+            if (worldPos.x >= _totalRect.xMin && worldPos.x <= _totalRect.xMax &&
+                worldPos.y >= _totalRect.yMin && worldPos.y <= _totalRect.yMax)
             {
-                clickPosition = Input.mousePosition;
-                isValidClick = true;
-            }
-
-            // 检测触摸（微信小游戏适配）
-            if (Input.touchCount > 0)
-            {
-                Touch touch = Input.GetTouch(0);
-                if (touch.phase == TouchPhase.Began)
-                {
-                    clickPosition = touch.position;
-                    isValidClick = true;
-                }
-            }
-
-            if (isValidClick)
-            {
-                // 将屏幕坐标转换为世界坐标
-                Vector3 worldPos = Camera.main.ScreenToWorldPoint(new Vector3(clickPosition.x, clickPosition.y, 10f));
-
-                // 检查点击位置是否在 totalArea 范围内
-                if (worldPos.x >= _totalRect.xMin && worldPos.x <= _totalRect.xMax &&
-                    worldPos.y >= _totalRect.yMin && worldPos.y <= _totalRect.yMax)
-                {
-                    SpawnBaitAtPosition(worldPos);
-                }
-                else
-                {
-                    if (enableDebugLog)
-                        Z_Logger.Log($"[FishTankManager] 点击位置 ({worldPos.x:F2}, {worldPos.y:F2}) 不在鱼缸范围内");
-                }
+                SpawnBaitAtPosition(worldPos);
             }
         }
     }
 
     // ============================================================
-    // 鱼饵生成方法（对象池）
+    // 鱼饵系统
     // ============================================================
 
-    /// <summary>在指定位置生成鱼饵</summary>
     public void SpawnBaitAtPosition(Vector3 position)
     {
-        LogDebug("=== SpawnBaitAtPosition 开始 ===");
+        if (fishTankBaitPrefab == null) return;
 
-        if (fishTankBaitPrefab == null)
-        {
-            Z_Logger.LogError("[FishTankManager] fishTankBaitPrefab 为空!");
-            return;
-        }
-
-        LogDebug($"当前活跃: {_activeBaits.Count}/{fishTankBaitMaxQueueSize}, 池中空闲: {_baitPool.Count}");
-
-        // 检查队列是否已满，如果满了则移除最旧的鱼饵（FIFO）
         if (_activeBaits.Count >= fishTankBaitMaxQueueSize)
         {
             GameObject oldestBait = _activeBaits.Dequeue();
             if (oldestBait != null)
             {
-                LogDebug("队列已满，移除最旧鱼饵");
                 ResetFishChasingBait(oldestBait);
                 ReturnBaitToPool(oldestBait);
             }
         }
 
-        // 确保鱼饵在 totalArea 范围内
         float margin = 0.5f;
         Vector3 spawnPos = position;
         spawnPos.x = Mathf.Clamp(spawnPos.x, _totalRect.xMin + margin, _totalRect.xMax - margin);
         spawnPos.y = Mathf.Clamp(spawnPos.y, _totalRect.yMin + margin, _totalRect.yMax - margin);
         spawnPos.z = 0;
 
-        LogDebug($"鱼饵生成位置: ({spawnPos.x:F2}, {spawnPos.y:F2})");
-
-        // 从对象池获取鱼饵（池空则动态创建）
         GameObject bait = GetBaitFromPool(spawnPos);
-        if (bait == null)
-        {
-            Z_Logger.LogError("[FishTankManager] 从对象池获取鱼饵失败!");
-            return;
-        }
+        if (bait == null) return;
 
         _activeBaits.Enqueue(bait);
-
-        LogDebug($"鱼饵已入队，当前活跃: {_activeBaits.Count}, 池中空闲: {_baitPool.Count}");
-
-        // 生成时立即检测一次附近的鱼
         CheckNearbyFish(bait);
-
-        LogDebug("=== SpawnBaitAtPosition 结束 ===");
     }
 
-    /// <summary>在随机位置生成鱼饵（用于调试）</summary>
-    public void SpawnBait()
-    {
-        LogDebug("=== SpawnBait 开始 ===");
-
-        if (fishTankBaitPrefab == null)
-        {
-            Z_Logger.LogError("[FishTankManager] fishTankBaitPrefab 为空!");
-            return;
-        }
-
-        LogDebug($"当前活跃: {_activeBaits.Count}/{fishTankBaitMaxQueueSize}, 池中空闲: {_baitPool.Count}");
-
-        if (_activeBaits.Count >= fishTankBaitMaxQueueSize)
-        {
-            GameObject oldestBait = _activeBaits.Dequeue();
-            if (oldestBait != null)
-            {
-                LogDebug("队列已满，移除最旧鱼饵");
-                ResetFishChasingBait(oldestBait);
-                ReturnBaitToPool(oldestBait);
-            }
-        }
-
-        float margin = 0.5f;
-        float x = UnityEngine.Random.Range(_totalRect.xMin + margin, _totalRect.xMax - margin);
-        float y = UnityEngine.Random.Range(_totalRect.yMin + margin, _totalRect.yMax - margin);
-        Vector3 spawnPos = new Vector3(x, y, 0);
-
-        LogDebug($"鱼饵生成位置: ({x:F2}, {y:F2})");
-
-        GameObject bait = GetBaitFromPool(spawnPos);
-        if (bait == null)
-        {
-            Z_Logger.LogError("[FishTankManager] 从对象池获取鱼饵失败!");
-            return;
-        }
-
-        _activeBaits.Enqueue(bait);
-
-        LogDebug($"鱼饵已入队，当前活跃: {_activeBaits.Count}, 池中空闲: {_baitPool.Count}");
-
-        CheckNearbyFish(bait);
-
-        LogDebug("=== SpawnBait 结束 ===");
-    }
-
-    // ============================================================
-    // 鱼饵系统方法
-    // ============================================================
-
-    /// <summary>重置所有追逐该鱼饵的鱼的状态</summary>
     private void ResetFishChasingBait(GameObject bait)
     {
         if (bait == null) return;
-
-        LogDebug($"ResetFishChasingBait 被调用");
 
         foreach (var fish in fullScreenSwimList)
         {
@@ -698,134 +768,78 @@ public class FishTankManager : MonoBehaviour
             if (fish.IsChasingBait)
             {
                 float distance = Vector3.Distance(fish.transform.position, bait.transform.position);
-                LogDebug($"鱼 {fish.UniqueId} 正在追逐，距离鱼饵: {distance:F2}");
-
-                if (distance < 0.5f)
-                {
-                    LogDebug($"鱼 {fish.UniqueId} 距离鱼饵太近({distance:F2})，跳过重置");
-                    continue;
-                }
-
-                if (distance < fishTankBaitTriggerRadius)
-                {
-                    if (Vector3.Distance(fish.GetBaitTargetPosition(), bait.transform.position) < 0.1f)
-                    {
-                        LogDebug($"鱼 {fish.UniqueId} 追逐的鱼饵被移除，继续向最后位置移动");
-                    }
-                }
+                if (distance < 0.5f) continue;
             }
         }
     }
 
-    /// <summary>检测鱼饵附近的鱼并触发追逐</summary>
     private void CheckNearbyFish(GameObject bait)
     {
-        if (enableDebugLog)
-            Z_Logger.Log("[FishTankManager] === CheckNearbyFish 开始 ===");
-
-        if (bait == null)
-        {
-            if (enableDebugLog)
-                Z_Logger.Log("[FishTankManager] CheckNearbyFish: bait 为空");
-            return;
-        }
+        if (bait == null) return;
 
         Vector3 baitPos = bait.transform.position;
         float radius = fishTankBaitTriggerRadius;
 
-        if (enableDebugLog)
-        {
-            Z_Logger.Log($"[FishTankManager] 鱼饵位置: ({baitPos.x:F2}, {baitPos.y:F2}), 触发半径: {radius}");
-            Z_Logger.Log($"[FishTankManager] 全屏游动鱼数量: {fullScreenSwimList.Count}");
-        }
-
-        bool anyFishTriggered = false;
-        int fishChecked = 0;
-        int fishSkippedChasing = 0;
-
         foreach (var fish in fullScreenSwimList)
         {
-            if (fish == null || !fish.gameObject.activeSelf)
-            {
-                continue;
-            }
-
-            fishChecked++;
-
-            // 已经追逐中的不触发
-            if (fish.IsChasingBait)
-            {
-                fishSkippedChasing++;
-                if (enableDebugLog)
-                    Z_Logger.Log($"[FishTankManager] 鱼 {fish.UniqueId} 已在追逐中，跳过");
-                continue;
-            }
+            if (fish == null || !fish.gameObject.activeSelf) continue;
+            if (fish.IsChasingBait) continue;
 
             float distance = Vector3.Distance(fish.transform.position, baitPos);
-            if (enableDebugLog)
-                Z_Logger.Log($"[FishTankManager] 鱼 {fish.UniqueId} 距离鱼饵: {distance:F2}, 状态: {fish.GetCurrentSwimState()}, 鱼状态: {fish.CurrentFishState}");
-
             if (distance <= radius)
             {
-                if (enableDebugLog)
-                    Z_Logger.Log($"[FishTankManager] 鱼 {fish.UniqueId} 在触发范围内! 距离: {distance:F2}");
-
-                // 不管什么状态，直接触发追逐
                 float chaseDuration = UnityEngine.Random.Range(fishTankBaitChaseDurationMin, fishTankBaitChaseDurationMax);
-                if (enableDebugLog)
-                    Z_Logger.Log($"[FishTankManager] 触发鱼 {fish.UniqueId} 追逐，持续时间: {chaseDuration:F2}s");
                 fish.StartChasingBait(baitPos, chaseDuration, fishTankBaitChaseSpeedMultiplier);
-                anyFishTriggered = true;
-
-                // 关键日志：鱼开始追逐
                 LogInfo($"鱼 {fish.UniqueId} 开始追逐鱼饵! 距离: {distance:F2}");
             }
         }
-
-        if (enableDebugLog)
-        {
-            Z_Logger.Log($"[FishTankManager] CheckNearbyFish 统计: 检查 {fishChecked} 条鱼, 跳过追逐中 {fishSkippedChasing} 条, 触发 {anyFishTriggered} 条");
-
-            if (!anyFishTriggered)
-            {
-                Z_Logger.Log($"[FishTankManager] 没有鱼在鱼饵附近触发, 半径: {radius}");
-            }
-
-            Z_Logger.Log("[FishTankManager] === CheckNearbyFish 结束 ===");
-        }
     }
 
-    /// <summary>清除所有活跃鱼饵（归还到对象池）</summary>
-    public void ClearAllBaits()
+    private void UpdateBaits()
     {
-        LogDebug("ClearAllBaits 被调用");
+        List<GameObject> baitsList = new List<GameObject>(_activeBaits);
 
-        // 将所有活跃鱼饵归还到池中
-        while (_activeBaits.Count > 0)
+        foreach (var bait in baitsList)
         {
-            GameObject bait = _activeBaits.Dequeue();
-            if (bait != null)
+            if (bait == null) continue;
+
+            FishTankBaitCtrl baitComp = bait.GetComponent<FishTankBaitCtrl>();
+            if (baitComp != null)
             {
-                ResetFishChasingBait(bait);
-                ReturnBaitToPool(bait);
+                baitComp.UpdateBait();
+                CheckNearbyFish(bait);
+                CheckBaitConsumption(bait);
             }
         }
-
-        LogDebug($"已清除所有鱼饵，池中空闲: {_baitPool.Count}");
     }
 
-    /// <summary>移除指定鱼饵（被吃掉或手动移除）</summary>
+    private void CheckBaitConsumption(GameObject bait)
+    {
+        if (bait == null) return;
+        if (!_activeBaits.Contains(bait)) return;
+
+        Vector3 baitPos = bait.transform.position;
+
+        foreach (var fish in fullScreenSwimList)
+        {
+            if (fish == null || !fish.gameObject.activeSelf) continue;
+            if (!fish.IsChasingBait) continue;
+
+            float distance = Vector3.Distance(fish.transform.position, baitPos);
+            if (distance < 0.3f)
+            {
+                LogInfo($"鱼饵已被鱼 {fish.UniqueId} 吃掉!");
+                RemoveBait(bait);
+                fish.ResetFishState();
+                break;
+            }
+        }
+    }
+
     public void RemoveBait(GameObject bait)
     {
-        LogDebug("RemoveBait 被调用");
+        if (bait == null) return;
 
-        if (bait == null)
-        {
-            LogDebug("RemoveBait: bait 为空");
-            return;
-        }
-
-        // 从活跃队列中移除（需要重建队列，因为Queue不支持直接移除指定元素）
         Queue<GameObject> newQueue = new Queue<GameObject>();
         bool found = false;
 
@@ -837,7 +851,6 @@ public class FishTankManager : MonoBehaviour
                 found = true;
                 ResetFishChasingBait(bait);
                 ReturnBaitToPool(bait);
-                LogInfo("鱼饵已被移除!");
             }
             else
             {
@@ -846,112 +859,106 @@ public class FishTankManager : MonoBehaviour
         }
 
         _activeBaits = newQueue;
-        LogDebug($"RemoveBait 完成，剩余活跃: {_activeBaits.Count}, 池中空闲: {_baitPool.Count}");
     }
 
-    /// <summary>更新所有鱼饵（下落、检测）</summary>
-    private void UpdateBaits()
+    public void ClearAllBaits()
     {
-        // 使用快照避免在遍历时修改队列
-        List<GameObject> baitsList = new List<GameObject>(_activeBaits);
-
-        foreach (var bait in baitsList)
+        while (_activeBaits.Count > 0)
         {
-            if (bait == null) continue;
-
-            FishTankBaitComponent baitComp = bait.GetComponent<FishTankBaitComponent>();
-            if (baitComp != null)
+            GameObject bait = _activeBaits.Dequeue();
+            if (bait != null)
             {
-                baitComp.UpdateBait();
-
-                // 持续检测鱼饵附近的鱼
-                CheckNearbyFish(bait);
-
-                // 检查是否有鱼吃到鱼饵（只有追逐中的鱼才能吃掉）
-                CheckBaitConsumption(bait);
-            }
-        }
-    }
-
-    /// <summary>检查鱼饵是否被鱼吃掉</summary>
-    private void CheckBaitConsumption(GameObject bait)
-    {
-        if (bait == null) return;
-        if (!_activeBaits.Contains(bait)) return;
-
-        Vector3 baitPos = bait.transform.position;
-        if (enableDebugLog) Z_Logger.Log($"[FishTankManager] CheckBaitConsumption 检查鱼饵位置: ({baitPos.x:F2}, {baitPos.y:F2})");
-
-        foreach (var fish in fullScreenSwimList)
-        {
-            if (fish == null || !fish.gameObject.activeSelf) continue;
-
-            // 只有正在追逐鱼饵的鱼才能吃掉鱼饵
-            if (!fish.IsChasingBait)
-            {
-                if (enableDebugLog) Z_Logger.Log($"[FishTankManager] 鱼 {fish.UniqueId} 不在追逐状态，跳过");
-                continue;
-            }
-
-            // 检查鱼的目标位置是否和当前鱼饵位置匹配
-            Vector3 fishTarget = fish.GetBaitTargetPosition();
-            float targetDistance = Vector3.Distance(fishTarget, baitPos);
-            if (enableDebugLog) Z_Logger.Log($"[FishTankManager] 鱼 {fish.UniqueId} 目标距离鱼饵: {targetDistance:F2}");
-
-            // 如果目标距离大于阈值，说明鱼在追逐其他鱼饵，跳过
-            if (targetDistance > 0.5f)
-            {
-                if (enableDebugLog) Z_Logger.Log($"[FishTankManager] 鱼 {fish.UniqueId} 的目标位置({fishTarget:F2})不是当前鱼饵({baitPos:F2})，跳过");
-                continue;
-            }
-
-            float distance = Vector3.Distance(fish.transform.position, baitPos);
-            if (enableDebugLog) Z_Logger.Log($"[FishTankManager] 鱼 {fish.UniqueId} 距离鱼饵: {distance:F2}, 吃掉阈值: 0.3");
-
-            // 鱼到达鱼饵位置（距离 < 0.3f）则吃掉
-            if (distance < 0.3f)
-            {
-                if (enableDebugLog) Z_Logger.Log($"[FishTankManager] 鱼 {fish.UniqueId} 吃到鱼饵! 距离: {distance:F2}");
-
-                // 关键日志：鱼饵被吃掉
-                LogInfo($"鱼饵已被吃掉，增加金币! (鱼: {fish.UniqueId})");
-
-                RemoveBait(bait);
-
-                // 鱼吃掉鱼饵后，重置鱼的状态回到正常
-                fish.ResetFishState();
-                break;
+                ResetFishChasingBait(bait);
+                ReturnBaitToPool(bait);
             }
         }
     }
 
     // ============================================================
-    // 公共方法和属性
+    // 公共方法
     // ============================================================
 
-    /// <summary>刷新鱼缸（F5触发）</summary>
-    public void Refresh()
+    /// <summary>
+    /// 打开鱼缸显示
+    /// </summary>
+    public void OpenFishTank()
     {
-        LogInfo("F5 刷新");
+        LogInfo("OpenFishTank 开始");
+
+        fishTankGo.SetActive(true);
+        ClearAllBaits();
+
+        if (!_isInitialized)
+        {
+            Init();
+        }
+        else
+        {
+            UpdateRects();
+            // 如果有当前数据，重新显示
+            if (_currentDisplayingFish.Count > 0)
+            {
+                ShowFish(_currentDisplayingFish);
+            }
+        }
+
+        if (_updateCoroutine == null)
+        {
+            _updateCoroutine = StartCoroutine(UpdateLoop());
+            LogInfo("更新协程已重新启动");
+        }
+
+        LogInfo("OpenFishTank 完成");
+    }
+
+    /// <summary>
+    /// 关闭鱼缸显示
+    /// </summary>
+    public void CloseFishTank()
+    {
+        LogInfo("CloseFishTank 开始");
+
+        if (fishTankGo != null)
+            fishTankGo.SetActive(false);
 
         ClearAllBaits();
 
-        foreach (var f in fullScreenSwimList)
+        if (_updateCoroutine != null)
         {
-            if (f)
-            {
-                f.ResetFishState();
-                SetBehavior(f);
-            }
+            StopCoroutine(_updateCoroutine);
+            _updateCoroutine = null;
+            LogInfo("更新协程已停止");
         }
-        foreach (var f in fullScreenStaticList) if (f) SetBehavior(f);
-        foreach (var f in bottomSwimList) if (f) SetBehavior(f);
-        foreach (var f in bottomStaticList) if (f) SetBehavior(f);
 
-        LogFishCount();
+        _isInitialized = false;
+        LogInfo("CloseFishTank 完成");
     }
 
-    /// <summary>设置鱼的统一缩放</summary>
+    /// <summary>
+    /// 重置鱼缸 - 销毁所有鱼
+    /// </summary>
+    public void ResetFishTank()
+    {
+        LogInfo("ResetFishTank 开始");
+        CloseFishTank();
+        ClearAllFish();
+        _currentDisplayingFish.Clear();
+        LogInfo("ResetFishTank 完成");
+    }
+
+    /// <summary>
+    /// 兼容旧接口 - 设置鱼数据（内部调用ShowFish）
+    /// </summary>
+    public void SetFishData(List<FishDetailData> fishList)
+    {
+        if (fishList == null || fishList.Count == 0)
+        {
+            ClearFish();
+            return;
+        }
+        ShowFish(fishList);
+    }
+
     public void SetUniformScale(float scale)
     {
         uniformScale = scale;
@@ -959,10 +966,8 @@ public class FishTankManager : MonoBehaviour
         foreach (var f in fullScreenStaticList) if (f) f.UniformScale = scale;
         foreach (var f in bottomSwimList) if (f) f.UniformScale = scale;
         foreach (var f in bottomStaticList) if (f) f.UniformScale = scale;
-        if (enableDebugLog) Z_Logger.Log($"[FishTankManager] 同比例缩放设置为: {scale}");
     }
 
-    /// <summary>设置渲染队列</summary>
     public void SetRenderQueue(int queue)
     {
         renderQueue = queue;
@@ -972,45 +977,15 @@ public class FishTankManager : MonoBehaviour
         foreach (var f in bottomStaticList) if (f) f.SetRenderQueue(queue);
     }
 
-    private void LogFishCount()
-    {
-        int total = TotalFishCount;
-        if (enableDebugLog) Z_Logger.Log($"[FishTankManager] 鱼数量: {total} | " +
-                  $"全屏游动: {fullScreenSwimList.Count}, " +
-                  $"全屏静止: {fullScreenStaticList.Count}, " +
-                  $"底部游动: {bottomSwimList.Count}, " +
-                  $"底部静止: {bottomStaticList.Count}");
-    }
+    // ============================================================
+    // 生命周期
+    // ============================================================
 
-    private void Start()
-    {
-        OpenFishTank();
-    }
+    private void Start() { }
 
-    public void OpenFishTank()
+    private void OnEnable()
     {
-        gameObject.SetActive(true);
-        ClearAllBaits();
-        if (!_isInitialized) Init();
-        else { UpdateRects(); Refresh(); }
-    }
-
-    public void CloseFishTank()
-    {
-        gameObject.SetActive(false);
-        ClearAllBaits();
-        if (_updateCoroutine != null)
-        {
-            StopCoroutine(_updateCoroutine);
-            _updateCoroutine = null;
-        }
-    }
-
-    public void ReloadFishTank()
-    {
-        ClearAllBaits();
-        CreateAllFish();
-        LogFishCount();
+        if (_isInitialized) UpdateRects();
     }
 
     private void OnDestroy()
@@ -1021,7 +996,6 @@ public class FishTankManager : MonoBehaviour
             _updateCoroutine = null;
         }
 
-        // 清空对象池
         while (_baitPool.Count > 0)
         {
             GameObject bait = _baitPool.Dequeue();
@@ -1031,97 +1005,4 @@ public class FishTankManager : MonoBehaviour
         ClearAllBaits();
         ClearAllFish();
     }
-
-    private void OnEnable()
-    {
-        if (_isInitialized) UpdateRects();
-    }
-
-    // ============================================================
-    // 公共查询方法
-    // ============================================================
-
-    public int GetBaitCount() => _activeBaits.Count;                // 获取当前活跃鱼饵数量
-    public int GetBaitMaxQueueSize() => fishTankBaitMaxQueueSize;   // 获取鱼饵队列最大容量
-    public int GetPoolCount() => _baitPool.Count;                   // 获取对象池空闲数量
-}
-
-// ============================================================
-// 鱼饵组件（支持对象池复用）
-// ============================================================
-
-[System.Serializable]
-public class FishTankBaitComponent : MonoBehaviour
-{
-    private FishTankManager _manager;   // 管理器引用
-    private Rect _totalRect;            // 全屏区域矩形
-    private float _fallSpeed;           // 下落速度
-    private float _scale;               // 鱼饵缩放
-    private bool _isFalling = true;     // 是否正在下落
-    private bool _isTriggered = false;  // 是否已被触发（被吃掉或移除）
-    private bool _isActive = false;     // 是否激活（从池中取出）
-    private Vector3 _currentPosition;   // 当前位置
-
-    /// <summary>初始化鱼饵组件（由Manager调用）</summary>
-    public void Init(FishTankManager manager, Rect totalRect, float fallSpeed, float scale)
-    {
-        _manager = manager;
-        _totalRect = totalRect;
-        _fallSpeed = fallSpeed;
-        _scale = scale;
-        _isFalling = true;
-        _isTriggered = false;
-        _isActive = false;
-
-        transform.localScale = Vector3.one * _scale;
-
-        if (_manager.EnableDebugLog)
-            Z_Logger.Log($"[FishTankBaitComponent] 初始化完成");
-    }
-
-    /// <summary>重置鱼饵到指定位置（从池中取出时调用）</summary>
-    public void ResetBait(Vector3 position)
-    {
-        _currentPosition = position;
-        transform.position = position;
-        _isFalling = true;
-        _isTriggered = false;
-        _isActive = true;
-
-        if (_manager.EnableDebugLog)
-            Z_Logger.Log($"[FishTankBaitComponent] 重置鱼饵到位置: ({position.x:F2}, {position.y:F2})");
-    }
-
-    /// <summary>停用鱼饵（归还到池中时调用）</summary>
-    public void Deactivate()
-    {
-        _isActive = false;
-        _isTriggered = true;
-    }
-
-    /// <summary>更新鱼饵状态（每帧由Manager调用）</summary>
-    public void UpdateBait()
-    {
-        if (_isTriggered || !_isActive) return;
-
-        if (_isFalling)
-        {
-            Vector3 pos = transform.position;
-            pos.y -= _fallSpeed * Time.deltaTime;
-
-            // 触底停止下落
-            if (pos.y <= _totalRect.yMin + 0.3f)
-            {
-                pos.y = _totalRect.yMin + 0.3f;
-                _isFalling = false;
-                if (_manager.EnableDebugLog)
-                    Z_Logger.Log("[FishTankBaitComponent] 鱼饵停止移动");
-            }
-
-            transform.position = pos;
-            _currentPosition = pos;
-        }
-    }
-
-    public bool IsActive => _isActive;   // 是否激活
 }
