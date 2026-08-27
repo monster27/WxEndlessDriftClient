@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static NetServerManager;
+using static PlayerDataManager;
 
 public class PlayerDataService : MonoBehaviour
 {
@@ -31,18 +32,12 @@ public class PlayerDataService : MonoBehaviour
     [SerializeField] private float debounceDelay = 0.1f;
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 3. 缓存数据（用于比较）
+    // 3. 缓存数据
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    // 鱼篓缓存
     private int _cachedBagHash = 0;
     private int _cachedBagCapacity = 10;
-
-    // 鱼缸缓存 - Key: TankId, Value: Hash
     private Dictionary<int, int> _cachedTankHashes = new Dictionary<int, int>();
-
-    // 记录上次处理的版本号，防止重复处理
-    private int _lastProcessedVersion = -1;
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // 4. 防抖
@@ -90,31 +85,109 @@ public class PlayerDataService : MonoBehaviour
     {
         UnregisterEvents();
 
-        CommunicateEvent.Register("PlayerDataUpdated", OnPlayerDataUpdated);
-        CommunicateEvent.Register("FISH_TANK_OPEN", OnFishTankOpen);
-        CommunicateEvent.Register("FISH_TANK_FORCE_REFRESH", OnForceRefresh);
+        // 监听DataManager的数据变化
+        CommunicateEvent.Register(FishTankMessage.PlayerDataUpdated.ToString(), OnPlayerDataUpdated);
 
-        // ✅ 监听数据就绪事件，立即刷新缓存
-        CommunicateEvent.Register("FishTankDataReady", OnFishTankDataReady);
+        // 监听View的消息
+        CommunicateEvent.Register(FishTankMessage.OpenFishTank.ToString(), OnOpenFishTank);
+        CommunicateEvent.Register(FishTankMessage.CloseFishTank.ToString(), OnCloseFishTank);
+        CommunicateEvent.Register(FishTankMessage.RefreshFishTank.ToString(), OnRefreshFishTank);
+        CommunicateEvent.Register(FishTankMessage.SwitchTank.ToString(), OnSwitchTank);
+        CommunicateEvent.Register(FishTankMessage.TransferFish.ToString(), OnTransferFish);
+        CommunicateEvent.Register(FishTankMessage.UnlockTank.ToString(), OnUnlockTank);
+        CommunicateEvent.Register(FishTankMessage.ToggleManagerPanel.ToString(), OnToggleManagerPanel);
+
+        // 监听Network层数据加载完成
+        CommunicateEvent.Register(FishTankMessage.DataLoaded.ToString(), OnDataLoaded);
 
         LogDebug("事件注册完成");
     }
 
     private void UnregisterEvents()
     {
-        CommunicateEvent.Unregister("PlayerDataUpdated", OnPlayerDataUpdated);
-        CommunicateEvent.Unregister("FISH_TANK_OPEN", OnFishTankOpen);
-        CommunicateEvent.Unregister("FISH_TANK_FORCE_REFRESH", OnForceRefresh);
-        CommunicateEvent.Unregister("FishTankDataReady", OnFishTankDataReady);
+        CommunicateEvent.Unregister(FishTankMessage.PlayerDataUpdated.ToString(), OnPlayerDataUpdated);
+        CommunicateEvent.Unregister(FishTankMessage.OpenFishTank.ToString(), OnOpenFishTank);
+        CommunicateEvent.Unregister(FishTankMessage.CloseFishTank.ToString(), OnCloseFishTank);
+        CommunicateEvent.Unregister(FishTankMessage.RefreshFishTank.ToString(), OnRefreshFishTank);
+        CommunicateEvent.Unregister(FishTankMessage.SwitchTank.ToString(), OnSwitchTank);
+        CommunicateEvent.Unregister(FishTankMessage.TransferFish.ToString(), OnTransferFish);
+        CommunicateEvent.Unregister(FishTankMessage.UnlockTank.ToString(), OnUnlockTank);
+        CommunicateEvent.Unregister(FishTankMessage.ToggleManagerPanel.ToString(), OnToggleManagerPanel);
+        CommunicateEvent.Unregister(FishTankMessage.DataLoaded.ToString(), OnDataLoaded);
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 7. 事件处理器
+    // 7. 消息处理器
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    /// <summary>
-    /// 数据层数据更新 - 防抖入口
-    /// </summary>
+    private void OnOpenFishTank()
+    {
+        LogDebug("收到 OpenFishTank 消息");
+        if (IsDataReady())
+        {
+            NotifyView(FishTankMessage.DataUpdated);
+        }
+        else
+        {
+            LogDebug("数据尚未加载，等待 DataLoaded");
+        }
+    }
+
+    private void OnCloseFishTank()
+    {
+        LogDebug("收到 CloseFishTank 消息");
+        // 不需要额外处理
+    }
+
+    private void OnRefreshFishTank()
+    {
+        LogDebug("收到 RefreshFishTank 消息");
+        if (IsDataReady())
+        {
+            NotifyView(FishTankMessage.DataUpdated);
+        }
+    }
+
+    private void OnSwitchTank()
+    {
+        LogDebug("收到 SwitchTank 消息");
+        // View已经更新了索引，只需要通知刷新
+        if (IsDataReady())
+        {
+            NotifyView(FishTankMessage.DataUpdated);
+        }
+    }
+
+    private void OnTransferFish()
+    {
+        LogDebug("收到 TransferFish 消息");
+        // 实际网络请求由NetServerManager处理
+        // 等待网络完成后的数据更新通知
+    }
+
+    private void OnUnlockTank()
+    {
+        LogDebug("收到 UnlockTank 消息");
+        // 实际网络请求由NetServerManager处理
+        // 等待网络完成后的数据更新通知
+    }
+
+    private void OnToggleManagerPanel()
+    {
+        LogDebug("收到 ToggleManagerPanel 消息");
+        // View自己处理面板切换
+    }
+
+    private void OnDataLoaded()
+    {
+        LogDebug("收到 DataLoaded 消息，数据已就绪");
+        NotifyView(FishTankMessage.DataUpdated);
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 8. DataManager数据变化处理（防抖）
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
     private void OnPlayerDataUpdated()
     {
         if (_isProcessing) return;
@@ -127,49 +200,6 @@ public class PlayerDataService : MonoBehaviour
         _debounceCoroutine = StartCoroutine(DebounceProcess());
         LogDebug("数据更新事件已接收，启动防抖");
     }
-
-    /// <summary>
-    /// 鱼缸打开事件
-    /// </summary>
-    private void OnFishTankOpen()
-    {
-        LogDebug("鱼缸打开，触发数据刷新");
-    }
-
-    /// <summary>
-    /// 强制刷新事件
-    /// </summary>
-    private void OnForceRefresh()
-    {
-        LogDebug("强制刷新");
-        _lastProcessedVersion = -1;
-        _cachedBagHash = 0;
-        _cachedTankHashes.Clear();
-
-        if (PlayerDataManager.Instance != null)
-        {
-            PlayerDataManager.Instance.ForceNotifyDataChanged();
-        }
-    }
-
-    /// <summary>
-    /// ✅ 鱼缸数据就绪 - 立即刷新缓存
-    /// </summary>
-    private void OnFishTankDataReady()
-    {
-        LogDebug("鱼缸数据就绪，刷新缓存");
-
-        // 重置缓存，强制重新读取
-        _cachedTankHashes.Clear();
-        _lastProcessedVersion = -1;
-
-        // 立即处理数据变化
-        ProcessDataChanges();
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 8. 防抖处理
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     private IEnumerator DebounceProcess()
     {
@@ -188,7 +218,7 @@ public class PlayerDataService : MonoBehaviour
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 9. 核心：数据变化检测与分发
+    // 9. 数据变化检测
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     private void ProcessDataChanges()
@@ -199,38 +229,19 @@ public class PlayerDataService : MonoBehaviour
             return;
         }
 
-        bool bagChanged = false;
-        bool tankChanged = false;
-
-        if (CheckBagChanges())
-        {
-            bagChanged = true;
-            LogDebug("鱼篓数据发生变化");
-        }
-
-        var tankChanges = CheckTankChanges();
-        if (tankChanges.Count > 0)
-        {
-            tankChanged = true;
-            LogDebug($"鱼缸数据发生变化: {string.Join(", ", tankChanges)}");
-        }
-
-        _lastProcessedVersion = PlayerDataManager.Instance.FishDataVersion;
+        bool bagChanged = CheckBagChanges();
+        bool tankChanged = CheckTankChanges();
 
         if (bagChanged || tankChanged)
         {
-            CommunicateEvent.Modify("FishTankDataChanged");
-            LogDebug("分发: FishTankDataChanged");
+            LogDebug($"数据发生变化: bagChanged={bagChanged}, tankChanged={tankChanged}");
+            NotifyView(FishTankMessage.DataUpdated);
         }
         else
         {
-            LogDebug("数据无变化，不分发事件");
+            LogDebug("数据无变化");
         }
     }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 10. 数据比较方法
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     private bool CheckBagChanges()
     {
@@ -249,10 +260,10 @@ public class PlayerDataService : MonoBehaviour
         return changed;
     }
 
-    private List<int> CheckTankChanges()
+    private bool CheckTankChanges()
     {
-        var changedTanks = new List<int>();
         var tanks = PlayerDataManager.Instance.GetAllFishTankStatusOrdered();
+        bool changed = false;
 
         var currentTankIds = new HashSet<int>(tanks.Select(t => t.tankId));
         var cachedTankIds = new HashSet<int>(_cachedTankHashes.Keys);
@@ -262,7 +273,7 @@ public class PlayerDataService : MonoBehaviour
             if (!currentTankIds.Contains(tankId))
             {
                 _cachedTankHashes.Remove(tankId);
-                changedTanks.Add(tankId);
+                changed = true;
             }
         }
 
@@ -274,11 +285,11 @@ public class PlayerDataService : MonoBehaviour
             if (!_cachedTankHashes.TryGetValue(tank.tankId, out int oldHash) || oldHash != newHash)
             {
                 _cachedTankHashes[tank.tankId] = newHash;
-                changedTanks.Add(tank.tankId);
+                changed = true;
             }
         }
 
-        return changedTanks;
+        return changed;
     }
 
     private int CalculateFishListHash(List<FishDetailData> list)
@@ -294,7 +305,7 @@ public class PlayerDataService : MonoBehaviour
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 11. 对外查询接口
+    // 10. 对外查询接口（供View调用）
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     public List<FishTankStatusData> GetTankList()
@@ -315,38 +326,20 @@ public class PlayerDataService : MonoBehaviour
     {
         if (PlayerDataManager.Instance == null)
             return new List<FishDetailData>();
-
-        var allFish = PlayerDataManager.Instance.GetAllFishDetailData();
-
-        if (enableDebugLog)
-        {
-            Z_Logger.Log($"[GetTankFishList] tankId={tankId}, allFish.Count={allFish.Count}");
-            foreach (var fish in allFish)
-            {
-                Z_Logger.Log($"[GetTankFishList] fish.id={fish.id}, fishId={fish.fishId}, location={fish.location}, tankId={fish.tankId}");
-            }
-        }
-
-        return allFish.Where(f => f.location == 1 && f.tankId == tankId).ToList();
+        return PlayerDataManager.Instance.GetFishTankItems(tankId);
     }
 
     public List<FishDetailData> GetBagFishList()
     {
         if (PlayerDataManager.Instance == null)
-            return new List<FishDetailData>();
-
-        var allFish = PlayerDataManager.Instance.GetAllFishDetailData();
-        var result = new List<FishDetailData>();
-
-        foreach (var fish in allFish)
         {
-            if (fish.location == 0)
-            {
-                result.Add(fish);
-            }
+            LogDebug("GetBagFishList: PlayerDataManager.Instance == null");
+            return new List<FishDetailData>();
         }
 
-        return result;
+        var result = PlayerDataManager.Instance.GetFishBagList();
+        LogDebug($"GetBagFishList: result.Count={result?.Count ?? 0}");
+        return result ?? new List<FishDetailData>();
     }
 
     public int GetBagCapacity()
@@ -354,6 +347,19 @@ public class PlayerDataService : MonoBehaviour
         if (PlayerDataManager.Instance == null)
             return 10;
         return PlayerDataManager.Instance.fishBagCapacity;
+    }
+
+
+    public int GetBagRemaining()
+    {
+        if (PlayerDataManager.Instance == null)
+            return 0;
+        return PlayerDataManager.Instance.GetFishBagRemaining();
+    }
+
+    public bool IsBagFull()
+    {
+        return GetBagRemaining() <= 0;
     }
 
     public bool IsTankUnlocked(int tankId)
@@ -377,25 +383,25 @@ public class PlayerDataService : MonoBehaviour
         return PlayerDataManager.Instance.GetFishTankRemaining(tankId);
     }
 
-    public int GetBagRemaining()
-    {
-        if (PlayerDataManager.Instance == null)
-            return 0;
-        return PlayerDataManager.Instance.GetFishBagRemaining();
-    }
-
-    public bool IsBagFull()
-    {
-        return GetBagRemaining() <= 0;
-    }
-
     public bool CanAddFishToTank(int tankId)
     {
         return GetTankRemaining(tankId) > 0 && IsTankUnlocked(tankId);
     }
 
+    public bool IsDataReady()
+    {
+        if (PlayerDataManager.Instance == null)
+            return false;
+        return PlayerDataManager.Instance.IsFishDataLoaded;
+    }
+
+    public int GetTankCount()
+    {
+        return GetTankList().Count;
+    }
+
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 12. 业务协调接口
+    // 11. UI展示数据接口
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     public FishTankDisplayData GetTankDisplayData(int tankIndex)
@@ -425,19 +431,77 @@ public class PlayerDataService : MonoBehaviour
     public FishBagDisplayData GetBagDisplayData()
     {
         var fishList = GetBagFishList();
+        int capacity = GetBagCapacity();
+
+        LogDebug($"GetBagDisplayData: fishList.Count={fishList?.Count ?? 0}, capacity={capacity}");
+
         return new FishBagDisplayData
         {
-            FishList = fishList,
-            Capacity = GetBagCapacity(),
-            CurrentCount = fishList.Count,
-            Remaining = GetBagCapacity() - fishList.Count,
-            IsFull = fishList.Count >= GetBagCapacity()
+            FishList = fishList ?? new List<FishDetailData>(),
+            Capacity = capacity,
+            CurrentCount = fishList?.Count ?? 0,
+            Remaining = capacity - (fishList?.Count ?? 0),
+            IsFull = (fishList?.Count ?? 0) >= capacity
         };
     }
 
-    public int GetTankCount()
+    public FishTankStoreData GetStoreData(int index)
     {
-        return GetTankList().Count;
+        LogDebug($"GetStoreData: index={index}");
+
+        if (index == 0)
+        {
+            var bag = GetBagDisplayData();
+            LogDebug($"GetStoreData: bag.FishList.Count={bag.FishList?.Count ?? 0}, bag.Capacity={bag.Capacity}");
+
+            var result = new FishTankStoreData
+            {
+                TankId = 0,
+                Name = "鱼篓",
+                IsBag = true,
+                IsSpecial = false,
+                PurchaseCost = 0,
+                MaxCapacity = bag.Capacity,
+                FishList = bag.FishList ?? new List<FishDetailData>(),
+                IsUnlocked = true
+            };
+
+            LogDebug($"GetStoreData: result.FishList.Count={result.FishList.Count}");
+            return result;
+        }
+
+        int tankIndex = index - 1;
+        var tanks = GetTankList();
+
+        if (tankIndex < 0 || tankIndex >= tanks.Count)
+        {
+            LogDebug($"GetStoreData: tankIndex out of range, tankIndex={tankIndex}, tanks.Count={tanks.Count}");
+            return null;
+        }
+
+        var tank = tanks[tankIndex];
+        if (tank == null)
+        {
+            LogDebug($"GetStoreData: tank is null, tankIndex={tankIndex}");
+            return null;
+        }
+
+        var config = LoadDataManager.Instance?.GetFishTankConfig(tank.tankId);
+        var fishList = GetTankFishList(tank.tankId);
+
+        LogDebug($"GetStoreData: tankId={tank.tankId}, name={config?.name}, fishList.Count={fishList?.Count ?? 0}, isUnlocked={tank.isUnlocked}");
+
+        return new FishTankStoreData
+        {
+            TankId = tank.tankId,
+            Name = config?.name ?? $"鱼缸{tank.tankId}",
+            IsBag = false,
+            IsSpecial = config?.type == "special",
+            PurchaseCost = config?.purchaseCost ?? 0,
+            MaxCapacity = tank.capacity,
+            FishList = fishList ?? new List<FishDetailData>(),
+            IsUnlocked = tank.isUnlocked
+        };
     }
 
     public int GetSpecialTankHourlyEarning()
@@ -456,28 +520,17 @@ public class PlayerDataService : MonoBehaviour
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 13. 调试
+    // 12. 通知View
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    public void DebugPrintCache()
+    private void NotifyView(FishTankMessage message)
     {
-        LogInfo("===== PlayerDataService 缓存状态 =====");
-        LogInfo($"鱼篓 Hash: {_cachedBagHash}, 容量: {_cachedBagCapacity}");
-        LogInfo($"已处理版本: {_lastProcessedVersion}");
-
-        foreach (var kvp in _cachedTankHashes)
-        {
-            LogInfo($"鱼缸 {kvp.Key}: Hash={kvp.Value}");
-        }
-
-        if (PlayerDataManager.Instance != null)
-        {
-            PlayerDataManager.Instance.DebugPrintFishData();
-        }
+        LogDebug($"通知View: {message}");
+        CommunicateEvent.Modify(message.ToString());
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 14. 日志辅助
+    // 13. 日志辅助
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     private void LogDebug(string message)
@@ -490,30 +543,4 @@ public class PlayerDataService : MonoBehaviour
     {
         Z_Logger.Log($"[PlayerDataService] {message}");
     }
-}
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 15. 数据类
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-public class FishTankDisplayData
-{
-    public int TankId;
-    public string Name;
-    public bool IsUnlocked;
-    public int Capacity;
-    public int CurrentCount;
-    public List<FishDetailData> FishList = new List<FishDetailData>();
-    public bool IsSpecial;
-    public int PurchaseCost;
-    public int HourlyEarning;
-}
-
-public class FishBagDisplayData
-{
-    public List<FishDetailData> FishList = new List<FishDetailData>();
-    public int Capacity;
-    public int CurrentCount;
-    public int Remaining;
-    public bool IsFull;
 }

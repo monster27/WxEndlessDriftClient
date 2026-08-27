@@ -45,7 +45,7 @@ public class ConsoleLogCaptureTool : EditorWindow
     private int selectedGroupIndex = -1;
     private string newGroupName = "";
     private string newKeyword = "";
-    private Vector2 scrollPosition;
+    private Vector2 mainScrollPosition;  // 主界面滚动条
     private List<LogEntry> filteredLogs = new List<LogEntry>();
     private bool isCapturing = false;
     private bool autoCaptureOnPlay = true;
@@ -223,6 +223,9 @@ public class ConsoleLogCaptureTool : EditorWindow
 
     private void OnGUI()
     {
+        // ========== 主界面滚动条 ==========
+        mainScrollPosition = EditorGUILayout.BeginScrollView(mainScrollPosition);
+
         GUILayout.Label("日志捕获与过滤工具", EditorStyles.boldLabel);
         EditorGUILayout.Space();
 
@@ -256,83 +259,107 @@ public class ConsoleLogCaptureTool : EditorWindow
 
         EditorGUILayout.Space();
 
-        // 分组切换标签
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("切换分组:", GUILayout.Width(70));
+        // ========== 分组按钮 - 两行显示 ==========
+        EditorGUILayout.LabelField("切换分组:", EditorStyles.boldLabel);
 
-        for (int i = 0; i < keywordGroups.Count; i++)
+        int groupsPerRow = 4;
+        int totalGroups = keywordGroups.Count;
+        int rowCount = Mathf.CeilToInt((float)totalGroups / groupsPerRow);
+
+        for (int row = 0; row < rowCount; row++)
         {
-            Color originalColor = GUI.backgroundColor;
-            if (selectedGroupIndex == i)
-            {
-                GUI.backgroundColor = Color.green;
-            }
+            EditorGUILayout.BeginHorizontal();
 
-            bool isFixedGroup = keywordGroups[i].isReadOnly;
-            if (isFixedGroup)
-            {
-                if (keywordGroups[i].groupName == ALL_LOG_GROUP_NAME)
-                {
-                    GUI.backgroundColor = new Color(0.3f, 0.6f, 1f);
-                }
-                else if (keywordGroups[i].groupName == ERROR_GROUP_NAME)
-                {
-                    GUI.backgroundColor = new Color(1f, 0.5f, 0.3f);
-                }
-            }
+            int startIndex = row * groupsPerRow;
+            int endIndex = Mathf.Min(startIndex + groupsPerRow, totalGroups);
 
-            if (GUILayout.Button(keywordGroups[i].groupName, GUILayout.Width(90)))
+            for (int i = startIndex; i < endIndex; i++)
             {
-                foreach (var group in keywordGroups)
+                Color originalColor = GUI.backgroundColor;
+                if (selectedGroupIndex == i)
                 {
-                    group.isSelected = false;
+                    GUI.backgroundColor = Color.green;
                 }
-                keywordGroups[i].isSelected = true;
-                selectedGroupIndex = i;
-                SaveAllData();
-                isRenaming = false;
 
-                if (isCapturing)
+                bool isFixedGroup = keywordGroups[i].isReadOnly;
+                if (isFixedGroup)
                 {
-                    RefreshFilteredLogs();
-                }
-            }
-            GUI.backgroundColor = originalColor;
-        }
-
-        if (keywordGroups.Count > 3 && selectedGroupIndex >= 2 && !IsCurrentGroupReadOnly)
-        {
-            if (GUILayout.Button("✕", GUILayout.Width(25)))
-            {
-                if (EditorUtility.DisplayDialog("确认删除",
-                    $"确定要删除分组 \"{keywordGroups[selectedGroupIndex].groupName}\" 吗？",
-                    "确定", "取消"))
-                {
-                    string groupName = keywordGroups[selectedGroupIndex].groupName;
-                    keywordGroups.RemoveAt(selectedGroupIndex);
-                    selectedGroupIndex = Mathf.Min(selectedGroupIndex, keywordGroups.Count - 1);
-                    if (selectedGroupIndex >= 0)
+                    if (keywordGroups[i].groupName == ALL_LOG_GROUP_NAME)
                     {
-                        keywordGroups[selectedGroupIndex].isSelected = true;
+                        GUI.backgroundColor = new Color(0.3f, 0.6f, 1f);
                     }
-                    isRenaming = false;
+                    else if (keywordGroups[i].groupName == ERROR_GROUP_NAME)
+                    {
+                        GUI.backgroundColor = new Color(1f, 0.5f, 0.3f);
+                    }
+                }
+
+                string buttonLabel = keywordGroups[i].groupName;
+                if (keywordGroups[i].isReadOnly)
+                {
+                    buttonLabel += " 🔒";
+                }
+
+                if (GUILayout.Button(buttonLabel, GUILayout.MinWidth(80)))
+                {
+                    foreach (var group in keywordGroups)
+                    {
+                        group.isSelected = false;
+                    }
+                    keywordGroups[i].isSelected = true;
+                    selectedGroupIndex = i;
                     SaveAllData();
-                    Z_Logger.Log($"[日志捕获工具] 已删除分组: {groupName}");
+                    isRenaming = false;
 
                     if (isCapturing)
                     {
                         RefreshFilteredLogs();
                     }
                 }
+                GUI.backgroundColor = originalColor;
             }
+
+            // 如果这一行有删除按钮，放在行尾
+            if (row == 0 && keywordGroups.Count > 2)
+            {
+                if (selectedGroupIndex >= 2 && !IsCurrentGroupReadOnly)
+                {
+                    if (GUILayout.Button("✕ 删除当前分组", GUILayout.Width(100)))
+                    {
+                        if (EditorUtility.DisplayDialog("确认删除",
+                            $"确定要删除分组 \"{keywordGroups[selectedGroupIndex].groupName}\" 吗？",
+                            "确定", "取消"))
+                        {
+                            string groupName = keywordGroups[selectedGroupIndex].groupName;
+                            keywordGroups.RemoveAt(selectedGroupIndex);
+                            selectedGroupIndex = Mathf.Min(selectedGroupIndex, keywordGroups.Count - 1);
+                            if (selectedGroupIndex >= 0)
+                            {
+                                keywordGroups[selectedGroupIndex].isSelected = true;
+                            }
+                            isRenaming = false;
+                            SaveAllData();
+                            Z_Logger.Log($"[日志捕获工具] 已删除分组: {groupName}");
+
+                            if (isCapturing)
+                            {
+                                RefreshFilteredLogs();
+                            }
+                        }
+                    }
+                }
+                else if (selectedGroupIndex >= 0 && IsCurrentGroupReadOnly)
+                {
+                    GUI.color = Color.gray;
+                    GUILayout.Label("(固定分组不可删除)", GUILayout.Width(110));
+                    GUI.color = Color.white;
+                }
+            }
+
+            EditorGUILayout.EndHorizontal();
         }
-        else if (selectedGroupIndex >= 0 && IsCurrentGroupReadOnly)
-        {
-            GUI.color = Color.gray;
-            GUILayout.Label("(固定)", GUILayout.Width(40));
-            GUI.color = Color.white;
-        }
-        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.Space();
 
         // ========== 当前分组操作 ==========
         if (selectedGroupIndex >= 0 && selectedGroupIndex < keywordGroups.Count)
@@ -443,6 +470,7 @@ public class ConsoleLogCaptureTool : EditorWindow
             GUI.enabled = true;
             EditorGUILayout.EndHorizontal();
 
+            // 关键字列表
             EditorGUILayout.BeginVertical("box");
             if (isAllLog)
             {
@@ -616,7 +644,8 @@ public class ConsoleLogCaptureTool : EditorWindow
         // ========== 日志列表 ==========
         EditorGUILayout.LabelField($"过滤后的日志 (共 {filteredLogs.Count} 条)", EditorStyles.boldLabel);
 
-        scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.Height(400));
+        Vector2 logScrollPosition = Vector2.zero;
+        logScrollPosition = EditorGUILayout.BeginScrollView(logScrollPosition, GUILayout.Height(400));
 
         foreach (var log in filteredLogs)
         {
@@ -664,10 +693,19 @@ public class ConsoleLogCaptureTool : EditorWindow
         }
 
         EditorGUILayout.EndScrollView();
+
+        // ========== 结束主滚动 ==========
+        EditorGUILayout.EndScrollView();
     }
 
     private void StartCapture()
     {
+        if (selectedGroupIndex < 0 || selectedGroupIndex >= keywordGroups.Count)
+        {
+            EditorUtility.DisplayDialog("提示", "请先选择一个分组", "确定");
+            return;
+        }
+
         var currentGroup = keywordGroups[selectedGroupIndex];
 
         if (!currentGroup.isReadOnly && ActiveKeywords.Count == 0)

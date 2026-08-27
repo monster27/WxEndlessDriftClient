@@ -8,8 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
-using System.Linq;
-using static NetServerManager;
+using static PlayerDataManager;
 
 public enum FishTankPanelType
 {
@@ -20,7 +19,7 @@ public enum FishTankPanelType
 public class FishTankStorePanel : MonoBehaviour
 {
     [Header("===== 调试 =====")]
-    private bool enableDebugLog = false;
+    [SerializeField] private bool enableDebugLog = false;
 
     [Header("===== 标题 =====")]
     [SerializeField] private Text titleText;
@@ -39,54 +38,40 @@ public class FishTankStorePanel : MonoBehaviour
     [SerializeField] private GameObject lockIcon;
 
     // ============================================================
-    // 数据（只保留UI状态）
+    // 数据
     // ============================================================
 
     private int _currentIndex = 0;
     private FishTankPanelType _panelType = FishTankPanelType.Upper;
-
-
-    public FishTankStorePanel _otherPanel = null;
-    public int _lockedIndex = -1;
+    private FishTankStoreData _currentData;
 
     private List<UI_FishTankStorePrefab> _fishItems = new List<UI_FishTankStorePrefab>();
-    private Stack<UI_FishTankStorePrefab> _fishItemPool = new Stack<UI_FishTankStorePrefab>();
     private Dictionary<int, UI_FishTankStorePrefab> _activeFishItems = new Dictionary<int, UI_FishTankStorePrefab>();
 
     private Action<FishDetailData, FishTankStoreData, FishTankStoreData> _onFishTransfer;
     private Action<int> _onUnlockRequest;
 
     private bool _isInitialized = false;
-    private int _lastFishListHash = 0;
-    private FishTankStoreData _cachedData = null;
+    public int _lockedIndex = -1;
 
     public bool IsInitialized => _isInitialized;
     public int CurrentIndex => _currentIndex;
-
-    private void LogDebug(string message)
-    {
-        if (enableDebugLog) Z_Logger.Log($"[FishTankStorePanel] {message}");
-    }
 
     // ============================================================
     // 初始化
     // ============================================================
 
-    public void Init(GameObject prefab, int startIndex = 0, FishTankPanelType panelType = FishTankPanelType.Upper, bool isEnableDebug = false)
+    public void Init(int startIndex = 0, bool isEnableDebug = false)
     {
         enableDebugLog = isEnableDebug;
-        fishPrefab = prefab;
-        _panelType = panelType;
         _currentIndex = startIndex;
 
         _isInitialized = true;
         SetupUI();
+        RegisterEvents();
 
-        LogDebug($"初始化完成, 类型={panelType}, 起始索引={startIndex}");
-
-        // ✅ 注册鱼篓变化事件
-        CommunicateEvent.Register("FishBagChanged", OnBagDataChanged);
-        CommunicateEvent.Register("FishTankChanged", OnTankDataChanged);
+        LogDebug($"初始化完成, 起始索引={startIndex}");
+        RefreshData();
     }
 
     private void SetupUI()
@@ -106,9 +91,38 @@ public class FishTankStorePanel : MonoBehaviour
             lockBtn.onClick.RemoveAllListeners();
             lockBtn.onClick.AddListener(OnLockClick);
         }
+    }
 
+    // ============================================================
+    // 事件注册
+    // ============================================================
+
+    private void RegisterEvents()
+    {
+        UnregisterEvents();
+        CommunicateEvent.Register(FishTankMessage.DataUpdated.ToString(), OnDataUpdated);
+        LogDebug("事件注册完成");
+    }
+
+    private void UnregisterEvents()
+    {
+        CommunicateEvent.Unregister(FishTankMessage.DataUpdated.ToString(), OnDataUpdated);
+    }
+
+    // ============================================================
+    // 事件处理
+    // ============================================================
+
+    private void OnDataUpdated()
+    {
+        if (!_isInitialized) return;
+        LogDebug("收到 DataUpdated 消息");
         RefreshData();
     }
+
+    // ============================================================
+    // 回调设置
+    // ============================================================
 
     public void SetTransferCallback(Action<FishDetailData, FishTankStoreData, FishTankStoreData> callback)
     {
@@ -120,110 +134,29 @@ public class FishTankStorePanel : MonoBehaviour
         _onUnlockRequest = callback;
     }
 
-    // ============================================================
-    // 事件处理
-    // ============================================================
-
-    private void OnBagDataChanged()
+    public void SetLockedIndex(int index)
     {
-        if (_currentIndex == 0) // 当前显示的是鱼篓
-        {
-            RefreshData();
-        }
-        else
-        {
-            // 鱼篓变化但当前显示的是鱼缸，只更新Hash缓存
-            UpdateBagHashCache();
-        }
-    }
-
-    private void OnTankDataChanged()
-    {
-        // 鱼缸变化，检查是否影响当前显示
-        RefreshData();
-    }
-
-    private void UpdateBagHashCache()
-    {
-        if (PlayerDataService.Instance == null) return;
-        var bagList = PlayerDataService.Instance.GetBagFishList();
-        _lastFishListHash = CalculateFishListHash(bagList);
-    }
-
-    private int CalculateFishListHash(List<FishDetailData> list)
-    {
-        if (list == null || list.Count == 0) return 0;
-        int hash = 0;
-        foreach (var fish in list)
-        {
-            if (fish != null)
-                hash ^= fish.id.GetHashCode();
-        }
-        return hash;
+        _lockedIndex = index;
     }
 
     // ============================================================
-    // 数据读取（通过 PlayerDataService）
+    // 数据读取（通过Service）
     // ============================================================
 
-    private List<FishTankStatusData> GetTankList()
+    private FishTankStoreData GetCurrentData()
     {
         if (PlayerDataService.Instance == null)
-            return new List<FishTankStatusData>();
-        return PlayerDataService.Instance.GetTankList();
-    }
+            return null;
 
-    private FishTankStoreData GetBagData()
-    {
-        if (PlayerDataService.Instance == null) return null;
-
-        // ✅ 使用 PlayerDataService 的 GetBagFishList()
-        var fishList = PlayerDataService.Instance.GetBagFishList();
-
-        return new FishTankStoreData
-        {
-            TankId = 0,
-            Name = "鱼篓",
-            IsBag = true,
-            IsSpecial = false,
-            PurchaseCost = 0,
-            MaxCapacity = PlayerDataService.Instance.GetBagCapacity(),
-            FishList = fishList,
-            IsUnlocked = true
-        };
-    }
-
-    public FishTankStoreData GetCurrentData()
-    {
-        if (PlayerDataService.Instance == null) return null;
-
-        if (_currentIndex == 0)
-            return GetBagData();  // 使用上面修复后的方法
-
-        var tanks = PlayerDataService.Instance.GetTankList();
-        int tankIndex = _currentIndex - 1;
-        if (tankIndex < 0 || tankIndex >= tanks.Count) return null;
-
-        var tank = tanks[tankIndex];
-        var config = LoadDataManager.Instance?.GetFishTankConfig(tank.tankId);
-        var fishList = PlayerDataService.Instance.GetTankFishList(tank.tankId);
-
-        return new FishTankStoreData
-        {
-            TankId = tank.tankId,
-            Name = config?.name ?? $"鱼缸{tank.tankId}",
-            IsBag = false,
-            IsSpecial = config?.type == "special",
-            PurchaseCost = config?.purchaseCost ?? 0,
-            MaxCapacity = tank.capacity,
-            FishList = fishList,
-            IsUnlocked = tank.isUnlocked
-        };
+        return PlayerDataService.Instance.GetStoreData(_currentIndex);
     }
 
     private int GetTotalContainerCount()
     {
-        return 1 + GetTankList().Count;
+        if (PlayerDataService.Instance == null)
+            return 1;
+
+        return 1 + PlayerDataService.Instance.GetTankCount();
     }
 
     // ============================================================
@@ -240,6 +173,7 @@ public class FishTankStorePanel : MonoBehaviour
         if (_currentIndex < 0)
             _currentIndex = 0;
 
+        _currentData = GetCurrentData();
         RenderCurrentContainer();
     }
 
@@ -258,16 +192,21 @@ public class FishTankStorePanel : MonoBehaviour
 
     private void RenderCurrentContainer()
     {
-        var current = GetCurrentData();
-        _cachedData = current;
+        LogDebug($"RenderCurrentContainer: _currentData==null? {_currentData == null}");
+
+        var current = _currentData;
 
         if (current == null)
         {
+            LogDebug("RenderCurrentContainer: current is null, clearing items");
             ClearAllFishItems();
             UpdateTitleAndCapacity(null);
             UpdateLockUI(false, false);
+            UpdateSwitchButtons();
             return;
         }
+
+        LogDebug($"RenderCurrentContainer: IsBag={current.IsBag}, IsUnlocked={current.IsUnlocked}, FishList.Count={current.FishList?.Count ?? 0}, Name={current.Name}");
 
         bool isUnlocked = current.IsUnlocked;
         bool isBag = current.IsBag;
@@ -276,15 +215,41 @@ public class FishTankStorePanel : MonoBehaviour
 
         if (!isUnlocked && !isBag)
         {
+            LogDebug($"RenderCurrentContainer: {current.Name} is locked");
             ClearAllFishItems();
             if (titleText != null) titleText.text = current.Name;
             if (capacityText != null) capacityText.text = "🔒 未解锁";
+            UpdateSwitchButtons();
             return;
         }
 
         UpdateTitleAndCapacity(current);
-        UpdateFishItems(current);
 
+        // ✅ 添加日志：渲染前
+        LogDebug($"RenderCurrentContainer: 准备渲染鱼列表, FishList.Count={current.FishList?.Count ?? 0}");
+
+        if (current.FishList == null || current.FishList.Count == 0)
+        {
+            LogDebug("RenderCurrentContainer: FishList is empty or null, clearing items");
+            ClearAllFishItems();
+            UpdateSwitchButtons();
+            return;
+        }
+
+        // 打印每条鱼的信息
+        foreach (var fish in current.FishList)
+        {
+            LogDebug($"RenderCurrentContainer: fish.id={fish.id}, fishId={fish.fishId}, location={fish.location}, tankId={fish.tankId}");
+        }
+
+        UpdateFishItems(current);
+        UpdateSwitchButtons();
+
+        LogDebug($"RenderCurrentContainer: 渲染完成, activeFishItems={_activeFishItems.Count}");
+    }
+
+    private void UpdateSwitchButtons()
+    {
         int total = GetTotalContainerCount();
         if (leftSwitchBtn != null) leftSwitchBtn.interactable = total > 1;
         if (rightSwitchBtn != null) rightSwitchBtn.interactable = total > 1;
@@ -344,25 +309,19 @@ public class FishTankStorePanel : MonoBehaviour
             return;
         }
 
-        int newHash = CalculateFishListHash(current.FishList);
-
-        if (newHash == _lastFishListHash && _activeFishItems.Count == current.FishList.Count)
-        {
-            return;
-        }
-        _lastFishListHash = newHash;
-
-        HashSet<int> newFishIds = new HashSet<int>();
+        // 构建当前鱼ID集合
+        HashSet<int> currentFishIds = new HashSet<int>();
         foreach (var fishData in current.FishList)
         {
-            if (fishData == null || fishData.fishId <= 0) continue;
-            newFishIds.Add(fishData.id);
+            if (fishData != null && fishData.id > 0)
+                currentFishIds.Add(fishData.id);
         }
 
+        // 移除不在当前列表中的鱼
         List<int> toRemove = new List<int>();
         foreach (var kvp in _activeFishItems)
         {
-            if (!newFishIds.Contains(kvp.Key))
+            if (!currentFishIds.Contains(kvp.Key))
                 toRemove.Add(kvp.Key);
         }
 
@@ -370,15 +329,16 @@ public class FishTankStorePanel : MonoBehaviour
         {
             if (_activeFishItems.TryGetValue(fishId, out var item))
             {
-                ReturnFishItemToPool(item);
+                Destroy(item.gameObject);
                 _activeFishItems.Remove(fishId);
                 _fishItems.Remove(item);
             }
         }
 
+        // 添加新鱼或更新现有鱼
         foreach (var fishData in current.FishList)
         {
-            if (fishData == null || fishData.fishId <= 0) continue;
+            if (fishData == null || fishData.id <= 0) continue;
 
             if (_activeFishItems.TryGetValue(fishData.id, out var existingItem))
             {
@@ -386,13 +346,9 @@ public class FishTankStorePanel : MonoBehaviour
             }
             else
             {
-                var newItem = GetFishItemFromPool();
-                if (newItem == null)
-                {
-                    GameObject itemObj = Instantiate(fishPrefab, fishContainer);
-                    newItem = itemObj.GetComponent<UI_FishTankStorePrefab>();
-                    if (newItem == null) continue;
-                }
+                GameObject itemObj = Instantiate(fishPrefab, fishContainer);
+                var newItem = itemObj.GetComponent<UI_FishTankStorePrefab>();
+                if (newItem == null) continue;
 
                 newItem.Init(fishData);
                 newItem.SetClickCallback(OnFishItemClick);
@@ -404,50 +360,21 @@ public class FishTankStorePanel : MonoBehaviour
         }
     }
 
-    // ============================================================
-    // 对象池
-    // ============================================================
-
-    private UI_FishTankStorePrefab GetFishItemFromPool()
-    {
-        while (_fishItemPool.Count > 0)
-        {
-            var item = _fishItemPool.Pop();
-            if (item != null && item.gameObject != null)
-                return item;
-        }
-        return null;
-    }
-
-    private void ReturnFishItemToPool(UI_FishTankStorePrefab item)
-    {
-        if (item == null || item.gameObject == null) return;
-        item.gameObject.SetActive(false);
-        //item.transform.SetParent(null);
-        _fishItemPool.Push(item);
-    }
-
     private void ClearAllFishItems()
     {
         foreach (var kvp in _activeFishItems)
         {
             if (kvp.Value != null && kvp.Value.gameObject != null)
-            {
-                ReturnFishItemToPool(kvp.Value);
-            }
+                Destroy(kvp.Value.gameObject);
         }
         _activeFishItems.Clear();
         _fishItems.Clear();
-        _lastFishListHash = 0;
     }
 
     // ============================================================
     // 按钮事件
     // ============================================================
 
-    // ============================================================
-    // 按钮事件
-    // ============================================================
     private void OnLeftSwitch()
     {
         int total = GetTotalContainerCount();
@@ -460,13 +387,10 @@ public class FishTankStorePanel : MonoBehaviour
         {
             newIndex = (_currentIndex - 1 - i + total) % total;
 
-            // ✅ 只需要检查是否与锁定索引冲突
             if (_lockedIndex >= 0 && newIndex == _lockedIndex)
-            {
-                continue; // 被锁定了，继续往左找
-            }
+                continue;
 
-            break; // 找到了可用索引
+            break;
         }
 
         if (newIndex != _currentIndex)
@@ -474,10 +398,11 @@ public class FishTankStorePanel : MonoBehaviour
             _currentIndex = newIndex;
             RefreshData();
 
-            // ✅ 通知另一个面板更新锁定索引
-            if (_otherPanel != null)
+            if (transform.parent != null)
             {
-                _otherPanel.SetLockedIndex(_currentIndex);
+                var otherPanel = GetOtherPanel();
+                if (otherPanel != null)
+                    otherPanel.SetLockedIndex(_currentIndex);
             }
         }
     }
@@ -494,13 +419,10 @@ public class FishTankStorePanel : MonoBehaviour
         {
             newIndex = (_currentIndex + 1 + i) % total;
 
-            // ✅ 只需要检查是否与锁定索引冲突
             if (_lockedIndex >= 0 && newIndex == _lockedIndex)
-            {
-                continue; // 被锁定了，继续往右找
-            }
+                continue;
 
-            break; // 找到了可用索引
+            break;
         }
 
         if (newIndex != _currentIndex)
@@ -508,18 +430,16 @@ public class FishTankStorePanel : MonoBehaviour
             _currentIndex = newIndex;
             RefreshData();
 
-            if (_otherPanel != null)
-            {
-                _otherPanel.SetLockedIndex(_currentIndex);
-            }
+            var otherPanel = GetOtherPanel();
+            if (otherPanel != null)
+                otherPanel.SetLockedIndex(_currentIndex);
         }
     }
 
     private void OnLockClick()
     {
-        var current = GetCurrentData();
-        if (current == null || current.IsUnlocked || current.IsBag) return;
-        _onUnlockRequest?.Invoke(current.TankId);
+        if (_currentData == null || _currentData.IsUnlocked || _currentData.IsBag) return;
+        _onUnlockRequest?.Invoke(_currentData.TankId);
     }
 
     private void OnFishItemClick(UI_FishTankStorePrefab fishItem)
@@ -527,16 +447,15 @@ public class FishTankStorePanel : MonoBehaviour
         if (fishItem == null || fishItem.FishDetail == null) return;
         if (_onFishTransfer == null) return;
 
-        var fromData = GetCurrentData();
-        if (fromData == null) return;
+        if (_currentData == null) return;
 
-        if (!fromData.IsBag && !fromData.IsUnlocked)
+        if (!_currentData.IsBag && !_currentData.IsUnlocked)
         {
-            GameUIManager.ShowMessage($"{fromData.Name} 未解锁，请先解锁");
+            GameUIManager.ShowMessage($"{_currentData.Name} 未解锁，请先解锁");
             return;
         }
 
-        FishTankStorePanel targetPanel = GetTargetPanel();
+        var targetPanel = GetOtherPanel();
         if (targetPanel == null) return;
 
         var toData = targetPanel.GetCurrentData();
@@ -548,18 +467,14 @@ public class FishTankStorePanel : MonoBehaviour
             return;
         }
 
-        _onFishTransfer?.Invoke(fishItem.FishDetail, fromData, toData);
+        _onFishTransfer?.Invoke(fishItem.FishDetail, _currentData, toData);
     }
 
-    /// <summary>
-    /// 设置锁定索引（由另一个面板调用）
-    /// </summary>
-    public void SetLockedIndex(int index)
-    {
-        _lockedIndex = index;
-    }
+    // ============================================================
+    // 辅助方法
+    // ============================================================
 
-    private FishTankStorePanel GetTargetPanel()
+    private FishTankStorePanel GetOtherPanel()
     {
         Transform parent = transform.parent;
         if (parent == null) return null;
@@ -573,61 +488,28 @@ public class FishTankStorePanel : MonoBehaviour
         return null;
     }
 
-    /// <summary>
-    /// 强制刷新（重置Hash缓存，强制重新渲染）
-    /// </summary>
-    public void ForceRefresh()
-    {
-        if (!_isInitialized) return;
-
-        // ✅ 重置Hash，强制重新渲染
-        _lastFishListHash = 0;
-        _cachedData = null;
-
-        // 清空所有鱼项，重新创建
-        ClearAllFishItems();
-
-        RefreshData();
-
-        LogDebug("强制刷新完成");
-    }
-
     // ============================================================
     // 生命周期
     // ============================================================
 
     private void OnDestroy()
     {
+        UnregisterEvents();
+
         if (leftSwitchBtn != null) leftSwitchBtn.onClick.RemoveAllListeners();
         if (rightSwitchBtn != null) rightSwitchBtn.onClick.RemoveAllListeners();
         if (lockBtn != null) lockBtn.onClick.RemoveAllListeners();
 
-        CommunicateEvent.Unregister("FishBagChanged", OnBagDataChanged);
-        CommunicateEvent.Unregister("FishTankChanged", OnTankDataChanged);
-
         ClearAllFishItems();
-
-        while (_fishItemPool.Count > 0)
-        {
-            var item = _fishItemPool.Pop();
-            if (item != null && item.gameObject != null)
-                Destroy(item.gameObject);
-        }
     }
-}
 
-/// <summary>
-/// 鱼缸存储数据（UI展示用）
-/// </summary>
-[Serializable]
-public class FishTankStoreData
-{
-    public int TankId;
-    public string Name;
-    public bool IsBag;
-    public bool IsSpecial;
-    public int PurchaseCost;
-    public int MaxCapacity;
-    public List<FishDetailData> FishList = new List<FishDetailData>();
-    public bool IsUnlocked = true;
+    // ============================================================
+    // 日志
+    // ============================================================
+
+    private void LogDebug(string message)
+    {
+        if (enableDebugLog)
+            Z_Logger.Log($"[FishTankStorePanel] {message}");
+    }
 }
