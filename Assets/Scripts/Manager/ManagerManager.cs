@@ -118,6 +118,12 @@ public class ManagerManager : SingletonMono<ManagerManager>
             logBuilder.AppendLine($"  PlayerDataManager: 完成 (就绪: {PlayerDataManager.Instance.IsReady})");
         }
 
+        if (PlayerDataService.Instance != null)
+        {
+            PlayerDataService.Instance.Init();
+            logBuilder.AppendLine($"  PlayerDataService: 完成 (就绪: {PlayerDataService.Instance.IsReady})");
+        }
+
         // ====================================================================
         // 8. PlayerAniManager - 动画管理器
         // ====================================================================
@@ -227,8 +233,9 @@ public class ManagerManager : SingletonMono<ManagerManager>
         CommunicateEvent.Modify(CommunicateEvent.EVENT_REFRESH_BAG);
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 }

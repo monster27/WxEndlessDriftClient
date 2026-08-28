@@ -56,7 +56,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NextTex:
-        m_Texture: {fileID: 2800000, guid: 977d3f2323dade243805ac10016604b9, type: 3}
+        m_Texture: {fileID: 2800000, guid: be35b50c330b1784891e7508161c0b2e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -97,7 +97,7 @@ Material:
     - _Speed: 15
     - _SpriteSheetEnabled: 0
     - _SrcBlend: 1
-    - _Transition: 0.5825303
+    - _Transition: 0
     - _TransitionSpeed: 1
     - _UVSec: 0
     - _UseNextTex: 0

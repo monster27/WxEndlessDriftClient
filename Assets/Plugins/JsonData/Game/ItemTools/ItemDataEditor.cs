@@ -529,7 +529,7 @@ public class ItemDataEditor : EditorWindow
 
     private void LoadItemsFromJson()
     {
-        string fullPath = Path.Combine(Application.dataPath, "Resources", $"{inputPath}.json");
+        string fullPath = Path.Combine(Application.dataPath, "Addressables", $"{inputPath}.json");
 
         if (!File.Exists(fullPath))
         {

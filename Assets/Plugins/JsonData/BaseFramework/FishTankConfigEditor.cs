@@ -4,13 +4,13 @@ using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
 
-/// <summary>
-/// 鱼缸配置编辑器
-/// </summary>
+// ==================== 编辑器窗口 ====================
 public class FishTankConfigEditor : EditorWindow
 {
     private List<FishTankData> fishTanks = new List<FishTankData>();
     private List<FishTankLevelData> fishTankLevels = new List<FishTankLevelData>();
+    private float baseEarningRate = 0.2f;
+
     private string savePath = "Assets/Addressables/JsonData/BaseFramework/fishTankConfig.json";
     private Vector2 scrollPosition;
     private Vector2 levelScrollPosition;
@@ -44,6 +44,7 @@ public class FishTankConfigEditor : EditorWindow
             {
                 fishTanks = wrapper.fishTanks ?? new List<FishTankData>();
                 fishTankLevels = wrapper.fishTankLevels ?? new List<FishTankLevelData>();
+                baseEarningRate = wrapper.baseEarningRate;   // ✅ 读取全局收益率
                 Z_Logger.Log("加载鱼缸配置成功");
             }
             else
@@ -78,6 +79,8 @@ public class FishTankConfigEditor : EditorWindow
             new FishTankLevelData { level = 4, maxCount = 40, upgradeCost = 8000, bonus = 0.08f },
             new FishTankLevelData { level = 5, maxCount = 50, upgradeCost = 16000, bonus = 0.10f }
         };
+
+        baseEarningRate = 0.2f;   // 默认 20%
     }
 
     private string RemoveJsonComments(string json)
@@ -92,7 +95,8 @@ public class FishTankConfigEditor : EditorWindow
         FishTankConfigWrapper wrapper = new FishTankConfigWrapper
         {
             fishTanks = fishTanks,
-            fishTankLevels = fishTankLevels
+            fishTankLevels = fishTankLevels,
+            baseEarningRate = baseEarningRate   // ✅ 保存全局收益率
         };
 
         string json = JsonUtility.ToJson(wrapper, true);
@@ -115,6 +119,20 @@ public class FishTankConfigEditor : EditorWindow
         EditorGUILayout.Space(10);
 
         DrawToolbar();
+        EditorGUILayout.Space(10);
+
+        // ========== 全局基础收益率 ==========
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.LabelField("全局基础收益率", EditorStyles.boldLabel);
+        EditorGUILayout.BeginHorizontal();
+        float newRate = EditorGUILayout.Slider(baseEarningRate * 100, 0, 100) / 100f;
+        if (newRate != baseEarningRate)
+        {
+            baseEarningRate = newRate;
+        }
+        EditorGUILayout.LabelField($"{baseEarningRate * 100:F1}%", GUILayout.Width(60));
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.EndVertical();
         EditorGUILayout.Space(10);
 
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
@@ -330,6 +348,7 @@ public class FishTankConfigEditor : EditorWindow
             $"配置文件路径: {savePath}\n" +
             $"鱼缸数量: {fishTanks.Count} 个\n" +
             $"等级数量: {fishTankLevels.Count} 级\n" +
+            $"全局基础收益率: {baseEarningRate * 100:F1}%\n" +
             $"特殊鱼缸购买价格为0，普通鱼缸需要金币购买\n" +
             $"加成: 0.02 = 2%，最高 0.10 = 10%",
             MessageType.Info);

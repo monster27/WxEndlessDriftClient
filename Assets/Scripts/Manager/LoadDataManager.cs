@@ -49,6 +49,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     public List<FishTankDecData> fishTankDecorations = new List<FishTankDecData>();
     public List<FishTankData> fishTanks = new List<FishTankData>(); 
     public List<FishTankLevelData> fishTankLevels = new List<FishTankLevelData>();
+    public float baseEarningRate = 0;
 
     private StringBuilder dataLog = new StringBuilder();
     public bool isDataLoaded = false;
@@ -420,6 +421,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
             {
                 fishTanks = wrapper.fishTanks ?? new List<FishTankData>();
                 fishTankLevels = wrapper.fishTankLevels ?? new List<FishTankLevelData>();
+                baseEarningRate = wrapper.baseEarningRate;
                 dataLog.AppendLine($"✓ 鱼缸配置数据: 成功加载 {fishTanks.Count} 个鱼缸, {fishTankLevels.Count} 个等级");
                 foreach (var item in fishTanks)
                     dataLog.AppendLine($"    - ID: {item.id}, 名称: {item.name}, 类型: {item.type}, 价格: {item.purchaseCost}");

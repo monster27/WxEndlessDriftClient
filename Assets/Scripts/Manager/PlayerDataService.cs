@@ -12,14 +12,18 @@ using UnityEngine;
 using static NetServerManager;
 using static PlayerDataManager;
 
-public class PlayerDataService : MonoBehaviour
+public class PlayerDataService : SingletonMono<PlayerDataService>
 {
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 1. 单例
+    // 1. _isReady
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    private static PlayerDataService _instance;
-    public static PlayerDataService Instance => _instance;
+    private bool _isReady = false;
+
+    /// <summary>
+    /// 管理器是否已就绪（可以安全调用同步方法）
+    /// </summary>
+    public bool IsReady => _isReady;
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // 2. 配置
@@ -50,25 +54,15 @@ public class PlayerDataService : MonoBehaviour
     // 5. 生命周期
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    private void Awake()
-    {
-        if (_instance != null && _instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        _instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-
-    private void Start()
+    public void Init()
     {
         RegisterEvents();
         LogDebug("PlayerDataService 启动完成");
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
         UnregisterEvents();
         if (_debounceCoroutine != null)
         {
@@ -88,17 +82,19 @@ public class PlayerDataService : MonoBehaviour
         // 监听DataManager的数据变化
         CommunicateEvent.Register(FishTankMessage.PlayerDataUpdated.ToString(), OnPlayerDataUpdated);
 
-        // 监听View的消息
+        // 监听View的消息（无参数）
         CommunicateEvent.Register(FishTankMessage.OpenFishTank.ToString(), OnOpenFishTank);
         CommunicateEvent.Register(FishTankMessage.CloseFishTank.ToString(), OnCloseFishTank);
         CommunicateEvent.Register(FishTankMessage.RefreshFishTank.ToString(), OnRefreshFishTank);
         CommunicateEvent.Register(FishTankMessage.SwitchTank.ToString(), OnSwitchTank);
-        CommunicateEvent.Register(FishTankMessage.TransferFish.ToString(), OnTransferFish);
-        CommunicateEvent.Register(FishTankMessage.UnlockTank.ToString(), OnUnlockTank);
+        CommunicateEvent.Register<int>(FishTankMessage.UnlockTank.ToString(), OnUnlockTank);
         CommunicateEvent.Register(FishTankMessage.ToggleManagerPanel.ToString(), OnToggleManagerPanel);
 
         // 监听Network层数据加载完成
         CommunicateEvent.Register(FishTankMessage.DataLoaded.ToString(), OnDataLoaded);
+
+        // ✅ 带参数的 TransferFish
+        CommunicateEvent.Register<TransferData>(FishTankMessage.TransferFish.ToString(), OnTransferFish);
 
         LogDebug("事件注册完成");
     }
@@ -110,8 +106,9 @@ public class PlayerDataService : MonoBehaviour
         CommunicateEvent.Unregister(FishTankMessage.CloseFishTank.ToString(), OnCloseFishTank);
         CommunicateEvent.Unregister(FishTankMessage.RefreshFishTank.ToString(), OnRefreshFishTank);
         CommunicateEvent.Unregister(FishTankMessage.SwitchTank.ToString(), OnSwitchTank);
-        CommunicateEvent.Unregister(FishTankMessage.TransferFish.ToString(), OnTransferFish);
-        CommunicateEvent.Unregister(FishTankMessage.UnlockTank.ToString(), OnUnlockTank);
+        // 注意：TransferFish 使用泛型注册，取消注册也要用泛型
+        CommunicateEvent.Unregister<TransferData>(FishTankMessage.TransferFish.ToString(), OnTransferFish);
+        CommunicateEvent.Unregister<int>(FishTankMessage.UnlockTank.ToString(), OnUnlockTank);
         CommunicateEvent.Unregister(FishTankMessage.ToggleManagerPanel.ToString(), OnToggleManagerPanel);
         CommunicateEvent.Unregister(FishTankMessage.DataLoaded.ToString(), OnDataLoaded);
     }
@@ -158,18 +155,66 @@ public class PlayerDataService : MonoBehaviour
         }
     }
 
-    private void OnTransferFish()
+    private void OnTransferFish(TransferData transferData)
     {
         LogDebug("收到 TransferFish 消息");
-        // 实际网络请求由NetServerManager处理
-        // 等待网络完成后的数据更新通知
+
+        if (transferData == null || transferData.FishData == null)
+        {
+            LogDebug("TransferFish: 参数无效");
+            return;
+        }
+
+        LogDebug($"TransferFish: FromIndex={transferData.FromIndex}, ToIndex={transferData.ToIndex}, FishId={transferData.FishData.id}");
+
+        // 根据转移类型调用网络请求
+        if (transferData.IsFromBag && !transferData.IsToBag)
+        {
+            int tankId = transferData.ToIndex - 1;
+            if (tankId < 0) { LogDebug("无效的目标鱼缸索引"); return; }
+            NetServerManager.Instance?.MoveFishFromBagToTank(tankId, transferData.FishData.id, (success, message) =>
+            {
+                if (success)
+                    LogDebug("鱼篓→鱼缸转移成功");
+                else
+                    LogDebug($"鱼篓→鱼缸转移失败: {message}");
+            });
+        }
+        else if (!transferData.IsFromBag && transferData.IsToBag)
+        {
+            NetServerManager.Instance?.MoveFishFromTankToBag(transferData.FishData.id, (success, message) =>
+            {
+                if (success)
+                    LogDebug("鱼缸→鱼篓转移成功");
+                else
+                    LogDebug($"鱼缸→鱼篓转移失败: {message}");
+            });
+        }
+        else if (!transferData.IsFromBag && !transferData.IsToBag)
+        {
+            int fromTankId = transferData.FromIndex - 1;
+            int toTankId = transferData.ToIndex - 1;
+            if (fromTankId < 0 || toTankId < 0) { LogDebug("无效的鱼缸索引"); return; }
+            NetServerManager.Instance?.MoveFishFromTankToTank(fromTankId, toTankId, transferData.FishData.id, (success, message) =>
+            {
+                if (success)
+                    LogDebug("鱼缸→鱼缸转移成功");
+                else
+                    LogDebug($"鱼缸→鱼缸转移失败: {message}");
+            });
+        }
+        else
+        {
+            LogDebug("未知的转移类型");
+        }
     }
 
-    private void OnUnlockTank()
+    private void OnUnlockTank(int tankId)
     {
-        LogDebug("收到 UnlockTank 消息");
-        // 实际网络请求由NetServerManager处理
-        // 等待网络完成后的数据更新通知
+        LogDebug($"收到 UnlockTank 消息，tankId={tankId}");
+
+        // 调用 NetServerManager 的解锁请求（会触发网络请求并自动刷新数据）
+        NetServerManager.Instance?.OnUnlockFishTankRequest(tankId);
     }
 
     private void OnToggleManagerPanel()
@@ -326,7 +371,8 @@ public class PlayerDataService : MonoBehaviour
     {
         if (PlayerDataManager.Instance == null)
             return new List<FishDetailData>();
-        return PlayerDataManager.Instance.GetFishTankItems(tankId);
+        var list = PlayerDataManager.Instance.GetFishTankItems(tankId);
+        return list;
     }
 
     public List<FishDetailData> GetBagFishList()
@@ -348,7 +394,6 @@ public class PlayerDataService : MonoBehaviour
             return 10;
         return PlayerDataManager.Instance.fishBagCapacity;
     }
-
 
     public int GetBagRemaining()
     {
@@ -447,76 +492,73 @@ public class PlayerDataService : MonoBehaviour
 
     public FishTankStoreData GetStoreData(int index)
     {
-        LogDebug($"GetStoreData: index={index}");
+        Z_Logger.Log($"[PlayerDataService] GetStoreData 被调用: index={index}");
 
+        // 防御：检查 PlayerDataManager 是否就绪
+        if (PlayerDataManager.Instance == null)
+        {
+            Z_Logger.LogError("[PlayerDataService] GetStoreData 失败: PlayerDataManager.Instance 为 null");
+            return new FishTankStoreData
+            {
+                IsBag = (index == 0),
+                Name = "加载中...",
+                FishList = new List<FishDetailData>(),
+                MaxCapacity = 10,
+                IsUnlocked = false
+            };
+        }
+
+        // 鱼篓 (index == 0)
         if (index == 0)
         {
-            var bag = GetBagDisplayData();
-            LogDebug($"GetStoreData: bag.FishList.Count={bag.FishList?.Count ?? 0}, bag.Capacity={bag.Capacity}");
-
-            var result = new FishTankStoreData
+            var bagList = PlayerDataManager.Instance.GetFishBagList();
+            int capacity = PlayerDataManager.Instance.GetFishBagCapacity();
+            var data = new FishTankStoreData
             {
-                TankId = 0,
-                Name = "鱼篓",
                 IsBag = true,
-                IsSpecial = false,
-                PurchaseCost = 0,
-                MaxCapacity = bag.Capacity,
-                FishList = bag.FishList ?? new List<FishDetailData>(),
+                Name = "鱼篓",
+                FishList = new List<FishDetailData>(bagList),
+                MaxCapacity = capacity,
                 IsUnlocked = true
             };
-
-            LogDebug($"GetStoreData: result.FishList.Count={result.FishList.Count}");
-            return result;
+            return data;
         }
 
-        int tankIndex = index - 1;
-        var tanks = GetTankList();
-
-        if (tankIndex < 0 || tankIndex >= tanks.Count)
+        // 鱼缸 (index >= 1)
+        int tankId = index;
+        var status = PlayerDataManager.Instance.GetFishTankStatus(tankId);
+        if (status == null)
         {
-            LogDebug($"GetStoreData: tankIndex out of range, tankIndex={tankIndex}, tanks.Count={tanks.Count}");
-            return null;
-        }
-
-        var tank = tanks[tankIndex];
-        if (tank == null)
-        {
-            LogDebug($"GetStoreData: tank is null, tankIndex={tankIndex}");
-            return null;
-        }
-
-        var config = LoadDataManager.Instance?.GetFishTankConfig(tank.tankId);
-        var fishList = GetTankFishList(tank.tankId);
-
-        LogDebug($"GetStoreData: tankId={tank.tankId}, name={config?.name}, fishList.Count={fishList?.Count ?? 0}, isUnlocked={tank.isUnlocked}");
-
-        return new FishTankStoreData
-        {
-            TankId = tank.tankId,
-            Name = config?.name ?? $"鱼缸{tank.tankId}",
-            IsBag = false,
-            IsSpecial = config?.type == "special",
-            PurchaseCost = config?.purchaseCost ?? 0,
-            MaxCapacity = tank.capacity,
-            FishList = fishList ?? new List<FishDetailData>(),
-            IsUnlocked = tank.isUnlocked
-        };
-    }
-
-    public int GetSpecialTankHourlyEarning()
-    {
-        var tanks = GetTankList();
-        foreach (var tank in tanks)
-        {
-            var config = LoadDataManager.Instance?.GetFishTankConfig(tank.tankId);
-            if (config?.type == "special" && tank.isUnlocked)
+            Z_Logger.LogError($"[PlayerDataService] GetStoreData 失败: 鱼缸 {tankId} 的状态为 null");
+            return new FishTankStoreData
             {
-                var fishList = GetTankFishList(tank.tankId);
-                return fishList.Count * 10;
-            }
+                IsBag = false,
+                TankId = tankId,
+                Name = $"鱼缸{tankId}",
+                FishList = new List<FishDetailData>(),
+                MaxCapacity = 10,
+                IsUnlocked = false
+            };
         }
-        return 0;
+
+        string name = $"鱼缸{tankId}";
+        if (LoadDataManager.Instance != null)
+        {
+            var config = LoadDataManager.Instance.GetFishTankConfig(tankId);
+            if (config != null) name = config.name;
+        }
+
+        var tankList = PlayerDataManager.Instance.GetFishTankItems(tankId);
+        var dataTank = new FishTankStoreData
+        {
+            IsBag = false,
+            TankId = tankId,
+            Name = name,
+            FishList = new List<FishDetailData>(tankList),
+            MaxCapacity = status.capacity,
+            IsUnlocked = status.isUnlocked
+        };
+        return dataTank;
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

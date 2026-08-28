@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using static PlayerDataManager;
+using View.Detail;
 
 public class FishTankManagerPanel : MonoBehaviour
 {
@@ -174,7 +175,12 @@ public class FishTankManagerPanel : MonoBehaviour
                 if (config?.type == "special" && tank.isUnlocked)
                 {
                     var fishList = PlayerDataService.Instance.GetTankFishList(tank.tankId);
-                    hourlyEarning = fishList.Count * 10;
+                    foreach (var fish in fishList)
+                    {
+                        LogDebug($"Tank {tank.tankId} has fish {fish.fishId} (weight: {fish.weight}, price: {fish.calculatedPrice})");
+                        hourlyEarning += Mathf.RoundToInt(fish.calculatedPrice * LoadDataManager.Instance.baseEarningRate);
+                    }
+                    //hourlyEarning = fishList.Count * 10;
                     tankName = config.name;
                     break;
                 }

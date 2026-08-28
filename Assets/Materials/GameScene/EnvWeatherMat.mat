@@ -97,7 +97,7 @@ Material:
     - _Speed: 15
     - _SpriteSheetEnabled: 0
     - _SrcBlend: 1
-    - _Transition: 0.57406
+    - _Transition: 0
     - _TransitionSpeed: 1
     - _UVSec: 0
     - _UseNextTex: 0

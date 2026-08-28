@@ -16,19 +16,19 @@
       "id": 3,
       "name": "普通鱼缸2号",
       "type": "normal",
-      "purchaseCost": 2000
+      "purchaseCost": 1000
     },
     {
       "id": 4,
       "name": "普通鱼缸3号",
       "type": "normal",
-      "purchaseCost": 4000
+      "purchaseCost": 1000
     },
     {
       "id": 5,
       "name": "普通鱼缸4号",
       "type": "normal",
-      "purchaseCost": 8000
+      "purchaseCost": 1000
     }
   ],
   "fishTankLevels": [
@@ -62,5 +62,6 @@
       "upgradeCost": 16000,
       "bonus": 0.10
     }
-  ]
+  ],
+  "baseEarningRate": 0.2
 }

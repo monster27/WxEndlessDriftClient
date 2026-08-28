@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using static PlayerDataManager;
+using Newtonsoft.Json;
 
 public partial class NetServerManager
 {
@@ -104,67 +105,73 @@ public partial class NetServerManager
 
     private IEnumerator FetchPlayerFishBagCoroutine(Action<bool> onComplete = null)
     {
-        if (!CheckNetworkConnection())
+        List<FishDetailData> fishList = null;
+        int capacity = 0;
+        bool dataSuccess = false;
+
+        yield return FetchGetJson<InventoryResponse>(ServerUrls.Player.FishBagById(_currentPlayerId), data =>
+        {
+            if (data?.items != null)
+            {
+                fishList = new List<FishDetailData>();
+                foreach (var item in data.items)
+                {
+                    fishList.Add(new FishDetailData
+                    {
+                        id = item.id,
+                        fishId = item.key,
+                        weight = item.weight,
+                        starRatingId = item.starRatingId,
+                        isShiny = item.isShiny,
+                        isLocked = item.isLocked,
+                        calculatedPrice = item.calculatedPrice,
+                        caughtTimestamp = item.caughtTimestamp,
+                        location = 0,
+                        tankId = 0
+                    });
+                }
+                dataSuccess = true;
+            }
+        }, "鱼篓数据");
+
+        if (!dataSuccess || fishList == null)
         {
             onComplete?.Invoke(false);
             yield break;
         }
 
-        string url = GetFullUrl(ServerUrls.Player.FishBagById(_currentPlayerId));
-        Z_Logger.Log($"[NetServerManager] 请求鱼篓数据: {url}");
-
-        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        yield return FetchGetJson<CapacityResponse>(ServerUrls.Inventory.FishCapacityById(_currentPlayerId), capData =>
         {
-            request.SetRequestHeader("Content-Type", "application/json");
-            request.timeout = 10;
+            if (capData != null)
+                capacity = capData.capacity;
+        }, "鱼篓容量");
 
-            yield return request.SendWebRequest();
+        if (capacity <= 0)
+            capacity = fishBagCapacity;
 
-            if (request.result == UnityWebRequest.Result.Success)
-            {
-                string json = request.downloadHandler.text;
-                FishBagResponse response = null;
+        fishBagCapacity = capacity;
 
-                try
-                {
-                    response = Newtonsoft.Json.JsonConvert.DeserializeObject<FishBagResponse>(json);
-                }
-                catch (Exception e)
-                {
-                    Z_Logger.LogError($"[NetServerManager] 解析鱼篓数据异常: {e.Message}");
-                    onComplete?.Invoke(false);
-                    yield break;
-                }
+        fishBagDetailData.Clear();
+        fishInventory.Clear();
+        foreach (var fish in fishList)
+        {
+            if (!fishInventory.ContainsKey(fish.fishId))
+                fishInventory[fish.fishId] = 0;
+            fishInventory[fish.fishId]++;
 
-                if (response != null && response.items != null)
-                {
-                    // ✅ 标记鱼篓数据
-                    foreach (var fish in response.items)
-                    {
-                        fish.location = 0;
-                        fish.tankId = 0;
-                    }
-
-                    // ✅ 存入 PlayerDataManager（使用主文件的 fishDetailData）
-                    if (PlayerDataManager.Instance != null)
-                    {
-                        // 先清空旧的鱼篓数据，再添加新数据
-                        PlayerDataManager.Instance.UpdateFishBagFromResponse(response.items, fishBagCapacity);
-                    }
-
-                    onComplete?.Invoke(true);
-                }
-                else
-                {
-                    onComplete?.Invoke(false);
-                }
-            }
-            else
-            {
-                Z_Logger.LogError($"[NetServerManager] 请求鱼篓数据失败: {request.error}");
-                onComplete?.Invoke(false);
-            }
+            if (!fishBagDetailData.ContainsKey(fish.fishId))
+                fishBagDetailData[fish.fishId] = new List<FishDetailData>();
+            fishBagDetailData[fish.fishId].Add(fish);
         }
+
+        PlayerDataManager.Instance?.UpdateFishDetailData(fishBagDetailData);
+
+        int total = GetTotalFishCount();
+        isFishBagFull = total >= fishBagCapacity;
+
+        Z_Logger.Log($"[NetServerManager] 鱼篓数据加载完成: {fishInventory.Count} 种鱼，总数量: {total}，容量: {fishBagCapacity}，已满: {isFishBagFull}");
+
+        onComplete?.Invoke(true);
     }
 
     // ============================================================
@@ -198,10 +205,9 @@ public partial class NetServerManager
             {
                 string json = request.downloadHandler.text;
                 FishTankListResponse data = null;
-
                 try
                 {
-                    data = JsonUtility.FromJson<FishTankListResponse>(json);
+                    data = JsonConvert.DeserializeObject<FishTankListResponse>(json);
                 }
                 catch (Exception e)
                 {
@@ -314,11 +320,12 @@ public partial class NetServerManager
             if (request.result == UnityWebRequest.Result.Success)
             {
                 string json = request.downloadHandler.text;
-                FishTankStatusResponse data = null;
+                Z_Logger.Log($"[NetServerManager] 鱼缸状态原始响应: {json}");
 
+                FishTankStatusResponse data = null;
                 try
                 {
-                    data = JsonUtility.FromJson<FishTankStatusResponse>(json);
+                    data = JsonConvert.DeserializeObject<FishTankStatusResponse>(json);
                 }
                 catch (Exception e)
                 {
@@ -344,6 +351,7 @@ public partial class NetServerManager
                 }
                 else
                 {
+                    Z_Logger.LogWarning($"[NetServerManager] 鱼缸状态响应 success=false 或 data=null");
                     onComplete?.Invoke(null);
                 }
             }
@@ -389,10 +397,9 @@ public partial class NetServerManager
         {
             string json = request.downloadHandler.text;
             FishTankOperationResponse response = null;
-
             try
             {
-                response = JsonUtility.FromJson<FishTankOperationResponse>(json);
+                response = JsonConvert.DeserializeObject<FishTankOperationResponse>(json);
             }
             catch (Exception e)
             {
@@ -408,7 +415,12 @@ public partial class NetServerManager
                 isSuccess = true;
                 responseMessage = response.message;
 
-                yield return StartCoroutine(FetchSingleTankStatusCoroutine(tankId, null));
+                // ★ 修改：拉取后更新数据
+                yield return StartCoroutine(FetchSingleTankStatusCoroutine(tankId, resp =>
+                {
+                    if (resp != null && PlayerDataManager.Instance != null)
+                        PlayerDataManager.Instance.UpdateSingleFishTankFromResponse(resp);
+                }));
                 yield return StartCoroutine(FetchPlayerFishBagCoroutine(null));
 
                 NotifyDataLoaded();
@@ -464,10 +476,9 @@ public partial class NetServerManager
         {
             string json = request.downloadHandler.text;
             FishTankUpgradeResponse response = null;
-
             try
             {
-                response = JsonUtility.FromJson<FishTankUpgradeResponse>(json);
+                response = JsonConvert.DeserializeObject<FishTankUpgradeResponse>(json);
             }
             catch (Exception e)
             {
@@ -485,7 +496,12 @@ public partial class NetServerManager
                 newLevel = response.level;
                 newCapacity = response.capacity;
 
-                yield return StartCoroutine(FetchSingleTankStatusCoroutine(tankId, null));
+                // ★ 修改：拉取后更新数据
+                yield return StartCoroutine(FetchSingleTankStatusCoroutine(tankId, resp =>
+                {
+                    if (resp != null && PlayerDataManager.Instance != null)
+                        PlayerDataManager.Instance.UpdateSingleFishTankFromResponse(resp);
+                }));
                 yield return StartCoroutine(FetchPlayerFishBagCoroutine(null));
 
                 NotifyDataLoaded();
@@ -506,11 +522,12 @@ public partial class NetServerManager
     }
 
     // ============================================================
-    // ✅ 网络请求 - 从鱼篓放入鱼缸
+    // ✅ 网络请求 - 从鱼篓放入鱼缸（★ 修改：更新数据）
     // ============================================================
 
     public void MoveFishFromBagToTank(int tankId, int fishItemId, Action<bool, string> onComplete = null)
     {
+        Z_Logger.Log($"[NetServerManager] MoveFishFromBagToTank: tankId={tankId}, fishItemId={fishItemId}");
         StartCoroutine(MoveFishFromBagToTankCoroutine(tankId, fishItemId, onComplete));
     }
 
@@ -550,10 +567,9 @@ public partial class NetServerManager
         {
             string responseJson = request.downloadHandler.text;
             FishTankMoveResponse response = null;
-
             try
             {
-                response = JsonUtility.FromJson<FishTankMoveResponse>(responseJson);
+                response = JsonConvert.DeserializeObject<FishTankMoveResponse>(responseJson);
             }
             catch (Exception e)
             {
@@ -569,16 +585,12 @@ public partial class NetServerManager
                 isSuccess = true;
                 responseMessage = response.message;
 
-                // ✅ 同步更新本地数据
-                if (PlayerDataManager.Instance != null)
+                // ★ 修改：拉取鱼缸状态并更新到 PlayerDataManager
+                yield return StartCoroutine(FetchSingleTankStatusCoroutine(tankId, resp =>
                 {
-                    // 从鱼篓移除
-                    PlayerDataManager.Instance.RemoveFishFromBag(fishItemId);
-                    // 添加到鱼缸（需要从服务器重新获取鱼数据，或者从缓存中获取）
-                    // 这里通过重新拉取数据来保证一致性
-                }
-
-                yield return StartCoroutine(FetchSingleTankStatusCoroutine(tankId, null));
+                    if (resp != null && PlayerDataManager.Instance != null)
+                        PlayerDataManager.Instance.UpdateSingleFishTankFromResponse(resp);
+                }));
                 yield return StartCoroutine(FetchPlayerFishBagCoroutine(null));
 
                 NotifyDataLoaded();
@@ -599,7 +611,7 @@ public partial class NetServerManager
     }
 
     // ============================================================
-    // ✅ 网络请求 - 从鱼缸取出到鱼篓
+    // ✅ 网络请求 - 从鱼缸取出到鱼篓（★ 修改：更新数据）
     // ============================================================
 
     public void MoveFishFromTankToBag(int fishItemId, Action<bool, string> onComplete = null)
@@ -643,10 +655,9 @@ public partial class NetServerManager
         {
             string responseJson = request.downloadHandler.text;
             FishTankMoveResponse response = null;
-
             try
             {
-                response = JsonUtility.FromJson<FishTankMoveResponse>(responseJson);
+                response = JsonConvert.DeserializeObject<FishTankMoveResponse>(responseJson);
             }
             catch (Exception e)
             {
@@ -662,11 +673,24 @@ public partial class NetServerManager
                 isSuccess = true;
                 responseMessage = response.message;
 
+                // 找到鱼所在的鱼缸ID
                 if (PlayerDataManager.Instance != null)
                     tankId = PlayerDataManager.Instance.FindTankIdByFishItemId(fishItemId);
 
+                // ★ 修改：拉取鱼缸状态并更新
                 if (tankId > 0)
-                    yield return StartCoroutine(FetchSingleTankStatusCoroutine(tankId, null));
+                {
+                    yield return StartCoroutine(FetchSingleTankStatusCoroutine(tankId, resp =>
+                    {
+                        if (resp != null && PlayerDataManager.Instance != null)
+                            PlayerDataManager.Instance.UpdateSingleFishTankFromResponse(resp);
+                    }));
+                }
+                else
+                {
+                    // 如果无法确定，拉取所有鱼缸
+                    yield return StartCoroutine(FetchAllFishTanksCoroutine(null));
+                }
 
                 yield return StartCoroutine(FetchPlayerFishBagCoroutine(null));
 
@@ -688,7 +712,7 @@ public partial class NetServerManager
     }
 
     // ============================================================
-    // ✅ 网络请求 - 鱼缸转移到鱼缸
+    // ✅ 网络请求 - 鱼缸转移到鱼缸（★ 修改：更新数据）
     // ============================================================
 
     public void MoveFishFromTankToTank(int fromTankId, int toTankId, int fishItemId, Action<bool, string> onComplete = null)
@@ -733,10 +757,9 @@ public partial class NetServerManager
         {
             string responseJson = request.downloadHandler.text;
             FishTankOperationResponse response = null;
-
             try
             {
-                response = JsonUtility.FromJson<FishTankOperationResponse>(responseJson);
+                response = JsonConvert.DeserializeObject<FishTankOperationResponse>(responseJson);
             }
             catch (Exception e)
             {
@@ -752,8 +775,17 @@ public partial class NetServerManager
                 isSuccess = true;
                 responseMessage = response.message;
 
-                yield return StartCoroutine(FetchSingleTankStatusCoroutine(fromTankId, null));
-                yield return StartCoroutine(FetchSingleTankStatusCoroutine(toTankId, null));
+                // ★ 修改：拉取两个鱼缸状态并更新
+                yield return StartCoroutine(FetchSingleTankStatusCoroutine(fromTankId, resp =>
+                {
+                    if (resp != null && PlayerDataManager.Instance != null)
+                        PlayerDataManager.Instance.UpdateSingleFishTankFromResponse(resp);
+                }));
+                yield return StartCoroutine(FetchSingleTankStatusCoroutine(toTankId, resp =>
+                {
+                    if (resp != null && PlayerDataManager.Instance != null)
+                        PlayerDataManager.Instance.UpdateSingleFishTankFromResponse(resp);
+                }));
                 yield return StartCoroutine(FetchPlayerFishBagCoroutine(null));
 
                 NotifyDataLoaded();
@@ -825,10 +857,9 @@ public partial class NetServerManager
         {
             string responseJson = request.downloadHandler.text;
             FishTankBatchMoveResponse response = null;
-
             try
             {
-                response = JsonUtility.FromJson<FishTankBatchMoveResponse>(responseJson);
+                response = JsonConvert.DeserializeObject<FishTankBatchMoveResponse>(responseJson);
             }
             catch (Exception e)
             {
@@ -845,7 +876,12 @@ public partial class NetServerManager
                 responseMessage = response.message;
                 movedCount = response.movedCount;
 
-                yield return StartCoroutine(FetchSingleTankStatusCoroutine(tankId, null));
+                // ★ 修改：拉取鱼缸状态并更新
+                yield return StartCoroutine(FetchSingleTankStatusCoroutine(tankId, resp =>
+                {
+                    if (resp != null && PlayerDataManager.Instance != null)
+                        PlayerDataManager.Instance.UpdateSingleFishTankFromResponse(resp);
+                }));
                 yield return StartCoroutine(FetchPlayerFishBagCoroutine(null));
 
                 NotifyDataLoaded();
@@ -948,8 +984,14 @@ public partial class NetServerManager
 
         UnlockFishTank(tankId, (success, message) =>
         {
-            if (!success)
+            if (success)
+            {
+                GameUIManager.Instance?.ShowTip("解锁成功！"); // ✅ 添加成功提示
+            }
+            else
+            {
                 GameUIManager.Instance?.ShowTip(message);
+            }
         });
     }
 
@@ -1008,81 +1050,122 @@ public partial class NetServerManager
     [Serializable]
     public class FishBagResponse
     {
+        [JsonProperty("success")]
         public bool success;
+        [JsonProperty("items")]
         public List<FishDetailData> items;
+        [JsonProperty("capacity")]
         public int capacity;
+        [JsonProperty("count")]
         public int count;
     }
 
     [Serializable]
     public class FishTankInfoData
     {
+        [JsonProperty("tankId")]
         public int tankId;
+        [JsonProperty("name")]
         public string name;
+        [JsonProperty("type")]
         public string type;
+        [JsonProperty("purchaseCost")]
         public int purchaseCost;
+        [JsonProperty("isUnlocked")]
         public bool isUnlocked;
+        [JsonProperty("level")]
         public int level;
+        [JsonProperty("capacity")]
         public int capacity;
+        [JsonProperty("currentCount")]
         public int currentCount;
+        [JsonProperty("remainingSpace")]
         public int remainingSpace;
     }
 
     [Serializable]
     public class FishTankUpgradeInfo
     {
+        [JsonProperty("isUnlocked")]
         public bool isUnlocked;
+        [JsonProperty("currentLevel")]
         public int currentLevel;
+        [JsonProperty("currentCapacity")]
         public int currentCapacity;
+        [JsonProperty("nextLevel")]
         public int nextLevel;
+        [JsonProperty("nextCapacity")]
         public int nextCapacity;
+        [JsonProperty("upgradeCost")]
         public int upgradeCost;
+        [JsonProperty("canUpgrade")]
         public bool canUpgrade;
+        [JsonProperty("isMaxLevel")]
         public bool isMaxLevel;
     }
 
     [Serializable]
     private class FishTankListResponse
     {
+        [JsonProperty("success")]
         public bool success;
+        [JsonProperty("tanks")]
         public List<FishTankInfoData> tanks;
     }
 
     [Serializable]
     private class FishTankOperationResponse
     {
+        [JsonProperty("success")]
         public bool success;
+        [JsonProperty("message")]
         public string message;
     }
 
     [Serializable]
     private class FishTankUpgradeResponse
     {
+        [JsonProperty("success")]
         public bool success;
+        [JsonProperty("message")]
         public string message;
+        [JsonProperty("level")]
         public int level;
+        [JsonProperty("capacity")]
         public int capacity;
     }
 
     [Serializable]
     private class FishTankMoveResponse
     {
+        [JsonProperty("success")]
         public bool success;
+        [JsonProperty("message")]
         public string message;
+        [JsonProperty("fishTankCount")]
         public int fishTankCount;
+        [JsonProperty("fishTankCapacity")]
         public int fishTankCapacity;
+        [JsonProperty("bagCount")]
         public int bagCount;
+        [JsonProperty("bagCapacity")]
         public int bagCapacity;
     }
 
     [Serializable]
     private class FishTankBatchMoveResponse
     {
+        [JsonProperty("success")]
         public bool success;
+        [JsonProperty("message")]
         public string message;
+        [JsonProperty("movedCount")]
         public int movedCount;
+        [JsonProperty("fishTankCount")]
         public int fishTankCount;
+        [JsonProperty("fishTankCapacity")]
         public int fishTankCapacity;
+        [JsonProperty("bagCapacity")]
         public int bagCapacity;
     }
 }

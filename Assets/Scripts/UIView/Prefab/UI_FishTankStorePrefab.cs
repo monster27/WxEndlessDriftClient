@@ -84,9 +84,10 @@ public class UI_FishTankStorePrefab : MonoBehaviour
 
         if (harvestText != null)
         {
-            int price = _fishDetail.calculatedPrice;
-            harvestText.text = $" {price}";
-            harvestText.gameObject.SetActive(price > 0);
+            float displayMultiplier = LoadDataManager.Instance.baseEarningRate; 
+            int displayPrice = Mathf.RoundToInt(_fishDetail.calculatedPrice * displayMultiplier);
+            harvestText.text = $" {displayPrice}";
+            harvestText.gameObject.SetActive(displayPrice > 0);
         }
 
         if (clickBtn != null)

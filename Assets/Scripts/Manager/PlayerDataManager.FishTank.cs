@@ -147,10 +147,14 @@ public partial class PlayerDataManager
                 }
             }
         }
-
         return result;
     }
 
+    // 在 PlayerDataManager.FishTank.cs 中添加
+    public int GetFishBagCapacity()
+    {
+        return fishBagCapacity;
+    }
     /// <summary>
     /// 获取鱼篓总数量
     /// </summary>
@@ -233,7 +237,11 @@ public partial class PlayerDataManager
     public List<FishDetailData> GetFishTankItems(int tankId)
     {
         if (_fishTankData.TryGetValue(tankId, out var list))
-            return list.ToList();
+        {
+            var copy = list.ToList();
+            return copy;
+        }
+        Z_Logger.Log($"[PlayerDataManager] GetFishTankItems: tankId={tankId} 未找到数据，返回空列表");
         return new List<FishDetailData>();
     }
 
@@ -439,6 +447,8 @@ public partial class PlayerDataManager
     {
         if (tank == null) return;
 
+        Z_Logger.Log($"[PlayerDataManager] UpdateSingleFishTankFromResponse 开始: tankId={tank.tankId}, items.Count={tank.items?.Count ?? 0}");
+
         if (!_fishTankStatus.ContainsKey(tank.tankId))
             _fishTankStatus[tank.tankId] = new FishTankStatusData();
 
@@ -449,9 +459,15 @@ public partial class PlayerDataManager
         _fishTankStatus[tank.tankId].currentCount = tank.currentCount;
         _fishTankStatus[tank.tankId].remainingSpace = tank.remainingSpace;
 
-        _fishTankData[tank.tankId] = tank.items ?? new List<FishDetailData>();
+        // ✅ 复制一份，避免外部修改影响内部数据
+        _fishTankData[tank.tankId] = tank.items != null ? new List<FishDetailData>(tank.items) : new List<FishDetailData>();
 
         _isFishDataLoaded = true;
+
+        // 打印更新后的鱼ID列表
+        var ids = string.Join(",", _fishTankData[tank.tankId].Select(f => f.id));
+        Z_Logger.Log($"[PlayerDataManager] 鱼缸 {tank.tankId} 更新后鱼ID列表: {ids}");
+
         Z_Logger.Log($"[PlayerDataManager] 鱼缸 {tank.tankId} 状态已更新");
         NotifyDataChanged();
     }

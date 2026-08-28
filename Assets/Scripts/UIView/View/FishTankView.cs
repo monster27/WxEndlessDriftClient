@@ -95,11 +95,11 @@ public class FishTankView : BaseView
         CommunicateEvent.Modify(message.ToString());
     }
 
-    private void SendMessage(FishTankMessage message, object parameter)
+    // 在现有的 SendMessage 方法旁边添加
+    private void SendMessage<T>(FishTankMessage message, T parameter)
     {
         CommunicateEvent.Modify(message.ToString(), parameter);
     }
-
     // ============================================================
     // 打开/关闭
     // ============================================================
@@ -413,7 +413,18 @@ public class FishTankView : BaseView
 
     private void OnUnlockRequest(int tankId)
     {
-        SendMessage(FishTankMessage.UnlockTank, tankId);
+        var config = GetTankConfig(tankId);
+        if (config == null) return;
+
+        GameUIManager.Instance?.ShowDialog(
+            $"花费 {config.purchaseCost} 金币解锁 {config.name}？",
+            DialogType.Info,
+            () =>
+            {
+                SendMessage(FishTankMessage.UnlockTank, tankId);
+                GameUIManager.ShowMessage("解锁请求已发送");
+            }
+        );
     }
 
     // ============================================================

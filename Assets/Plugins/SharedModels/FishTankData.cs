@@ -23,4 +23,5 @@ public class FishTankConfigWrapper
 {
     public List<FishTankData> fishTanks = new List<FishTankData>();
     public List<FishTankLevelData> fishTankLevels = new List<FishTankLevelData>();
+    public float baseEarningRate = 0.2f;
 }
