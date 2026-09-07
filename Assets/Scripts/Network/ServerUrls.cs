@@ -177,4 +177,19 @@ public static class ServerUrls
         /// <summary>从鱼缸转移到另一个鱼缸</summary>
         public const string MoveTankToTank = "/api/fishtank/move/tank-to-tank";
     }
+
+    public static class FishTankDecoration
+    {
+        /// <summary>获取玩家已拥有的装饰ID列表</summary>
+        public static string List(int playerId) => $"/api/FishTankDecoration/list/{playerId}";
+
+        /// <summary>获取指定鱼缸的装备状态（含变换数据）</summary>
+        public static string Equipped(int playerId, int tankId) => $"/api/FishTankDecoration/equipped/{playerId}/{tankId}";
+
+        /// <summary>装备装饰</summary>
+        public const string Equip = "/api/FishTankDecoration/equip";
+
+        /// <summary>卸下装饰</summary>
+        public const string Unequip = "/api/FishTankDecoration/unequip";
+    }
 }

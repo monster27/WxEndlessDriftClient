@@ -142,8 +142,10 @@ public partial class NetServerManager
 
     private IEnumerator PurchaseMallItemCoroutine(int itemId, int quantity, System.Action<bool, string> callback)
     {
-        string url = serverUrl + ServerUrls.Player.MallPurchase;
-        string jsonData = $"{{\"PlayerId\":{_currentPlayerId},\"ItemId\":{itemId},\"Quantity\":{quantity}}}";
+        //string url = serverUrl + ServerUrls.Player.MallPurchase;
+        //string jsonData = $"{{\"PlayerId\":{_currentPlayerId},\"ItemId\":{itemId},\"Quantity\":{quantity}}}";
+        string url = serverUrl + ServerUrls.Player.MallPurchase + "/" + _currentPlayerId;
+        string jsonData = $"{{\"itemId\":{itemId},\"quantity\":{quantity}}}";
 
         Z_Logger.Log($"[NetServerManager] 购买商城物品请求: {jsonData}");
 

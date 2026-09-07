@@ -345,19 +345,83 @@
             "isUnique": true
         },
         {
-            "itemId": 7001,
-            "price": 12,
+            "itemId": 8001,
+            "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 70,
+            "categoryId": 80,
+            "isUnique": false
+        },
+        {
+            "itemId": 8002,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 80,
+            "isUnique": false
+        },
+        {
+            "itemId": 8201,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 81,
+            "isUnique": false
+        },
+        {
+            "itemId": 8202,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 81,
+            "isUnique": false
+        },
+        {
+            "itemId": 8401,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 82,
             "isUnique": true
         },
         {
-            "itemId": 7002,
-            "price": 13,
+            "itemId": 8402,
+            "price": 1,
             "stock": 99,
             "isOnSale": true,
-            "categoryId": 70,
+            "categoryId": 82,
+            "isUnique": true
+        },
+        {
+            "itemId": 8601,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 83,
+            "isUnique": true
+        },
+        {
+            "itemId": 8602,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 83,
+            "isUnique": true
+        },
+        {
+            "itemId": 8801,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 84,
+            "isUnique": true
+        },
+        {
+            "itemId": 8802,
+            "price": 1,
+            "stock": 99,
+            "isOnSale": true,
+            "categoryId": 84,
             "isUnique": true
         }
     ]

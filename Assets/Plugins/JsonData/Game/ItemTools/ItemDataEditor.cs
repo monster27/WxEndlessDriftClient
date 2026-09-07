@@ -28,7 +28,8 @@ public class ItemDataEditor : EditorWindow
     private bool showNestBaitList = true;
     private bool showOtherList = true;
     private bool showCollectionInfoList = true;
-    private bool showIslandInfoList = true;  // ✅ 新增：岛屿情报列表
+    private bool showIslandInfoList = true;
+    private bool showFishTankDecList = true;
 
     // ===== 筛选相关 =====
     private int selectedTypeFilter = -1; // -1=全部
@@ -141,7 +142,7 @@ public class ItemDataEditor : EditorWindow
         var options = new List<string>();
         options.Add("全部");
 
-        string fishPath = Path.Combine(Application.dataPath, "Resources", "JsonData/Game/BagItem/fishes.json");
+        string fishPath = Path.Combine(Application.dataPath, "Addressables", "JsonData/Game/BagItem/fishes.json");
         if (File.Exists(fishPath))
         {
             try
@@ -243,7 +244,7 @@ public class ItemDataEditor : EditorWindow
     private HashSet<int> GetFishIdsByIsland(int islandId)
     {
         var fishIds = new HashSet<int>();
-        string fishPath = Path.Combine(Application.dataPath, "Resources", "JsonData/Game/BagItem/fishes.json");
+        string fishPath = Path.Combine(Application.dataPath, "Addressables", "JsonData/Game/BagItem/fishes.json");
 
         if (File.Exists(fishPath))
         {
@@ -291,16 +292,18 @@ public class ItemDataEditor : EditorWindow
         List<ItemData> trashItems = filteredItems.FindAll(item => item.itemType == 3);
         List<ItemData> nestBaitItems = filteredItems.FindAll(item => item.itemType == 6);
         List<ItemData> collectionInfoItems = filteredItems.FindAll(item => item.itemType == 7);
-        List<ItemData> islandInfoItems = filteredItems.FindAll(item => item.itemType == 8);  // ✅ 新增：岛屿情报
+        List<ItemData> islandInfoItems = filteredItems.FindAll(item => item.itemType == 8); 
         List<ItemData> otherItems = filteredItems.FindAll(item => item.itemType == 4 || item.itemType == 5);
+        List<ItemData> fishTankDecItems = filteredItems.FindAll(item => item.itemType == 9);
 
         DrawItemGroup("🐟 水产数据", fishItems, ref showFishList);
         DrawItemGroup("🎣 饵料数据", baitItems, ref showBaitList);
         DrawItemGroup("🗑️ 垃圾数据", trashItems, ref showTrashList);
         DrawItemGroup("🪣 窝料数据", nestBaitItems, ref showNestBaitList);
         DrawItemGroup("📖 图鉴情报数据", collectionInfoItems, ref showCollectionInfoList);
-        DrawItemGroup("🏝️ 岛屿情报数据", islandInfoItems, ref showIslandInfoList);  // ✅ 新增
-        DrawItemGroup("📦 其他物品", otherItems, ref showOtherList);
+        DrawItemGroup("🏝️ 岛屿情报数据", islandInfoItems, ref showIslandInfoList); 
+        DrawItemGroup("📦 室内外装饰数据", otherItems, ref showOtherList);
+        DrawItemGroup("🐠 鱼缸装饰数据", fishTankDecItems, ref showFishTankDecList);
 
         EditorGUILayout.EndScrollView();
         GUILayout.Space(5);
@@ -390,7 +393,8 @@ public class ItemDataEditor : EditorWindow
             case 5: return "室内皮肤";
             case 6: return "窝料";
             case 7: return "图鉴情报";
-            case 8: return "岛屿情报";  // ✅ 新增
+            case 8: return "岛屿情报";
+            case 9: return "鱼缸装饰";
             default: return "未知";
         }
     }
@@ -571,7 +575,7 @@ public class ItemDataEditor : EditorWindow
         };
 
         string json = JsonUtility.ToJson(wrapper, true);
-        string fullPath = Path.Combine(Application.dataPath, "Resources", $"{inputPath}.json");
+        string fullPath = Path.Combine(Application.dataPath, "Addressables", $"{inputPath}.json");
 
         string directory = Path.GetDirectoryName(fullPath);
         if (!Directory.Exists(directory))

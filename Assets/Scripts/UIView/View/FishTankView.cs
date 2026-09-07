@@ -38,6 +38,9 @@ public class FishTankView : BaseView
     [SerializeField] private FishTankManagerPanel managerPanel;
     [SerializeField] private Button managerCloseBtn;
 
+    [Header("===== 装饰面板 =====")]   
+    [SerializeField] private FishTankDecorationPanel decorationPanel;  
+
     [Header("===== StorePanel 预制体 =====")]
     [SerializeField] private GameObject fishTankStorePrefab;
 
@@ -62,15 +65,13 @@ public class FishTankView : BaseView
     {
         UnregisterEvents();
 
-        // UI按钮事件
         if (leftBtn != null) leftBtn.onClick.AddListener(OnLeftClick);
         if (rightBtn != null) rightBtn.onClick.AddListener(OnRightClick);
         if (manageBtn != null) manageBtn.onClick.AddListener(ToggleManagerPanel);
         if (managerCloseBtn != null) managerCloseBtn.onClick.AddListener(CloseManagerPanel);
-        if (decorationBtn != null) decorationBtn.onClick.AddListener(OnDecorationClick);
+        if (decorationBtn != null) decorationBtn.onClick.AddListener(OnDecorationClick);   // ✅ 已绑定，但方法需实现
         if (lockBtn != null) lockBtn.onClick.AddListener(OnLockClick);
 
-        // 监听Service的数据更新通知
         CommunicateEvent.Register(FishTankMessage.DataUpdated.ToString(), OnDataUpdated);
     }
 
@@ -95,11 +96,11 @@ public class FishTankView : BaseView
         CommunicateEvent.Modify(message.ToString());
     }
 
-    // 在现有的 SendMessage 方法旁边添加
     private void SendMessage<T>(FishTankMessage message, T parameter)
     {
         CommunicateEvent.Modify(message.ToString(), parameter);
     }
+
     // ============================================================
     // 打开/关闭
     // ============================================================
@@ -115,21 +116,24 @@ public class FishTankView : BaseView
             managerPanel.SetUnlockCallback(OnUnlockRequest);
             managerPanel.ClosePanel();
         }
+
+        // ✅ 初始化装饰面板（默认隐藏）
+        if (decorationPanel != null)
+        {
+            decorationPanel.gameObject.SetActive(false);
+        }
     }
 
     public void OpenFishTank()
     {
         LogDebug("OpenFishTank");
 
-        // 显示界面
         defaultMaskImg.SetActive(true);
         ShowView();
         _currentTankIndex = 0;
 
-        // 显示加载状态
         ShowLoadingState();
 
-        // 发送消息给Service
         SendMessage(FishTankMessage.OpenFishTank);
     }
 
@@ -148,6 +152,8 @@ public class FishTankView : BaseView
         if (fishTankManager != null) fishTankManager.CloseFishTank();
         HideView();
         CloseManagerPanel();
+        // ✅ 关闭装饰面板
+        if (decorationPanel != null) decorationPanel.gameObject.SetActive(false);
 
         _isManagerOpen = false;
         _currentTankIndex = 0;
@@ -177,14 +183,6 @@ public class FishTankView : BaseView
 
         if (fishTankManager != null)
             fishTankManager.CloseFishTank();
-    }
-
-    private void HideLoadingState()
-    {
-        if (tankNameText != null && tankNameText.text == "加载中...")
-        {
-            // 加载状态由RefreshAll覆盖
-        }
     }
 
     // ============================================================
@@ -242,6 +240,12 @@ public class FishTankView : BaseView
             if (_isManagerOpen && managerPanel != null)
             {
                 managerPanel.RefreshData();
+            }
+
+            // ✅ 如果装饰面板打开，刷新它
+            if (decorationPanel != null && decorationPanel.gameObject.activeSelf)
+            {
+                decorationPanel.RefreshData();
             }
         }
         catch (Exception ex)
@@ -344,6 +348,12 @@ public class FishTankView : BaseView
                 managerPanel.ClosePanel();
         }
 
+        // ✅ 如果装饰面板打开，关闭它（避免重叠）
+        if (_isManagerOpen && decorationPanel != null && decorationPanel.gameObject.activeSelf)
+        {
+            decorationPanel.gameObject.SetActive(false);
+        }
+
         SendMessage(FishTankMessage.ToggleManagerPanel);
     }
 
@@ -387,9 +397,28 @@ public class FishTankView : BaseView
         }
     }
 
+    // ✅ 实现装饰按钮点击逻辑
     private void OnDecorationClick()
     {
-        GameUIManager.ShowMessage("装饰功能开发中");
+        // 如果管理面板打开，先关闭它
+        if (_isManagerOpen)
+        {
+            ToggleManagerPanel();
+        }
+
+        // 切换装饰面板的显示状态
+        if (decorationPanel != null)
+        {
+            bool isActive = decorationPanel.gameObject.activeSelf;
+            decorationPanel.gameObject.SetActive(!isActive);
+
+            if (!isActive)
+            {
+                // 打开时初始化，传入当前鱼缸ID
+                var currentTank = GetCurrentTank();
+                decorationPanel.Init(currentTank?.tankId ?? 1);
+            }
+        }
     }
 
     private void OnLockClick()

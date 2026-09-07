@@ -143,7 +143,7 @@ public partial class NetServerManager
 
     // ========== 数据查询 ==========
 
-    private Dictionary<int, int> GetPlayerInventory() => playerInventory;
+    public Dictionary<int, int> GetPlayerInventory() => playerInventory;
     private Dictionary<int, int> GetPlayerFishInventory() => fishInventory;
     public int GetFishBagCapacity() => fishBagCapacity;
     public int GetPlayerGold() => playerGold;

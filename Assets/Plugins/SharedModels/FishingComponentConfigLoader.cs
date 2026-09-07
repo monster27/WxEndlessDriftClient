@@ -45,7 +45,7 @@ public class FishingComponentConfigLoader
         string[] possiblePaths = new string[]
         {
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Shared", "Data", "JsonData", "Ability", "fishing_components.json"),
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "JsonData", "Ability", "fishing_components.json"),
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Addressables", "JsonData", "Ability", "fishing_components.json"),
                 Path.Combine(Directory.GetCurrentDirectory(), "Shared", "Data", "JsonData", "Ability", "fishing_components.json"),
                 Path.Combine(Directory.GetCurrentDirectory(), "fishing_components.json")
         };

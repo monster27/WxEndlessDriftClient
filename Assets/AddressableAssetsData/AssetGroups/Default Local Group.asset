@@ -496,6 +496,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1aff6c7c70c613c44acf73a565906edb
+    m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8402.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1b184158d32445548abf49aa5c650350
     m_Address: Assets/Atlases/Assets/Textures/UI/Common/Common.spriteatlas
     m_ReadOnly: 0
@@ -1374,6 +1379,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4d37d4f168b90244c88d7a5851a417d3
+    m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8601.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4d5df46e110791949aabc38fde901a0a
     m_Address: Assets/Addressables/UI/Icon/RarityBackground/202.png
     m_ReadOnly: 0
@@ -1427,6 +1437,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5104a873ea39f40409cce04444083666
+    m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8602.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5124443f4f59e3c45ba68a01ab5d47c2
     m_Address: Assets/Addressables/UI/Icon/TrashIcons/9002.png
@@ -1786,6 +1801,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6659de16f25ff5748b7094ee6fb515c7
+    m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8202.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 66bfa4f952642524ca5997e4ab24eb12
     m_Address: "Assets/Textures/EquipmentSample/\u88C5\u5907\u754C\u97622.png"
@@ -2425,6 +2445,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8d756264ded379b4b80c54afa5bc2c7d
+    m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8002.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8db22bd4799b5254f9c1697adf6c2758
     m_Address: Assets/Textures/0605/fish basket/2.png
@@ -3288,6 +3313,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bbc4a146630f166419302416708f095e
+    m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8201.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bc4f485d55eca0844ae45860970b632e
     m_Address: Assets/Addressables/UI/Icon/FishIcons/1022.png
     m_ReadOnly: 0
@@ -3916,6 +3946,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e7239ee3465c64f4db3352327d9e701d
+    m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8001.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e7670e261ce7ab74392999b665c618c8
     m_Address: Assets/Textures/0605/Character interface/Skill unlock icon.png
     m_ReadOnly: 0
@@ -4054,6 +4089,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eef3448c3e9a5ea4f93d4d0f4f08b7cd
+    m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8801.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ef7e25f91c89ed54b85535c904221223
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/LeftTopUI/\u661F\u8C61.png"
     m_ReadOnly: 0
@@ -4173,6 +4213,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f6c22f719daa8e647aa357ff9d79cd8b
+    m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8802.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f6ed7c42957e5294d8f27b09553eff7e
     m_Address: Assets/Addressables/UI/Icon/OutdoorSkinIcons/4102.png

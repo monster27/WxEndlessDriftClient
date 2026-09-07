@@ -21,6 +21,8 @@ public class FishTankManagerPanel : MonoBehaviour
 
     [Header("===== 按钮 =====")]
     [SerializeField] private Button closeBtn;
+    [SerializeField] private Button sortByRarityBtn;  
+    [SerializeField] private Button sortByPriceBtn;   
 
     [Header("===== 收益显示 =====")]
     [SerializeField] private GameObject harvestInfoObj;
@@ -82,6 +84,16 @@ public class FishTankManagerPanel : MonoBehaviour
         {
             closeBtn.onClick.RemoveAllListeners();
             closeBtn.onClick.AddListener(ClosePanel);
+        }
+        if (sortByRarityBtn != null)
+        {
+            sortByRarityBtn.onClick.RemoveAllListeners();
+            sortByRarityBtn.onClick.AddListener(OnSortByRarity);
+        }
+        if (sortByPriceBtn != null)
+        {
+            sortByPriceBtn.onClick.RemoveAllListeners();
+            sortByPriceBtn.onClick.AddListener(OnSortByPrice);
         }
     }
 
@@ -213,7 +225,17 @@ public class FishTankManagerPanel : MonoBehaviour
     {
         gameObject.SetActive(false);
     }
+    private void OnSortByRarity()
+    {
+        if (upperStorePanel != null) upperStorePanel.SortByRarity();
+        if (lowerStorePanel != null) lowerStorePanel.SortByRarity();
+    }
 
+    private void OnSortByPrice()
+    {
+        if (upperStorePanel != null) upperStorePanel.SortByPrice();
+        if (lowerStorePanel != null) lowerStorePanel.SortByPrice();
+    }
     // ============================================================
     // 回调转发
     // ============================================================
@@ -236,6 +258,8 @@ public class FishTankManagerPanel : MonoBehaviour
     {
         UnregisterEvents();
         if (closeBtn != null) closeBtn.onClick.RemoveAllListeners();
+        if (sortByRarityBtn != null) sortByRarityBtn.onClick.RemoveAllListeners();
+        if (sortByPriceBtn != null) sortByPriceBtn.onClick.RemoveAllListeners();
     }
 
     // ============================================================

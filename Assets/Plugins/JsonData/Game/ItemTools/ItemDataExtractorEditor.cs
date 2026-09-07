@@ -17,12 +17,13 @@ public class ItemDataExtractorEditor : EditorWindow
     private string categoryDataPath = "Addressables/JsonData/Game/GameFramework/itemCategories.json";
     private string collectionDataPath = "Addressables/JsonData/BaseFramework/collection.json";
     private string islandInfoDataPath = "Addressables/JsonData/Game/GameFramework/islandInfo.json";  // ✅ 新增：岛屿情报数据路径
+    private string fishTankDecDataPath = "Addressables/JsonData/Game/BagItem/fishTankDec.json";
     private Vector2 scrollPosition;
     private List<ItemData> extractedItems = new List<ItemData>();
     private List<ItemData> existingItems = new List<ItemData>();
     private CategoryListWrapper categoryWrapper;
     private CollectionWrapper collectionWrapper;
-    private IslandInfoListWrapper islandInfoWrapper;  // ✅ 新增：岛屿情报数据包装器
+    private IslandInfoListWrapper islandInfoWrapper;
 
     private bool showFishList = true;
     private bool showBaitList = true;
@@ -31,7 +32,8 @@ public class ItemDataExtractorEditor : EditorWindow
     private bool showIndoorSkinList = true;
     private bool showOutdoorSkinList = true;
     private bool showCollectionInfoList = true;
-    private bool showIslandInfoList = true;  // ✅ 新增：岛屿情报列表折叠
+    private bool showIslandInfoList = true;
+    private bool showFishTankDecList = true;
 
     [MenuItem("Tools/游戏内容/3.物品通用数据/1.提取物品数据(用于价格)")]
     public static void ShowWindow()
@@ -62,7 +64,7 @@ public class ItemDataExtractorEditor : EditorWindow
         EditorGUILayout.LabelField($"室内皮肤数据: {indoorSkinDataPath}");
         EditorGUILayout.LabelField($"室外皮肤数据: {outdoorSkinDataPath}");
         EditorGUILayout.LabelField($"图鉴数据: {collectionDataPath}");
-        EditorGUILayout.LabelField($"岛屿情报数据: {islandInfoDataPath}");  // ✅ 新增
+        EditorGUILayout.LabelField($"岛屿情报数据: {islandInfoDataPath}"); 
         EditorGUILayout.LabelField($"输出路径: {outputPath}");
 
         EditorGUILayout.EndVertical();
@@ -105,7 +107,8 @@ public class ItemDataExtractorEditor : EditorWindow
         List<ItemData> indoorSkinItems = extractedItems.FindAll(item => item.itemType == 5);
         List<ItemData> nestBaitItems = extractedItems.FindAll(item => item.itemType == 6);
         List<ItemData> collectionInfoItems = extractedItems.FindAll(item => item.itemType == 7);
-        List<ItemData> islandInfoItems = extractedItems.FindAll(item => item.itemType == 8);  // ✅ 新增：岛屿情报（itemType=8）
+        List<ItemData> islandInfoItems = extractedItems.FindAll(item => item.itemType == 8);
+        List<ItemData> fishTankDecItems = extractedItems.FindAll(item => item.itemType == 9);
 
         DrawItemGroup("🐟 鱼类数据", fishItems, ref showFishList);
         DrawItemGroup("🎣 鱼饵数据", baitItems, ref showBaitList);
@@ -114,7 +117,8 @@ public class ItemDataExtractorEditor : EditorWindow
         DrawItemGroup("🏠 室内皮肤数据", indoorSkinItems, ref showIndoorSkinList);
         DrawItemGroup("🪣 窝料数据", nestBaitItems, ref showNestBaitList);
         DrawItemGroup("📖 图鉴情报数据", collectionInfoItems, ref showCollectionInfoList);
-        DrawItemGroup("🏝️ 岛屿情报数据", islandInfoItems, ref showIslandInfoList);  // ✅ 新增
+        DrawItemGroup("🏝️ 岛屿情报数据", islandInfoItems, ref showIslandInfoList);
+        DrawItemGroup("🐠 鱼缸装饰数据", fishTankDecItems, ref showFishTankDecList);
     }
 
     private void DrawItemGroup(string title, List<ItemData> items, ref bool isExpanded)
@@ -175,7 +179,8 @@ public class ItemDataExtractorEditor : EditorWindow
             case 5: return "室内皮肤";
             case 6: return "窝料";
             case 7: return "图鉴情报";
-            case 8: return "岛屿情报";  // ✅ 新增
+            case 8: return "岛屿情报";
+            case 9: return "鱼缸装饰";
             default: return "未知";
         }
     }
@@ -187,7 +192,8 @@ public class ItemDataExtractorEditor : EditorWindow
         LoadExistingItems();
         LoadCategoryData();
         LoadCollectionData();
-        LoadIslandInfoData();  // ✅ 新增：加载岛屿情报数据
+        LoadIslandInfoData();
+        LoadFishTankDecorationData();
 
         List<FishData> fishes = LoadFishData();
         List<BaitData> baits = LoadBaitData();
@@ -376,6 +382,8 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
+
+
         // ========== 处理窝料 ==========
         if (nestBaits != null)
         {
@@ -481,7 +489,6 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
-        // ========== ✅ 新增：处理岛屿情报 ==========
         if (islandInfoWrapper?.islandInfoList != null)
         {
             foreach (var islandInfo in islandInfoWrapper.islandInfoList)
@@ -526,9 +533,70 @@ public class ItemDataExtractorEditor : EditorWindow
             }
         }
 
+        // ========== 处理鱼缸装饰 ==========
+        List<FishTankDecData> fishTankDecs = LoadFishTankDecorationData();
+        if (fishTankDecs != null)
+        {
+            foreach (var dec in fishTankDecs)
+            {
+                ItemData existingItem = FindItemById(dec.id);
+                ItemData item;
+
+                if (existingItem != null)
+                {
+                    item = existingItem;
+                    item.name = dec.name;
+                    item.description = dec.description;
+                    item.itemType = 9;
+                    item.categoryId = GetCategoryIdByItemId(dec.id);
+                    item.iconPath = $"UI/Icon/FishTankDecIcons/{dec.id}";
+                    item.isUnique = true;
+                    // 价格保持原有值（若之前已设置则保留，否则为默认0/-1）
+                }
+                else
+                {
+                    item = new ItemData
+                    {
+                        id = dec.id,
+                        name = dec.name,
+                        description = dec.description,
+                        sellPrice = -1,
+                        buyPrice =-1,
+                        itemType = 9,
+                        categoryId = GetCategoryIdByItemId(dec.id),
+                        iconPath = $"UI/Icon/FishTankDecIcons/{dec.id}",
+                        isUnique = GetCategoryIdByItemId(dec.id) != 80 && GetCategoryIdByItemId(dec.id) != 81
+                    };
+                }
+                extractedItems.Add(item);
+            }
+        }
+
         SaveItemsToJson();
         Z_Logger.Log($"[物品提取] 完成！共 {extractedItems.Count} 条物品（含 {extractedItems.FindAll(i => i.itemType == 7).Count} 条图鉴情报，{extractedItems.FindAll(i => i.itemType == 8).Count} 条岛屿情报）");
         Repaint();
+    }
+
+    private List<FishTankDecData> LoadFishTankDecorationData()
+    {
+        string fullPath = Path.Combine(Application.dataPath, fishTankDecDataPath);
+        if (!File.Exists(fullPath))
+        {
+            Z_Logger.LogWarning($"[物品提取] 鱼缸装饰文件不存在: {fullPath}");
+            return null;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(fullPath);
+            var wrapper = JsonUtility.FromJson<FishTankDecListWrapper>(json);
+            return wrapper?.items ?? null;
+        }
+        catch (System.Exception e)
+        {
+            Z_Logger.LogError($"[物品提取] 加载鱼缸装饰数据失败: {e.Message}");
+            return null;
+        }
     }
 
     private void WriteItemsData()
@@ -585,7 +653,7 @@ public class ItemDataExtractorEditor : EditorWindow
     private void LoadExistingItems()
     {
         existingItems.Clear();
-        string fullPath = Path.Combine(Application.dataPath, "Resources", $"{outputPath}.json");
+        string fullPath = Path.Combine(Application.dataPath, "Addressables", $"{outputPath}.json");
 
         if (!File.Exists(fullPath))
         {
@@ -865,7 +933,7 @@ public class ItemDataExtractorEditor : EditorWindow
         };
 
         string json = JsonUtility.ToJson(wrapper, true);
-        string fullPath = Path.Combine(Application.dataPath, "Resources", $"{outputPath}.json");
+        string fullPath = Path.Combine(Application.dataPath, "Addressables", $"{outputPath}.json");
 
         string directory = Path.GetDirectoryName(fullPath);
         if (!Directory.Exists(directory))

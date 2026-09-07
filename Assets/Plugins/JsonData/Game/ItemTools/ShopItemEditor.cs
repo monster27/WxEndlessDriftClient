@@ -358,8 +358,9 @@ public class ShopItemEditor : EditorWindow
         var baitItems = shopItems.Where(s => GetItemType(s.itemId) == 2).ToList();
         var skinItems = shopItems.Where(s => GetItemType(s.itemId) == 4 || GetItemType(s.itemId) == 5).ToList();
         var collectionInfoItems = shopItems.Where(s => GetItemType(s.itemId) == 7).ToList();
-        var islandInfoItems = shopItems.Where(s => GetItemType(s.itemId) == 8).ToList();  // ✅ 新增：岛屿情报
+        var islandInfoItems = shopItems.Where(s => GetItemType(s.itemId) == 8).ToList();  
         var otherItems = shopItems.Where(s => GetItemType(s.itemId) == 3 || GetItemType(s.itemId) == 6).ToList();
+        var fishTankDecItems = shopItems.Where(s => GetItemType(s.itemId) == 9).ToList();
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField($"🐟 水产: {fishItems.Count} 件", GUILayout.Width(120));
@@ -367,7 +368,8 @@ public class ShopItemEditor : EditorWindow
         EditorGUILayout.LabelField($"🎨 皮肤: {skinItems.Count} 件", GUILayout.Width(120));
         EditorGUILayout.LabelField($"📖 图鉴情报: {collectionInfoItems.Count} 件", GUILayout.Width(140));
         EditorGUILayout.LabelField($"🏝️ 岛屿情报: {islandInfoItems.Count} 件", GUILayout.Width(140));
-        EditorGUILayout.LabelField($"📦 其他: {otherItems.Count} 件", GUILayout.Width(120));
+        EditorGUILayout.LabelField($"📦 室内外装饰: {otherItems.Count} 件", GUILayout.Width(120));
+        EditorGUILayout.LabelField($"🐠 鱼缸装饰: {fishTankDecItems.Count} 件", GUILayout.Width(140));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.EndVertical();
@@ -526,7 +528,7 @@ public class ShopItemEditor : EditorWindow
             string iconPath = GetItemIconPath(shopItem.itemId);
             if (!string.IsNullOrEmpty(iconPath))
             {
-                var obj = AssetDatabase.LoadAssetAtPath<Object>($"Assets/Resources/{iconPath}.png");
+                var obj = AssetDatabase.LoadAssetAtPath<Object>($"Assets/Addressables/{iconPath}.png");
                 if (obj != null)
                 {
                     EditorGUIUtility.PingObject(obj);
@@ -606,7 +608,8 @@ public class ShopItemEditor : EditorWindow
             case 4: return "🏕️";
             case 5: return "🏠";
             case 7: return "📖";
-            case 8: return "🏝️";  // ✅ 新增：岛屿情报图标
+            case 8: return "🏝️";
+            case 9: return "🐠";
             default: return "📦";
         }
     }

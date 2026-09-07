@@ -965,5 +965,4 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         var tank = GetFishTankById(tankId);
         return tank?.purchaseCost ?? 0;
     }
-
 }

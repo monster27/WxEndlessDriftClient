@@ -29,6 +29,7 @@ public class FishTankDecorationDataEditor : EditorWindow
     private int newId = 8001;
     private string newName = "新装饰";
     private int newCategoryIndex = 0;
+    private float newBonus = 0f;   // 改为 float
 
     private readonly string[] categoryNames = { "全部", "摆设(80)", "挂饰(81)", "边框(82)", "底面(83)", "背景(84)" };
     private readonly int[] categoryValues = { 0, 80, 81, 82, 83, 84 };
@@ -72,7 +73,7 @@ public class FishTankDecorationDataEditor : EditorWindow
         DrawTopToolbar();
         EditorGUILayout.BeginHorizontal();
 
-        EditorGUILayout.BeginVertical(GUILayout.Width(520));
+        EditorGUILayout.BeginVertical(GUILayout.Width(580));
         DrawSearchFilter();
         DrawQuickCreate();
         DrawDecorationList();
@@ -131,13 +132,17 @@ public class FishTankDecorationDataEditor : EditorWindow
         newId = EditorGUILayout.IntField(newId, GUILayout.Width(60));
 
         EditorGUILayout.LabelField("名称:", GUILayout.Width(35));
-        newName = EditorGUILayout.TextField(newName, GUILayout.Width(140));
+        newName = EditorGUILayout.TextField(newName, GUILayout.Width(120));
 
         EditorGUILayout.LabelField("类别:", GUILayout.Width(35));
         newCategoryIndex = EditorGUILayout.Popup(newCategoryIndex, new string[] { "摆设", "挂饰", "边框", "底面", "背景" });
 
         int categoryId = categoryValues[newCategoryIndex + 1];
         EditorGUILayout.LabelField($"范围: {categoryStartIds[newCategoryIndex + 1]}-{categoryEndIds[newCategoryIndex + 1]}", GUILayout.Width(130));
+
+        // 加成输入（float）
+        EditorGUILayout.LabelField("加成:", GUILayout.Width(35));
+        newBonus = EditorGUILayout.FloatField(newBonus, GUILayout.Width(50));
 
         GUI.backgroundColor = new Color(0.2f, 0.7f, 0.2f);
         if (GUILayout.Button("创建", GUILayout.Width(50)))
@@ -174,6 +179,7 @@ public class FishTankDecorationDataEditor : EditorWindow
         EditorGUILayout.LabelField("ID", EditorStyles.toolbarButton, GUILayout.Width(50));
         EditorGUILayout.LabelField("名称", EditorStyles.toolbarButton, GUILayout.Width(150));
         EditorGUILayout.LabelField("类别", EditorStyles.toolbarButton, GUILayout.Width(80));
+        EditorGUILayout.LabelField("加成", EditorStyles.toolbarButton, GUILayout.Width(50));
         EditorGUILayout.LabelField("操作", EditorStyles.toolbarButton, GUILayout.Width(95));
         EditorGUILayout.EndHorizontal();
 
@@ -257,6 +263,9 @@ public class FishTankDecorationDataEditor : EditorWindow
         EditorGUILayout.LabelField(categoryName, categoryStyle, GUILayout.Width(80));
         GUI.backgroundColor = Color.white;
 
+        // 显示加成（float）
+        EditorGUILayout.LabelField($"{item.bonus}", GUILayout.Width(50));
+
         EditorGUILayout.BeginHorizontal(GUILayout.Width(95));
 
         GUI.backgroundColor = new Color(0.4f, 0.7f, 1f);
@@ -315,6 +324,7 @@ public class FishTankDecorationDataEditor : EditorWindow
 
         string categoryName = categoryNameMap.TryGetValue(item.categoryId, out string name) ? name : $"未知({item.categoryId})";
         EditorGUILayout.LabelField($"类别: {categoryName}");
+        EditorGUILayout.LabelField($"加成: {item.bonus}");   // 显示 float
 
         EditorGUILayout.LabelField("描述:", EditorStyles.boldLabel);
         EditorGUILayout.TextArea(item.description, GUILayout.Height(60));
@@ -398,6 +408,12 @@ public class FishTankDecorationDataEditor : EditorWindow
         item.categoryId = categoryValues[newCategoryIndex + 1];
         EditorGUILayout.EndHorizontal();
 
+        // 加成编辑（float）
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("加成:", GUILayout.Width(60));
+        item.bonus = EditorGUILayout.FloatField(item.bonus, GUILayout.Width(80));
+        EditorGUILayout.EndHorizontal();
+
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("描述:", GUILayout.Width(60));
         EditorGUILayout.EndHorizontal();
@@ -426,11 +442,11 @@ public class FishTankDecorationDataEditor : EditorWindow
     {
         switch (categoryId)
         {
-            case 80: return new Color(0.2f, 0.8f, 0.6f); // 摆设
-            case 81: return new Color(0.9f, 0.3f, 0.5f); // 挂饰
-            case 82: return new Color(0.8f, 0.7f, 0.2f); // 边框
-            case 83: return new Color(0.6f, 0.4f, 0.2f); // 底面
-            case 84: return new Color(0.3f, 0.6f, 0.9f); // 背景
+            case 80: return new Color(0.2f, 0.8f, 0.6f);
+            case 81: return new Color(0.9f, 0.3f, 0.5f);
+            case 82: return new Color(0.8f, 0.7f, 0.2f);
+            case 83: return new Color(0.6f, 0.4f, 0.2f);
+            case 84: return new Color(0.3f, 0.6f, 0.9f);
             default: return Color.gray;
         }
     }
@@ -526,7 +542,8 @@ public class FishTankDecorationDataEditor : EditorWindow
             id = newId,
             name = newName,
             description = "",
-            categoryId = categoryId
+            categoryId = categoryId,
+            bonus = newBonus   // float
         };
 
         decorationList.Add(newItem);
@@ -535,6 +552,7 @@ public class FishTankDecorationDataEditor : EditorWindow
 
         newId = FindNextAvailableId(categoryId);
         if (newId == -1) newId = categoryStartIds[newCategoryIndex + 1];
+        newBonus = 0f; // 重置为 0
 
         EditorUtility.DisplayDialog("成功", $"已创建 [{newItem.id}] {newItem.name}", "确定");
         Repaint();
@@ -564,7 +582,14 @@ public class FishTankDecorationDataEditor : EditorWindow
 
     private void AddDefaultData()
     {
-        // 默认数据已在JSON中，这里不重复添加
+        // 如果希望有默认数据，可以在这里补充，但注意 bonus 应为 float
+        // 例如：
+        // decorationList = new List<FishTankDecData>
+        // {
+        //     new FishTankDecData { id = 8001, name = "默认摆设", description = "", categoryId = 80, bonus = 0f },
+        //     ...
+        // };
+        // 但建议在外部 JSON 中维护默认数据，此处留空。
     }
 
     #endregion

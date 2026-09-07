@@ -9,6 +9,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
 using static PlayerDataManager;
+using System.Linq;
 
 public enum FishTankPanelType
 {
@@ -465,7 +466,37 @@ public class FishTankStorePanel : MonoBehaviour
 
         _onFishTransfer?.Invoke(fishItem.FishDetail, _currentData, toData);
     }
+    public void SortByRarity()
+    {
+        if (_currentData == null || !_currentData.IsUnlocked || _currentData.FishList == null || _currentData.FishList.Count == 0)
+        {
+            LogDebug("SortByRarity 跳过：数据无效或未解锁");
+            return;
+        }
 
+        // 按稀有度降序排列 UI 物体，不改变数据列表顺序
+        ReorderFishItems(
+            keySelector: fish => LoadDataManager.Instance?.GetFishById(fish.fishId)?.rarityId ?? 0,
+            descending: true
+        );
+        LogDebug("按稀有度排序完成");
+    }
+
+    public void SortByPrice()
+    {
+        if (_currentData == null || !_currentData.IsUnlocked || _currentData.FishList == null || _currentData.FishList.Count == 0)
+        {
+            LogDebug("SortByPrice 跳过：数据无效或未解锁");
+            return;
+        }
+
+        // 按价格降序排列 UI 物体
+        ReorderFishItems(
+            keySelector: fish => fish.calculatedPrice,
+            descending: true
+        );
+        LogDebug("按价格排序完成");
+    }
     // ============================================================
     // 辅助方法
     // ============================================================
@@ -483,7 +514,30 @@ public class FishTankStorePanel : MonoBehaviour
         }
         return null;
     }
+    /// <summary>
+    /// 根据指定的键对当前激活的鱼 UI 项进行排序，调整它们在父容器中的层级顺序（sibling index）。
+    /// 此方法不会修改数据列表 _currentData.FishList 的顺序。
+    /// </summary>
+    /// <param name="keySelector">从 FishDetailData 提取排序键的委托（键需实现 IComparable）</param>
+    /// <param name="descending">是否降序（true 为降序，false 为升序）</param>
+    private void ReorderFishItems(Func<FishDetailData, IComparable> keySelector, bool descending)
+    {
+        // 获取当前所有活跃的 UI 项
+        var activeItems = _activeFishItems.Values.ToList();
+        if (activeItems.Count == 0) return;
 
+        // 根据 keySelector 排序（降序或升序）
+        if (descending)
+            activeItems.Sort((a, b) => keySelector(b.FishDetail).CompareTo(keySelector(a.FishDetail)));
+        else
+            activeItems.Sort((a, b) => keySelector(a.FishDetail).CompareTo(keySelector(b.FishDetail)));
+
+        // 按排序后的顺序设置 sibling index（索引越小越靠前显示）
+        for (int i = 0; i < activeItems.Count; i++)
+        {
+            activeItems[i].transform.SetSiblingIndex(i);
+        }
+    }
     // ============================================================
     // 生命周期
     // ============================================================
