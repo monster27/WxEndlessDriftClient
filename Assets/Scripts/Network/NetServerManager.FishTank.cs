@@ -1,6 +1,6 @@
 // ============================================================
 // 文件: NetServerManager.FishTank.cs
-// 说明: 鱼缸系统网络请求 - 只负责收发数据
+// 说明: 鱼缸系统网络请求 - 只负责收发数据（装饰相关已移入 FishTankDecoration.cs）
 // 路径: Assets/Scripts/Network/
 // ============================================================
 
@@ -979,83 +979,6 @@ public partial class NetServerManager
         {
             if (!success) GameUIManager.Instance?.ShowTip(message);
         });
-    }
-
-    // ============================================================
-    // ✅ 装饰操作网络方法（需根据实际API实现）
-    // ============================================================
-
-    public void EquipDecoration(int tankId, int category, int decorationId,
-        float posX, float posY, float posZ,
-        float scaleX, float scaleY, float scaleZ,
-        float rotX, float rotY, float rotZ,
-        Action<bool, string, int> onComplete)
-    {
-        // TODO: 实现装备装饰的网络请求
-        // 成功后调用 onComplete(true, "成功", newRecordId)
-        // 失败调用 onComplete(false, "失败", 0)
-        StartCoroutine(EquipDecorationCoroutine(tankId, category, decorationId,
-            posX, posY, posZ, scaleX, scaleY, scaleZ, rotX, rotY, rotZ, onComplete));
-    }
-
-    private IEnumerator EquipDecorationCoroutine(int tankId, int category, int decorationId,
-        float posX, float posY, float posZ,
-        float scaleX, float scaleY, float scaleZ,
-        float rotX, float rotY, float rotZ,
-        Action<bool, string, int> onComplete)
-    {
-        // 模拟请求
-        yield return new WaitForSeconds(0.3f);
-        // 成功后应调用 PlayerDataManager.AddEquippedDecoration 并更新拥有数量
-        onComplete?.Invoke(true, "装备成功", UnityEngine.Random.Range(1000, 9999));
-    }
-
-    public void UnEquipDecoration(int tankId, int recordId, Action<bool, string> onComplete)
-    {
-        StartCoroutine(UnEquipDecorationCoroutine(tankId, recordId, onComplete));
-    }
-
-    private IEnumerator UnEquipDecorationCoroutine(int tankId, int recordId, Action<bool, string> onComplete)
-    {
-        yield return new WaitForSeconds(0.3f);
-        // 成功后调用 PlayerDataManager.RemoveEquippedDecoration
-        onComplete?.Invoke(true, "卸下成功");
-    }
-
-    public void MirrorDecoration(int tankId, int recordId, float rotationY, Action<bool, string> onComplete)
-    {
-        StartCoroutine(MirrorDecorationCoroutine(tankId, recordId, rotationY, onComplete));
-    }
-
-    private IEnumerator MirrorDecorationCoroutine(int tankId, int recordId, float rotationY, Action<bool, string> onComplete)
-    {
-        yield return new WaitForSeconds(0.3f);
-        // 成功后调用 PlayerDataManager.UpdateDecorationMirror
-        onComplete?.Invoke(true, "镜像成功");
-    }
-
-    public void MoveDecoration(int tankId, int recordId, float posX, float posY, Action<bool, string> onComplete)
-    {
-        StartCoroutine(MoveDecorationCoroutine(tankId, recordId, posX, posY, onComplete));
-    }
-
-    private IEnumerator MoveDecorationCoroutine(int tankId, int recordId, float posX, float posY, Action<bool, string> onComplete)
-    {
-        yield return new WaitForSeconds(0.3f);
-        // 成功后调用 PlayerDataManager.UpdateDecorationPosition
-        onComplete?.Invoke(true, "移动成功");
-    }
-
-    public void ApplyTextureDecoration(int tankId, int category, int decorationId, Action<bool, string> onComplete)
-    {
-        StartCoroutine(ApplyTextureDecorationCoroutine(tankId, category, decorationId, onComplete));
-    }
-
-    private IEnumerator ApplyTextureDecorationCoroutine(int tankId, int category, int decorationId, Action<bool, string> onComplete)
-    {
-        yield return new WaitForSeconds(0.3f);
-        // 成功后直接更新UI，数据由服务器维护
-        onComplete?.Invoke(true, "应用成功");
     }
 
     // ============================================================

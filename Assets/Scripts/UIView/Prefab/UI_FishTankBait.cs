@@ -19,19 +19,32 @@ public class UI_FishTankBait : MonoBehaviour
 
     private void Awake()
     {
-        _rect = GetComponent<RectTransform>();
-        if (_rect == null) _rect = gameObject.AddComponent<RectTransform>();
-        _rect.anchorMin = new Vector2(0.5f, 0.5f);
-        _rect.anchorMax = new Vector2(0.5f, 0.5f);
-        _rect.pivot = new Vector2(0.5f, 0.5f);
+        EnsureComponents();
+    }
 
-        _image = GetComponent<Image>();
-        if (_image == null) _image = gameObject.AddComponent<Image>();
-        _image.raycastTarget = false;
+    private void EnsureComponents()
+    {
+        if (_rect == null)
+        {
+            _rect = GetComponent<RectTransform>();
+            if (_rect == null) _rect = gameObject.AddComponent<RectTransform>();
+            _rect.anchorMin = new Vector2(0.5f, 0.5f);
+            _rect.anchorMax = new Vector2(0.5f, 0.5f);
+            _rect.pivot = new Vector2(0.5f, 0.5f);
+        }
+
+        if (_image == null)
+        {
+            _image = GetComponent<Image>();
+            if (_image == null) _image = gameObject.AddComponent<Image>();
+            _image.raycastTarget = false;
+        }
     }
 
     public void Init(FishTankMainPanel manager, Rect totalRect, float fallSpeedRatio, float scale)
     {
+        EnsureComponents();
+
         _manager = manager;
         _totalRect = totalRect;
         _fallSpeedRatio = fallSpeedRatio;
@@ -45,6 +58,7 @@ public class UI_FishTankBait : MonoBehaviour
 
     public void ResetBait(Vector3 anchoredPos)
     {
+        EnsureComponents();
         _rect.anchoredPosition = new Vector2(anchoredPos.x, anchoredPos.y);
         _isFalling = true;
         _isTriggered = false;
@@ -61,6 +75,8 @@ public class UI_FishTankBait : MonoBehaviour
     public void UpdateBait()
     {
         if (_isTriggered || !_isActive) return;
+
+        EnsureComponents();
 
         Rect currentRect = _manager != null ? _manager.TotalRect : _totalRect;
         if (currentRect.height <= 0.1f) return;
@@ -93,9 +109,15 @@ public class UI_FishTankBait : MonoBehaviour
     public bool IsActive => _isActive;
     public bool IsFalling => _isFalling;
 
-    /// <summary>世界坐标（用于跨容器比较）</summary>
-    public Vector3 GetWorldPosition() => _rect.position;
+    public Vector3 GetWorldPosition()
+    {
+        EnsureComponents();
+        return _rect.position;
+    }
 
-    /// <summary>当前所在容器的本地坐标（用于显示/下落）</summary>
-    public Vector2 GetAnchoredPosition() => _rect.anchoredPosition;
+    public Vector2 GetAnchoredPosition()
+    {
+        EnsureComponents();
+        return _rect.anchoredPosition;
+    }
 }

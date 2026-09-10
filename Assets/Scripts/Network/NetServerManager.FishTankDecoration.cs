@@ -10,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using Newtonsoft.Json;
+using static PlayerDataManager;
 
 public partial class NetServerManager
 {
@@ -40,7 +41,7 @@ public partial class NetServerManager
         float? posX = null, float? posY = null, float? posZ = null,
         float? scaleX = null, float? scaleY = null, float? scaleZ = null,
         float? rotX = null, float? rotY = null, float? rotZ = null,
-        Action<bool, string, int> onComplete = null)  // 增加 newRecordId
+        Action<bool, string, int> onComplete = null)
     {
         StartCoroutine(EquipDecorationCoroutine(tankId, slotType, decorationId,
             posX, posY, posZ, scaleX, scaleY, scaleZ, rotX, rotY, rotZ, onComplete));
@@ -52,6 +53,46 @@ public partial class NetServerManager
     public void UnequipDecoration(int tankId, int slotType, Action<bool, string> onComplete = null)
     {
         StartCoroutine(UnequipDecorationCoroutine(tankId, slotType, onComplete));
+    }
+
+    /// <summary>
+    /// 按记录ID卸下装饰（推荐使用，精确控制）
+    /// </summary>
+    public void UnEquipDecoration(int tankId, int recordId, Action<bool, string> onComplete = null)
+    {
+        StartCoroutine(UnequipDecorationByIdCoroutine(recordId, onComplete));
+    }
+
+    /// <summary>
+    /// 镜像装饰（通过 update-transform 修改 RotationY）
+    /// </summary>
+    public void MirrorDecoration(int tankId, int recordId, float rotationY, Action<bool, string> onComplete = null)
+    {
+        StartCoroutine(UpdateTransformCoroutine(recordId,
+            null, null, null,
+            null, null, null,
+            null, rotationY, null,
+            onComplete));
+    }
+
+    /// <summary>
+    /// 移动装饰（通过 update-transform 修改 PositionX / PositionY）
+    /// </summary>
+    public void MoveDecoration(int tankId, int recordId, float posX, float posY, Action<bool, string> onComplete = null)
+    {
+        StartCoroutine(UpdateTransformCoroutine(recordId,
+            posX, posY, null,
+            null, null, null,
+            null, null, null,
+            onComplete));
+    }
+
+    /// <summary>
+    /// 应用纹理装饰（82/83/84）—— 由于这三类每类只能装备 1 个，装备成功即已应用，无需额外网络请求
+    /// </summary>
+    public void ApplyTextureDecoration(int tankId, int category, int decorationId, Action<bool, string> onComplete = null)
+    {
+        onComplete?.Invoke(true, "应用成功");
     }
 
     // ============================================================
@@ -207,8 +248,6 @@ public partial class NetServerManager
                     {
                         Z_Logger.Log($"[NetServerManager] 装备装饰成功: {response.message}, 新ID={response.newRecordId}");
                         onComplete?.Invoke(true, response.message, response.newRecordId);
-                        // 触发更新事件
-                        CommunicateEvent.Modify("DecorationDataUpdated");
                         yield break;
                     }
                     else
@@ -271,7 +310,6 @@ public partial class NetServerManager
                     {
                         Z_Logger.Log($"[NetServerManager] 卸下装饰成功: {response.message}");
                         onComplete?.Invoke(true, response.message);
-                        CommunicateEvent.Modify("DecorationDataUpdated");
                         yield break;
                     }
                     else
@@ -295,6 +333,146 @@ public partial class NetServerManager
         onComplete?.Invoke(false, "网络请求失败");
     }
 
+    private IEnumerator UnequipDecorationByIdCoroutine(int recordId, Action<bool, string> onComplete)
+    {
+        if (!CheckNetworkConnection())
+        {
+            onComplete?.Invoke(false, "网络未连接");
+            yield break;
+        }
+
+        var requestData = new Dictionary<string, object>
+        {
+            { "PlayerId", _currentPlayerId },
+            { "RecordId", recordId }
+        };
+
+        string json = NetUtils.SerializeToJson(requestData);
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+        string url = GetFullUrl(ServerUrls.FishTankDecoration.UnequipById);
+
+        Z_Logger.Log($"[NetServerManager] 按ID卸下装饰请求: recordId={recordId}");
+
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string responseJson = request.downloadHandler.text;
+                try
+                {
+                    var response = JsonConvert.DeserializeObject<OperationResponse>(responseJson);
+                    if (response != null && response.success)
+                    {
+                        Z_Logger.Log($"[NetServerManager] 按ID卸下装饰成功: {response.message}");
+                        onComplete?.Invoke(true, response.message);
+                        yield break;
+                    }
+                    else
+                    {
+                        Z_Logger.LogWarning($"[NetServerManager] 按ID卸下装饰失败: {response?.message ?? "未知错误"}");
+                        onComplete?.Invoke(false, response?.message ?? "卸下失败");
+                        yield break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Z_Logger.LogError($"[NetServerManager] 解析按ID卸下响应失败: {e.Message}");
+                }
+            }
+            else
+            {
+                Z_Logger.LogError($"[NetServerManager] 按ID卸下请求失败: {request.error}");
+            }
+        }
+
+        onComplete?.Invoke(false, "网络请求失败");
+    }
+
+    /// <summary>
+    /// 更新装饰变换的统一协程（移动 / 镜像共用）
+    /// </summary>
+    private IEnumerator UpdateTransformCoroutine(
+        int recordId,
+        float? posX, float? posY, float? posZ,
+        float? scaleX, float? scaleY, float? scaleZ,
+        float? rotX, float? rotY, float? rotZ,
+        Action<bool, string> onComplete)
+    {
+        if (!CheckNetworkConnection())
+        {
+            onComplete?.Invoke(false, "网络未连接");
+            yield break;
+        }
+
+        var requestData = new Dictionary<string, object>
+        {
+            { "PlayerId", _currentPlayerId },
+            { "RecordId", recordId }
+        };
+
+        if (posX.HasValue) requestData["PositionX"] = posX.Value;
+        if (posY.HasValue) requestData["PositionY"] = posY.Value;
+        if (posZ.HasValue) requestData["PositionZ"] = posZ.Value;
+        if (scaleX.HasValue) requestData["ScaleX"] = scaleX.Value;
+        if (scaleY.HasValue) requestData["ScaleY"] = scaleY.Value;
+        if (scaleZ.HasValue) requestData["ScaleZ"] = scaleZ.Value;
+        if (rotX.HasValue) requestData["RotationX"] = rotX.Value;
+        if (rotY.HasValue) requestData["RotationY"] = rotY.Value;
+        if (rotZ.HasValue) requestData["RotationZ"] = rotZ.Value;
+
+        string json = NetUtils.SerializeToJson(requestData);
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+        string url = GetFullUrl(ServerUrls.FishTankDecoration.UpdateTransform);
+
+        Z_Logger.Log($"[NetServerManager] 更新装饰变换请求: recordId={recordId}");
+
+        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        {
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10;
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                string responseJson = request.downloadHandler.text;
+                try
+                {
+                    var response = JsonConvert.DeserializeObject<OperationResponse>(responseJson);
+                    if (response != null && response.success)
+                    {
+                        Z_Logger.Log($"[NetServerManager] 更新变换成功: {response.message}");
+                        onComplete?.Invoke(true, response.message);
+                        yield break;
+                    }
+                    else
+                    {
+                        Z_Logger.LogWarning($"[NetServerManager] 更新变换失败: {response?.message ?? "未知错误"}");
+                        onComplete?.Invoke(false, response?.message ?? "更新失败");
+                        yield break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Z_Logger.LogError($"[NetServerManager] 解析更新变换响应失败: {e.Message}");
+                }
+            }
+            else
+            {
+                Z_Logger.LogError($"[NetServerManager] 更新变换请求失败: {request.error}");
+            }
+        }
+
+        onComplete?.Invoke(false, "网络请求失败");
+    }
+
     // ============================================================
     // 数据类定义
     // ============================================================
@@ -310,7 +488,7 @@ public partial class NetServerManager
     private class EquippedStatusResponse
     {
         public bool success;
-        public Dictionary<int, List<DecorationEquipInfo>> data;  // 改为列表
+        public Dictionary<int, List<DecorationEquipInfo>> data;
     }
 
     [Serializable]
@@ -325,6 +503,6 @@ public partial class NetServerManager
     {
         public bool success;
         public string message;
-        public int newRecordId;  // 新增字段
+        public int newRecordId;
     }
 }

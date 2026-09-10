@@ -150,31 +150,15 @@ public static class ServerUrls
 
     public static class FishTank
     {
-        /// <summary>获取玩家所有鱼缸列表</summary>
         public static string List(int playerId) => $"/api/fishtank/list/{playerId}";
-
-        /// <summary>获取指定鱼缸状态</summary>
         public static string Status(int playerId, int tankId) => $"/api/fishtank/status/{playerId}/{tankId}";
-
-        /// <summary>获取鱼缸升级信息</summary>
         public static string UpgradeInfo(int playerId, int tankId) => $"/api/fishtank/upgrade-info/{playerId}/{tankId}";
-
-        /// <summary>解锁指定鱼缸</summary>
         public static string Unlock(int playerId, int tankId) => $"/api/fishtank/unlock/{playerId}/{tankId}";
-
-        /// <summary>升级指定鱼缸</summary>
         public static string Upgrade(int playerId, int tankId) => $"/api/fishtank/upgrade/{playerId}/{tankId}";
 
-        /// <summary>从鱼篓放入鱼缸</summary>
         public const string MoveBagToTank = "/api/fishtank/move/bag-to-tank";
-
-        /// <summary>从鱼缸取出到鱼篓</summary>
         public const string MoveTankToBag = "/api/fishtank/move/tank-to-bag";
-
-        /// <summary>批量从鱼篓放入鱼缸</summary>
         public const string BatchMoveBagToTank = "/api/fishtank/move/batch/bag-to-tank";
-
-        /// <summary>从鱼缸转移到另一个鱼缸</summary>
         public const string MoveTankToTank = "/api/fishtank/move/tank-to-tank";
     }
 
@@ -189,7 +173,13 @@ public static class ServerUrls
         /// <summary>装备装饰</summary>
         public const string Equip = "/api/FishTankDecoration/equip";
 
-        /// <summary>卸下装饰</summary>
+        /// <summary>按槽位卸下装饰（兼容旧逻辑）</summary>
         public const string Unequip = "/api/FishTankDecoration/unequip";
+
+        /// <summary>按记录ID卸下装饰（推荐）</summary>
+        public const string UnequipById = "/api/FishTankDecoration/unequip-by-id";
+
+        /// <summary>更新装饰变换（移动 / 镜像）</summary>
+        public const string UpdateTransform = "/api/FishTankDecoration/update-transform";
     }
 }

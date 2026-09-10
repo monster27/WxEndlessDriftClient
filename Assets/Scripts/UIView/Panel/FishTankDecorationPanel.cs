@@ -11,6 +11,9 @@ public class FishTankDecorationPanel : MonoBehaviour
     [Header("===== 调试 =====")]
     [SerializeField] private bool enableDebugLog = false;
 
+    [Header("===== 关闭按钮 =====")]
+    [SerializeField] private Button closeBtn;
+
     [Header("===== 品类 Toggle 组 =====")]
     [SerializeField] private ToggleGroup categoryToggleGroup;
     [SerializeField] private Toggle toggle80;
@@ -23,33 +26,57 @@ public class FishTankDecorationPanel : MonoBehaviour
     [SerializeField] private Transform decorationContainer;
     [SerializeField] private GameObject decPrefab;
 
-    [Header("===== 当前鱼缸ID =====")]
-    [SerializeField] private int currentTankId = 1;
+    [Header("===== 操作面板引用 =====")]
+    [SerializeField] private UI_FishTankDecOperator decOperator;
 
     [Header("===== 对象池 =====")]
     [SerializeField] private int poolInitSize = 5;
 
-    // ---------- 数据 ----------
+    // 数据
     private int _currentCategory = 80;
-    private List<int> _ownedDecorationIds = new List<int>();
+    private int _currentTankId = 1;
     private Dictionary<int, List<DecorationEquipInfo>> _equippedStatus = new Dictionary<int, List<DecorationEquipInfo>>();
+    private List<FishTankDecData> _allDecConfigs = new List<FishTankDecData>();
 
     private DecorationObjectPool _pool;
     private List<UI_FishTankDecPrefab> _activeItems = new List<UI_FishTankDecPrefab>();
     private bool _isInitialized = false;
-    private List<FishTankDecData> _allDecConfigs = new List<FishTankDecData>();
 
-    // ---------- 初始化 ----------
-    public void Init(int tankId = 1)
+    // 回调
+    private Action _onCloseCallback;
+    private Action<FishTankDecData> _onItemClickCallback;
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 初始化
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    public void Init(bool isEnableDebug = false)
     {
-        currentTankId = tankId;
-        _allDecConfigs = LoadDataManager.Instance.fishTankDecorations ?? new List<FishTankDecData>();
+        if (_isInitialized) return;
+        enableDebugLog = isEnableDebug;
+
+        _allDecConfigs = LoadDataManager.Instance?.fishTankDecorations ?? new List<FishTankDecData>();
         _pool = new DecorationObjectPool(decPrefab, decorationContainer, poolInitSize);
+
         SetupToggles();
-        RegisterEvents();
+        SetupCloseButton();
+
+        if (decOperator != null) decOperator.EnsureInit();
+
         _isInitialized = true;
-        LogDebug($"初始化完成，当前鱼缸ID={currentTankId}");
-        RefreshData();
+        LogDebug("初始化完成");
+    }
+
+    private void SetupCloseButton()
+    {
+        if (closeBtn == null) return;
+        closeBtn.onClick.RemoveAllListeners();
+        closeBtn.onClick.AddListener(() =>
+        {
+            HideDecOperator();
+            gameObject.SetActive(false);
+            _onCloseCallback?.Invoke();
+        });
     }
 
     private void SetupToggles()
@@ -67,58 +94,91 @@ public class FishTankDecorationPanel : MonoBehaviour
         else _currentCategory = 80;
     }
 
-    private void RegisterEvents()
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 对外接口
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    public void SetCloseCallback(Action callback) { _onCloseCallback = callback; }
+    public void SetItemClickCallback(Action<FishTankDecData> callback) { _onItemClickCallback = callback; }
+
+    public void SetOperatorCallbacks(
+        Action<int, float, float> onDragMove,
+        Action<int, float, float> onDragEnd,
+        Action<int> onMirror,
+        Action<int> onRemove)
     {
-        UnregisterEvents();
-        CommunicateEvent.Register(FishTankMessage.DecorationDataUpdated.ToString(), OnDecorationDataUpdated);
+        if (decOperator != null)
+            decOperator.SetCallbacks(onDragMove, onDragEnd, onMirror, onRemove);
     }
 
-    private void UnregisterEvents()
+    public void Open(int tankId)
     {
-        CommunicateEvent.Unregister(FishTankMessage.DecorationDataUpdated.ToString(), OnDecorationDataUpdated);
+        _currentTankId = tankId;
+        RefreshData();
     }
 
-    // ---------- 数据刷新（通过 PlayerDataService） ----------
+    public void Close()
+    {
+        HideDecOperator();
+        gameObject.SetActive(false);
+    }
+
     public void RefreshData()
     {
         if (!_isInitialized) return;
 
-        // 通过 Service 获取数据
-        _ownedDecorationIds = PlayerDataService.Instance?.GetOwnedDecorationIds() ?? new List<int>();
-        _equippedStatus = PlayerDataService.Instance?.GetEquippedDecorations(currentTankId)
+        // ★ 不再拉取 _ownedDecorationIds，改为直接查背包数量
+        _equippedStatus = PlayerDataService.Instance?.GetEquippedDecorations(_currentTankId)
                           ?? new Dictionary<int, List<DecorationEquipInfo>>();
 
-        // 补全：若已装备但未在拥有列表中（数据一致性问题）
-        foreach (var kvp in _equippedStatus)
-        {
-            foreach (var info in kvp.Value)
-            {
-                if (!_ownedDecorationIds.Contains(info.DecorationId))
-                    _ownedDecorationIds.Add(info.DecorationId);
-            }
-        }
-
         RenderCurrentCategory();
-
-        // 通知主面板刷新装饰显示（如果是装饰模式）
-        CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
     }
 
-    private void OnDecorationDataUpdated()
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 操作面板控制
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    public bool IsDecOperatorShowing => decOperator != null && decOperator.IsShowing;
+    public int CurrentDecOperatorRecordId => decOperator != null ? decOperator.CurrentRecordId : 0;
+
+    public void ShowDecOperator(int tankId, int recordId, int category, int decorationId, RectTransform decorationRect)
     {
-        LogDebug("收到装饰数据更新通知，刷新数据");
-        RefreshData();
+        if (decOperator == null) return;
+        decOperator.ShowForDecoration(tankId, recordId, category, decorationId, decorationRect);
     }
 
+    public void HideDecOperator()
+    {
+        if (decOperator != null) decOperator.Hide();
+    }
+
+    public void RefreshDecOperatorPosition()
+    {
+        if (decOperator != null) decOperator.UpdatePosition();
+    }
+
+    public void RebindDecOperatorTarget(int recordId, RectTransform newRect)
+    {
+        if (decOperator == null) return;
+        if (!decOperator.IsShowing) return;
+        if (decOperator.CurrentRecordId != recordId) return;
+
+        if (newRect != null) decOperator.RebindTarget(newRect);
+        else decOperator.Hide();
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private void OnCategoryChanged(int category)
     {
         if (_currentCategory == category) return;
         _currentCategory = category;
-        LogDebug($"切换到品类 {category}");
         RenderCurrentCategory();
     }
 
-    // ---------- 渲染 ----------
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 渲染
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
     private void RenderCurrentCategory()
     {
         ClearActiveItems();
@@ -128,34 +188,31 @@ public class FishTankDecorationPanel : MonoBehaviour
             .OrderBy(c => c.id)
             .ToList();
 
-        if (configs.Count == 0)
-        {
-            LogDebug($"品类 {_currentCategory} 无装饰配置");
-            return;
-        }
+        if (configs.Count == 0) return;
 
-        foreach (var config in configs)
+        for (int i = 0; i < configs.Count; i++)
         {
+            var config = configs[i];
             UI_FishTankDecPrefab item = _pool.Get();
             item.transform.SetParent(decorationContainer, false);
+            item.transform.SetSiblingIndex(i);   // ★ 强制按 ID 顺序
             item.gameObject.SetActive(true);
 
-            bool owned = _ownedDecorationIds.Contains(config.id);
+            // ★ 从背包查真实数量（不再是 owned ? 1 : 0）
+            int ownedQuantity = PlayerDataService.Instance?.GetOwnedDecorationQuantity(config.id) ?? 0;
+            bool owned = ownedQuantity > 0;
 
-            bool equipped = false;
+            // 当前品类已装备数量
             int equippedCount = 0;
             if (_equippedStatus.TryGetValue(_currentCategory, out var list))
             {
                 foreach (var info in list)
                 {
-                    if (info.DecorationId == config.id)
-                    {
-                        equipped = true;
-                        equippedCount++;
-                    }
+                    if (info.DecorationId == config.id) equippedCount++;
                 }
             }
 
+            // 80/81 跨品类统计；82-84 只统计当前品类
             int totalEquippedCount = 0;
             if (_currentCategory == 80 || _currentCategory == 81)
             {
@@ -173,17 +230,12 @@ public class FishTankDecorationPanel : MonoBehaviour
                 totalEquippedCount = equippedCount;
             }
 
-            int ownedQuantity = 0;
-            if (owned) ownedQuantity = 1; // 简化
+            bool equipped = totalEquippedCount > 0;
+            int unEquippedCount = Mathf.Max(0, ownedQuantity - totalEquippedCount);
 
-            int unEquippedCount = ownedQuantity - totalEquippedCount;
-            if (unEquippedCount < 0) unEquippedCount = 0;
-
-            item.Init(config, owned, equipped, totalEquippedCount, unEquippedCount, currentTankId, OnDecorationClick);
+            item.Init(config, owned, equipped, totalEquippedCount, unEquippedCount, _currentTankId, OnDecorationItemClickedInternal);
             _activeItems.Add(item);
         }
-
-        LogDebug($"渲染完成，品类{_currentCategory} 共 {configs.Count} 个装饰");
     }
 
     private void ClearActiveItems()
@@ -199,127 +251,16 @@ public class FishTankDecorationPanel : MonoBehaviour
         _activeItems.Clear();
     }
 
-    // ============================================================
-    // 点击事件处理（全部发送事件）
-    // ============================================================
-    private void OnDecorationClick(UI_FishTankDecPrefab item)
+    private void OnDecorationItemClickedInternal(UI_FishTankDecPrefab item)
     {
-        if (item == null || item.Config == null)
-        {
-            LogDebug("OnDecorationClick: item 或 config 为空");
-            return;
-        }
-
-        int decId = item.Config.id;
-        int category = item.Config.categoryId;
-        LogDebug($"OnDecorationClick: decId={decId}, category={category}, tankId={currentTankId}");
-
-        bool owned = _ownedDecorationIds.Contains(decId);
-        if (!owned)
-        {
-            LogDebug("未拥有此装饰，显示提示");
-            GameUIManager.ShowMessage("尚未拥有该装饰");
-            return;
-        }
-
-        // 80/81：已装备则选中显示操作面板，否则装备
-        if (category == 80 || category == 81)
-        {
-            bool alreadyEquipped = false;
-            int recordId = 0;
-            if (_equippedStatus.TryGetValue(category, out var list))
-            {
-                var info = list.FirstOrDefault(i => i.DecorationId == decId);
-                if (info != null)
-                {
-                    alreadyEquipped = true;
-                    recordId = info.Id; // 使用 Id
-                }
-            }
-
-            if (alreadyEquipped)
-            {
-                // 发送选中事件，携带品类
-                var selectData = new SelectDecorationData
-                {
-                    TankId = currentTankId,
-                    RecordId = recordId,
-                    Category = category,
-                    ScreenPosition = Input.mousePosition
-                };
-                CommunicateEvent.Modify(FishTankMessage.SelectDecoration.ToString(), selectData);
-                LogDebug($"选中已装备的80/81装饰，显示操作面板");
-                return;
-            }
-            else
-            {
-                // 未装备，发送装备请求
-                var equipData = new EquipDecorationData
-                {
-                    TankId = currentTankId,
-                    Category = category,
-                    DecorationId = decId,
-                    PosX = 0,
-                    PosY = 0,
-                    PosZ = 0,
-                    ScaleX = 1,
-                    ScaleY = 1,
-                    ScaleZ = 1,
-                    RotX = 0,
-                    RotY = 0,
-                    RotZ = 0
-                };
-                CommunicateEvent.Modify(FishTankMessage.EquipDecoration.ToString(), equipData);
-            }
-            return;
-        }
-
-        // 82~84：纹理替换类
-        if (category >= 82 && category <= 84)
-        {
-            bool alreadyEquipped = false;
-            if (_equippedStatus.TryGetValue(category, out var list))
-            {
-                alreadyEquipped = list.Any(info => info.DecorationId == decId);
-            }
-
-            if (alreadyEquipped)
-            {
-                // 已装备，应用纹理（发送应用事件）
-                var applyData = new ApplyDecorationData
-                {
-                    TankId = currentTankId,
-                    Category = category,
-                    DecorationId = decId
-                };
-                CommunicateEvent.Modify(FishTankMessage.ApplyTextureDecoration.ToString(), applyData);
-                GameUIManager.ShowMessage("已应用装饰");
-                return;
-            }
-            else
-            {
-                LogDebug($"82~84 未装备，发送装备请求");
-                var equipData = new EquipDecorationData
-                {
-                    TankId = currentTankId,
-                    Category = category,
-                    DecorationId = decId,
-                    PosX = 0,
-                    PosY = 0,
-                    PosZ = 0,
-                    ScaleX = 1,
-                    ScaleY = 1,
-                    ScaleZ = 1,
-                    RotX = 0,
-                    RotY = 0,
-                    RotZ = 0
-                };
-                CommunicateEvent.Modify(FishTankMessage.EquipDecoration.ToString(), equipData);
-            }
-        }
+        if (item == null || item.Config == null) return;
+        _onItemClickCallback?.Invoke(item.Config);
     }
 
-    // ---------- 对象池 ----------
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 对象池
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
     private class DecorationObjectPool
     {
         private GameObject _prefab;
@@ -331,10 +272,7 @@ public class FishTankDecorationPanel : MonoBehaviour
         {
             _prefab = prefab;
             _parent = parent;
-            for (int i = 0; i < initialSize; i++)
-            {
-                CreateNewObject();
-            }
+            for (int i = 0; i < initialSize; i++) CreateNewObject();
         }
 
         private UI_FishTankDecPrefab CreateNewObject()
@@ -344,7 +282,7 @@ public class FishTankDecorationPanel : MonoBehaviour
             var item = go.GetComponent<UI_FishTankDecPrefab>();
             if (item == null)
             {
-                Debug.LogError("DecorationObjectPool: 预制体缺少 UI_FishTankDecPrefab 组件");
+                Z_Logger.LogError("DecorationObjectPool: 预制体缺少 UI_FishTankDecPrefab 组件");
                 return null;
             }
             _allObjects.Add(item);
@@ -356,10 +294,7 @@ public class FishTankDecorationPanel : MonoBehaviour
         {
             if (_pool.Count == 0)
             {
-                for (int i = 0; i < 5; i++)
-                {
-                    CreateNewObject();
-                }
+                for (int i = 0; i < 5; i++) CreateNewObject();
             }
             return _pool.Dequeue();
         }
@@ -368,9 +303,7 @@ public class FishTankDecorationPanel : MonoBehaviour
         {
             if (item == null) return;
             if (!_pool.Contains(item) && _allObjects.Contains(item))
-            {
                 _pool.Enqueue(item);
-            }
         }
 
         public void Clear()
@@ -385,11 +318,11 @@ public class FishTankDecorationPanel : MonoBehaviour
         }
     }
 
-    // ---------- 生命周期 ----------
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private void OnDestroy()
     {
-        UnregisterEvents();
         if (_pool != null) _pool.Clear();
+        if (closeBtn != null) closeBtn.onClick.RemoveAllListeners();
     }
 
     private void LogDebug(string msg)

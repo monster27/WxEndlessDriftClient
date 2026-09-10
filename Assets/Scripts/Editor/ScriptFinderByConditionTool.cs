@@ -684,6 +684,92 @@ public class ScriptFinderByConditionTool : Editor
     }
 
     // ============================================================
+    // 注释检测工具（重写版）
+    // ============================================================
+
+    /// <summary>
+    /// 判断 content 中 matchIndex 处是否位于注释中
+    /// 组合两种方式：
+    ///   1) 匹配所在行、匹配之前是否有 "//"（行注释）
+    ///   2) 扫描内容，判断是否处于跨行的块注释 /* */ 中
+    /// </summary>
+    private static bool IsInComment(string content, int matchIndex)
+    {
+        if (string.IsNullOrEmpty(content) || matchIndex <= 0 || matchIndex >= content.Length)
+            return false;
+
+        // ---------- 方法一：行注释检查 ----------
+        // 找到 match 所在行的起始位置
+        int lineStart = content.LastIndexOf('\n', matchIndex - 1) + 1;
+        string beforeMatchOnLine = content.Substring(lineStart, matchIndex - lineStart);
+
+        // 如果匹配之前同一行就出现了 //，说明这个匹配位于行注释中
+        if (beforeMatchOnLine.Contains("//"))
+            return true;
+
+        // ---------- 方法二：块注释检查 ----------
+        return IsInBlockComment(content, matchIndex);
+    }
+
+    /// <summary>
+    /// 扫描 content[0..matchIndex)，判断 matchIndex 处是否处于块注释 /* */ 中。
+    /// 会跳过字符串和字符常量。
+    /// </summary>
+    private static bool IsInBlockComment(string content, int matchIndex)
+    {
+        bool inBlockComment = false;
+        bool inString = false;
+        bool inVerbatimString = false;
+        bool inChar = false;
+
+        for (int i = 0; i < matchIndex; i++)
+        {
+            char c = content[i];
+            char next = (i + 1 < content.Length) ? content[i + 1] : '\0';
+
+            // 块注释中
+            if (inBlockComment)
+            {
+                if (c == '*' && next == '/')
+                {
+                    inBlockComment = false;
+                    i++;
+                }
+                continue;
+            }
+
+            // 普通字符串中
+            if (inString)
+            {
+                if (c == '\\' && !inVerbatimString) { i++; continue; }
+                if (c == '"')
+                {
+                    if (inVerbatimString && next == '"') { i++; continue; }
+                    inString = false;
+                    inVerbatimString = false;
+                }
+                continue;
+            }
+
+            // 字符常量中
+            if (inChar)
+            {
+                if (c == '\\') { i++; continue; }
+                if (c == '\'') inChar = false;
+                continue;
+            }
+
+            // 非注释、非字符串状态
+            if (c == '/' && next == '*') { inBlockComment = true; i++; continue; }
+            if (c == '@' && next == '"') { inString = true; inVerbatimString = true; i++; continue; }
+            if (c == '"') { inString = true; continue; }
+            if (c == '\'') { inChar = true; continue; }
+        }
+
+        return inBlockComment;
+    }
+
+    // ============================================================
     // 获取所有客户端C#脚本
     // ============================================================
 
@@ -783,7 +869,7 @@ public class ScriptFinderByConditionTool : Editor
     }
 
     // ============================================================
-    // 类名输入窗口（最终优化版）
+    // 类名输入窗口
     // ============================================================
 
     private class ClassNameInputWindow : EditorWindow
@@ -830,17 +916,14 @@ public class ScriptFinderByConditionTool : Editor
         {
             GUILayout.Space(10);
 
-            // ===== 标题区域 =====
             EditorGUILayout.LabelField("🔍 搜索指定类名的脚本", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField("搜索所有 C# 脚本中的 public class 或 public partial class  |  💡 支持部分匹配，自动忽略大小写", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField("搜索所有 C# 脚本中的 public class 或 public partial class  |  💡 支持部分匹配，自动忽略大小写，忽略被注释掉的类", EditorStyles.miniLabel);
 
             GUILayout.Space(8);
 
-            // ===== 输入区域 =====
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("类名:", GUILayout.Width(40));
 
-            // 输入框 - 字体16，高度36
             GUIStyle textFieldStyle = new GUIStyle(EditorStyles.textField);
             textFieldStyle.fontSize = 12;
             textFieldStyle.fixedHeight = 20;
@@ -851,10 +934,8 @@ public class ScriptFinderByConditionTool : Editor
 
             GUILayout.Space(6);
 
-            // ===== 操作按钮 =====
             EditorGUILayout.BeginHorizontal();
 
-            // 搜索按钮
             GUI.backgroundColor = new Color(0.3f, 0.7f, 0.3f);
             if (GUILayout.Button("🔍 搜索", GUILayout.Height(34), GUILayout.Width(90)))
             {
@@ -867,7 +948,6 @@ public class ScriptFinderByConditionTool : Editor
             }
             GUI.backgroundColor = Color.white;
 
-            // 清空搜索内容按钮（清空输入框和搜索结果）
             GUI.backgroundColor = new Color(0.9f, 0.9f, 0.9f);
             if (GUILayout.Button("清空内容", GUILayout.Height(34), GUILayout.Width(90)))
             {
@@ -879,7 +959,6 @@ public class ScriptFinderByConditionTool : Editor
             }
             GUI.backgroundColor = Color.white;
 
-            // 复制按钮
             GUI.backgroundColor = new Color(0.3f, 0.5f, 0.8f);
             if (GUILayout.Button("📋 复制完整内容", GUILayout.Height(34), GUILayout.Width(130)))
             {
@@ -902,7 +981,6 @@ public class ScriptFinderByConditionTool : Editor
 
             GUILayout.Space(8);
 
-            // ===== 历史记录 =====
             if (historyList.Length > 0)
             {
                 EditorGUILayout.BeginHorizontal();
@@ -910,7 +988,6 @@ public class ScriptFinderByConditionTool : Editor
 
                 GUILayout.FlexibleSpace();
 
-                // 清空历史按钮 - 更大
                 GUI.backgroundColor = new Color(0.9f, 0.6f, 0.6f);
                 if (GUILayout.Button("🗑 清空历史", GUILayout.Width(90), GUILayout.Height(24)))
                 {
@@ -938,7 +1015,6 @@ public class ScriptFinderByConditionTool : Editor
 
                         EditorGUILayout.BeginHorizontal(GUILayout.MaxWidth(200));
 
-                        // 历史按钮
                         if (GUILayout.Button(historyList[i], GUILayout.Height(26), GUILayout.MinWidth(80)))
                         {
                             className = historyList[i];
@@ -946,7 +1022,6 @@ public class ScriptFinderByConditionTool : Editor
                             Repaint();
                         }
 
-                        // 单个删除按钮
                         GUI.backgroundColor = new Color(1f, 0.5f, 0.5f);
                         if (GUILayout.Button("✕", GUILayout.Width(22), GUILayout.Height(26)))
                         {
@@ -968,12 +1043,10 @@ public class ScriptFinderByConditionTool : Editor
 
             GUILayout.Space(8);
 
-            // ===== 分割线 =====
             EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
 
             GUILayout.Space(6);
 
-            // ===== 预览结果区域 =====
             if (showPreview)
             {
                 EditorGUILayout.BeginHorizontal();
@@ -990,7 +1063,7 @@ public class ScriptFinderByConditionTool : Editor
 
                 if (previewResults.Count == 0)
                 {
-                    EditorGUILayout.HelpBox($"未找到包含类名 \"{className}\" 的脚本文件", MessageType.Info);
+                    EditorGUILayout.HelpBox($"未找到包含类名 \"{className}\" 的脚本文件（已忽略被注释掉的类）", MessageType.Info);
                 }
                 else
                 {
@@ -1050,7 +1123,6 @@ public class ScriptFinderByConditionTool : Editor
             // 防止窗口失去焦点时自动关闭
         }
 
-        // 执行预览搜索
         private void PerformPreview(string searchClass)
         {
             if (string.IsNullOrEmpty(searchClass))
@@ -1064,7 +1136,6 @@ public class ScriptFinderByConditionTool : Editor
             Repaint();
         }
 
-        // 仅搜索类名，返回文件列表（忽略大小写，支持部分匹配）
         private List<string> SearchForClassNames(string className)
         {
             if (string.IsNullOrEmpty(className))
@@ -1073,7 +1144,6 @@ public class ScriptFinderByConditionTool : Editor
             string[] allCsFiles = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
             List<string> matchedFiles = new List<string>();
 
-            // 支持部分匹配，忽略大小写
             string searchPattern = $@"public\s+(?:partial\s+)?class\s+\S*{Regex.Escape(className)}\S*";
 
             foreach (string filePath in allCsFiles)
@@ -1089,7 +1159,18 @@ public class ScriptFinderByConditionTool : Editor
                     string content = File.ReadAllText(filePath, Encoding.UTF8);
                     var matches = Regex.Matches(content, searchPattern, RegexOptions.IgnoreCase);
 
-                    if (matches.Count > 0)
+                    bool hasValidMatch = false;
+                    foreach (Match match in matches)
+                    {
+                        // ✅ 过滤掉位于注释中的匹配
+                        if (IsInComment(content, match.Index))
+                            continue;
+
+                        hasValidMatch = true;
+                        break;
+                    }
+
+                    if (hasValidMatch)
                     {
                         matchedFiles.Add(Path.GetFileName(filePath));
                     }
@@ -1104,7 +1185,6 @@ public class ScriptFinderByConditionTool : Editor
             return matchedFiles;
         }
 
-        // 根据文件名查找完整路径
         private string FindScriptPath(string fileName)
         {
             if (string.IsNullOrEmpty(fileName))
@@ -1122,14 +1202,12 @@ public class ScriptFinderByConditionTool : Editor
             return "";
         }
 
-        // 保存历史记录
         private void SaveHistory()
         {
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(historyList);
             EditorPrefs.SetString("ScriptFinder_ClassSearchHistory", json);
         }
 
-        // 添加历史记录
         private void AddHistory(string value)
         {
             if (string.IsNullOrEmpty(value)) return;
@@ -1171,7 +1249,6 @@ public class ScriptFinderByConditionTool : Editor
         Dictionary<string, string> classDefinitions = new Dictionary<string, string>();
         Dictionary<string, string> fileContents = new Dictionary<string, string>();
 
-        // 支持部分匹配，忽略大小写
         string searchPattern = $@"public\s+(?:partial\s+)?class\s+\S*{Regex.Escape(className)}\S*";
 
         foreach (string filePath in allCsFiles)
@@ -1187,23 +1264,30 @@ public class ScriptFinderByConditionTool : Editor
                 string content = File.ReadAllText(filePath, Encoding.UTF8);
                 var matches = Regex.Matches(content, searchPattern, RegexOptions.IgnoreCase);
 
-                if (matches.Count > 0)
+                bool hasValidMatch = false;
+                string classDefs = "";
+
+                foreach (Match match in matches)
+                {
+                    // ✅ 过滤掉位于注释中的匹配
+                    if (IsInComment(content, match.Index))
+                        continue;
+
+                    hasValidMatch = true;
+
+                    int startIndex = content.LastIndexOf('\n', match.Index) + 1;
+                    int endIndex = content.IndexOf('\n', match.Index);
+                    if (endIndex == -1) endIndex = content.Length;
+
+                    string fullLine = content.Substring(startIndex, endIndex - startIndex).Trim();
+                    classDefs += fullLine + "\n";
+                }
+
+                if (hasValidMatch)
                 {
                     matchedFiles.Add(filePath);
                     fileContents[filePath] = content;
-
-                    foreach (Match match in matches)
-                    {
-                        string line = match.Value;
-                        int startIndex = content.LastIndexOf('\n', match.Index) + 1;
-                        int endIndex = content.IndexOf('\n', match.Index);
-                        if (endIndex == -1) endIndex = content.Length;
-
-                        string fullLine = content.Substring(startIndex, endIndex - startIndex).Trim();
-                        if (!classDefinitions.ContainsKey(filePath))
-                            classDefinitions[filePath] = "";
-                        classDefinitions[filePath] += fullLine + "\n";
-                    }
+                    classDefinitions[filePath] = classDefs;
                 }
             }
             catch (System.Exception ex)
@@ -1219,7 +1303,7 @@ public class ScriptFinderByConditionTool : Editor
 
         if (matchedFiles.Count == 0)
         {
-            EditorUtility.DisplayDialog("提示", $"未找到包含类名 \"{className}\" 的脚本文件！", "确定");
+            EditorUtility.DisplayDialog("提示", $"未找到包含类名 \"{className}\" 的脚本文件！（已忽略被注释掉的类）", "确定");
             return;
         }
 
@@ -1280,7 +1364,7 @@ public class ScriptFinderByConditionTool : Editor
 
         outputContent.AppendLine("// ============================================");
         outputContent.AppendLine($"// 📊 统计信息");
-        outputContent.AppendLine($"// ============================================");
+        outputContent.AppendLine("// ============================================");
         outputContent.AppendLine($"// 搜索类名: {className}");
         outputContent.AppendLine($"// 总文件数: {sortedFiles.Count}");
         outputContent.AppendLine($"// 总大小: {FormatFileSize(totalSize)}");
@@ -1292,7 +1376,6 @@ public class ScriptFinderByConditionTool : Editor
         message += "📋 类定义列表:\n";
         foreach (var kvp in classDefinitions.OrderBy(x => x.Key))
         {
-            string relativePath = kvp.Key.Replace(Application.dataPath, "Assets");
             string fileName = Path.GetFileName(kvp.Key);
             string classDef = kvp.Value.TrimEnd().Replace("\n", ", ");
             if (classDef.Length > 80)
@@ -1426,7 +1509,7 @@ public class ScriptFinderByConditionTool : Editor
 
         mergedContent.AppendLine("// ============================================");
         mergedContent.AppendLine($"// 📊 统计信息");
-        mergedContent.AppendLine($"// ============================================");
+        mergedContent.AppendLine("// ============================================");
         mergedContent.AppendLine($"// 总文件数: {sortedFiles.Count}");
         mergedContent.AppendLine($"// 总大小: {FormatFileSize(totalSize)}");
         mergedContent.AppendLine("// ============================================");

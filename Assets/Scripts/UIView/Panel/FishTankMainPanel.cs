@@ -18,9 +18,15 @@ public class FishTankMainPanel : MonoBehaviour
     [SerializeField] private RectTransform baitContainer;
     [SerializeField] private RectTransform decorationContainer;
 
-    [Header("===== 鱼预制体 =====")]
+    [Header("===== 预制体 =====")]
     [SerializeField] private GameObject fishPrefab;
     [SerializeField] private GameObject baitPrefab;
+    [SerializeField] private GameObject decPrefab;
+
+    [Header("===== 82/83/84 贴图 Image =====")]
+    [SerializeField] private Image backgroundBorderImage;
+    [SerializeField] private Image backgroundBottomImage;
+    [SerializeField] private Image backgroundImage;
 
     [Header("===== 鱼行为参数（像素单位） =====")]
     [SerializeField] private float baseHeight = 30f;
@@ -46,10 +52,10 @@ public class FishTankMainPanel : MonoBehaviour
     [SerializeField] private float sprintDurationMax = 3.5f;
 
     [Header("===== 鱼饵系统 =====")]
-    [SerializeField] private float baitTriggerRadius = 500f;      // 鱼发现鱼饵的距离（像素）
-    [SerializeField] private float baitEatRadius = 40f;           // 鱼真正吃掉鱼饵的距离（像素）
+    [SerializeField] private float baitTriggerRadius = 500f;
+    [SerializeField] private float baitEatRadius = 40f;
     [SerializeField, Range(0.05f, 2f)]
-    private float baitFallSpeedRatio = 0.25f;                     // 每秒下落占区域高度比例
+    private float baitFallSpeedRatio = 0.25f;
     [SerializeField] private float baitChaseDurationMin = 0.5f;
     [SerializeField] private float baitChaseDurationMax = 0.8f;
     [SerializeField] private float baitChaseSpeedMultiplier = 5f;
@@ -62,29 +68,10 @@ public class FishTankMainPanel : MonoBehaviour
     [Header("===== 调试 =====")]
     [SerializeField] private bool enableDebugLog = false;
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    [Header("===== 顶部UI =====")]
-    [SerializeField] private Button leftBtn;
-    [SerializeField] private Button rightBtn;
-    [SerializeField] private Text tankNameText;
-    [SerializeField] private Text capacityText;
-    [SerializeField] private Text harvestText;
-    [SerializeField] private Button lockBtn;
-    [SerializeField] private GameObject lockIcon;
-
-    [Header("===== 底部功能按钮 =====")]
-    [SerializeField] private Button manageBtn;
-    [SerializeField] private Button decorationBtn;
-
-    [Header("===== 子面板引用 =====")]
-    [SerializeField] private FishTankManagerPanel managerPanel;
-    [SerializeField] private FishTankDecorationPanel decorationPanel;
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private int _currentTankIndex = 0;
+    private bool _hasInitialized = false;
     private bool _isDecorationMode = false;
-    private bool _isManagerOpen = false;
-    private bool _isInitialized = false;
 
     private List<UI_FishTankFish> _fullScreenSwimList = new List<UI_FishTankFish>();
     private List<UI_FishTankFish> _fullScreenStaticList = new List<UI_FishTankFish>();
@@ -97,83 +84,71 @@ public class FishTankMainPanel : MonoBehaviour
 
     private FishObjectPool _fishPool;
     private BaitObjectPool _baitPool;
-
-    private Dictionary<string, UI_FishTankDecPrefab> _decorationItems = new Dictionary<string, UI_FishTankDecPrefab>();
-    private string _selectedDecInstanceId = null;
-
     private Coroutine _updateCoroutine;
 
     private Rect _totalRect;
     private Rect _bottomRect;
 
+    private Dictionary<int, UI_FishTankDec> _decorationInstances = new Dictionary<int, UI_FishTankDec>();
+    private Sprite _defaultBorderSprite;
+    private Sprite _defaultBottomSprite;
+    private Sprite _defaultBackgroundSprite;
+
+    /// <summary>
+    /// 装饰被点击时，由外部（View）注册的回调
+    /// </summary>
+    public Action<UI_FishTankDec> OnDecorationClickedCallback { get; set; }
+
     public bool EnableDebugLog => enableDebugLog;
     public Rect TotalRect => _totalRect;
+    public bool IsDecorationMode => _isDecorationMode;
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private void Awake()
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 初始化
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    public void Init(bool isEnableDebug = false)
     {
-        // fishContainer
-        if (fishContainer == null)
-        {
-            GameObject go = new GameObject("FishContainer");
-            go.transform.SetParent(transform);
-            fishContainer = go.AddComponent<RectTransform>();
-            fishContainer.anchorMin = Vector2.zero;
-            fishContainer.anchorMax = Vector2.one;
-            fishContainer.sizeDelta = Vector2.zero;
-            fishContainer.anchoredPosition = Vector2.zero;
-        }
+        if (_hasInitialized) return;
+        enableDebugLog = isEnableDebug;
 
-        // baitContainer
-        if (baitContainer == null)
-        {
-            GameObject go = new GameObject("BaitContainer");
-            go.transform.SetParent(transform);
-            baitContainer = go.AddComponent<RectTransform>();
-            baitContainer.anchorMin = Vector2.zero;
-            baitContainer.anchorMax = Vector2.one;
-            baitContainer.sizeDelta = Vector2.zero;
-            baitContainer.anchoredPosition = Vector2.zero;
-        }
+        if (backgroundBorderImage != null) _defaultBorderSprite = backgroundBorderImage.sprite;
+        if (backgroundBottomImage != null) _defaultBottomSprite = backgroundBottomImage.sprite;
+        if (backgroundImage != null) _defaultBackgroundSprite = backgroundImage.sprite;
 
-        // decorationContainer
-        if (decorationContainer == null)
-        {
-            GameObject go = new GameObject("DecorationContainer");
-            go.transform.SetParent(transform);
-            decorationContainer = go.AddComponent<RectTransform>();
-            decorationContainer.anchorMin = Vector2.zero;
-            decorationContainer.anchorMax = Vector2.one;
-            decorationContainer.sizeDelta = Vector2.zero;
-            decorationContainer.gameObject.SetActive(false);
-        }
+        if (fishPrefab != null && fishContainer != null)
+            _fishPool = new FishObjectPool(fishPrefab, fishContainer, fishPoolInitialCapacity, this);
 
-        _fishPool = new FishObjectPool(fishPrefab, fishContainer, fishPoolInitialCapacity, this);
-        _baitPool = new BaitObjectPool(baitPrefab, baitContainer, baitPoolInitSize, this, _totalRect, baitFallSpeedRatio, baitScale);
+        if (baitPrefab != null && baitContainer != null)
+            _baitPool = new BaitObjectPool(baitPrefab, baitContainer, baitPoolInitSize, this, _totalRect, baitFallSpeedRatio, baitScale);
 
-        BindUIEvents();
         SetupClickHandler();
-
-        if (managerPanel != null)
-        {
-            managerPanel.gameObject.SetActive(false);
-            managerPanel.SetTransferCallback(OnFishTransferRequest);
-            managerPanel.SetUnlockCallback(OnUnlockRequest);
-        }
-        if (decorationPanel != null)
-            decorationPanel.gameObject.SetActive(false);
-
-        _isInitialized = true;
-        LogDebug("Awake 完成");
+        EnsureDecorationOnTop();
+        _hasInitialized = true;
+        Debug.Log("[FishTankMainPanel] Init 完成");
     }
 
-    private void OnEnable()
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 打开/关闭
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    public void OpenPanel()
     {
-        RegisterEvents();
-        if (_isInitialized) UpdateRects();
+        gameObject.SetActive(true);
+        if (!_hasInitialized) Init(enableDebugLog);
+        UpdateRects();
+        if (_updateCoroutine == null)
+            _updateCoroutine = StartCoroutine(UpdateLoop());
     }
 
-    private void OnDisable() => UnregisterEvents();
+    public void ClosePanel()
+    {
+        if (_updateCoroutine != null) { StopCoroutine(_updateCoroutine); _updateCoroutine = null; }
+        ClearAllBaits();
+        ClearFish();
+        ClearAllDecorations();
+        gameObject.SetActive(false);
+    }
 
     private void OnDestroy()
     {
@@ -184,41 +159,80 @@ public class FishTankMainPanel : MonoBehaviour
         ClearAllDecorations();
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private void RegisterEvents()
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 可见性
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    public void SetFishVisible(bool visible)
     {
-        UnregisterEvents();
-        CommunicateEvent.Register(FishTankMessage.DataUpdated.ToString(), OnDataUpdated);
-        CommunicateEvent.Register(FishTankMessage.DecorationDataUpdated.ToString(), OnDecorationDataUpdated);
-        CommunicateEvent.Register(FishTankMessage.ShowDecOperator.ToString(), OnShowDecOperator);
-        CommunicateEvent.Register(FishTankMessage.HideDecOperator.ToString(), OnHideDecOperator);
+        if (fishContainer != null) fishContainer.gameObject.SetActive(visible);
     }
 
-    private void UnregisterEvents()
+    public void SetBaitVisible(bool visible)
     {
-        CommunicateEvent.Unregister(FishTankMessage.DataUpdated.ToString(), OnDataUpdated);
-        CommunicateEvent.Unregister(FishTankMessage.DecorationDataUpdated.ToString(), OnDecorationDataUpdated);
-        CommunicateEvent.Unregister(FishTankMessage.ShowDecOperator.ToString(), OnShowDecOperator);
-        CommunicateEvent.Unregister(FishTankMessage.HideDecOperator.ToString(), OnHideDecOperator);
+        if (baitContainer != null) baitContainer.gameObject.SetActive(visible);
     }
 
-    private void BindUIEvents()
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 装饰模式开关
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    /// <summary>
+    /// 切换装饰模式
+    /// true  = 装饰可点，鱼缸区域不可点（不生成鱼饵）
+    /// false = 装饰不可点，鱼缸区域可点（生成鱼饵）
+    /// </summary>
+    public void SetDecorationMode(bool isDecorationMode)
     {
-        if (leftBtn != null) leftBtn.onClick.AddListener(OnLeftClick);
-        if (rightBtn != null) rightBtn.onClick.AddListener(OnRightClick);
-        if (manageBtn != null) manageBtn.onClick.AddListener(ToggleManagerPanel);
-        if (decorationBtn != null) decorationBtn.onClick.AddListener(ToggleDecorationMode);
-        if (lockBtn != null) lockBtn.onClick.AddListener(OnLockClick);
+        _isDecorationMode = isDecorationMode;
+
+        // 遍历所有装饰实例，切换 Button.interactable
+        foreach (var kv in _decorationInstances)
+        {
+            if (kv.Value != null) kv.Value.SetInteractable(isDecorationMode);
+        }
+
+        // 鱼缸区域 raycastTarget：装饰模式下关闭
+        SetFishTankClickable(!isDecorationMode);
+
+        LogDebug($"SetDecorationMode: {isDecorationMode}, 装饰实例数={_decorationInstances.Count}");
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    /// <summary>
+    /// 设置鱼缸点击区域是否可点击（生成鱼饵）
+    /// </summary>
+    public void SetFishTankClickable(bool clickable)
+    {
+        if (totalAreaRect == null) return;
+        var img = totalAreaRect.GetComponent<Image>();
+        if (img != null) img.raycastTarget = clickable;
+    }
+
+    /// <summary>
+    /// 确保 decorationContainer 在 totalAreaRect 之上
+    /// </summary>
+    public void EnsureDecorationOnTop()
+    {
+        if (totalAreaRect == null || decorationContainer == null) return;
+        if (totalAreaRect.parent != decorationContainer.parent) return;
+
+        int areaIdx = totalAreaRect.GetSiblingIndex();
+        int decIdx = decorationContainer.GetSiblingIndex();
+        if (decIdx < areaIdx)
+        {
+            decorationContainer.SetSiblingIndex(areaIdx);
+            LogDebug($"调整 decorationContainer siblingIndex: {decIdx} -> {areaIdx}");
+        }
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 点击生成鱼饵
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
     private void SetupClickHandler()
     {
-        if (totalAreaRect == null)
-        {
-            Debug.LogWarning("[FishTankMainPanel] totalAreaRect 未绑定，无法添加点击监听");
-            return;
-        }
+        if (totalAreaRect == null) return;
 
         var img = totalAreaRect.GetComponent<Image>();
         if (img == null) img = totalAreaRect.gameObject.AddComponent<Image>();
@@ -227,13 +241,15 @@ public class FishTankMainPanel : MonoBehaviour
 
         var trigger = totalAreaRect.GetComponent<EventTrigger>();
         if (trigger == null) trigger = totalAreaRect.gameObject.AddComponent<EventTrigger>();
-
         trigger.triggers.Clear();
 
         var entry = new EventTrigger.Entry();
         entry.eventID = EventTriggerType.PointerClick;
         entry.callback.AddListener((data) =>
         {
+            // 装饰模式下不生成鱼饵
+            if (_isDecorationMode) return;
+
             PointerEventData ped = data as PointerEventData;
             if (ped == null) return;
 
@@ -249,21 +265,11 @@ public class FishTankMainPanel : MonoBehaviour
             }
         });
         trigger.triggers.Add(entry);
-
-        LogDebug("已为 totalAreaRect 添加点击监听");
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    /// <summary>
-    /// 在点击位置生成鱼饵（鱼饵挂 baitContainer 下）
-    /// </summary>
     public void SpawnBaitAtPosition(Vector3 worldPosition)
     {
-        if (baitPrefab == null)
-        {
-            Debug.LogError("[FishTankMainPanel] baitPrefab 未绑定！");
-            return;
-        }
+        if (baitPrefab == null || _baitPool == null || baitContainer == null) return;
 
         Vector3 localPos = baitContainer.InverseTransformPoint(worldPosition);
         localPos.z = 0;
@@ -274,245 +280,44 @@ public class FishTankMainPanel : MonoBehaviour
 
         GameObject bait = _baitPool.Get(localPos);
         if (bait == null) return;
-
-        Debug.Log($"[FishTankMainPanel] 生成鱼饵, worldPos={worldPosition}, localPos={localPos}");
         CheckNearbyFish(bait);
     }
 
     public void ReturnBait(GameObject bait)
     {
-        if (bait == null) return;
+        if (bait == null || _baitPool == null) return;
         _baitPool.RemoveBait(bait);
     }
 
-    /// <summary>
-    /// 清空当前所有鱼饵（切换鱼缸时调用）
-    /// </summary>
-    private void ClearAllBaits()
+    public void ClearAllBaits()
     {
         _baitPool?.ClearAll();
-        LogDebug("清空所有鱼饵");
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    public void OpenPanel()
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 鱼群
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    public void RefreshFishTank(int tankIndex)
     {
-        gameObject.SetActive(true);
-        if (!_isInitialized) return;
-        UpdateRects();
-        if (_updateCoroutine == null)
-        {
-            _updateCoroutine = StartCoroutine(UpdateLoop());
-            LogDebug("更新循环已启动");
-        }
-        RefreshAll();
-        CommunicateEvent.Modify(FishTankMessage.OpenFishTank.ToString());
-    }
+        _currentTankIndex = tankIndex;
 
-    public void ClosePanel()
-    {
-        if (_updateCoroutine != null)
-        {
-            StopCoroutine(_updateCoroutine);
-            _updateCoroutine = null;
-        }
-        CloseFishTank();
-
-        // 关闭时清空所有鱼饵
-        ClearAllBaits();
-
-        if (managerPanel != null) managerPanel.ClosePanel();
-        if (decorationPanel != null) decorationPanel.gameObject.SetActive(false);
-        SetFishVisible(true);
-        _isManagerOpen = false;
-        _isDecorationMode = false;
-        decorationContainer.gameObject.SetActive(false);
-        ClearAllDecorations();
-        gameObject.SetActive(false);
-        CommunicateEvent.Modify(FishTankMessage.CloseFishTank.ToString());
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    public void ToggleDecorationMode()
-    {
-        _isDecorationMode = !_isDecorationMode;
-        if (_isDecorationMode)
-        {
-            SetFishVisible(false);
-            decorationContainer.gameObject.SetActive(true);
-            if (managerPanel != null && managerPanel.gameObject.activeSelf) managerPanel.ClosePanel();
-            LoadEquippedDecorations();
-            if (decorationPanel != null && decorationPanel.gameObject.activeSelf) decorationPanel.RefreshData();
-        }
-        else
-        {
-            decorationContainer.gameObject.SetActive(false);
-            SetFishVisible(true);
-            ClearAllDecorations();
-            CommunicateEvent.Modify(FishTankMessage.HideDecOperator.ToString());
-        }
-        CommunicateEvent.Modify(_isDecorationMode ? FishTankMessage.EnterDecorationMode.ToString() : FishTankMessage.ExitDecorationMode.ToString());
-    }
-
-    private void LoadEquippedDecorations()
-    {
-        ClearAllDecorations();
-        var equipped = PlayerDataService.Instance?.GetEquippedDecorations(_currentTankIndex + 1);
-        if (equipped == null) return;
-        if (equipped.TryGetValue(80, out var list80))
-        {
-            foreach (var info in list80)
-                CreateDecorationUI(info, 80);
-        }
-        if (equipped.TryGetValue(81, out var list81))
-        {
-            foreach (var info in list81)
-                CreateDecorationUI(info, 81);
-        }
-        LogDebug($"加载了 {_decorationItems.Count} 个装饰");
-    }
-
-    private void CreateDecorationUI(DecorationEquipInfo info, int category)
-    {
-        GameObject decoGo = new GameObject($"Decoration_{info.Id}");
-        decoGo.transform.SetParent(decorationContainer, false);
-        var rect = decoGo.AddComponent<RectTransform>();
-        rect.anchoredPosition = new Vector2(info.PositionX, info.PositionY);
-        rect.sizeDelta = new Vector2(100, 100);
-
-        var image = decoGo.AddComponent<Image>();
-        var itemData = LoadDataManager.Instance?.GetItemById(info.DecorationId);
-        if (itemData != null && !string.IsNullOrEmpty(itemData.iconPath))
-        {
-            AssetManager.LoadFromAddressables<Sprite>(itemData.iconPath, (sprite, handle) =>
-            {
-                if (sprite != null) image.sprite = sprite;
-            });
-        }
-
-        var clickHandler = decoGo.AddComponent<DecoClickHandler>();
-        clickHandler.Init(info.Id.ToString(), info.DecorationId, category, _currentTankIndex + 1);
-        _decorationItems[info.Id.ToString()] = null;
-    }
-
-    private void ClearAllDecorations()
-    {
-        foreach (Transform child in decorationContainer)
-            Destroy(child.gameObject);
-        _decorationItems.Clear();
-        _selectedDecInstanceId = null;
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    public void RefreshAll()
-    {
-        if (!gameObject.activeInHierarchy) return;
-        RefreshTopUI();
-        RefreshFishTank();
-        if (managerPanel != null && managerPanel.gameObject.activeSelf) managerPanel.RefreshData();
-        if (decorationPanel != null && decorationPanel.gameObject.activeSelf) decorationPanel.RefreshData();
-        if (_isDecorationMode) LoadEquippedDecorations();
-    }
-
-    private void RefreshTopUI()
-    {
-        var tanks = GetTankList();
-        if (tanks == null || tanks.Count == 0)
-        {
-            SetTopUIEmpty();
-            return;
-        }
-
+        var tanks = PlayerDataService.Instance?.GetTankList() ?? new List<FishTankStatusData>();
+        if (tanks.Count == 0) { ClearFish(); return; }
         if (_currentTankIndex >= tanks.Count) _currentTankIndex = tanks.Count - 1;
         if (_currentTankIndex < 0) _currentTankIndex = 0;
 
         var tank = tanks[_currentTankIndex];
-        if (tank == null) { SetTopUIEmpty(); return; }
+        if (tank == null || !tank.isUnlocked) { ClearFish(); return; }
 
-        var fishList = GetCurrentTankFish();
-        var config = GetTankConfig(tank.tankId);
-
-        if (tankNameText != null) tankNameText.text = config?.name ?? $"鱼缸{tank.tankId}";
-        if (capacityText != null) capacityText.text = $"{fishList.Count}/{tank.capacity}";
-
-        if (harvestText != null)
-        {
-            if (config?.type == "special" && tank.isUnlocked && fishList.Count > 0)
-            {
-                harvestText.text = $"每小时: {fishList.Count * 10} 金币";
-                harvestText.gameObject.SetActive(true);
-            }
-            else harvestText.gameObject.SetActive(false);
-        }
-
-        if (lockIcon != null) lockIcon.SetActive(!tank.isUnlocked);
-        if (lockBtn != null) lockBtn.gameObject.SetActive(!tank.isUnlocked);
-
-        if (leftBtn != null) leftBtn.interactable = tanks.Count > 1;
-        if (rightBtn != null) rightBtn.interactable = tanks.Count > 1;
-    }
-
-    private void SetTopUIEmpty()
-    {
-        if (tankNameText != null) tankNameText.text = "暂无鱼缸";
-        if (capacityText != null) capacityText.text = "0/0";
-        if (harvestText != null) harvestText.gameObject.SetActive(false);
-        if (lockIcon != null) lockIcon.SetActive(false);
-        if (lockBtn != null) lockBtn.gameObject.SetActive(false);
-        if (leftBtn != null) leftBtn.interactable = false;
-        if (rightBtn != null) rightBtn.interactable = false;
-    }
-
-    private void RefreshFishTank()
-    {
-        var tank = GetCurrentTank();
-        if (tank == null || !tank.isUnlocked)
-        {
-            SetFishData(null);
-            CloseFishTank();
-            return;
-        }
-
-        var fishList = GetCurrentTankFish();
+        var fishList = PlayerDataService.Instance?.GetTankFishList(tank.tankId) ?? new List<FishDetailData>();
         SetFishData(fishList);
-        OpenFishTank();
     }
 
-    private List<FishTankStatusData> GetTankList()
-    {
-        return PlayerDataService.Instance?.GetTankList() ?? new List<FishTankStatusData>();
-    }
-
-    private FishTankStatusData GetCurrentTank()
-    {
-        var tanks = GetTankList();
-        if (tanks.Count == 0) return null;
-        if (_currentTankIndex >= tanks.Count) _currentTankIndex = tanks.Count - 1;
-        return tanks[_currentTankIndex];
-    }
-
-    private List<FishDetailData> GetCurrentTankFish()
-    {
-        var tank = GetCurrentTank();
-        if (tank == null) return new List<FishDetailData>();
-        return PlayerDataService.Instance?.GetTankFishList(tank.tankId) ?? new List<FishDetailData>();
-    }
-
-    private FishTankConfig GetTankConfig(int tankId)
-    {
-        return LoadDataManager.Instance?.GetFishTankConfig(tankId);
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     public void SetFishData(List<FishDetailData> fishList)
     {
-        if (fishList == null || fishList.Count == 0)
-        {
-            ClearFish();
-            return;
-        }
+        if (fishList == null || fishList.Count == 0) { ClearFish(); return; }
         _pendingFishData = new List<FishDetailData>(fishList);
-        LogDebug($"待处理鱼数据: {_pendingFishData.Count}");
     }
 
     public void ClearFish()
@@ -520,25 +325,7 @@ public class FishTankMainPanel : MonoBehaviour
         ClearAllFish();
         _currentDisplayingFish.Clear();
         _pendingFishData = null;
-        if (_createCoroutine != null)
-        {
-            StopCoroutine(_createCoroutine);
-            _createCoroutine = null;
-        }
-    }
-
-    public void OpenFishTank()
-    {
-        if (_updateCoroutine == null)
-            _updateCoroutine = StartCoroutine(UpdateLoop());
-    }
-
-    public void CloseFishTank() { }
-
-    public void SetFishVisible(bool visible)
-    {
-        if (fishContainer != null)
-            fishContainer.gameObject.SetActive(visible);
+        if (_createCoroutine != null) { StopCoroutine(_createCoroutine); _createCoroutine = null; }
     }
 
     private void Update()
@@ -547,12 +334,7 @@ public class FishTankMainPanel : MonoBehaviour
         {
             List<FishDetailData> fishList = _pendingFishData;
             _pendingFishData = null;
-            if (IsSameFishList(fishList, _currentDisplayingFish))
-            {
-                LogDebug("数据相同，跳过重建");
-                return;
-            }
-            LogDebug($"启动重建协程，数量: {fishList.Count}");
+            if (IsSameFishList(fishList, _currentDisplayingFish)) return;
             _createCoroutine = StartCoroutine(RebuildFish(fishList));
         }
     }
@@ -563,7 +345,6 @@ public class FishTankMainPanel : MonoBehaviour
         ClearAllFish();
         yield return StartCoroutine(CreateFishCoroutine(fishList));
         _createCoroutine = null;
-        LogDebug($"重建完成，总鱼数: {GetTotalFishCount()}");
     }
 
     private IEnumerator CreateFishCoroutine(List<FishDetailData> fishList)
@@ -588,22 +369,27 @@ public class FishTankMainPanel : MonoBehaviour
 
             float timeout = 3f;
             float timer = 0f;
-            while (!loaded && timer < timeout)
-            {
-                yield return null;
-                timer += Time.deltaTime;
-            }
+            while (!loaded && timer < timeout) { yield return null; timer += Time.deltaTime; }
             if (sprite == null) continue;
 
             var fish = _fishPool.Get();
             if (fish == null) continue;
+
+            var speciesType = LoadDataManager.Instance.GetFishSpeciesType(fishData.fishSpeciesId);
+
+            FishSpeciesData fishSpeciesData = new FishSpeciesData
+            {
+                id = (int)speciesType,
+                name = speciesType.ToString(),
+                type = speciesType.ToString()
+            };
+            fish.Init(fishSpeciesData, null);
 
             fish.SetBaseHeight(baseHeight);
             fish.UniformScale = uniformScale * UnityEngine.Random.Range(0.8f, 1.2f);
             fish.EnableDebugLog = enableDebugLog;
             fish.SetTexture(sprite.texture);
 
-            var speciesType = LoadDataManager.Instance.GetFishSpeciesType(fishData.fishSpeciesId);
             UpdateRects();
             fish.totalAreaRect = _totalRect;
             fish.bottomAreaRect = _bottomRect;
@@ -624,8 +410,7 @@ public class FishTankMainPanel : MonoBehaviour
             {
                 case FishSpeciesType.FullScreenSwim:
                     fish.SetFullScreenSwim(moveSpeedMin, moveSpeedMax,
-                        directionChangeIntervalMin, directionChangeIntervalMax,
-                        spawnPos);
+                        directionChangeIntervalMin, directionChangeIntervalMax, spawnPos);
                     _fullScreenSwimList.Add(fish);
                     break;
                 case FishSpeciesType.FullScreenStatic:
@@ -644,7 +429,6 @@ public class FishTankMainPanel : MonoBehaviour
             }
         }
         UpdateRects();
-        LogDebug($"CreateFishCoroutine 完成，全屏游动鱼: {_fullScreenSwimList.Count}");
     }
 
     private bool IsSameFishList(List<FishDetailData> list1, List<FishDetailData> list2)
@@ -661,20 +445,14 @@ public class FishTankMainPanel : MonoBehaviour
 
     private void ClearAllFish()
     {
-        foreach (var fish in _fullScreenSwimList) if (fish) _fishPool.Return(fish);
-        foreach (var fish in _fullScreenStaticList) if (fish) _fishPool.Return(fish);
-        foreach (var fish in _bottomSwimList) if (fish) _fishPool.Return(fish);
-        foreach (var fish in _bottomStaticList) if (fish) _fishPool.Return(fish);
+        foreach (var fish in _fullScreenSwimList) if (fish && _fishPool != null) _fishPool.Return(fish);
+        foreach (var fish in _fullScreenStaticList) if (fish && _fishPool != null) _fishPool.Return(fish);
+        foreach (var fish in _bottomSwimList) if (fish && _fishPool != null) _fishPool.Return(fish);
+        foreach (var fish in _bottomStaticList) if (fish && _fishPool != null) _fishPool.Return(fish);
         _fullScreenSwimList.Clear();
         _fullScreenStaticList.Clear();
         _bottomSwimList.Clear();
         _bottomStaticList.Clear();
-    }
-
-    private int GetTotalFishCount()
-    {
-        return _fullScreenSwimList.Count + _fullScreenStaticList.Count +
-               _bottomSwimList.Count + _bottomStaticList.Count;
     }
 
     private Vector2 GetRandomPosInRect(Rect rect)
@@ -685,7 +463,10 @@ public class FishTankMainPanel : MonoBehaviour
         return new Vector2(x, y);
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 更新循环
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
     private void UpdateRects()
     {
         if (totalAreaRect != null && fishContainer != null)
@@ -695,7 +476,6 @@ public class FishTankMainPanel : MonoBehaviour
             Vector3 local0 = fishContainer.InverseTransformPoint(corners[0]);
             Vector3 local2 = fishContainer.InverseTransformPoint(corners[2]);
             _totalRect = new Rect(local0.x, local0.y, local2.x - local0.x, local2.y - local0.y);
-            LogDebug($"计算 _totalRect (fishContainer 本地): {_totalRect}");
         }
 
         if (bottomAreaRect != null && fishContainer != null)
@@ -713,19 +493,12 @@ public class FishTankMainPanel : MonoBehaviour
         foreach (var fish in _bottomStaticList) if (fish) { fish.totalAreaRect = _totalRect; fish.bottomAreaRect = _bottomRect; }
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private IEnumerator UpdateLoop()
     {
-        int frame = 0;
         while (true)
         {
             yield return new WaitForEndOfFrame();
             if (!gameObject.activeSelf) continue;
-            frame++;
-            if (enableDebugLog && frame % 60 == 0)
-                LogDebug($"更新循环运行中，鱼数: {_fullScreenSwimList.Count}");
-
-            if (_isDecorationMode) continue;
 
             UpdateBaits();
 
@@ -740,19 +513,17 @@ public class FishTankMainPanel : MonoBehaviour
         }
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private void UpdateBaits()
     {
-        _baitPool.UpdateAllBaits(_totalRect, CheckNearbyFish, CheckBaitConsumption);
+        _baitPool?.UpdateAllBaits(_totalRect, CheckNearbyFish, CheckBaitConsumption);
     }
 
     private void CheckNearbyFish(GameObject bait)
     {
-        if (bait == null || _isDecorationMode) return;
+        if (bait == null) return;
         var baitComp = bait.GetComponent<UI_FishTankBait>();
         if (baitComp == null || !baitComp.IsActive) return;
 
-        // 世界坐标 → fishContainer 本地坐标（与鱼同一坐标系）
         Vector3 baitWorld = baitComp.GetWorldPosition();
         Vector3 baitLocalInFish = fishContainer.InverseTransformPoint(baitWorld);
         Vector2 baitPos = new Vector2(baitLocalInFish.x, baitLocalInFish.y);
@@ -768,7 +539,6 @@ public class FishTankMainPanel : MonoBehaviour
             {
                 float duration = UnityEngine.Random.Range(baitChaseDurationMin, baitChaseDurationMax);
                 fish.StartChasingBait(baitPos, duration, baitChaseSpeedMultiplier);
-                LogDebug($"鱼 {fish.UniqueId} 开始追逐，距离 {dist:F1}");
             }
         }
     }
@@ -792,7 +562,6 @@ public class FishTankMainPanel : MonoBehaviour
             float dist = Vector2.Distance(fishRect.anchoredPosition, baitPos);
             if (dist < baitEatRadius)
             {
-                LogDebug($"鱼饵被 {fish.UniqueId} 吃掉，距离 {dist:F1}");
                 _baitPool.RemoveBait(bait);
                 fish.ResetFishState();
                 break;
@@ -800,114 +569,136 @@ public class FishTankMainPanel : MonoBehaviour
         }
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private void OnLeftClick()
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 装饰渲染
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    public void RenderDecorations(int tankId)
     {
-        var tanks = GetTankList();
-        if (tanks.Count <= 1) return;
+        ClearAllDecorations();
 
-        // ★ 切换前清空所有鱼饵
-        ClearAllBaits();
+        var equipped = PlayerDataService.Instance?.GetEquippedDecorations(tankId);
+        if (equipped == null) return;
 
-        _currentTankIndex = (_currentTankIndex - 1 + tanks.Count) % tanks.Count;
-        CommunicateEvent.Modify(FishTankMessage.SwitchTank.ToString(), _currentTankIndex);
-        RefreshAll();
-        if (managerPanel != null && managerPanel.gameObject.activeSelf)
-            managerPanel.OnTankSwitched(_currentTankIndex);
+        if (equipped.TryGetValue(80, out var list80))
+            foreach (var info in list80) CreateDecorationInstance(info, 80, tankId);
+
+        if (equipped.TryGetValue(81, out var list81))
+            foreach (var info in list81) CreateDecorationInstance(info, 81, tankId);
+
+        ApplyTexture(equipped, 82, backgroundBorderImage, _defaultBorderSprite);
+        ApplyTexture(equipped, 83, backgroundBottomImage, _defaultBottomSprite);
+        ApplyTexture(equipped, 84, backgroundImage, _defaultBackgroundSprite);
     }
 
-    private void OnRightClick()
+    /// <summary>
+    /// 从 decPrefab 实例化一个装饰
+    /// </summary>
+    private void CreateDecorationInstance(DecorationEquipInfo info, int category, int tankId)
     {
-        var tanks = GetTankList();
-        if (tanks.Count <= 1) return;
+        if (decorationContainer == null || decPrefab == null) return;
 
-        // ★ 切换前清空所有鱼饵
-        ClearAllBaits();
+        GameObject go = Instantiate(decPrefab, decorationContainer);
+        go.name = $"Decoration_{info.Id}";
 
-        _currentTankIndex = (_currentTankIndex + 1) % tanks.Count;
-        CommunicateEvent.Modify(FishTankMessage.SwitchTank.ToString(), _currentTankIndex);
-        RefreshAll();
-        if (managerPanel != null && managerPanel.gameObject.activeSelf)
-            managerPanel.OnTankSwitched(_currentTankIndex);
-    }
+        var rect = go.GetComponent<RectTransform>();
+        if (rect == null) rect = go.AddComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = new Vector2(info.PositionX, info.PositionY);
 
-    private void OnLockClick()
-    {
-        var tank = GetCurrentTank();
-        if (tank == null || tank.isUnlocked) return;
-        var config = GetTankConfig(tank.tankId);
-        if (config == null) return;
-        GameUIManager.Instance?.ShowDialog(
-            $"花费 {config.purchaseCost} 金币解锁 {config.name}？",
-            DialogType.Info,
-            () =>
-            {
-                CommunicateEvent.Modify(FishTankMessage.UnlockTank.ToString(), tank.tankId);
-                GameUIManager.ShowMessage("解锁请求已发送");
-            }
-        );
-    }
+        if (rect.sizeDelta.x <= 0.01f || rect.sizeDelta.y <= 0.01f)
+            rect.sizeDelta = new Vector2(100f, 100f);
 
-    private void ToggleManagerPanel()
-    {
-        _isManagerOpen = !_isManagerOpen;
-        if (managerPanel != null)
+        var img = go.GetComponent<Image>();
+        if (img == null) img = go.GetComponentInChildren<Image>();
+        if (img != null) img.raycastTarget = true;
+
+        var btn = go.GetComponent<Button>();
+        if (btn == null) btn = go.GetComponentInChildren<Button>();
+        if (btn != null)
         {
-            if (_isManagerOpen)
-            {
-                managerPanel.OpenPanel();
-                if (_isDecorationMode) ToggleDecorationMode();
-            }
-            else
-                managerPanel.ClosePanel();
+            if (btn.targetGraphic == null && img != null) btn.targetGraphic = img;
         }
-        CommunicateEvent.Modify(FishTankMessage.ToggleManagerPanel.ToString());
+
+        var decComp = go.GetComponent<UI_FishTankDec>();
+        if (decComp == null) decComp = go.AddComponent<UI_FishTankDec>();
+
+        decComp.Init(info.Id, category, tankId, info.DecorationId, OnDecorationInstanceClicked);
+
+        // ★ 根据当前模式设置交互
+        decComp.SetInteractable(_isDecorationMode);
+
+        decComp.SetFlip(Mathf.Approximately(info.RotationY, 180f));
+
+        _decorationInstances[info.Id] = decComp;
     }
 
-    private void OnFishTransferRequest(FishDetailData fishData, FishTankStoreData fromContainer, FishTankStoreData toContainer)
+    private void OnDecorationInstanceClicked(UI_FishTankDec dec)
     {
-        if (fishData == null || toContainer == null) return;
-        var transferData = new TransferData
+        if (!_isDecorationMode) return;
+        if (dec == null) return;
+
+        OnDecorationClickedCallback?.Invoke(dec);
+    }
+
+    private void ApplyTexture(Dictionary<int, List<DecorationEquipInfo>> equipped, int category, Image target, Sprite defaultSprite)
+    {
+        if (target == null) return;
+
+        if (equipped != null && equipped.TryGetValue(category, out var list) && list.Count > 0)
         {
-            FishData = fishData,
-            FromIndex = fromContainer?.IsBag == true ? 0 : (fromContainer?.TankId ?? 0) + 1,
-            ToIndex = toContainer.IsBag ? 0 : toContainer.TankId + 1,
-            IsFromBag = fromContainer?.IsBag ?? false,
-            IsToBag = toContainer.IsBag
-        };
-        CommunicateEvent.Modify(FishTankMessage.TransferFish.ToString(), transferData);
-    }
-
-    private void OnUnlockRequest(int tankId)
-    {
-        var config = GetTankConfig(tankId);
-        if (config == null) return;
-        GameUIManager.Instance?.ShowDialog(
-            $"花费 {config.purchaseCost} 金币解锁 {config.name}？",
-            DialogType.Info,
-            () =>
+            var info = list[0];
+            var itemData = LoadDataManager.Instance?.GetItemById(info.DecorationId);
+            if (itemData != null && !string.IsNullOrEmpty(itemData.iconPath))
             {
-                CommunicateEvent.Modify(FishTankMessage.UnlockTank.ToString(), tankId);
-                GameUIManager.ShowMessage("解锁请求已发送");
+                AssetManager.LoadFromAddressables<Sprite>(itemData.iconPath, (s, handle) =>
+                {
+                    if (s != null && target != null) target.sprite = s;
+                });
+                return;
             }
-        );
+        }
+
+        target.sprite = defaultSprite;
     }
 
-    private void OnDataUpdated()
+    public void ClearAllDecorations()
     {
-        if (gameObject.activeInHierarchy) RefreshAll();
+        foreach (var kv in _decorationInstances)
+        {
+            if (kv.Value != null) Destroy(kv.Value.gameObject);
+        }
+        _decorationInstances.Clear();
     }
 
-    private void OnDecorationDataUpdated()
+    public void MoveDecorationInstance(int recordId, float dx, float dy)
     {
-        if (gameObject.activeInHierarchy && _isDecorationMode) LoadEquippedDecorations();
+        if (_decorationInstances.TryGetValue(recordId, out var dec) && dec != null)
+        {
+            var rect = dec.Rect;
+            if (rect != null) rect.anchoredPosition += new Vector2(dx, dy);
+        }
     }
 
-    private void OnShowDecOperator() { }
+    public RectTransform GetDecorationRect(int recordId)
+    {
+        if (_decorationInstances.TryGetValue(recordId, out var dec) && dec != null)
+            return dec.Rect;
+        return null;
+    }
 
-    private void OnHideDecOperator() { }
+    public UI_FishTankDec GetDecorationInstance(int recordId)
+    {
+        _decorationInstances.TryGetValue(recordId, out var dec);
+        return dec;
+    }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 对象池（鱼）
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
     private class FishObjectPool
     {
         private GameObject _prefab;
@@ -918,9 +709,7 @@ public class FishTankMainPanel : MonoBehaviour
 
         public FishObjectPool(GameObject prefab, Transform parent, int capacity, FishTankMainPanel panel)
         {
-            _prefab = prefab;
-            _parent = parent;
-            _panel = panel;
+            _prefab = prefab; _parent = parent; _panel = panel;
             for (int i = 0; i < capacity; i++) CreateNewObject();
         }
 
@@ -960,6 +749,10 @@ public class FishTankMainPanel : MonoBehaviour
         }
     }
 
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 对象池（鱼饵）
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
     private class BaitObjectPool
     {
         private GameObject _prefab;
@@ -974,22 +767,14 @@ public class FishTankMainPanel : MonoBehaviour
 
         public BaitObjectPool(GameObject prefab, Transform parent, int capacity, FishTankMainPanel panel, Rect totalRect, float fallSpeedRatio, float scale)
         {
-            _prefab = prefab;
-            _parent = parent;
-            _panel = panel;
-            _totalRect = totalRect;
-            _fallSpeedRatio = fallSpeedRatio;
-            _scale = scale;
+            _prefab = prefab; _parent = parent; _panel = panel;
+            _totalRect = totalRect; _fallSpeedRatio = fallSpeedRatio; _scale = scale;
             for (int i = 0; i < capacity; i++) CreateNewBait();
         }
 
         private GameObject CreateNewBait()
         {
-            if (_prefab == null)
-            {
-                Debug.LogError("[BaitObjectPool] baitPrefab 为空，无法创建鱼饵");
-                return null;
-            }
+            if (_prefab == null) { Z_Logger.LogError("[BaitObjectPool] baitPrefab 为空"); return null; }
             GameObject go = GameObject.Instantiate(_prefab, _parent);
             go.SetActive(false);
             var bait = go.GetComponent<UI_FishTankBait>();
@@ -1004,11 +789,7 @@ public class FishTankMainPanel : MonoBehaviour
         {
             GameObject bait;
             if (_pool.Count > 0) bait = _pool.Dequeue();
-            else
-            {
-                bait = CreateNewBait();
-                if (bait != null) bait = _pool.Dequeue();
-            }
+            else { bait = CreateNewBait(); if (bait != null) bait = _pool.Dequeue(); }
             if (bait == null) return null;
             bait.SetActive(true);
             var comp = bait.GetComponent<UI_FishTankBait>();
@@ -1077,33 +858,5 @@ public class FishTankMainPanel : MonoBehaviour
     private void LogDebug(string msg)
     {
         if (enableDebugLog) Z_Logger.Log($"[FishTankMainPanel] {msg}");
-    }
-}
-
-public class DecoClickHandler : MonoBehaviour
-{
-    private string _recordId;
-    private int _decorationId;
-    private int _category;
-    private int _tankId;
-
-    public void Init(string recordId, int decId, int category, int tankId)
-    {
-        _recordId = recordId;
-        _decorationId = decId;
-        _category = category;
-        _tankId = tankId;
-    }
-
-    private void OnMouseDown()
-    {
-        var data = new SelectDecorationData
-        {
-            TankId = _tankId,
-            RecordId = int.Parse(_recordId),
-            Category = _category,
-            ScreenPosition = Input.mousePosition
-        };
-        CommunicateEvent.Modify(FishTankMessage.SelectDecoration.ToString(), data);
     }
 }

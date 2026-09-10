@@ -448,22 +448,39 @@ public partial class PlayerDataManager
 
     public void UpdateEquippedDecorations(int tankId, Dictionary<int, List<DecorationEquipInfo>> equipped)
     {
-        // 清理旧的RecordId索引
-        if (_tankEquippedDecorations.TryGetValue(tankId, out var oldDecorations))
+        bool hasAnyData = equipped != null && equipped.Values.Any(v => v != null && v.Count > 0);
+        bool neverLoaded = !_tankEquippedDecorations.ContainsKey(tankId);
+
+        int incomingCount = 0;
+        if (equipped != null)
+            foreach (var kv in equipped) incomingCount += kv.Value?.Count ?? 0;
+
+        Z_Logger.Log($"[PlayerDataManager] UpdateEquippedDecorations tankId={tankId}, hasAnyData={hasAnyData}, neverLoaded={neverLoaded}, incoming实例数={incomingCount}");
+
+        if (hasAnyData || neverLoaded)
         {
-            foreach (var kvp in oldDecorations)
+            // 清理旧的 RecordId 索引
+            if (_tankEquippedDecorations.TryGetValue(tankId, out var oldDecorations))
+            {
+                foreach (var kvp in oldDecorations)
+                    foreach (var info in kvp.Value)
+                        _decorationInfoByRecordId.Remove(info.Id);
+            }
+
+            _tankEquippedDecorations[tankId] = equipped ?? new Dictionary<int, List<DecorationEquipInfo>>();
+
+            // 更新索引
+            foreach (var kvp in _tankEquippedDecorations[tankId])
                 foreach (var info in kvp.Value)
-                    _decorationInfoByRecordId.Remove(info.Id);   // 使用 Id 作为 RecordId
+                    _decorationInfoByRecordId[info.Id] = info;
+
+            Z_Logger.Log($"[PlayerDataManager] 鱼缸 {tankId} 装饰数据已覆盖，槽位数={_tankEquippedDecorations[tankId].Count}");
+        }
+        else
+        {
+            Z_Logger.Log($"[PlayerDataManager] 鱼缸 {tankId} 装饰返回空且已有缓存，保留本地数据（当前槽位数={_tankEquippedDecorations[tankId].Count}）");
         }
 
-        _tankEquippedDecorations[tankId] = equipped ?? new Dictionary<int, List<DecorationEquipInfo>>();
-
-        // 更新索引
-        foreach (var kvp in _tankEquippedDecorations[tankId])
-            foreach (var info in kvp.Value)
-                _decorationInfoByRecordId[info.Id] = info;
-
-        Z_Logger.Log($"[PlayerDataManager] 鱼缸 {tankId} 装备装饰更新完成");
         NotifyDataChanged();
     }
 

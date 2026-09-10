@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using static PlayerDataManager;
-using View.Detail;
 
 public class FishTankManagerPanel : MonoBehaviour
 {
@@ -24,32 +23,19 @@ public class FishTankManagerPanel : MonoBehaviour
     [SerializeField] private Text harvestTitleText;
     [SerializeField] private Text harvestValueText;
 
-    // ============================================================
-    // 数据
-    // ============================================================
-    private GameObject _fishTankStorePrefab;
     private Action<FishDetailData, FishTankStoreData, FishTankStoreData> _onFishTransfer;
     private Action<int> _onUnlockRequest;
+    private Action _onCloseCallback;
     private bool _isInitialized = false;
 
-    // ============================================================
-    // 初始化
-    // ============================================================
-    public void Init(GameObject fishTankStorePrefab, bool isEnableDebug = false)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    public void Init(bool isEnableDebug = false)
     {
-        enableDebugLog = isEnableDebug;
-        _fishTankStorePrefab = fishTankStorePrefab;
-
-        InitPanels();
-        SetupUI();
-        RegisterEvents();
-
+        if (_isInitialized) return;
         _isInitialized = true;
-        LogDebug("Init 完成");
-    }
 
-    private void InitPanels()
-    {
+        enableDebugLog = isEnableDebug;
+
         if (upperStorePanel != null)
         {
             upperStorePanel.Init(0, enableDebugLog);
@@ -69,6 +55,9 @@ public class FishTankManagerPanel : MonoBehaviour
             upperStorePanel.SetLockedIndex(lowerStorePanel.CurrentIndex);
             lowerStorePanel.SetLockedIndex(upperStorePanel.CurrentIndex);
         }
+
+        SetupUI();
+        RegisterEvents();
     }
 
     private void SetupUI()
@@ -76,8 +65,13 @@ public class FishTankManagerPanel : MonoBehaviour
         if (closeBtn != null)
         {
             closeBtn.onClick.RemoveAllListeners();
-            closeBtn.onClick.AddListener(ClosePanel);
+            closeBtn.onClick.AddListener(() =>
+            {
+                ClosePanel();
+                _onCloseCallback?.Invoke();
+            });
         }
+
         if (sortByRarityBtn != null)
         {
             sortByRarityBtn.onClick.RemoveAllListeners();
@@ -90,14 +84,11 @@ public class FishTankManagerPanel : MonoBehaviour
         }
     }
 
-    // ============================================================
-    // 事件注册
-    // ============================================================
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private void RegisterEvents()
     {
         UnregisterEvents();
         CommunicateEvent.Register(FishTankMessage.DataUpdated.ToString(), OnDataUpdated);
-        LogDebug("事件注册完成");
     }
 
     private void UnregisterEvents()
@@ -105,20 +96,14 @@ public class FishTankManagerPanel : MonoBehaviour
         CommunicateEvent.Unregister(FishTankMessage.DataUpdated.ToString(), OnDataUpdated);
     }
 
-    // ============================================================
-    // 事件处理
-    // ============================================================
     private void OnDataUpdated()
     {
         if (!_isInitialized) return;
         if (!gameObject.activeSelf) return;
-        LogDebug("收到 DataUpdated 消息，刷新面板");
         RefreshData();
     }
 
-    // ============================================================
-    // 回调设置
-    // ============================================================
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     public void SetTransferCallback(Action<FishDetailData, FishTankStoreData, FishTankStoreData> callback)
     {
         _onFishTransfer = callback;
@@ -133,9 +118,12 @@ public class FishTankManagerPanel : MonoBehaviour
         if (lowerStorePanel != null) lowerStorePanel.SetUnlockCallback(callback);
     }
 
-    // ============================================================
-    // 数据更新
-    // ============================================================
+    public void SetCloseCallback(Action callback)
+    {
+        _onCloseCallback = callback;
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     public void RefreshData()
     {
         if (!_isInitialized) return;
@@ -153,9 +141,7 @@ public class FishTankManagerPanel : MonoBehaviour
         if (lowerStorePanel != null) lowerStorePanel.SetCurrentIndex(tankIndex + 1);
     }
 
-    // ============================================================
-    // 收益显示
-    // ============================================================
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private void UpdateHarvestInfo()
     {
         int hourlyEarning = 0;
@@ -192,9 +178,7 @@ public class FishTankManagerPanel : MonoBehaviour
         }
     }
 
-    // ============================================================
-    // 面板开关
-    // ============================================================
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     public void OpenPanel()
     {
         gameObject.SetActive(true);
@@ -218,9 +202,7 @@ public class FishTankManagerPanel : MonoBehaviour
         if (lowerStorePanel != null) lowerStorePanel.SortByPrice();
     }
 
-    // ============================================================
-    // 回调转发
-    // ============================================================
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private void OnFishTransferRequest(FishDetailData fishData, FishTankStoreData fromContainer, FishTankStoreData toContainer)
     {
         _onFishTransfer?.Invoke(fishData, fromContainer, toContainer);
@@ -231,9 +213,7 @@ public class FishTankManagerPanel : MonoBehaviour
         _onUnlockRequest?.Invoke(tankId);
     }
 
-    // ============================================================
-    // 生命周期
-    // ============================================================
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private void OnDestroy()
     {
         UnregisterEvents();
@@ -242,12 +222,8 @@ public class FishTankManagerPanel : MonoBehaviour
         if (sortByPriceBtn != null) sortByPriceBtn.onClick.RemoveAllListeners();
     }
 
-    // ============================================================
-    // 日志
-    // ============================================================
     private void LogDebug(string message)
     {
-        if (enableDebugLog)
-            Z_Logger.Log($"[FishTankManagerPanel] {message}");
+        if (enableDebugLog) Z_Logger.Log($"[FishTankManagerPanel] {message}");
     }
 }

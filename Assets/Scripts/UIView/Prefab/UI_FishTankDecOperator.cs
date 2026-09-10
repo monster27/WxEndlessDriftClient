@@ -2,10 +2,11 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using static PlayerDataManager;
+using System;
 
 /// <summary>
-/// 装饰操作面板 - 纯UI，所有操作通过事件发送
+/// 装饰操作面板（浮窗）
+/// 位置规则：面板的「右下角」对齐装饰的「右上角」
 /// </summary>
 public class UI_FishTankDecOperator : MonoBehaviour
 {
@@ -18,34 +19,64 @@ public class UI_FishTankDecOperator : MonoBehaviour
     private RectTransform _rect;
     private Canvas _parentCanvas;
 
-    // 当前选中的装饰信息
     private int _tankId;
     private int _recordId;
-    private int _decorationId;
     private int _category;
+    private int _decorationId;
+    private RectTransform _targetDecorationRect;
 
-    // 拖拽相关
     private bool _isDragging = false;
     private Vector2 _lastScreenPos;
+    private Vector2 _totalDragDelta;
 
-    private void Awake()
+    private bool _isInitialized = false;
+
+    // 回调
+    private Action<int, float, float> _onDragMove;    // (recordId, dx, dy)
+    private Action<int, float, float> _onDragEnd;     // (recordId, totalDx, totalDy)
+    private Action<int> _onMirror;                    // (recordId)
+    private Action<int> _onRemove;                    // (recordId)
+
+    public int CurrentRecordId => _recordId;
+    public bool IsShowing => panelRoot != null ? panelRoot.activeSelf : gameObject.activeSelf;
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 初始化
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    public void EnsureInit()
     {
+        if (_isInitialized) return;
+        _isInitialized = true;
+
         _rect = GetComponent<RectTransform>();
-        _parentCanvas = GetComponentInParent<Canvas>();
-        if (_parentCanvas == null)
+        if (_rect != null)
         {
-            Debug.LogError("UI_FishTankDecOperator 必须在 Canvas 下！");
-            return;
+            // 右下角对齐装饰右上角 → pivot 设在右下角
+            _rect.pivot = new Vector2(1f, 0f);
+            _rect.anchorMin = new Vector2(0.5f, 0.5f);
+            _rect.anchorMax = new Vector2(0.5f, 0.5f);
         }
 
-        if (mirrorBtn != null) mirrorBtn.onClick.AddListener(OnMirrorClick);
-        if (removeBtn != null) removeBtn.onClick.AddListener(OnRemoveClick);
+        _parentCanvas = GetComponentInParent<Canvas>();
 
-        // 拖拽区域事件
+        if (mirrorBtn != null)
+        {
+            mirrorBtn.onClick.RemoveAllListeners();
+            mirrorBtn.onClick.AddListener(OnMirrorClick);
+        }
+
+        if (removeBtn != null)
+        {
+            removeBtn.onClick.RemoveAllListeners();
+            removeBtn.onClick.AddListener(OnRemoveClick);
+        }
+
         if (dragHandle != null)
         {
             var trigger = dragHandle.gameObject.GetComponent<EventTrigger>();
             if (trigger == null) trigger = dragHandle.gameObject.AddComponent<EventTrigger>();
+            trigger.triggers.Clear();
 
             AddEventTrigger(trigger, EventTriggerType.PointerDown, OnDragHandleDown);
             AddEventTrigger(trigger, EventTriggerType.Drag, OnDragHandleDrag);
@@ -53,81 +84,103 @@ public class UI_FishTankDecOperator : MonoBehaviour
             AddEventTrigger(trigger, EventTriggerType.PointerExit, OnDragHandleUp);
         }
 
-        if (panelRoot != null) panelRoot.SetActive(false);
-        else gameObject.SetActive(false);
-
-        // 监听选中事件
-        CommunicateEvent.Register<SelectDecorationData>(FishTankMessage.SelectDecoration.ToString(), OnSelectDecoration);
-        CommunicateEvent.Register(FishTankMessage.HideDecOperator.ToString(), OnHideDecOperator);
-    }
-
-    private void OnDestroy()
-    {
-        if (mirrorBtn != null) mirrorBtn.onClick.RemoveAllListeners();
-        if (removeBtn != null) removeBtn.onClick.RemoveAllListeners();
-        CommunicateEvent.Unregister<SelectDecorationData>(FishTankMessage.SelectDecoration.ToString(), OnSelectDecoration);
-        CommunicateEvent.Unregister(FishTankMessage.HideDecOperator.ToString(), OnHideDecOperator);
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 事件处理
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private void OnSelectDecoration(SelectDecorationData data)
-    {
-        if (data == null) return;
-        _tankId = data.TankId;
-        _recordId = data.RecordId;
-        _category = data.Category; // 直接从事件获取品类
-
-        // 获取装饰ID（用于展示，可选）
-        var info = PlayerDataService.Instance?.GetDecorationInfoByRecordId(_recordId);
-        if (info != null)
-            _decorationId = info.DecorationId;
-
-        ShowAt(data.ScreenPosition);
-    }
-
-    private void OnHideDecOperator()
-    {
         Hide();
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 显示/隐藏
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private void ShowAt(Vector3 screenPos)
+    public void SetCallbacks(
+        Action<int, float, float> onDragMove,
+        Action<int, float, float> onDragEnd,
+        Action<int> onMirror,
+        Action<int> onRemove)
     {
+        _onDragMove = onDragMove;
+        _onDragEnd = onDragEnd;
+        _onMirror = onMirror;
+        _onRemove = onRemove;
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 显示 / 隐藏
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    public void ShowForDecoration(int tankId, int recordId, int category, int decorationId, RectTransform decorationRect)
+    {
+        EnsureInit();
+
+        _tankId = tankId;
+        _recordId = recordId;
+        _category = category;
+        _decorationId = decorationId;
+        _targetDecorationRect = decorationRect;
+
         if (panelRoot != null) panelRoot.SetActive(true);
         else gameObject.SetActive(true);
 
-        Vector2 localPoint;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            _parentCanvas.transform as RectTransform,
-            screenPos,
-            _parentCanvas.worldCamera,
-            out localPoint
-        );
-        _rect.anchoredPosition = localPoint;
+        UpdatePosition();
 
         _isDragging = false;
+        _totalDragDelta = Vector2.zero;
     }
 
-    private void Hide()
+    public void Hide()
     {
         if (panelRoot != null) panelRoot.SetActive(false);
         else gameObject.SetActive(false);
+
         _isDragging = false;
+        _totalDragDelta = Vector2.zero;
+        _targetDecorationRect = null;
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 拖拽控制装饰移动（发送事件）
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    /// <summary>
+    /// 重新对齐到目标装饰的右上角
+    /// </summary>
+    public void UpdatePosition()
+    {
+        if (_targetDecorationRect == null || _rect == null) return;
+
+        // 装饰右上角世界坐标
+        Vector3[] corners = new Vector3[4];
+        _targetDecorationRect.GetWorldCorners(corners);
+        Vector3 worldRightTop = corners[2];
+
+        // 转换到 Operator 父容器本地坐标
+        RectTransform parentRect = _rect.parent as RectTransform;
+        if (parentRect == null) return;
+
+        Canvas canvas = _parentCanvas;
+        Camera cam = (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            ? canvas.worldCamera : null;
+
+        Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(cam, worldRightTop);
+
+        Vector2 localPos;
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, screenPos, cam, out localPos))
+        {
+            _rect.anchoredPosition = localPos;
+        }
+    }
+
+    /// <summary>
+    /// 数据刷新后重新绑定目标（用于重建后继续跟随同一 recordId 的新对象）
+    /// </summary>
+    public void RebindTarget(RectTransform newRect)
+    {
+        _targetDecorationRect = newRect;
+        UpdatePosition();
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 拖拽
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
     private void OnDragHandleDown(BaseEventData data)
     {
         PointerEventData ped = data as PointerEventData;
         if (ped == null) return;
         _isDragging = true;
         _lastScreenPos = ped.position;
+        _totalDragDelta = Vector2.zero;
     }
 
     private void OnDragHandleDrag(BaseEventData data)
@@ -137,54 +190,54 @@ public class UI_FishTankDecOperator : MonoBehaviour
         if (ped == null) return;
 
         Vector2 currentScreenPos = ped.position;
-        Vector2 deltaScreen = currentScreenPos - _lastScreenPos;
 
-        if (deltaScreen.magnitude > 0.001f)
+        // 屏幕坐标 → 父容器本地坐标
+        RectTransform parentRect = _rect != null ? _rect.parent as RectTransform : null;
+        if (parentRect == null) return;
+
+        Camera cam = (_parentCanvas != null && _parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            ? _parentCanvas.worldCamera : null;
+
+        Vector2 localCurrent, localLast;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, currentScreenPos, cam, out localCurrent);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(parentRect, _lastScreenPos, cam, out localLast);
+
+        Vector2 deltaLocal = localCurrent - localLast;
+
+        if (deltaLocal.sqrMagnitude > 0.0001f)
         {
-            var moveData = new MoveDecorationData
-            {
-                TankId = _tankId,
-                RecordId = _recordId,
-                DeltaX = deltaScreen.x,
-                DeltaY = deltaScreen.y
-            };
-            CommunicateEvent.Modify(FishTankMessage.MoveDecoration.ToString(), moveData);
+            _totalDragDelta += deltaLocal;
+            _onDragMove?.Invoke(_recordId, deltaLocal.x, deltaLocal.y);
             _lastScreenPos = currentScreenPos;
         }
     }
 
     private void OnDragHandleUp(BaseEventData data)
     {
+        if (!_isDragging) return;
         _isDragging = false;
+
+        if (_totalDragDelta.sqrMagnitude > 0.0001f)
+        {
+            _onDragEnd?.Invoke(_recordId, _totalDragDelta.x, _totalDragDelta.y);
+        }
+        _totalDragDelta = Vector2.zero;
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 按钮事件
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 按钮
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
     private void OnMirrorClick()
     {
-        var data = new MirrorDecorationData
-        {
-            TankId = _tankId,
-            RecordId = _recordId
-        };
-        CommunicateEvent.Modify(FishTankMessage.MirrorDecoration.ToString(), data);
+        _onMirror?.Invoke(_recordId);
     }
 
     private void OnRemoveClick()
     {
-        var data = new RemoveDecorationData
-        {
-            TankId = _tankId,
-            RecordId = _recordId
-        };
-        CommunicateEvent.Modify(FishTankMessage.RemoveDecoration.ToString(), data);
-        Hide(); // 移除后隐藏操作面板
+        _onRemove?.Invoke(_recordId);
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 辅助
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private void AddEventTrigger(EventTrigger trigger, EventTriggerType type, System.Action<BaseEventData> action)
     {
         var entry = new EventTrigger.Entry { eventID = type };

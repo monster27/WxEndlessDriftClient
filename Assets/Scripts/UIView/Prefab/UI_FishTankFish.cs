@@ -2,6 +2,11 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+public enum FishTankFishState
+{
+    Normal,      // 正常状态（蓄力/恢复/冲刺）
+    BaitChasing  // 追逐鱼饵状态
+}
 
 public class UI_FishTankFish : MonoBehaviour
 {
@@ -14,10 +19,10 @@ public class UI_FishTankFish : MonoBehaviour
     private Image _image;
 
     // ===== 大小参数 =====
-    [SerializeField] private float baseHeight = 50f;   // 固定基础高度 50 像素（宽度按图像比例）
-    [SerializeField] private float baseScale = 1f;     // 基础缩放，所有动画在此基础上叠加
+    [SerializeField] private float baseHeight = 50f;
+    [SerializeField] private float baseScale = 1f;
 
-    // ===== 物理参数（世界单位，乘以 baseScale * 100 转换） =====
+    // ===== 物理参数 =====
     private float moveSpeedMin = 0.35f;
     private float moveSpeedMax = 1.2f;
     private float verticalSpeedRatio = 0.4f;
@@ -32,13 +37,10 @@ public class UI_FishTankFish : MonoBehaviour
     private float sprintDurationMin = 1.5f;
     private float sprintDurationMax = 3.5f;
 
-    // ===== 转换因子 =====
     private float ScaleFactor => baseScale * 100f;
 
-    // ===== 调试 =====
     private bool enableDebugLog = false;
 
-    // ===== 个性系数 =====
     private float _personality = 1f;
 
     // ===== 内部状态 =====
@@ -49,16 +51,13 @@ public class UI_FishTankFish : MonoBehaviour
     private float _verticalDirection = 1f;
     private bool _isVerticalMoving = false;
 
-    // ===== 速度物理（像素单位） =====
     private float _currentSpeed = 0f;
     private float _targetSpeed = 0f;
     private float _maxSpeed = 1.5f;
 
-    // ===== 身体形状（像素，基础尺寸） =====
     private Vector2 _baseSize = new Vector2(50f, 50f);
     private Vector2 _currentShape = new Vector2(50f, 50f);
 
-    // ===== 动画缩放（相对于 baseScale 的额外乘数） =====
     private float _animScaleX = 1f;
     private float _animScaleY = 1f;
 
@@ -70,7 +69,6 @@ public class UI_FishTankFish : MonoBehaviour
     private float _boundaryLockTimer = 0f;
     private const float BOUNDARY_LOCK_DURATION = 0.3f;
 
-    // ===== 状态机 =====
     private enum SwimState { Charging, Recovering, Sprinting }
     private SwimState _swimState = SwimState.Charging;
 
@@ -82,7 +80,6 @@ public class UI_FishTankFish : MonoBehaviour
     private float _directionChangeTimer = 0f;
     private float _directionChangeInterval = 3f;
 
-    // ===== 鱼饵追逐 =====
     private FishTankFishState _fishState = FishTankFishState.Normal;
     private bool _isChasingBait = false;
     private Vector2 _baitTargetPosition;
@@ -91,12 +88,13 @@ public class UI_FishTankFish : MonoBehaviour
     private float _chaseSpeedMultiplier = 5f;
     private bool _hasLoggedStart = false;
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 公共属性
+    // ===== 组件初始化标志 =====
+    private bool _componentsReady = false;
+
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     public string UniqueId => _uniqueId;
     public FishSpeciesType SpeciesType => speciesType;
-    public float UniformScale { get => baseScale; set { baseScale = value; ApplyBaseSize(); } }
+    public float UniformScale { get => baseScale; set { EnsureComponents(); baseScale = value; ApplyBaseSize(); } }
     public bool EnableDebugLog { get => enableDebugLog; set => enableDebugLog = value; }
     public float GetCurrentMoveSpeed() => _currentSpeed;
     public float GetCurrentDirection() => _currentDirection;
@@ -104,10 +102,12 @@ public class UI_FishTankFish : MonoBehaviour
     public FishTankFishState CurrentFishState => _fishState;
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 初始化
+    // 组件懒初始化（替代 Awake）
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    private void Awake()
+    private void EnsureComponents()
     {
+        if (_componentsReady) return;
+
         _rect = GetComponent<RectTransform>();
         if (_rect == null) _rect = gameObject.AddComponent<RectTransform>();
         _rect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -129,12 +129,14 @@ public class UI_FishTankFish : MonoBehaviour
         if (_image == null) _image = renderGo.AddComponent<Image>();
         _image.raycastTarget = false;
 
-        gameObject.SetActive(false);
-        _image.enabled = false;
+        _componentsReady = true;
     }
 
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     public void Init(FishSpeciesData data, Shader shader)
     {
+        EnsureComponents();
+
         _uniqueId = Guid.NewGuid().ToString();
         gameObject.name = $"UI_FishTankFish_{_uniqueId}";
         speciesData = data;
@@ -146,6 +148,8 @@ public class UI_FishTankFish : MonoBehaviour
 
     private void ResetAllState()
     {
+        EnsureComponents();
+
         _directionChangeInterval = UnityEngine.Random.Range(2f, 6f);
         _currentDirection = UnityEngine.Random.Range(0, 2) == 0 ? 1 : -1;
         _verticalDirection = UnityEngine.Random.Range(0, 2) == 0 ? 1 : -1;
@@ -183,15 +187,14 @@ public class UI_FishTankFish : MonoBehaviour
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 贴图与大小（高度固定 50，宽度按图像比例）
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     public void SetTexture(Texture2D tex)
     {
+        EnsureComponents();
         if (_image == null || tex == null) return;
+
         Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
         _image.sprite = sprite;
 
-        // 高度固定为 baseHeight（50），宽度按图像比例
         float aspect = (float)tex.width / tex.height;
         float finalHeight = baseHeight;
         float finalWidth = finalHeight * aspect;
@@ -200,7 +203,6 @@ public class UI_FishTankFish : MonoBehaviour
         _currentShape = _baseSize;
         ApplyBaseSize();
 
-        // 如果已设置位置，重新约束边界（避免纹理加载后大小变化导致超出）
         if (gameObject.activeSelf)
         {
             Vector2 pos = _rect.anchoredPosition;
@@ -211,36 +213,29 @@ public class UI_FishTankFish : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 应用基础尺寸到 RectTransform（sizeDelta = baseSize * baseScale）
-    /// </summary>
     private void ApplyBaseSize()
     {
+        EnsureComponents();
+        if (_rect == null) return;
         _rect.sizeDelta = _baseSize * baseScale;
         ApplyShapeToRenderer();
     }
 
-    /// <summary>
-    /// 应用视觉缩放：方向翻转 * 动画缩放，作用在 renderGo.localScale 上
-    /// </summary>
     private void ApplyShapeToRenderer()
     {
+        EnsureComponents();
         if (_image == null || renderGo == null) return;
 
-        // sizeDelta 已包含 baseScale（在 ApplyBaseSize 中设置）
-        // renderGo 的 localScale 只处理方向翻转和动画乘数
         renderGo.transform.localScale = new Vector3(
-            -_currentDirection * _animScaleX,   // -_currentDirection 修正鱼头方向
+            -_currentDirection * _animScaleX,
             _animScaleY,
             1f
         );
     }
 
-    /// <summary>
-    /// 蓄力动画：把 _animScale 向 chargeScaleX/Y 过渡
-    /// </summary>
     private void UpdateShape(float progress)
     {
+        EnsureComponents();
         float eased = SmoothStep01(progress);
         float targetX = Mathf.Lerp(1f, chargeScaleX, eased);
         float targetY = Mathf.Lerp(1f, chargeScaleY, eased);
@@ -249,11 +244,9 @@ public class UI_FishTankFish : MonoBehaviour
         ApplyShapeToRenderer();
     }
 
-    /// <summary>
-    /// 恢复动画：把 _animScale 恢复为 1
-    /// </summary>
     private void ResetShape()
     {
+        EnsureComponents();
         _animScaleX = Mathf.Lerp(_animScaleX, 1f, Time.deltaTime * 10f);
         _animScaleY = Mathf.Lerp(_animScaleY, 1f, Time.deltaTime * 10f);
         ApplyShapeToRenderer();
@@ -271,8 +264,6 @@ public class UI_FishTankFish : MonoBehaviour
         ApplyShapeToRenderer();
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 外部设置
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     public void SetBaseHeight(float height) { /* 固定为 50，忽略 */ }
 
@@ -300,13 +291,13 @@ public class UI_FishTankFish : MonoBehaviour
         sprintDurationMax = sprintMax;
     }
 
-    public void SetRenderQueue(int queue) { /* UI 不需要 */ }
+    public void SetRenderQueue(int queue) { }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 边界工具
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private Vector2 ClampPositionToBoundary(Vector2 pos)
     {
+        EnsureComponents();
+        if (_rect == null) return pos;
         float halfWidth = _rect.sizeDelta.x * 0.5f;
         float halfHeight = _rect.sizeDelta.y * 0.5f;
         pos.x = Mathf.Clamp(pos.x,
@@ -327,10 +318,9 @@ public class UI_FishTankFish : MonoBehaviour
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 状态机控制
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private void ForceCharge()
     {
+        EnsureComponents();
         _swimState = SwimState.Charging;
         _stateTimer = 0f;
         _chargeDuration = UnityEngine.Random.Range(chargeDurationMin, chargeDurationMax) / _personality;
@@ -347,6 +337,8 @@ public class UI_FishTankFish : MonoBehaviour
 
     private void InitializeSwimState(float speedMin, float speedMax, float dirMin, float dirMax)
     {
+        EnsureComponents();
+
         moveSpeedMin = speedMin;
         moveSpeedMax = speedMax;
         _directionChangeInterval = UnityEngine.Random.Range(dirMin, dirMax) / _personality;
@@ -374,13 +366,12 @@ public class UI_FishTankFish : MonoBehaviour
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 行为设置
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     public void SetFullScreenSwim(
         float speedMin, float speedMax,
         float dirMin, float dirMax,
         Vector2 customPos)
     {
+        EnsureComponents();
         gameObject.SetActive(true);
         if (_image != null) _image.enabled = true;
 
@@ -395,6 +386,7 @@ public class UI_FishTankFish : MonoBehaviour
 
     public void SetFullScreenStatic()
     {
+        EnsureComponents();
         gameObject.SetActive(true);
         if (_image != null) _image.enabled = true;
         float halfWidth = _rect.sizeDelta.x * 0.5f;
@@ -415,6 +407,7 @@ public class UI_FishTankFish : MonoBehaviour
         float speedMin, float speedMax,
         float dirMin, float dirMax)
     {
+        EnsureComponents();
         gameObject.SetActive(true);
         if (_image != null) _image.enabled = true;
         float halfWidth = _rect.sizeDelta.x * 0.5f;
@@ -428,6 +421,7 @@ public class UI_FishTankFish : MonoBehaviour
 
     public void SetBottomStatic()
     {
+        EnsureComponents();
         gameObject.SetActive(true);
         if (_image != null) _image.enabled = true;
         float halfWidth = _rect.sizeDelta.x * 0.5f;
@@ -445,11 +439,10 @@ public class UI_FishTankFish : MonoBehaviour
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 鱼饵追逐
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     public void StartChasingBait(Vector2 baitPosition, float chaseDuration, float speedMultiplier = 5f)
     {
-        Debug.Log($"[UI_FishTankFish] StartChasingBait: 鱼饵位置={baitPosition}, 鱼位置={_rect.anchoredPosition}");
+        EnsureComponents();
+        LogDebug($"StartChasingBait: 鱼饵位置={baitPosition}, 鱼位置={_rect.anchoredPosition}");
 
         if (_isChasingBait)
         {
@@ -480,6 +473,7 @@ public class UI_FishTankFish : MonoBehaviour
 
     private void UpdateBaitChasing()
     {
+        EnsureComponents();
         if (!_isChasingBait || !gameObject.activeSelf) return;
         _stateTimer += Time.deltaTime;
         Vector2 pos = _rect.anchoredPosition;
@@ -517,6 +511,7 @@ public class UI_FishTankFish : MonoBehaviour
 
     private void CheckBoundaries(ref Vector2 pos)
     {
+        EnsureComponents();
         if (_boundaryLockTimer > 0) _boundaryLockTimer -= Time.deltaTime;
 
         float halfWidth = _rect.sizeDelta.x * 0.5f;
@@ -565,6 +560,7 @@ public class UI_FishTankFish : MonoBehaviour
 
     public void ResetFishState()
     {
+        EnsureComponents();
         _isChasingBait = false;
         _fishState = FishTankFishState.Normal;
         _stateTimer = 0f;
@@ -576,11 +572,10 @@ public class UI_FishTankFish : MonoBehaviour
     public string GetCurrentSwimState() => _swimState.ToString();
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 更新循环
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private void Update()
     {
         if (!gameObject.activeSelf) return;
+        if (!_componentsReady) return;
 
         if (_isChasingBait)
         {
@@ -720,11 +715,12 @@ public class UI_FishTankFish : MonoBehaviour
 
     private void ApplyBoundary(ref Vector2 targetPos)
     {
+        EnsureComponents();
+        float halfWidth = _rect.sizeDelta.x * 0.5f;
+        float halfHeight = _rect.sizeDelta.y * 0.5f;
+
         if (_boundaryLockTimer <= 0)
         {
-            float halfWidth = _rect.sizeDelta.x * 0.5f;
-            float halfHeight = _rect.sizeDelta.y * 0.5f;
-
             if (targetPos.x - halfWidth < totalAreaRect.xMin + _boundaryMargin)
             {
                 targetPos.x = totalAreaRect.xMin + _boundaryMargin + halfWidth;
@@ -736,7 +732,7 @@ public class UI_FishTankFish : MonoBehaviour
                 _isVerticalMoving = UnityEngine.Random.value < verticalMoveProbability;
                 if (_isVerticalMoving) _verticalDirection = UnityEngine.Random.Range(0, 2) == 0 ? 1 : -1;
                 ForceCharge();
-                LogDebug("左边界（鱼左边缘触碰）");
+                LogDebug("左边界");
             }
             else if (targetPos.x + halfWidth > totalAreaRect.xMax - _boundaryMargin)
             {
@@ -749,28 +745,21 @@ public class UI_FishTankFish : MonoBehaviour
                 _isVerticalMoving = UnityEngine.Random.value < verticalMoveProbability;
                 if (_isVerticalMoving) _verticalDirection = UnityEngine.Random.Range(0, 2) == 0 ? 1 : -1;
                 ForceCharge();
-                LogDebug("右边界（鱼右边缘触碰）");
+                LogDebug("右边界");
             }
         }
 
-        // 上下边界
-        float halfHeight2 = _rect.sizeDelta.y * 0.5f;
-        float bottomEdge = targetPos.y - halfHeight2;
-        float topEdge = targetPos.y + halfHeight2;
-
-        if (bottomEdge < totalAreaRect.yMin + _boundaryMargin)
+        if (targetPos.y - halfHeight < totalAreaRect.yMin + _boundaryMargin)
         {
-            targetPos.y = totalAreaRect.yMin + _boundaryMargin + halfHeight2;
+            targetPos.y = totalAreaRect.yMin + _boundaryMargin + halfHeight;
             _basePosition.y = targetPos.y;
             _verticalDirection = 1;
-            LogDebug("下边界");
         }
-        else if (topEdge > totalAreaRect.yMax - _boundaryMargin)
+        else if (targetPos.y + halfHeight > totalAreaRect.yMax - _boundaryMargin)
         {
-            targetPos.y = totalAreaRect.yMax - _boundaryMargin - halfHeight2;
+            targetPos.y = totalAreaRect.yMax - _boundaryMargin - halfHeight;
             _basePosition.y = targetPos.y;
             _verticalDirection = -1;
-            LogDebug("上边界");
         }
     }
 
@@ -782,6 +771,7 @@ public class UI_FishTankFish : MonoBehaviour
 
     public void Stop()
     {
+        EnsureComponents();
         if (_image != null) _image.enabled = false;
         gameObject.SetActive(false);
     }

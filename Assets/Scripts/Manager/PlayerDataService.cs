@@ -79,10 +79,8 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     {
         UnregisterEvents();
 
-        // 监听DataManager的数据变化
         CommunicateEvent.Register(FishTankMessage.PlayerDataUpdated.ToString(), OnPlayerDataUpdated);
 
-        // 监听View的消息（无参数）
         CommunicateEvent.Register(FishTankMessage.OpenFishTank.ToString(), OnOpenFishTank);
         CommunicateEvent.Register(FishTankMessage.CloseFishTank.ToString(), OnCloseFishTank);
         CommunicateEvent.Register(FishTankMessage.RefreshFishTank.ToString(), OnRefreshFishTank);
@@ -90,10 +88,8 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
         CommunicateEvent.Register<int>(FishTankMessage.UnlockTank.ToString(), OnUnlockTank);
         CommunicateEvent.Register(FishTankMessage.ToggleManagerPanel.ToString(), OnToggleManagerPanel);
 
-        // 监听Network层数据加载完成
         CommunicateEvent.Register(FishTankMessage.DataLoaded.ToString(), OnDataLoaded);
 
-        // 带参数的 TransferFish
         CommunicateEvent.Register<TransferData>(FishTankMessage.TransferFish.ToString(), OnTransferFish);
 
         // ===== 装饰相关消息注册 =====
@@ -121,7 +117,6 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
         CommunicateEvent.Unregister(FishTankMessage.ToggleManagerPanel.ToString(), OnToggleManagerPanel);
         CommunicateEvent.Unregister(FishTankMessage.DataLoaded.ToString(), OnDataLoaded);
 
-        // 装饰消息取消注册
         CommunicateEvent.Unregister<EquipDecorationData>(FishTankMessage.EquipDecoration.ToString(), OnEquipDecoration);
         CommunicateEvent.Unregister<RemoveDecorationData>(FishTankMessage.RemoveDecoration.ToString(), OnRemoveDecoration);
         CommunicateEvent.Unregister<MirrorDecorationData>(FishTankMessage.MirrorDecoration.ToString(), OnMirrorDecoration);
@@ -230,6 +225,7 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     private void OnEquipDecoration(EquipDecorationData data)
     {
         LogDebug($"收到 EquipDecoration: TankId={data.TankId}, Category={data.Category}, DecId={data.DecorationId}");
+
         NetServerManager.Instance?.EquipDecoration(
             data.TankId, data.Category, data.DecorationId,
             data.PosX, data.PosY, data.PosZ,
@@ -239,8 +235,15 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
             {
                 if (success)
                 {
-                    LogDebug($"装备装饰成功: {message}, RecordId={newRecordId}");
-                    CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
+                    // 拉取最新装备状态
+                    NetServerManager.Instance.FetchEquippedStatus(data.TankId, (equipped) =>
+                    {
+                        if (equipped != null && PlayerDataManager.Instance != null)
+                            PlayerDataManager.Instance.UpdateEquippedDecorations(data.TankId, equipped);
+
+                        CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
+                    });
+
                     GameUIManager.ShowMessage("装备成功");
                 }
                 else
@@ -254,11 +257,12 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     private void OnRemoveDecoration(RemoveDecorationData data)
     {
         LogDebug($"收到 RemoveDecoration: TankId={data.TankId}, RecordId={data.RecordId}");
+
         NetServerManager.Instance?.UnEquipDecoration(data.TankId, data.RecordId, (success, message) =>
         {
             if (success)
             {
-                LogDebug($"卸下装饰成功: {message}");
+                PlayerDataManager.Instance?.RemoveEquippedDecoration(data.TankId, data.RecordId);
                 CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
                 GameUIManager.ShowMessage("已卸下装饰");
             }
@@ -273,47 +277,49 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     private void OnMirrorDecoration(MirrorDecorationData data)
     {
         LogDebug($"收到 MirrorDecoration: TankId={data.TankId}, RecordId={data.RecordId}");
+
         var info = GetDecorationInfoByRecordId(data.RecordId);
-        if (info != null)
+        if (info == null) return;
+
+        float newRotation = (info.RotationY == 0) ? 180 : 0;
+
+        NetServerManager.Instance?.MirrorDecoration(data.TankId, data.RecordId, newRotation, (success, message) =>
         {
-            float newRotation = (info.RotationY == 0) ? 180 : 0;
-            NetServerManager.Instance?.MirrorDecoration(data.TankId, data.RecordId, newRotation, (success, message) =>
+            if (success)
             {
-                if (success)
-                {
-                    LogDebug($"镜像装饰成功: {message}");
-                    CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
-                }
-                else
-                {
-                    LogDebug($"镜像失败: {message}");
-                    GameUIManager.ShowMessage($"镜像失败: {message}");
-                }
-            });
-        }
+                PlayerDataManager.Instance?.UpdateDecorationMirror(data.TankId, data.RecordId, newRotation);
+                CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
+            }
+            else
+            {
+                LogDebug($"镜像失败: {message}");
+                GameUIManager.ShowMessage($"镜像失败: {message}");
+            }
+        });
     }
 
     private void OnMoveDecoration(MoveDecorationData data)
     {
         LogDebug($"收到 MoveDecoration: TankId={data.TankId}, RecordId={data.RecordId}, Delta=({data.DeltaX:F2}, {data.DeltaY:F2})");
+
         var info = GetDecorationInfoByRecordId(data.RecordId);
-        if (info != null)
+        if (info == null) return;
+
+        float newX = info.PositionX + data.DeltaX;
+        float newY = info.PositionY + data.DeltaY;
+
+        NetServerManager.Instance?.MoveDecoration(data.TankId, data.RecordId, newX, newY, (success, message) =>
         {
-            float newX = info.PositionX + data.DeltaX;
-            float newY = info.PositionY + data.DeltaY;
-            NetServerManager.Instance?.MoveDecoration(data.TankId, data.RecordId, newX, newY, (success, message) =>
+            if (success)
             {
-                if (success)
-                {
-                    LogDebug($"移动装饰成功: {message}");
-                    CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
-                }
-                else
-                {
-                    LogDebug($"移动失败: {message}");
-                }
-            });
-        }
+                PlayerDataManager.Instance?.UpdateDecorationPosition(data.TankId, data.RecordId, newX, newY);
+                CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
+            }
+            else
+            {
+                LogDebug($"移动失败: {message}");
+            }
+        });
     }
 
     private void OnSelectDecoration(SelectDecorationData data)
@@ -468,11 +474,13 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     {
         if (PlayerDataManager.Instance == null) return false;
 
-        var ownedIds = PlayerDataManager.Instance.GetOwnedDecorationIds();
-        int newHash = CalculateListHash(ownedIds);
+        // ★ 用装饰物品的背包数量做 hash（数量变化也触发刷新）
+        var inventory = PlayerDataManager.Instance.GetInventory();
+        int newHash = CalculateDecorationInventoryHash(inventory);
         bool changed = newHash != _cachedDecorationHash;
         if (changed) _cachedDecorationHash = newHash;
 
+        // 装备状态 hash（保持不变）
         var tanks = PlayerDataManager.Instance.GetAllFishTankStatusOrdered();
         var currentEquippedHashes = new Dictionary<int, int>();
         foreach (var tank in tanks)
@@ -489,11 +497,20 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
         return changed;
     }
 
-    private int CalculateListHash(List<int> list)
+    /// <summary>
+    /// 计算装饰物品（ID 8001-8999）的背包数量 hash
+    /// </summary>
+    private int CalculateDecorationInventoryHash(Dictionary<int, int> inventory)
     {
-        if (list == null || list.Count == 0) return 0;
+        if (inventory == null || inventory.Count == 0) return 0;
         int hash = 0;
-        foreach (var id in list) hash ^= id.GetHashCode();
+        foreach (var kvp in inventory)
+        {
+            if (kvp.Key >= 8001 && kvp.Key <= 8999)
+            {
+                hash ^= (kvp.Key * 397) ^ kvp.Value;
+            }
+        }
         return hash;
     }
 
@@ -604,6 +621,18 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     {
         if (PlayerDataManager.Instance == null) return false;
         return PlayerDataManager.Instance.HasDecoration(decorationId);
+    }
+
+    /// <summary>
+    /// ★ 新增：从背包数据获取装饰的拥有数量
+    /// </summary>
+    public int GetOwnedDecorationQuantity(int decorationId)
+    {
+        if (PlayerDataManager.Instance == null) return 0;
+        var inventory = PlayerDataManager.Instance.GetInventory();
+        if (inventory != null && inventory.TryGetValue(decorationId, out int q))
+            return q;
+        return 0;
     }
 
     public Dictionary<int, List<DecorationEquipInfo>> GetEquippedDecorations(int tankId)
