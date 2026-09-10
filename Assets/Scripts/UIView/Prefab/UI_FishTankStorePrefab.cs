@@ -1,3 +1,4 @@
+// 路径：Assets/Scripts/UIView/Prefab/UI_FishTankStorePrefab.cs
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.AddressableAssets;
@@ -84,7 +85,7 @@ public class UI_FishTankStorePrefab : MonoBehaviour
 
         if (harvestText != null)
         {
-            float displayMultiplier = LoadDataManager.Instance.baseEarningRate; 
+            float displayMultiplier = LoadDataManager.Instance.baseEarningRate;
             int displayPrice = Mathf.RoundToInt(_fishDetail.calculatedPrice * displayMultiplier);
             harvestText.text = $" {displayPrice}";
             harvestText.gameObject.SetActive(displayPrice > 0);

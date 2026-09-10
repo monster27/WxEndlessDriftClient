@@ -1,9 +1,4 @@
-// ============================================================
-// 文件: FishTankManagerPanel.cs
-// 说明: 鱼缸管理面板 - 管理上下两个StorePanel
-// 路径: Assets/Scripts/UIView/Panel/
-// ============================================================
-
+// 路径：Assets/Scripts/UIView/Panel/FishTankManagerPanel.cs
 using UnityEngine;
 using UnityEngine.UI;
 using System;
@@ -21,8 +16,8 @@ public class FishTankManagerPanel : MonoBehaviour
 
     [Header("===== 按钮 =====")]
     [SerializeField] private Button closeBtn;
-    [SerializeField] private Button sortByRarityBtn;  
-    [SerializeField] private Button sortByPriceBtn;   
+    [SerializeField] private Button sortByRarityBtn;
+    [SerializeField] private Button sortByPriceBtn;
 
     [Header("===== 收益显示 =====")]
     [SerializeField] private GameObject harvestInfoObj;
@@ -32,7 +27,6 @@ public class FishTankManagerPanel : MonoBehaviour
     // ============================================================
     // 数据
     // ============================================================
-
     private GameObject _fishTankStorePrefab;
     private Action<FishDetailData, FishTankStoreData, FishTankStoreData> _onFishTransfer;
     private Action<int> _onUnlockRequest;
@@ -41,7 +35,6 @@ public class FishTankManagerPanel : MonoBehaviour
     // ============================================================
     // 初始化
     // ============================================================
-
     public void Init(GameObject fishTankStorePrefab, bool isEnableDebug = false)
     {
         enableDebugLog = isEnableDebug;
@@ -100,7 +93,6 @@ public class FishTankManagerPanel : MonoBehaviour
     // ============================================================
     // 事件注册
     // ============================================================
-
     private void RegisterEvents()
     {
         UnregisterEvents();
@@ -116,12 +108,10 @@ public class FishTankManagerPanel : MonoBehaviour
     // ============================================================
     // 事件处理
     // ============================================================
-
     private void OnDataUpdated()
     {
         if (!_isInitialized) return;
         if (!gameObject.activeSelf) return;
-
         LogDebug("收到 DataUpdated 消息，刷新面板");
         RefreshData();
     }
@@ -129,7 +119,6 @@ public class FishTankManagerPanel : MonoBehaviour
     // ============================================================
     // 回调设置
     // ============================================================
-
     public void SetTransferCallback(Action<FishDetailData, FishTankStoreData, FishTankStoreData> callback)
     {
         _onFishTransfer = callback;
@@ -147,7 +136,6 @@ public class FishTankManagerPanel : MonoBehaviour
     // ============================================================
     // 数据更新
     // ============================================================
-
     public void RefreshData()
     {
         if (!_isInitialized) return;
@@ -161,18 +149,13 @@ public class FishTankManagerPanel : MonoBehaviour
     public void OnTankSwitched(int tankIndex)
     {
         if (!_isInitialized) return;
-
-        if (upperStorePanel != null)
-            upperStorePanel.SetCurrentIndex(0);
-
-        if (lowerStorePanel != null)
-            lowerStorePanel.SetCurrentIndex(tankIndex + 1);
+        if (upperStorePanel != null) upperStorePanel.SetCurrentIndex(0);
+        if (lowerStorePanel != null) lowerStorePanel.SetCurrentIndex(tankIndex + 1);
     }
 
     // ============================================================
     // 收益显示
     // ============================================================
-
     private void UpdateHarvestInfo()
     {
         int hourlyEarning = 0;
@@ -189,10 +172,8 @@ public class FishTankManagerPanel : MonoBehaviour
                     var fishList = PlayerDataService.Instance.GetTankFishList(tank.tankId);
                     foreach (var fish in fishList)
                     {
-                        LogDebug($"Tank {tank.tankId} has fish {fish.fishId} (weight: {fish.weight}, price: {fish.calculatedPrice})");
                         hourlyEarning += Mathf.RoundToInt(fish.calculatedPrice * LoadDataManager.Instance.baseEarningRate);
                     }
-                    //hourlyEarning = fishList.Count * 10;
                     tankName = config.name;
                     break;
                 }
@@ -214,7 +195,6 @@ public class FishTankManagerPanel : MonoBehaviour
     // ============================================================
     // 面板开关
     // ============================================================
-
     public void OpenPanel()
     {
         gameObject.SetActive(true);
@@ -225,6 +205,7 @@ public class FishTankManagerPanel : MonoBehaviour
     {
         gameObject.SetActive(false);
     }
+
     private void OnSortByRarity()
     {
         if (upperStorePanel != null) upperStorePanel.SortByRarity();
@@ -236,10 +217,10 @@ public class FishTankManagerPanel : MonoBehaviour
         if (upperStorePanel != null) upperStorePanel.SortByPrice();
         if (lowerStorePanel != null) lowerStorePanel.SortByPrice();
     }
+
     // ============================================================
     // 回调转发
     // ============================================================
-
     private void OnFishTransferRequest(FishDetailData fishData, FishTankStoreData fromContainer, FishTankStoreData toContainer)
     {
         _onFishTransfer?.Invoke(fishData, fromContainer, toContainer);
@@ -253,7 +234,6 @@ public class FishTankManagerPanel : MonoBehaviour
     // ============================================================
     // 生命周期
     // ============================================================
-
     private void OnDestroy()
     {
         UnregisterEvents();
@@ -265,7 +245,6 @@ public class FishTankManagerPanel : MonoBehaviour
     // ============================================================
     // 日志
     // ============================================================
-
     private void LogDebug(string message)
     {
         if (enableDebugLog)

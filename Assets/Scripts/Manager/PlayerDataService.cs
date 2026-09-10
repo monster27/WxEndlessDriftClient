@@ -19,10 +19,6 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     private bool _isReady = false;
-
-    /// <summary>
-    /// 管理器是否已就绪（可以安全调用同步方法）
-    /// </summary>
     public bool IsReady => _isReady;
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -42,6 +38,10 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     private int _cachedBagHash = 0;
     private int _cachedBagCapacity = 10;
     private Dictionary<int, int> _cachedTankHashes = new Dictionary<int, int>();
+
+    // 装饰缓存
+    private int _cachedDecorationHash = 0;
+    private Dictionary<int, int> _cachedEquippedHashes = new Dictionary<int, int>();
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // 4. 防抖
@@ -93,10 +93,20 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
         // 监听Network层数据加载完成
         CommunicateEvent.Register(FishTankMessage.DataLoaded.ToString(), OnDataLoaded);
 
-        // ✅ 带参数的 TransferFish
+        // 带参数的 TransferFish
         CommunicateEvent.Register<TransferData>(FishTankMessage.TransferFish.ToString(), OnTransferFish);
 
-        LogDebug("事件注册完成");
+        // ===== 装饰相关消息注册 =====
+        CommunicateEvent.Register<EquipDecorationData>(FishTankMessage.EquipDecoration.ToString(), OnEquipDecoration);
+        CommunicateEvent.Register<RemoveDecorationData>(FishTankMessage.RemoveDecoration.ToString(), OnRemoveDecoration);
+        CommunicateEvent.Register<MirrorDecorationData>(FishTankMessage.MirrorDecoration.ToString(), OnMirrorDecoration);
+        CommunicateEvent.Register<MoveDecorationData>(FishTankMessage.MoveDecoration.ToString(), OnMoveDecoration);
+        CommunicateEvent.Register<SelectDecorationData>(FishTankMessage.SelectDecoration.ToString(), OnSelectDecoration);
+        CommunicateEvent.Register<ApplyDecorationData>(FishTankMessage.ApplyTextureDecoration.ToString(), OnApplyTextureDecoration);
+        CommunicateEvent.Register(FishTankMessage.EnterDecorationMode.ToString(), OnEnterDecorationMode);
+        CommunicateEvent.Register(FishTankMessage.ExitDecorationMode.ToString(), OnExitDecorationMode);
+
+        LogDebug("事件注册完成（含装饰）");
     }
 
     private void UnregisterEvents()
@@ -106,59 +116,53 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
         CommunicateEvent.Unregister(FishTankMessage.CloseFishTank.ToString(), OnCloseFishTank);
         CommunicateEvent.Unregister(FishTankMessage.RefreshFishTank.ToString(), OnRefreshFishTank);
         CommunicateEvent.Unregister(FishTankMessage.SwitchTank.ToString(), OnSwitchTank);
-        // 注意：TransferFish 使用泛型注册，取消注册也要用泛型
         CommunicateEvent.Unregister<TransferData>(FishTankMessage.TransferFish.ToString(), OnTransferFish);
         CommunicateEvent.Unregister<int>(FishTankMessage.UnlockTank.ToString(), OnUnlockTank);
         CommunicateEvent.Unregister(FishTankMessage.ToggleManagerPanel.ToString(), OnToggleManagerPanel);
         CommunicateEvent.Unregister(FishTankMessage.DataLoaded.ToString(), OnDataLoaded);
+
+        // 装饰消息取消注册
+        CommunicateEvent.Unregister<EquipDecorationData>(FishTankMessage.EquipDecoration.ToString(), OnEquipDecoration);
+        CommunicateEvent.Unregister<RemoveDecorationData>(FishTankMessage.RemoveDecoration.ToString(), OnRemoveDecoration);
+        CommunicateEvent.Unregister<MirrorDecorationData>(FishTankMessage.MirrorDecoration.ToString(), OnMirrorDecoration);
+        CommunicateEvent.Unregister<MoveDecorationData>(FishTankMessage.MoveDecoration.ToString(), OnMoveDecoration);
+        CommunicateEvent.Unregister<SelectDecorationData>(FishTankMessage.SelectDecoration.ToString(), OnSelectDecoration);
+        CommunicateEvent.Unregister<ApplyDecorationData>(FishTankMessage.ApplyTextureDecoration.ToString(), OnApplyTextureDecoration);
+        CommunicateEvent.Unregister(FishTankMessage.EnterDecorationMode.ToString(), OnEnterDecorationMode);
+        CommunicateEvent.Unregister(FishTankMessage.ExitDecorationMode.ToString(), OnExitDecorationMode);
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 7. 消息处理器
+    // 7. 消息处理器（原有）
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     private void OnOpenFishTank()
     {
         LogDebug("收到 OpenFishTank 消息");
-        if (IsDataReady())
-        {
-            NotifyView(FishTankMessage.DataUpdated);
-        }
-        else
-        {
-            LogDebug("数据尚未加载，等待 DataLoaded");
-        }
+        if (IsDataReady()) NotifyView(FishTankMessage.DataUpdated);
+        else LogDebug("数据尚未加载，等待 DataLoaded");
     }
 
     private void OnCloseFishTank()
     {
         LogDebug("收到 CloseFishTank 消息");
-        // 不需要额外处理
     }
 
     private void OnRefreshFishTank()
     {
         LogDebug("收到 RefreshFishTank 消息");
-        if (IsDataReady())
-        {
-            NotifyView(FishTankMessage.DataUpdated);
-        }
+        if (IsDataReady()) NotifyView(FishTankMessage.DataUpdated);
     }
 
     private void OnSwitchTank()
     {
         LogDebug("收到 SwitchTank 消息");
-        // View已经更新了索引，只需要通知刷新
-        if (IsDataReady())
-        {
-            NotifyView(FishTankMessage.DataUpdated);
-        }
+        if (IsDataReady()) NotifyView(FishTankMessage.DataUpdated);
     }
 
     private void OnTransferFish(TransferData transferData)
     {
         LogDebug("收到 TransferFish 消息");
-
         if (transferData == null || transferData.FishData == null)
         {
             LogDebug("TransferFish: 参数无效");
@@ -167,27 +171,22 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
 
         LogDebug($"TransferFish: FromIndex={transferData.FromIndex}, ToIndex={transferData.ToIndex}, FishId={transferData.FishData.id}");
 
-        // 根据转移类型调用网络请求
         if (transferData.IsFromBag && !transferData.IsToBag)
         {
             int tankId = transferData.ToIndex - 1;
             if (tankId < 0) { LogDebug("无效的目标鱼缸索引"); return; }
             NetServerManager.Instance?.MoveFishFromBagToTank(tankId, transferData.FishData.id, (success, message) =>
             {
-                if (success)
-                    LogDebug("鱼篓→鱼缸转移成功");
-                else
-                    LogDebug($"鱼篓→鱼缸转移失败: {message}");
+                if (success) LogDebug("鱼篓→鱼缸转移成功");
+                else LogDebug($"鱼篓→鱼缸转移失败: {message}");
             });
         }
         else if (!transferData.IsFromBag && transferData.IsToBag)
         {
             NetServerManager.Instance?.MoveFishFromTankToBag(transferData.FishData.id, (success, message) =>
             {
-                if (success)
-                    LogDebug("鱼缸→鱼篓转移成功");
-                else
-                    LogDebug($"鱼缸→鱼篓转移失败: {message}");
+                if (success) LogDebug("鱼缸→鱼篓转移成功");
+                else LogDebug($"鱼缸→鱼篓转移失败: {message}");
             });
         }
         else if (!transferData.IsFromBag && !transferData.IsToBag)
@@ -197,10 +196,8 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
             if (fromTankId < 0 || toTankId < 0) { LogDebug("无效的鱼缸索引"); return; }
             NetServerManager.Instance?.MoveFishFromTankToTank(fromTankId, toTankId, transferData.FishData.id, (success, message) =>
             {
-                if (success)
-                    LogDebug("鱼缸→鱼缸转移成功");
-                else
-                    LogDebug($"鱼缸→鱼缸转移失败: {message}");
+                if (success) LogDebug("鱼缸→鱼缸转移成功");
+                else LogDebug($"鱼缸→鱼缸转移失败: {message}");
             });
         }
         else
@@ -212,15 +209,12 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     private void OnUnlockTank(int tankId)
     {
         LogDebug($"收到 UnlockTank 消息，tankId={tankId}");
-
-        // 调用 NetServerManager 的解锁请求（会触发网络请求并自动刷新数据）
         NetServerManager.Instance?.OnUnlockFishTankRequest(tankId);
     }
 
     private void OnToggleManagerPanel()
     {
         LogDebug("收到 ToggleManagerPanel 消息");
-        // View自己处理面板切换
     }
 
     private void OnDataLoaded()
@@ -230,13 +224,146 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 8. DataManager数据变化处理（防抖）
+    // 8. 装饰消息处理器
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    private void OnEquipDecoration(EquipDecorationData data)
+    {
+        LogDebug($"收到 EquipDecoration: TankId={data.TankId}, Category={data.Category}, DecId={data.DecorationId}");
+        NetServerManager.Instance?.EquipDecoration(
+            data.TankId, data.Category, data.DecorationId,
+            data.PosX, data.PosY, data.PosZ,
+            data.ScaleX, data.ScaleY, data.ScaleZ,
+            data.RotX, data.RotY, data.RotZ,
+            (success, message, newRecordId) =>
+            {
+                if (success)
+                {
+                    LogDebug($"装备装饰成功: {message}, RecordId={newRecordId}");
+                    CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
+                    GameUIManager.ShowMessage("装备成功");
+                }
+                else
+                {
+                    LogDebug($"装备失败: {message}");
+                    GameUIManager.ShowMessage($"装备失败: {message}");
+                }
+            });
+    }
+
+    private void OnRemoveDecoration(RemoveDecorationData data)
+    {
+        LogDebug($"收到 RemoveDecoration: TankId={data.TankId}, RecordId={data.RecordId}");
+        NetServerManager.Instance?.UnEquipDecoration(data.TankId, data.RecordId, (success, message) =>
+        {
+            if (success)
+            {
+                LogDebug($"卸下装饰成功: {message}");
+                CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
+                GameUIManager.ShowMessage("已卸下装饰");
+            }
+            else
+            {
+                LogDebug($"卸下装饰失败: {message}");
+                GameUIManager.ShowMessage($"卸下失败: {message}");
+            }
+        });
+    }
+
+    private void OnMirrorDecoration(MirrorDecorationData data)
+    {
+        LogDebug($"收到 MirrorDecoration: TankId={data.TankId}, RecordId={data.RecordId}");
+        var info = GetDecorationInfoByRecordId(data.RecordId);
+        if (info != null)
+        {
+            float newRotation = (info.RotationY == 0) ? 180 : 0;
+            NetServerManager.Instance?.MirrorDecoration(data.TankId, data.RecordId, newRotation, (success, message) =>
+            {
+                if (success)
+                {
+                    LogDebug($"镜像装饰成功: {message}");
+                    CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
+                }
+                else
+                {
+                    LogDebug($"镜像失败: {message}");
+                    GameUIManager.ShowMessage($"镜像失败: {message}");
+                }
+            });
+        }
+    }
+
+    private void OnMoveDecoration(MoveDecorationData data)
+    {
+        LogDebug($"收到 MoveDecoration: TankId={data.TankId}, RecordId={data.RecordId}, Delta=({data.DeltaX:F2}, {data.DeltaY:F2})");
+        var info = GetDecorationInfoByRecordId(data.RecordId);
+        if (info != null)
+        {
+            float newX = info.PositionX + data.DeltaX;
+            float newY = info.PositionY + data.DeltaY;
+            NetServerManager.Instance?.MoveDecoration(data.TankId, data.RecordId, newX, newY, (success, message) =>
+            {
+                if (success)
+                {
+                    LogDebug($"移动装饰成功: {message}");
+                    CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
+                }
+                else
+                {
+                    LogDebug($"移动失败: {message}");
+                }
+            });
+        }
+    }
+
+    private void OnSelectDecoration(SelectDecorationData data)
+    {
+        LogDebug($"收到 SelectDecoration: RecordId={data.RecordId}, Category={data.Category}");
+        var showData = new ShowDecOperatorData
+        {
+            TankId = data.TankId,
+            RecordId = data.RecordId,
+            ScreenPosition = data.ScreenPosition
+        };
+        CommunicateEvent.Modify(FishTankMessage.ShowDecOperator.ToString(), showData);
+    }
+
+    private void OnApplyTextureDecoration(ApplyDecorationData data)
+    {
+        LogDebug($"收到 ApplyTextureDecoration: TankId={data.TankId}, Category={data.Category}, DecId={data.DecorationId}");
+        NetServerManager.Instance?.ApplyTextureDecoration(data.TankId, data.Category, data.DecorationId, (success, message) =>
+        {
+            if (success)
+            {
+                LogDebug($"应用纹理成功: {message}");
+                CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
+                GameUIManager.ShowMessage("应用成功");
+            }
+            else
+            {
+                LogDebug($"应用纹理失败: {message}");
+                GameUIManager.ShowMessage($"应用失败: {message}");
+            }
+        });
+    }
+
+    private void OnEnterDecorationMode()
+    {
+        LogDebug("进入装饰模式");
+    }
+
+    private void OnExitDecorationMode()
+    {
+        LogDebug("退出装饰模式");
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 9. DataManager数据变化处理（防抖）
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     private void OnPlayerDataUpdated()
     {
         if (_isProcessing) return;
-
         if (_debounceCoroutine != null)
         {
             StopCoroutine(_debounceCoroutine);
@@ -263,7 +390,7 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 9. 数据变化检测
+    // 10. 数据变化检测
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     private void ProcessDataChanges()
@@ -276,11 +403,15 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
 
         bool bagChanged = CheckBagChanges();
         bool tankChanged = CheckTankChanges();
+        bool decorationChanged = CheckDecorationChanges();
 
-        if (bagChanged || tankChanged)
+        if (bagChanged || tankChanged || decorationChanged)
         {
-            LogDebug($"数据发生变化: bagChanged={bagChanged}, tankChanged={tankChanged}");
+            LogDebug($"数据发生变化: bagChanged={bagChanged}, tankChanged={tankChanged}, decorationChanged={decorationChanged}");
             NotifyView(FishTankMessage.DataUpdated);
+
+            if (decorationChanged)
+                CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
         }
         else
         {
@@ -295,13 +426,11 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
         int newHash = CalculateFishListHash(bagList);
 
         bool changed = (newHash != _cachedBagHash) || (newCapacity != _cachedBagCapacity);
-
         if (changed)
         {
             _cachedBagHash = newHash;
             _cachedBagCapacity = newCapacity;
         }
-
         return changed;
     }
 
@@ -326,15 +455,59 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
         {
             var fishList = GetTankFishList(tank.tankId);
             int newHash = CalculateFishListHash(fishList);
-
             if (!_cachedTankHashes.TryGetValue(tank.tankId, out int oldHash) || oldHash != newHash)
             {
                 _cachedTankHashes[tank.tankId] = newHash;
                 changed = true;
             }
         }
-
         return changed;
+    }
+
+    private bool CheckDecorationChanges()
+    {
+        if (PlayerDataManager.Instance == null) return false;
+
+        var ownedIds = PlayerDataManager.Instance.GetOwnedDecorationIds();
+        int newHash = CalculateListHash(ownedIds);
+        bool changed = newHash != _cachedDecorationHash;
+        if (changed) _cachedDecorationHash = newHash;
+
+        var tanks = PlayerDataManager.Instance.GetAllFishTankStatusOrdered();
+        var currentEquippedHashes = new Dictionary<int, int>();
+        foreach (var tank in tanks)
+        {
+            var equipped = PlayerDataManager.Instance.GetEquippedDecorations(tank.tankId);
+            int hash = CalculateEquippedHash(equipped);
+            currentEquippedHashes[tank.tankId] = hash;
+
+            if (!_cachedEquippedHashes.TryGetValue(tank.tankId, out int oldHash) || oldHash != hash)
+                changed = true;
+        }
+
+        if (changed) _cachedEquippedHashes = currentEquippedHashes;
+        return changed;
+    }
+
+    private int CalculateListHash(List<int> list)
+    {
+        if (list == null || list.Count == 0) return 0;
+        int hash = 0;
+        foreach (var id in list) hash ^= id.GetHashCode();
+        return hash;
+    }
+
+    private int CalculateEquippedHash(Dictionary<int, List<DecorationEquipInfo>> equipped)
+    {
+        if (equipped == null || equipped.Count == 0) return 0;
+        int hash = 0;
+        foreach (var kvp in equipped)
+        {
+            hash ^= kvp.Key.GetHashCode();
+            foreach (var info in kvp.Value)
+                hash ^= info.Id.GetHashCode();
+        }
+        return hash;
     }
 
     private int CalculateFishListHash(List<FishDetailData> list)
@@ -342,15 +515,12 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
         if (list == null || list.Count == 0) return 0;
         int hash = 0;
         foreach (var fish in list)
-        {
-            if (fish != null)
-                hash ^= fish.id.GetHashCode();
-        }
+            if (fish != null) hash ^= fish.id.GetHashCode();
         return hash;
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 10. 对外查询接口（供View调用）
+    // 11. 对外查询接口
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     public List<FishTankStatusData> GetTankList()
@@ -362,98 +532,119 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
 
     public FishTankStatusData GetTankStatus(int tankId)
     {
-        if (PlayerDataManager.Instance == null)
-            return null;
+        if (PlayerDataManager.Instance == null) return null;
         return PlayerDataManager.Instance.GetFishTankStatus(tankId);
     }
 
     public List<FishDetailData> GetTankFishList(int tankId)
     {
-        if (PlayerDataManager.Instance == null)
-            return new List<FishDetailData>();
-        var list = PlayerDataManager.Instance.GetFishTankItems(tankId);
-        return list;
+        if (PlayerDataManager.Instance == null) return new List<FishDetailData>();
+        return PlayerDataManager.Instance.GetFishTankItems(tankId);
     }
 
     public List<FishDetailData> GetBagFishList()
     {
-        if (PlayerDataManager.Instance == null)
-        {
-            LogDebug("GetBagFishList: PlayerDataManager.Instance == null");
-            return new List<FishDetailData>();
-        }
-
-        var result = PlayerDataManager.Instance.GetFishBagList();
-        LogDebug($"GetBagFishList: result.Count={result?.Count ?? 0}");
-        return result ?? new List<FishDetailData>();
+        if (PlayerDataManager.Instance == null) return new List<FishDetailData>();
+        return PlayerDataManager.Instance.GetFishBagList() ?? new List<FishDetailData>();
     }
 
     public int GetBagCapacity()
     {
-        if (PlayerDataManager.Instance == null)
-            return 10;
+        if (PlayerDataManager.Instance == null) return 10;
         return PlayerDataManager.Instance.fishBagCapacity;
     }
 
     public int GetBagRemaining()
     {
-        if (PlayerDataManager.Instance == null)
-            return 0;
+        if (PlayerDataManager.Instance == null) return 0;
         return PlayerDataManager.Instance.GetFishBagRemaining();
     }
 
-    public bool IsBagFull()
-    {
-        return GetBagRemaining() <= 0;
-    }
+    public bool IsBagFull() => GetBagRemaining() <= 0;
 
     public bool IsTankUnlocked(int tankId)
     {
-        if (PlayerDataManager.Instance == null)
-            return false;
+        if (PlayerDataManager.Instance == null) return false;
         return PlayerDataManager.Instance.IsFishTankUnlocked(tankId);
     }
 
     public int GetTankCapacity(int tankId)
     {
-        if (PlayerDataManager.Instance == null)
-            return 10;
+        if (PlayerDataManager.Instance == null) return 10;
         return PlayerDataManager.Instance.GetFishTankCapacity(tankId);
     }
 
     public int GetTankRemaining(int tankId)
     {
-        if (PlayerDataManager.Instance == null)
-            return 0;
+        if (PlayerDataManager.Instance == null) return 0;
         return PlayerDataManager.Instance.GetFishTankRemaining(tankId);
     }
 
-    public bool CanAddFishToTank(int tankId)
-    {
-        return GetTankRemaining(tankId) > 0 && IsTankUnlocked(tankId);
-    }
+    public bool CanAddFishToTank(int tankId) => GetTankRemaining(tankId) > 0 && IsTankUnlocked(tankId);
 
     public bool IsDataReady()
     {
-        if (PlayerDataManager.Instance == null)
-            return false;
+        if (PlayerDataManager.Instance == null) return false;
         return PlayerDataManager.Instance.IsFishDataLoaded;
     }
 
-    public int GetTankCount()
+    public int GetTankCount() => GetTankList().Count;
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 12. 装饰数据查询接口
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    public List<int> GetOwnedDecorationIds()
     {
-        return GetTankList().Count;
+        if (PlayerDataManager.Instance == null) return new List<int>();
+        return PlayerDataManager.Instance.GetOwnedDecorationIds();
+    }
+
+    public bool HasDecoration(int decorationId)
+    {
+        if (PlayerDataManager.Instance == null) return false;
+        return PlayerDataManager.Instance.HasDecoration(decorationId);
+    }
+
+    public Dictionary<int, List<DecorationEquipInfo>> GetEquippedDecorations(int tankId)
+    {
+        if (PlayerDataManager.Instance == null) return new Dictionary<int, List<DecorationEquipInfo>>();
+        return PlayerDataManager.Instance.GetEquippedDecorations(tankId);
+    }
+
+    public List<DecorationEquipInfo> GetEquippedDecorationsByCategory(int tankId, int category)
+    {
+        if (PlayerDataManager.Instance == null) return new List<DecorationEquipInfo>();
+        return PlayerDataManager.Instance.GetEquippedDecorationsByCategory(tankId, category);
+    }
+
+    public List<DecorationEquipInfo> GetEquippedMovableDecorations(int tankId)
+    {
+        if (PlayerDataManager.Instance == null) return new List<DecorationEquipInfo>();
+        return PlayerDataManager.Instance.GetEquippedMovableDecorations(tankId);
+    }
+
+    public DecorationEquipInfo GetDecorationInfoByRecordId(int recordId)
+    {
+        if (PlayerDataManager.Instance == null) return null;
+        return PlayerDataManager.Instance.GetDecorationInfoByRecordId(recordId);
+    }
+
+    public List<FishTankDecData> GetDecorationConfigsByCategory(int category)
+    {
+        if (LoadDataManager.Instance == null) return new List<FishTankDecData>();
+        return LoadDataManager.Instance.fishTankDecorations?
+            .Where(d => d.categoryId == category).ToList() ?? new List<FishTankDecData>();
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 11. UI展示数据接口
+    // 13. UI展示数据接口
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     public FishTankDisplayData GetTankDisplayData(int tankIndex)
     {
         var tanks = GetTankList();
-        if (tankIndex < 0 || tankIndex >= tanks.Count)
-            return null;
+        if (tankIndex < 0 || tankIndex >= tanks.Count) return null;
 
         var tank = tanks[tankIndex];
         var fishList = GetTankFishList(tank.tankId);
@@ -477,9 +668,6 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     {
         var fishList = GetBagFishList();
         int capacity = GetBagCapacity();
-
-        LogDebug($"GetBagDisplayData: fishList.Count={fishList?.Count ?? 0}, capacity={capacity}");
-
         return new FishBagDisplayData
         {
             FishList = fishList ?? new List<FishDetailData>(),
@@ -494,10 +682,8 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     {
         Z_Logger.Log($"[PlayerDataService] GetStoreData 被调用: index={index}");
 
-        // 防御：检查 PlayerDataManager 是否就绪
         if (PlayerDataManager.Instance == null)
         {
-            Z_Logger.LogError("[PlayerDataService] GetStoreData 失败: PlayerDataManager.Instance 为 null");
             return new FishTankStoreData
             {
                 IsBag = (index == 0),
@@ -508,12 +694,11 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
             };
         }
 
-        // 鱼篓 (index == 0)
         if (index == 0)
         {
             var bagList = PlayerDataManager.Instance.GetFishBagList();
             int capacity = PlayerDataManager.Instance.GetFishBagCapacity();
-            var data = new FishTankStoreData
+            return new FishTankStoreData
             {
                 IsBag = true,
                 Name = "鱼篓",
@@ -521,10 +706,8 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
                 MaxCapacity = capacity,
                 IsUnlocked = true
             };
-            return data;
         }
 
-        // 鱼缸 (index >= 1)
         int tankId = index;
         var status = PlayerDataManager.Instance.GetFishTankStatus(tankId);
         if (status == null)
@@ -549,7 +732,7 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
         }
 
         var tankList = PlayerDataManager.Instance.GetFishTankItems(tankId);
-        var dataTank = new FishTankStoreData
+        return new FishTankStoreData
         {
             IsBag = false,
             TankId = tankId,
@@ -558,11 +741,10 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
             MaxCapacity = status.capacity,
             IsUnlocked = status.isUnlocked
         };
-        return dataTank;
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 12. 通知View
+    // 14. 通知View
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     private void NotifyView(FishTankMessage message)
@@ -572,7 +754,7 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 13. 日志辅助
+    // 15. 日志辅助
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     private void LogDebug(string message)

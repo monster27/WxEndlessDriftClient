@@ -1,9 +1,4 @@
-// ============================================================
-// 文件: FishTankStorePanel.cs
-// 说明: 鱼缸存储面板 - 显示单个容器的鱼列表（使用对象池）
-// 路径: Assets/Scripts/UIView/Panel/
-// ============================================================
-
+// 路径：Assets/Scripts/UIView/Panel/FishTankStorePanel.cs
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
@@ -39,12 +34,11 @@ public class FishTankStorePanel : MonoBehaviour
     [SerializeField] private GameObject lockIcon;
 
     [Header("===== 对象池 =====")]
-    [SerializeField] private int poolInitialCapacity = 10;  // 初始容量
+    [SerializeField] private int poolInitialCapacity = 10;
 
     // ============================================================
     // 数据
     // ============================================================
-
     private int _currentIndex = 0;
     private FishTankPanelType _panelType = FishTankPanelType.Upper;
     private FishTankStoreData _currentData;
@@ -66,13 +60,11 @@ public class FishTankStorePanel : MonoBehaviour
     // ============================================================
     // 初始化
     // ============================================================
-
     public void Init(int startIndex = 0, bool isEnableDebug = false)
     {
         enableDebugLog = isEnableDebug;
         _currentIndex = startIndex;
 
-        // 创建对象池
         _fishItemPool = new UI_FishItemPool(fishPrefab, fishContainer, poolInitialCapacity);
 
         _isInitialized = true;
@@ -105,7 +97,6 @@ public class FishTankStorePanel : MonoBehaviour
     // ============================================================
     // 事件注册
     // ============================================================
-
     private void RegisterEvents()
     {
         UnregisterEvents();
@@ -121,7 +112,6 @@ public class FishTankStorePanel : MonoBehaviour
     // ============================================================
     // 事件处理
     // ============================================================
-
     private void OnDataUpdated()
     {
         if (!_isInitialized) return;
@@ -132,7 +122,6 @@ public class FishTankStorePanel : MonoBehaviour
     // ============================================================
     // 回调设置
     // ============================================================
-
     public void SetTransferCallback(Action<FishDetailData, FishTankStoreData, FishTankStoreData> callback)
     {
         _onFishTransfer = callback;
@@ -149,14 +138,12 @@ public class FishTankStorePanel : MonoBehaviour
     }
 
     // ============================================================
-    // 数据读取（通过Service）
+    // 数据读取（通过 Service）
     // ============================================================
-
     private FishTankStoreData GetCurrentData()
     {
         if (PlayerDataService.Instance == null)
             return null;
-
         return PlayerDataService.Instance.GetStoreData(_currentIndex);
     }
 
@@ -164,23 +151,19 @@ public class FishTankStorePanel : MonoBehaviour
     {
         if (PlayerDataService.Instance == null)
             return 1;
-
         return 1 + PlayerDataService.Instance.GetTankCount();
     }
 
     // ============================================================
     // 刷新
     // ============================================================
-
     public void RefreshData()
     {
         if (!_isInitialized) return;
 
         int total = GetTotalContainerCount();
-        if (_currentIndex >= total)
-            _currentIndex = total - 1;
-        if (_currentIndex < 0)
-            _currentIndex = 0;
+        if (_currentIndex >= total) _currentIndex = total - 1;
+        if (_currentIndex < 0) _currentIndex = 0;
 
         _currentData = GetCurrentData();
         RenderCurrentContainer();
@@ -190,7 +173,6 @@ public class FishTankStorePanel : MonoBehaviour
     {
         int total = GetTotalContainerCount();
         if (index < 0 || index >= total) return;
-
         _currentIndex = index;
         RefreshData();
     }
@@ -198,7 +180,6 @@ public class FishTankStorePanel : MonoBehaviour
     // ============================================================
     // 渲染
     // ============================================================
-
     private void RenderCurrentContainer()
     {
         LogDebug($"RenderCurrentContainer: _currentData==null? {_currentData == null}");
@@ -233,7 +214,6 @@ public class FishTankStorePanel : MonoBehaviour
         }
 
         UpdateTitleAndCapacity(current);
-
         LogDebug($"RenderCurrentContainer: 准备渲染鱼列表, FishList.Count={current.FishList?.Count ?? 0}");
 
         if (current.FishList == null || current.FishList.Count == 0)
@@ -300,7 +280,6 @@ public class FishTankStorePanel : MonoBehaviour
     // ============================================================
     // 鱼项管理（使用对象池）
     // ============================================================
-
     private void UpdateFishItems(FishTankStoreData current)
     {
         if (current.FishList == null || current.FishList.Count == 0)
@@ -309,7 +288,6 @@ public class FishTankStorePanel : MonoBehaviour
             return;
         }
 
-        // 构建当前鱼ID集合
         HashSet<int> currentFishIds = new HashSet<int>();
         foreach (var fishData in current.FishList)
         {
@@ -317,7 +295,6 @@ public class FishTankStorePanel : MonoBehaviour
                 currentFishIds.Add(fishData.id);
         }
 
-        // 移除不在当前列表中的鱼（回收至池）
         List<int> toRemove = new List<int>();
         foreach (var kvp in _activeFishItems)
         {
@@ -329,29 +306,25 @@ public class FishTankStorePanel : MonoBehaviour
         {
             if (_activeFishItems.TryGetValue(fishId, out var item))
             {
-                _fishItemPool.Return(item);          // 回收
+                _fishItemPool.Return(item);
                 _activeFishItems.Remove(fishId);
             }
         }
 
-        // 添加新鱼或更新现有鱼
         foreach (var fishData in current.FishList)
         {
             if (fishData == null || fishData.id <= 0) continue;
 
             if (_activeFishItems.TryGetValue(fishData.id, out var existingItem))
             {
-                // 已有：只更新数据
                 existingItem.UpdateData(fishData);
             }
             else
             {
-                // 新增：从池中取出
                 var newItem = _fishItemPool.Get();
                 newItem.Init(fishData);
                 newItem.SetClickCallback(OnFishItemClick);
                 newItem.gameObject.SetActive(true);
-
                 _activeFishItems[fishData.id] = newItem;
             }
         }
@@ -359,7 +332,6 @@ public class FishTankStorePanel : MonoBehaviour
 
     private void ClearAllFishItems()
     {
-        // 将所有活动项回收至池
         foreach (var kvp in _activeFishItems)
         {
             if (kvp.Value != null)
@@ -371,7 +343,6 @@ public class FishTankStorePanel : MonoBehaviour
     // ============================================================
     // 按钮事件
     // ============================================================
-
     private void OnLeftSwitch()
     {
         int total = GetTotalContainerCount();
@@ -383,10 +354,8 @@ public class FishTankStorePanel : MonoBehaviour
         for (int i = 0; i < maxAttempts; i++)
         {
             newIndex = (_currentIndex - 1 - i + total) % total;
-
             if (_lockedIndex >= 0 && newIndex == _lockedIndex)
                 continue;
-
             break;
         }
 
@@ -415,10 +384,8 @@ public class FishTankStorePanel : MonoBehaviour
         for (int i = 0; i < maxAttempts; i++)
         {
             newIndex = (_currentIndex + 1 + i) % total;
-
             if (_lockedIndex >= 0 && newIndex == _lockedIndex)
                 continue;
-
             break;
         }
 
@@ -443,7 +410,6 @@ public class FishTankStorePanel : MonoBehaviour
     {
         if (fishItem == null || fishItem.FishDetail == null) return;
         if (_onFishTransfer == null) return;
-
         if (_currentData == null) return;
 
         if (!_currentData.IsBag && !_currentData.IsUnlocked)
@@ -466,6 +432,7 @@ public class FishTankStorePanel : MonoBehaviour
 
         _onFishTransfer?.Invoke(fishItem.FishDetail, _currentData, toData);
     }
+
     public void SortByRarity()
     {
         if (_currentData == null || !_currentData.IsUnlocked || _currentData.FishList == null || _currentData.FishList.Count == 0)
@@ -474,7 +441,6 @@ public class FishTankStorePanel : MonoBehaviour
             return;
         }
 
-        // 按稀有度降序排列 UI 物体，不改变数据列表顺序
         ReorderFishItems(
             keySelector: fish => LoadDataManager.Instance?.GetFishById(fish.fishId)?.rarityId ?? 0,
             descending: true
@@ -490,17 +456,16 @@ public class FishTankStorePanel : MonoBehaviour
             return;
         }
 
-        // 按价格降序排列 UI 物体
         ReorderFishItems(
             keySelector: fish => fish.calculatedPrice,
             descending: true
         );
         LogDebug("按价格排序完成");
     }
+
     // ============================================================
     // 辅助方法
     // ============================================================
-
     private FishTankStorePanel GetOtherPanel()
     {
         Transform parent = transform.parent;
@@ -514,51 +479,38 @@ public class FishTankStorePanel : MonoBehaviour
         }
         return null;
     }
-    /// <summary>
-    /// 根据指定的键对当前激活的鱼 UI 项进行排序，调整它们在父容器中的层级顺序（sibling index）。
-    /// 此方法不会修改数据列表 _currentData.FishList 的顺序。
-    /// </summary>
-    /// <param name="keySelector">从 FishDetailData 提取排序键的委托（键需实现 IComparable）</param>
-    /// <param name="descending">是否降序（true 为降序，false 为升序）</param>
+
     private void ReorderFishItems(Func<FishDetailData, IComparable> keySelector, bool descending)
     {
-        // 获取当前所有活跃的 UI 项
         var activeItems = _activeFishItems.Values.ToList();
         if (activeItems.Count == 0) return;
 
-        // 根据 keySelector 排序（降序或升序）
         if (descending)
             activeItems.Sort((a, b) => keySelector(b.FishDetail).CompareTo(keySelector(a.FishDetail)));
         else
             activeItems.Sort((a, b) => keySelector(a.FishDetail).CompareTo(keySelector(b.FishDetail)));
 
-        // 按排序后的顺序设置 sibling index（索引越小越靠前显示）
         for (int i = 0; i < activeItems.Count; i++)
         {
             activeItems[i].transform.SetSiblingIndex(i);
         }
     }
+
     // ============================================================
     // 生命周期
     // ============================================================
-
     private void OnDestroy()
     {
         UnregisterEvents();
-
         if (leftSwitchBtn != null) leftSwitchBtn.onClick.RemoveAllListeners();
         if (rightSwitchBtn != null) rightSwitchBtn.onClick.RemoveAllListeners();
         if (lockBtn != null) lockBtn.onClick.RemoveAllListeners();
-
-        // 清空对象池（销毁所有对象）
-        if (_fishItemPool != null)
-            _fishItemPool.Clear();
+        if (_fishItemPool != null) _fishItemPool.Clear();
     }
 
     // ============================================================
     // 日志
     // ============================================================
-
     private void LogDebug(string message)
     {
         if (enableDebugLog)
@@ -568,28 +520,23 @@ public class FishTankStorePanel : MonoBehaviour
     // ============================================================
     // 内部对象池类
     // ============================================================
-
     private class UI_FishItemPool
     {
         private GameObject _prefab;
         private Transform _parent;
         private Queue<UI_FishTankStorePrefab> _pool = new Queue<UI_FishTankStorePrefab>();
-        private List<UI_FishTankStorePrefab> _allObjects = new List<UI_FishTankStorePrefab>(); // 跟踪所有已创建的对象
+        private List<UI_FishTankStorePrefab> _allObjects = new List<UI_FishTankStorePrefab>();
 
         public UI_FishItemPool(GameObject prefab, Transform parent, int initialCapacity)
         {
             _prefab = prefab;
             _parent = parent;
-            // 预创建 initialCapacity 个对象
             for (int i = 0; i < initialCapacity; i++)
             {
                 CreateNewObject();
             }
         }
 
-        /// <summary>
-        /// 创建一个新对象（不激活），加入池
-        /// </summary>
         private UI_FishTankStorePrefab CreateNewObject()
         {
             GameObject go = GameObject.Instantiate(_prefab, _parent);
@@ -601,13 +548,10 @@ public class FishTankStorePanel : MonoBehaviour
                 return null;
             }
             _allObjects.Add(item);
-            _pool.Enqueue(item);  // 直接放入池中备用
+            _pool.Enqueue(item);
             return item;
         }
 
-        /// <summary>
-        /// 从池中取出一个对象（激活状态）
-        /// </summary>
         public UI_FishTankStorePrefab Get()
         {
             UI_FishTankStorePrefab item;
@@ -617,40 +561,23 @@ public class FishTankStorePanel : MonoBehaviour
             }
             else
             {
-                // 池中无空闲对象，动态扩容（创建新对象）
                 item = CreateNewObject();
-                // 新创建的对象已入池，需要取出（从池中取出，但刚创建的已在队列末尾，需要 Dequeue）
-                // 但上面 CreateNewObject 直接将对象入队，所以需要从队列中取出
-                // 而因为我们是先创建再加入，现在队列非空，Dequeue 会取出刚加入的那个
-                item = _pool.Dequeue();  // 取出刚入队的对象
+                item = _pool.Dequeue();
             }
             item.gameObject.SetActive(true);
             return item;
         }
 
-        /// <summary>
-        /// 回收对象（禁用并放回池）
-        /// </summary>
         public void Return(UI_FishTankStorePrefab item)
         {
             if (item == null) return;
             item.gameObject.SetActive(false);
-            // 如果对象是从池中创建的（应该在 _allObjects 中），可以放回
-            // 但是为了安全，检查是否已经在池中（避免重复入队）
             if (!_pool.Contains(item) && _allObjects.Contains(item))
             {
                 _pool.Enqueue(item);
             }
-            else
-            {
-                // 如果对象不在 _allObjects 中（可能被外部销毁），忽略
-                Debug.LogWarning("UI_FishItemPool: 尝试回收一个不属于该池的对象");
-            }
         }
 
-        /// <summary>
-        /// 清空池，销毁所有对象
-        /// </summary>
         public void Clear()
         {
             foreach (var item in _allObjects)

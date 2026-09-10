@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 /// </summary>
 public enum ClickableType
 {
+    None,
     Player,               // 玩家
     Shop,                 // 商店
     NPC,                  // NPC
@@ -14,7 +15,7 @@ public enum ClickableType
     NestBaitsPlacement,   // 窝料
     Tent,                 // 帐篷
     Table = 20,           // 桌子
-    FishTank
+    FishTank,
 }
 
 /// <summary>

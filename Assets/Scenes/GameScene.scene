@@ -9613,6 +9613,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 229980042}
   m_CullTransparentMesh: 1
+--- !u!1 &232433391
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 232433392}
+  - component: {fileID: 232433393}
+  m_Layer: 5
+  m_HasEditorInfo: 1
+  m_Name: FishContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &232433392
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 232433391}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 469515441}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &232433393
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 232433391}
+  m_CullTransparentMesh: 1
 --- !u!1 &235099288
 GameObject:
   m_ObjectHideFlags: 0
@@ -12436,7 +12481,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &301365423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12511,11 +12556,7 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 690148996}
-  - {fileID: 1011450960}
-  - {fileID: 497113107}
-  - {fileID: 781188762}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -20843,6 +20884,54 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 467743763}
   m_CullTransparentMesh: 1
+--- !u!1 &469515440
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 469515441}
+  - component: {fileID: 469515442}
+  m_Layer: 5
+  m_HasEditorInfo: 1
+  m_Name: Container
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &469515441
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 469515440}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 232433392}
+  - {fileID: 1332593919}
+  - {fileID: 2026155505}
+  m_Father: {fileID: 1726826512}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &469515442
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 469515440}
+  m_CullTransparentMesh: 1
 --- !u!1 &471031442
 GameObject:
   m_ObjectHideFlags: 0
@@ -22193,7 +22282,7 @@ RectTransform:
   - {fileID: 941015319}
   - {fileID: 1851222590}
   - {fileID: 395528807}
-  m_Father: {fileID: 301365426}
+  m_Father: {fileID: 549283565}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -23297,6 +23386,82 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 531910087}
   m_CullTransparentMesh: 1
+--- !u!1 &532443906
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 532443907}
+  - component: {fileID: 532443909}
+  - component: {fileID: 532443908}
+  m_Layer: 5
+  m_HasEditorInfo: 1
+  m_Name: FishTankBottomArea
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &532443907
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 532443906}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1726826512}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 11.77, y: -147.12}
+  m_SizeDelta: {x: 741.54, y: 235.44}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &532443908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 532443906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: d1c384b4dbcd97542bcd1ed987bbbc02, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &532443909
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 532443906}
+  m_CullTransparentMesh: 1
 --- !u!1 &539066086
 GameObject:
   m_ObjectHideFlags: 0
@@ -23753,7 +23918,7 @@ GameObject:
   - component: {fileID: 549283562}
   m_Layer: 5
   m_HasEditorInfo: 1
-  m_Name: DefaultCanvas
+  m_Name: UICanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23842,6 +24007,10 @@ RectTransform:
   - {fileID: 63531009}
   - {fileID: 1522877710}
   - {fileID: 91216540}
+  - {fileID: 690148996}
+  - {fileID: 1011450960}
+  - {fileID: 497113107}
+  - {fileID: 781188762}
   - {fileID: 571299744}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -24104,7 +24273,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &557089921
 RectTransform:
   m_ObjectHideFlags: 0
@@ -25168,7 +25337,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &571299744
 RectTransform:
   m_ObjectHideFlags: 0
@@ -26815,7 +26984,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9691001a0d70e6949bbbc1cc86daa0c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  objectType: 3
+  objectType: 4
   objData: 
   defaultScaleMin: 0.9
   defaultDuration: 0.2
@@ -31168,6 +31337,82 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 682024313}
   m_CullTransparentMesh: 1
+--- !u!1 &687476425
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 687476426}
+  - component: {fileID: 687476428}
+  - component: {fileID: 687476427}
+  m_Layer: 5
+  m_HasEditorInfo: 1
+  m_Name: FishTankTotalArea
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &687476426
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 687476425}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1726826512}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 11.77, y: 112.58002}
+  m_SizeDelta: {x: 741.54, y: 754.84}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &687476427
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 687476425}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &687476428
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 687476425}
+  m_CullTransparentMesh: 1
 --- !u!1 &688365437
 GameObject:
   m_ObjectHideFlags: 0
@@ -31324,7 +31569,7 @@ RectTransform:
   - {fileID: 1726826512}
   - {fileID: 557089921}
   - {fileID: 1817972799}
-  m_Father: {fileID: 301365426}
+  m_Father: {fileID: 549283565}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -31384,21 +31629,7 @@ MonoBehaviour:
   maskBtn: {fileID: 1263877342}
   closeBtn: {fileID: 849755434}
   enableDebugLog: 1
-  defaultMaskImg: {fileID: 2009412008}
-  leftBtn: {fileID: 675972562}
-  rightBtn: {fileID: 222696677}
-  tankNameText: {fileID: 564384628}
-  capacityText: {fileID: 1376186176}
-  harvestText: {fileID: 573656243}
-  lockBtn: {fileID: 2114548873}
-  lockIcon: {fileID: 2114548869}
-  manageBtn: {fileID: 1148681909}
-  decorationBtn: {fileID: 1508339269}
-  fishTankManager: {fileID: 863742168}
-  managerPanel: {fileID: 557089923}
-  managerCloseBtn: {fileID: 1084619210}
-  decorationPanel: {fileID: 1817972802}
-  fishTankStorePrefab: {fileID: 3891705666780534910, guid: f3755ec8938f9ab4da4dc12c8c726f53, type: 3}
+  fishTankMainPanel: {fileID: 1726826513}
 --- !u!1 &696163793
 GameObject:
   m_ObjectHideFlags: 0
@@ -34716,6 +34947,38 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 763912158}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &764136047
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 764136048}
+  m_Layer: 0
+  m_HasEditorInfo: 1
+  m_Name: DecContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &764136048
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 764136047}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.19999999}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1821315516}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &765604616
 GameObject:
   m_ObjectHideFlags: 0
@@ -35108,6 +35371,82 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 770617841}
   m_CullTransparentMesh: 1
+--- !u!1 &779587702
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 779587703}
+  - component: {fileID: 779587705}
+  - component: {fileID: 779587704}
+  m_Layer: 5
+  m_HasEditorInfo: 1
+  m_Name: FishTankBgArea
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &779587703
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779587702}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1726826512}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 17.91, y: 230.3}
+  m_SizeDelta: {x: 774.33, y: 519.4}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &779587704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779587702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: d1c384b4dbcd97542bcd1ed987bbbc02, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &779587705
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779587702}
+  m_CullTransparentMesh: 1
 --- !u!1 &781188761
 GameObject:
   m_ObjectHideFlags: 0
@@ -35139,7 +35478,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 301365426}
+  m_Father: {fileID: 549283565}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -37513,6 +37852,7 @@ GameObject:
   m_Component:
   - component: {fileID: 863742167}
   - component: {fileID: 863742168}
+  - component: {fileID: 863742169}
   m_Layer: 0
   m_HasEditorInfo: 1
   m_Name: FishTankManager
@@ -37589,6 +37929,52 @@ MonoBehaviour:
   fishTankBaitScale: 0.5
   fishTankBaitPoolInitSize: 5
   fishPoolInitialCapacity: 10
+  _isInitialized: 0
+  _totalRect:
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  _bottomRect:
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  _currentDisplayingFish: []
+  _pendingData: []
+--- !u!114 &863742169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 863742166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a69c22bc1cd6a4247a58e92808bca7f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fishTankManager: {fileID: 863742168}
+  decorationContainer: {fileID: 764136048}
+  decPrefab_80: {fileID: 1764492124191270354, guid: a992184ed764b6b438c447e877305c68, type: 3}
+  decPrefab_81: {fileID: 1764492124191270354, guid: a992184ed764b6b438c447e877305c68, type: 3}
+  bottomRenderer: {fileID: 1928353107}
+  backgroundRenderer: {fileID: 2056416787}
+  operatorPrefab: {fileID: 838614946723848219, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+  _currentTankId: 1
+  _totalRect:
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  _bottomRect:
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  _selectedInstanceId: 
+  _operatorUIInstance: {fileID: 0}
+  _uiCanvas: {fileID: 0}
 --- !u!1 &863968036
 GameObject:
   m_ObjectHideFlags: 0
@@ -43691,7 +44077,7 @@ RectTransform:
   - {fileID: 390559499}
   - {fileID: 70793789}
   - {fileID: 955344039}
-  m_Father: {fileID: 301365426}
+  m_Father: {fileID: 549283565}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -45000,7 +45386,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.78431374}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -46689,6 +47075,112 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 0
+--- !u!1001 &1074483563
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1817972799}
+    m_Modifications:
+    - target: {fileID: 838614946723848219, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_Name
+      value: UI_FishTankDecOperator
+      objectReference: {fileID: 0}
+    - target: {fileID: 838614946723848219, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 549.88
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 98.579956
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 63.950012
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -174.28998
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+--- !u!224 &1074483565 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 7599570877738178636, guid: a844f126cd9e11b49b0ac4c021bc9dda, type: 3}
+  m_PrefabInstance: {fileID: 1074483563}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1084619208
 GameObject:
   m_ObjectHideFlags: 0
@@ -51339,21 +51831,7 @@ MonoBehaviour:
   maskBtn: {fileID: 2084153079}
   closeBtn: {fileID: 743965872}
   enableDebugLog: 0
-  defaultMaskImg: {fileID: 0}
-  leftBtn: {fileID: 0}
-  rightBtn: {fileID: 0}
-  tankNameText: {fileID: 0}
-  capacityText: {fileID: 0}
-  harvestText: {fileID: 0}
-  lockBtn: {fileID: 0}
-  lockIcon: {fileID: 0}
-  manageBtn: {fileID: 0}
-  decorationBtn: {fileID: 0}
-  fishTankManager: {fileID: 0}
-  managerPanel: {fileID: 0}
-  managerCloseBtn: {fileID: 0}
-  decorationPanel: {fileID: 0}
-  fishTankStorePrefab: {fileID: 0}
+  fishTankMainPanel: {fileID: 0}
 --- !u!222 &1203087388
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -53836,7 +54314,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9691001a0d70e6949bbbc1cc86daa0c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  objectType: 4
+  objectType: 5
   objData: 
   defaultScaleMin: 0.9
   defaultDuration: 0.2
@@ -56384,6 +56862,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1329488947}
   m_CullTransparentMesh: 1
+--- !u!1 &1332593918
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 1332593919}
+  - component: {fileID: 1332593920}
+  m_Layer: 5
+  m_HasEditorInfo: 1
+  m_Name: BaitContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1332593919
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1332593918}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 469515441}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &1332593920
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1332593918}
+  m_CullTransparentMesh: 1
 --- !u!1 &1333781385
 GameObject:
   m_ObjectHideFlags: 0
@@ -58901,7 +59424,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9691001a0d70e6949bbbc1cc86daa0c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  objectType: 0
+  objectType: 1
   objData: 
   defaultScaleMin: 0.9
   defaultDuration: 0.2
@@ -60753,6 +61276,82 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1410225581}
+  m_CullTransparentMesh: 1
+--- !u!1 &1410613240
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 1410613241}
+  - component: {fileID: 1410613243}
+  - component: {fileID: 1410613242}
+  m_Layer: 5
+  m_HasEditorInfo: 1
+  m_Name: FishTankBgImg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1410613241
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410613240}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1726826512}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 11.06, y: 253.21}
+  m_SizeDelta: {x: 854.08, y: 712.4}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1410613242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410613240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: d1c384b4dbcd97542bcd1ed987bbbc02, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1410613243
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410613240}
   m_CullTransparentMesh: 1
 --- !u!1 &1412866102
 GameObject:
@@ -69942,7 +70541,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9691001a0d70e6949bbbc1cc86daa0c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  objectType: 5
+  objectType: 6
   objData: 
   defaultScaleMin: 0.9
   defaultDuration: 0.2
@@ -74910,6 +75509,7 @@ GameObject:
   serializedVersion: 7
   m_Component:
   - component: {fileID: 1726826512}
+  - component: {fileID: 1726826513}
   m_Layer: 5
   m_HasEditorInfo: 1
   m_Name: MainPanel
@@ -74930,7 +75530,15 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 2001209124}
   - {fileID: 1263877341}
+  - {fileID: 779587703}
+  - {fileID: 532443907}
+  - {fileID: 1410613241}
+  - {fileID: 1971277726}
+  - {fileID: 1963297904}
+  - {fileID: 469515441}
+  - {fileID: 687476426}
   - {fileID: 222696676}
   - {fileID: 675972561}
   - {fileID: 1148681908}
@@ -74948,6 +75556,64 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1726826513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1726826511}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58fd2ba6a51f5bc4fa6c56fb7f78f89c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  totalAreaRect: {fileID: 687476426}
+  bottomAreaRect: {fileID: 532443907}
+  fishContainer: {fileID: 232433392}
+  baitContainer: {fileID: 1332593919}
+  decorationContainer: {fileID: 2026155505}
+  fishPrefab: {fileID: 1701074941962803506, guid: 45d27eb1e18ecb34f99e7d771af2f053, type: 3}
+  baitPrefab: {fileID: 2006990137818350807, guid: cebc5e3a544d2b84c907e38ba09f36e0, type: 3}
+  baseHeight: 0.5
+  uniformScale: 1
+  directionChangeIntervalMin: 4
+  directionChangeIntervalMax: 20
+  moveSpeedMin: 0.25
+  moveSpeedMax: 1.75
+  verticalSpeedRatio: 0.4
+  verticalMoveProbability: 0.2
+  accelerationMin: 2.5
+  accelerationMax: 5
+  dragForce: 0.8
+  chargeDurationMin: 0.4
+  chargeDurationMax: 1
+  chargeScaleX: 0.6
+  chargeScaleY: 1.35
+  chargeSpeedRatio: 0.15
+  sprintDurationMin: 1.5
+  sprintDurationMax: 3.5
+  baitTriggerRadius: 200
+  baitFallSpeedRatio: 0.1
+  baitChaseDurationMin: 0.5
+  baitChaseDurationMax: 0.8
+  baitChaseSpeedMultiplier: 5
+  baitScale: 1.1
+  baitPoolInitSize: 5
+  baitFeedRange: 50
+  fishPoolInitialCapacity: 10
+  enableDebugLog: 0
+  leftBtn: {fileID: 675972562}
+  rightBtn: {fileID: 222696677}
+  tankNameText: {fileID: 564384628}
+  capacityText: {fileID: 1376186176}
+  harvestText: {fileID: 573656243}
+  lockBtn: {fileID: 2114548873}
+  lockIcon: {fileID: 1018441419}
+  manageBtn: {fileID: 1148681909}
+  decorationBtn: {fileID: 1508339269}
+  managerPanel: {fileID: 557089923}
+  decorationPanel: {fileID: 1817972802}
 --- !u!1 &1728588781
 GameObject:
   m_ObjectHideFlags: 0
@@ -78941,7 +79607,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1817972799
 RectTransform:
   m_ObjectHideFlags: 0
@@ -78957,6 +79623,7 @@ RectTransform:
   - {fileID: 1042635437}
   - {fileID: 1448878566}
   - {fileID: 1009425925}
+  - {fileID: 1074483565}
   m_Father: {fileID: 690148996}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -79025,7 +79692,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 2133835840}
   - {fileID: 487708669}
+  - {fileID: 764136048}
   - {fileID: 1831775695}
   - {fileID: 1624273047}
   - {fileID: 235099289}
@@ -85386,6 +86055,82 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1962039605}
   m_CullTransparentMesh: 1
+--- !u!1 &1963297903
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 1963297904}
+  - component: {fileID: 1963297906}
+  - component: {fileID: 1963297905}
+  m_Layer: 5
+  m_HasEditorInfo: 1
+  m_Name: FishTankFrameImg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1963297904
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1963297903}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1726826512}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 17.010008, y: 97.82998}
+  m_SizeDelta: {x: 865.98, y: 1335.5}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1963297905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1963297903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 7fad74dc1ee16ab4f95f6b164bca0198, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1963297906
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1963297903}
+  m_CullTransparentMesh: 1
 --- !u!1 &1967829928
 GameObject:
   m_ObjectHideFlags: 0
@@ -85514,6 +86259,82 @@ RectTransform:
   m_AnchoredPosition: {x: 26.679993, y: 0.000022888184}
   m_SizeDelta: {x: -188.87, y: -13.635}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1971277725
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 1971277726}
+  - component: {fileID: 1971277728}
+  - component: {fileID: 1971277727}
+  m_Layer: 5
+  m_HasEditorInfo: 1
+  m_Name: FishTankBottomImg
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1971277726
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1971277725}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1726826512}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 22.75, y: -198}
+  m_SizeDelta: {x: 830.7, y: 337.19}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1971277727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1971277725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 4d37d4f168b90244c88d7a5851a417d3, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1971277728
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1971277725}
+  m_CullTransparentMesh: 1
 --- !u!1 &1973137725
 GameObject:
   m_ObjectHideFlags: 0
@@ -86805,6 +87626,82 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1999398520}
   m_CullTransparentMesh: 1
+--- !u!1 &2001209123
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 2001209124}
+  - component: {fileID: 2001209126}
+  - component: {fileID: 2001209125}
+  m_Layer: 5
+  m_HasEditorInfo: 1
+  m_Name: Mask
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2001209124
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2001209123}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1726826512}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2001209125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2001209123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.78431374}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &2001209126
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2001209123}
+  m_CullTransparentMesh: 1
 --- !u!1 &2003305414
 GameObject:
   m_ObjectHideFlags: 0
@@ -87453,6 +88350,51 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2022979727}
+  m_CullTransparentMesh: 1
+--- !u!1 &2026155504
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 2026155505}
+  - component: {fileID: 2026155506}
+  m_Layer: 5
+  m_HasEditorInfo: 1
+  m_Name: DecContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2026155505
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2026155504}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 469515441}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &2026155506
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2026155504}
   m_CullTransparentMesh: 1
 --- !u!1 &2027383787
 GameObject:
@@ -92710,6 +93652,186 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2132359605}
   m_CullTransparentMesh: 1
+--- !u!1 &2133835839
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 7
+  m_Component:
+  - component: {fileID: 2133835840}
+  - component: {fileID: 2133835845}
+  - component: {fileID: 2133835844}
+  - component: {fileID: 2133835843}
+  - component: {fileID: 2133835842}
+  - component: {fileID: 2133835841}
+  m_Layer: 6
+  m_HasEditorInfo: 1
+  m_Name: FishTank_Mask
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2133835840
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133835839}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.2505, y: 0.1187, z: 0}
+  m_LocalScale: {x: 6.045217, y: 10.060862, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1821315516}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2133835841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133835839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9691001a0d70e6949bbbc1cc86daa0c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectType: 0
+  objData: 
+  defaultScaleMin: 0.9
+  defaultDuration: 0.2
+--- !u!61 &2133835842
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133835839}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeLayer: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0
+--- !u!114 &2133835843
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133835839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29cbb5ab062b564448beaa85688386e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  elementId: 61
+  parameterType: 1
+  isCanFlip: 0
+  isFlipped: 0
+  renderQueue: 3
+  mainTexture: {fileID: 0}
+  tintColor: {r: 1, g: 1, b: 1, a: 1}
+  blinkTexture: {fileID: 0}
+  blinkColor: {r: 1, g: 1, b: 1, a: 1}
+  enableBlink: 0
+  blinkInterval: 0.5
+  blinkOffset: 0
+  sceneId: 
+  elementPath: 
+  material: {fileID: 2100000, guid: ef82f9859a4a91943b39befa1149de97, type: 2}
+  targetRenderer: {fileID: 2133835844}
+--- !u!23 &2133835844
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133835839}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_virtualGeometry: 0
+  m_ShadingRate: 0
+  m_ForceDisableGRD: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 4408d417d82c91947b83a8ff7d027009, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &2133835845
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133835839}
+  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &2135441298
 GameObject:
   m_ObjectHideFlags: 0

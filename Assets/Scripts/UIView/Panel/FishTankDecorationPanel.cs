@@ -1,13 +1,10 @@
-// ============================================================
-// 文件: FishTankDecorationPanel.cs
-// 说明: 鱼缸装饰面板 - 管理品类切换和装饰列表显示
-// ============================================================
-
+// 路径：Assets/Scripts/UIView/Panel/FishTankDecorationPanel.cs
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using static PlayerDataManager;
 
 public class FishTankDecorationPanel : MonoBehaviour
 {
@@ -35,7 +32,6 @@ public class FishTankDecorationPanel : MonoBehaviour
     // ---------- 数据 ----------
     private int _currentCategory = 80;
     private List<int> _ownedDecorationIds = new List<int>();
-    // 新的装备状态：每个槽位一个列表
     private Dictionary<int, List<DecorationEquipInfo>> _equippedStatus = new Dictionary<int, List<DecorationEquipInfo>>();
 
     private DecorationObjectPool _pool;
@@ -74,51 +70,38 @@ public class FishTankDecorationPanel : MonoBehaviour
     private void RegisterEvents()
     {
         UnregisterEvents();
-        CommunicateEvent.Register("DecorationDataUpdated", OnDecorationDataUpdated);
+        CommunicateEvent.Register(FishTankMessage.DecorationDataUpdated.ToString(), OnDecorationDataUpdated);
     }
 
     private void UnregisterEvents()
     {
-        CommunicateEvent.Unregister("DecorationDataUpdated", OnDecorationDataUpdated);
+        CommunicateEvent.Unregister(FishTankMessage.DecorationDataUpdated.ToString(), OnDecorationDataUpdated);
     }
 
-    // ---------- 数据刷新 ----------
+    // ---------- 数据刷新（通过 PlayerDataService） ----------
     public void RefreshData()
     {
         if (!_isInitialized) return;
 
-        if (NetServerManager.Instance != null)
+        // 通过 Service 获取数据
+        _ownedDecorationIds = PlayerDataService.Instance?.GetOwnedDecorationIds() ?? new List<int>();
+        _equippedStatus = PlayerDataService.Instance?.GetEquippedDecorations(currentTankId)
+                          ?? new Dictionary<int, List<DecorationEquipInfo>>();
+
+        // 补全：若已装备但未在拥有列表中（数据一致性问题）
+        foreach (var kvp in _equippedStatus)
         {
-            NetServerManager.Instance.FetchOwnedDecorations(ids =>
+            foreach (var info in kvp.Value)
             {
-                _ownedDecorationIds = ids ?? new List<int>();
-                LogDebug($"FetchOwnedDecorations 返回 {_ownedDecorationIds.Count} 个");
-                NetServerManager.Instance.FetchEquippedStatus(currentTankId, status =>
-                {
-                    _equippedStatus = status ?? new Dictionary<int, List<DecorationEquipInfo>>();
-
-                    // 补全拥有列表（已装备的装饰必定拥有）
-                    foreach (var kvp in _equippedStatus)
-                    {
-                        foreach (var info in kvp.Value)
-                        {
-                            int decId = info.DecorationId;
-                            if (decId != 0 && !_ownedDecorationIds.Contains(decId))
-                            {
-                                _ownedDecorationIds.Add(decId);
-                                LogDebug($"补全拥有列表：{decId}（已装备）");
-                            }
-                        }
-                    }
-
-                    RenderCurrentCategory();
-                });
-            });
+                if (!_ownedDecorationIds.Contains(info.DecorationId))
+                    _ownedDecorationIds.Add(info.DecorationId);
+            }
         }
-        else
-        {
-            RenderCurrentCategory();
-        }
+
+        RenderCurrentCategory();
+
+        // 通知主面板刷新装饰显示（如果是装饰模式）
+        CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
     }
 
     private void OnDecorationDataUpdated()
@@ -159,11 +142,8 @@ public class FishTankDecorationPanel : MonoBehaviour
 
             bool owned = _ownedDecorationIds.Contains(config.id);
 
-            // 计算是否装备（当前槽位是否有该装饰实例）
             bool equipped = false;
             int equippedCount = 0;
-
-            // 获取该槽位的列表
             if (_equippedStatus.TryGetValue(_currentCategory, out var list))
             {
                 foreach (var info in list)
@@ -176,8 +156,6 @@ public class FishTankDecorationPanel : MonoBehaviour
                 }
             }
 
-            // 对于80/81，totalEquippedCount 是该装饰在所有槽位的总数（跨鱼缸，但这里只统计当前鱼缸）
-            // 客户端需要显示“已装备数量”，这里沿用之前的逻辑：统计当前鱼缸中该装饰的实例总数
             int totalEquippedCount = 0;
             if (_currentCategory == 80 || _currentCategory == 81)
             {
@@ -192,22 +170,15 @@ public class FishTankDecorationPanel : MonoBehaviour
             }
             else
             {
-                // 其他类别：每个槽位只能1个，但现已改为列表，统计时也是每个实例
-                // 这里使用 equippedCount 即可，因为只有该槽位有且仅有一个实例（但为了兼容，仍用列表）
                 totalEquippedCount = equippedCount;
             }
 
             int ownedQuantity = 0;
-            if (NetServerManager.Instance != null)
-            {
-                var inventory = NetServerManager.Instance.GetPlayerInventory();
-                inventory.TryGetValue(config.id, out ownedQuantity);
-            }
+            if (owned) ownedQuantity = 1; // 简化
 
-            // 未装备数量 = 背包剩余
-            int unEquippedCount = ownedQuantity;
+            int unEquippedCount = ownedQuantity - totalEquippedCount;
+            if (unEquippedCount < 0) unEquippedCount = 0;
 
-            // 对于非80/81，即使有多个实例，但设计上仍限制为1，但逻辑不变
             item.Init(config, owned, equipped, totalEquippedCount, unEquippedCount, currentTankId, OnDecorationClick);
             _activeItems.Add(item);
         }
@@ -229,7 +200,7 @@ public class FishTankDecorationPanel : MonoBehaviour
     }
 
     // ============================================================
-    // 点击事件处理
+    // 点击事件处理（全部发送事件）
     // ============================================================
     private void OnDecorationClick(UI_FishTankDecPrefab item)
     {
@@ -244,8 +215,6 @@ public class FishTankDecorationPanel : MonoBehaviour
         LogDebug($"OnDecorationClick: decId={decId}, category={category}, tankId={currentTankId}");
 
         bool owned = _ownedDecorationIds.Contains(decId);
-        LogDebug($"owned = {owned} (包含于拥有列表)");
-
         if (!owned)
         {
             LogDebug("未拥有此装饰，显示提示");
@@ -253,78 +222,101 @@ public class FishTankDecorationPanel : MonoBehaviour
             return;
         }
 
-        // ============================================================
-        // 80/81 类别：直接发送装备请求（允许重复放置），不检查槽位占用
-        // ============================================================
+        // 80/81：已装备则选中显示操作面板，否则装备
         if (category == 80 || category == 81)
         {
-            LogDebug("80/81 分支：发送装备请求给服务器");
-            EquipDecoration(decId, category);
-            return;
-        }
-
-        // ============================================================
-        // 其他类别（82/83/84）：每个槽位仍限制1个（但服务器也允许重复，这里客户端做限制）
-        // 如果已装备，则提示，否则装备
-        // ============================================================
-        bool alreadyEquipped = false;
-        if (_equippedStatus.TryGetValue(category, out var list))
-        {
-            alreadyEquipped = list.Any(info => info.DecorationId == decId);
-        }
-
-        if (alreadyEquipped)
-        {
-            LogDebug($"装饰 {decId} 已装备在当前槽位，提示用户");
-            GameUIManager.ShowMessage("该装饰已装备（每个槽位限装1个）");
-            return;
-        }
-
-        // 如果当前槽位有其他装饰，允许替换（但允许重复放置，所以这里无需替换，直接装备）
-        // 为了保持逻辑，直接装备
-        EquipDecoration(decId, category);
-    }
-
-    private void EquipDecoration(int decId, int category)
-    {
-        LogDebug($"EquipDecoration: decId={decId}, category={category}, tankId={currentTankId}");
-        NetServerManager.Instance.EquipDecoration(
-            currentTankId, category, decId,
-            posX: 0, posY: 0, posZ: 0,
-            scaleX: 1, scaleY: 1, scaleZ: 1,
-            rotX: 0, rotY: 0, rotZ: 0,
-            (success, msg, newRecordId) =>
+            bool alreadyEquipped = false;
+            int recordId = 0;
+            if (_equippedStatus.TryGetValue(category, out var list))
             {
-                if (success)
+                var info = list.FirstOrDefault(i => i.DecorationId == decId);
+                if (info != null)
                 {
-                    LogDebug($"装备成功，消息: {msg}, 新ID={newRecordId}");
-
-                    // 只有真正消耗背包时才减1（服务器返回"已装备该装饰"时不消耗）
-                    if (!msg.Contains("已装备该装饰"))
-                    {
-                        var inv = NetServerManager.Instance.GetPlayerInventory();
-                        if (inv.ContainsKey(decId))
-                        {
-                            int old = inv[decId];
-                            inv[decId] = Math.Max(0, old - 1);
-                            LogDebug($"背包缓存更新: {decId} 从 {old} 减至 {inv[decId]}");
-                        }
-                    }
-                    else
-                    {
-                        LogDebug($"服务器返回幂等成功，不减少背包数量");
-                    }
-
-                    GameUIManager.ShowMessage("装备成功");
-                    RefreshData();
-                }
-                else
-                {
-                    LogDebug($"装备失败: {msg}");
-                    GameUIManager.ShowMessage($"装备失败: {msg}");
+                    alreadyEquipped = true;
+                    recordId = info.Id; // 使用 Id
                 }
             }
-        );
+
+            if (alreadyEquipped)
+            {
+                // 发送选中事件，携带品类
+                var selectData = new SelectDecorationData
+                {
+                    TankId = currentTankId,
+                    RecordId = recordId,
+                    Category = category,
+                    ScreenPosition = Input.mousePosition
+                };
+                CommunicateEvent.Modify(FishTankMessage.SelectDecoration.ToString(), selectData);
+                LogDebug($"选中已装备的80/81装饰，显示操作面板");
+                return;
+            }
+            else
+            {
+                // 未装备，发送装备请求
+                var equipData = new EquipDecorationData
+                {
+                    TankId = currentTankId,
+                    Category = category,
+                    DecorationId = decId,
+                    PosX = 0,
+                    PosY = 0,
+                    PosZ = 0,
+                    ScaleX = 1,
+                    ScaleY = 1,
+                    ScaleZ = 1,
+                    RotX = 0,
+                    RotY = 0,
+                    RotZ = 0
+                };
+                CommunicateEvent.Modify(FishTankMessage.EquipDecoration.ToString(), equipData);
+            }
+            return;
+        }
+
+        // 82~84：纹理替换类
+        if (category >= 82 && category <= 84)
+        {
+            bool alreadyEquipped = false;
+            if (_equippedStatus.TryGetValue(category, out var list))
+            {
+                alreadyEquipped = list.Any(info => info.DecorationId == decId);
+            }
+
+            if (alreadyEquipped)
+            {
+                // 已装备，应用纹理（发送应用事件）
+                var applyData = new ApplyDecorationData
+                {
+                    TankId = currentTankId,
+                    Category = category,
+                    DecorationId = decId
+                };
+                CommunicateEvent.Modify(FishTankMessage.ApplyTextureDecoration.ToString(), applyData);
+                GameUIManager.ShowMessage("已应用装饰");
+                return;
+            }
+            else
+            {
+                LogDebug($"82~84 未装备，发送装备请求");
+                var equipData = new EquipDecorationData
+                {
+                    TankId = currentTankId,
+                    Category = category,
+                    DecorationId = decId,
+                    PosX = 0,
+                    PosY = 0,
+                    PosZ = 0,
+                    ScaleX = 1,
+                    ScaleY = 1,
+                    ScaleZ = 1,
+                    RotX = 0,
+                    RotY = 0,
+                    RotZ = 0
+                };
+                CommunicateEvent.Modify(FishTankMessage.EquipDecoration.ToString(), equipData);
+            }
+        }
     }
 
     // ---------- 对象池 ----------

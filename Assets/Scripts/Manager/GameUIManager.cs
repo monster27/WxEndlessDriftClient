@@ -234,32 +234,31 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     }
 
 
+    // GameUIManager.cs 修改部分（其余不变）
+
     /// <summary>
     /// 刷新鱼缸数据（由网络层调用）
     /// </summary>
     public void RefreshFishTankData()
     {
         Z_Logger.Log("[GameUIManager] RefreshFishTankData 被调用");
-        if (fishTankView != null)
+        if (fishTankView != null && fishTankView.fishTankMainPanel != null)
         {
-            fishTankView.RefreshAll();  // ✅ 改为 RefreshAll()
+            fishTankView.fishTankMainPanel.RefreshAll();
             Z_Logger.Log("[GameUIManager] RefreshFishTankData 完成");
         }
         else
         {
-            Z_Logger.LogWarning("[GameUIManager] RefreshFishTankData: fishTankView 为空");
+            Z_Logger.LogWarning("[GameUIManager] RefreshFishTankData: fishTankView 或 fishTankMainPanel 为空");
         }
     }
 
-    // ============================================================
-    // OnFishTankDataUpdated 也改为调用 RefreshAll()
-    // ============================================================
     private void OnFishTankDataUpdated()
     {
         Z_Logger.Log("[GameUIManager] 收到鱼缸数据更新事件");
-        if (fishTankView != null)
+        if (fishTankView != null && fishTankView.fishTankMainPanel != null)
         {
-            fishTankView.RefreshAll();  // ✅ 改为 RefreshAll()
+            fishTankView.fishTankMainPanel.RefreshAll();
             Z_Logger.Log("[GameUIManager] RefreshFishTankData 完成");
         }
     }
