@@ -12,6 +12,7 @@ public class FishTankMainPanel : MonoBehaviour
     [Header("===== 鱼缸区域(UI RectTransform) =====")]
     [SerializeField] private RectTransform totalAreaRect;
     [SerializeField] private RectTransform bottomAreaRect;
+    [SerializeField] private RectTransform upAreaRect;
 
     [Header("===== 容器 =====")]
     [SerializeField] private RectTransform fishContainer;
@@ -88,6 +89,7 @@ public class FishTankMainPanel : MonoBehaviour
 
     private Rect _totalRect;
     private Rect _bottomRect;
+    private Rect _upRect;
 
     private Dictionary<int, UI_FishTankDec> _decorationInstances = new Dictionary<int, UI_FishTankDec>();
     private Sprite _defaultBorderSprite;
@@ -101,6 +103,8 @@ public class FishTankMainPanel : MonoBehaviour
 
     public bool EnableDebugLog => enableDebugLog;
     public Rect TotalRect => _totalRect;
+    public Rect BottomRect => _bottomRect;
+    public Rect UpRect => _upRect;
     public bool IsDecorationMode => _isDecorationMode;
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -173,35 +177,24 @@ public class FishTankMainPanel : MonoBehaviour
         if (baitContainer != null) baitContainer.gameObject.SetActive(visible);
     }
 
-
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // 装饰模式开关
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    /// <summary>
-    /// 切换装饰模式
-    /// true  = 装饰可点，鱼缸区域不可点（不生成鱼饵）
-    /// false = 装饰不可点，鱼缸区域可点（生成鱼饵）
-    /// </summary>
     public void SetDecorationMode(bool isDecorationMode)
     {
         _isDecorationMode = isDecorationMode;
 
-        // 遍历所有装饰实例，切换 Button.interactable
         foreach (var kv in _decorationInstances)
         {
             if (kv.Value != null) kv.Value.SetInteractable(isDecorationMode);
         }
 
-        // 鱼缸区域 raycastTarget：装饰模式下关闭
         SetFishTankClickable(!isDecorationMode);
 
         LogDebug($"SetDecorationMode: {isDecorationMode}, 装饰实例数={_decorationInstances.Count}");
     }
 
-    /// <summary>
-    /// 设置鱼缸点击区域是否可点击（生成鱼饵）
-    /// </summary>
     public void SetFishTankClickable(bool clickable)
     {
         if (totalAreaRect == null) return;
@@ -209,9 +202,6 @@ public class FishTankMainPanel : MonoBehaviour
         if (img != null) img.raycastTarget = clickable;
     }
 
-    /// <summary>
-    /// 确保 decorationContainer 在 totalAreaRect 之上
-    /// </summary>
     public void EnsureDecorationOnTop()
     {
         if (totalAreaRect == null || decorationContainer == null) return;
@@ -247,7 +237,6 @@ public class FishTankMainPanel : MonoBehaviour
         entry.eventID = EventTriggerType.PointerClick;
         entry.callback.AddListener((data) =>
         {
-            // 装饰模式下不生成鱼饵
             if (_isDecorationMode) return;
 
             PointerEventData ped = data as PointerEventData;
@@ -487,6 +476,15 @@ public class FishTankMainPanel : MonoBehaviour
             _bottomRect = new Rect(local0.x, local0.y, local2.x - local0.x, local2.y - local0.y);
         }
 
+        if (upAreaRect != null && fishContainer != null)
+        {
+            Vector3[] corners = new Vector3[4];
+            upAreaRect.GetWorldCorners(corners);
+            Vector3 local0 = fishContainer.InverseTransformPoint(corners[0]);
+            Vector3 local2 = fishContainer.InverseTransformPoint(corners[2]);
+            _upRect = new Rect(local0.x, local0.y, local2.x - local0.x, local2.y - local0.y);
+        }
+
         foreach (var fish in _fullScreenSwimList) if (fish) { fish.totalAreaRect = _totalRect; fish.bottomAreaRect = _bottomRect; }
         foreach (var fish in _fullScreenStaticList) if (fish) { fish.totalAreaRect = _totalRect; fish.bottomAreaRect = _bottomRect; }
         foreach (var fish in _bottomSwimList) if (fish) { fish.totalAreaRect = _totalRect; fish.bottomAreaRect = _bottomRect; }
@@ -591,9 +589,6 @@ public class FishTankMainPanel : MonoBehaviour
         ApplyTexture(equipped, 84, backgroundImage, _defaultBackgroundSprite);
     }
 
-    /// <summary>
-    /// 从 decPrefab 实例化一个装饰
-    /// </summary>
     private void CreateDecorationInstance(DecorationEquipInfo info, int category, int tankId)
     {
         if (decorationContainer == null || decPrefab == null) return;
@@ -606,7 +601,15 @@ public class FishTankMainPanel : MonoBehaviour
         rect.anchorMin = new Vector2(0.5f, 0.5f);
         rect.anchorMax = new Vector2(0.5f, 0.5f);
         rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.anchoredPosition = new Vector2(info.PositionX, info.PositionY);
+
+        // ★ 兼容旧数据：位置为 (0,0) 时使用区域中心
+        bool isDefaultPos = Mathf.Approximately(info.PositionX, 0f)
+                         && Mathf.Approximately(info.PositionY, 0f);
+        Vector2 finalPos = isDefaultPos
+            ? GetDefaultSpawnPosition(category)
+            : new Vector2(info.PositionX, info.PositionY);
+
+        rect.anchoredPosition = finalPos;
 
         if (rect.sizeDelta.x <= 0.01f || rect.sizeDelta.y <= 0.01f)
             rect.sizeDelta = new Vector2(100f, 100f);
@@ -627,7 +630,6 @@ public class FishTankMainPanel : MonoBehaviour
 
         decComp.Init(info.Id, category, tankId, info.DecorationId, OnDecorationInstanceClicked);
 
-        // ★ 根据当前模式设置交互
         decComp.SetInteractable(_isDecorationMode);
 
         decComp.SetFlip(Mathf.Approximately(info.RotationY, 180f));
@@ -639,6 +641,9 @@ public class FishTankMainPanel : MonoBehaviour
     {
         if (!_isDecorationMode) return;
         if (dec == null) return;
+
+        // ★ 点击时置顶：只改 siblingIndex，不影响镜像 localScale
+        dec.transform.SetAsLastSibling();
 
         OnDecorationClickedCallback?.Invoke(dec);
     }
@@ -693,6 +698,33 @@ public class FishTankMainPanel : MonoBehaviour
     {
         _decorationInstances.TryGetValue(recordId, out var dec);
         return dec;
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // ★ 新增：装饰默认生成位置
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    /// <summary>
+    /// 获取指定品类装饰的默认生成位置（所属区域中心，decorationContainer 本地坐标）
+    /// 80 → bottomAreaRect 中心
+    /// 81 → upAreaRect 中心
+    /// 其他 → totalAreaRect 中心
+    /// </summary>
+    public Vector2 GetDefaultSpawnPosition(int category)
+    {
+        RectTransform area = null;
+
+        if (category == 80) area = bottomAreaRect;
+        else if (category == 81) area = upAreaRect;
+
+        if (area == null) area = totalAreaRect;
+        if (area == null || decorationContainer == null) return Vector2.zero;
+
+        // 区域中心的世界坐标 → decorationContainer 本地坐标
+        Vector3 worldCenter = area.TransformPoint(area.rect.center);
+        Vector3 localPos = decorationContainer.InverseTransformPoint(worldCenter);
+
+        return new Vector2(localPos.x, localPos.y);
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

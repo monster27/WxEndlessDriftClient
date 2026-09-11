@@ -481,6 +481,21 @@ public partial class NetServerManager
         }, "金币数据");
     }
 
+    /// <summary>
+    /// 刷新背包并同步到 PlayerDataManager，完成后回调（复用已有协程，不改动原逻辑）
+    /// </summary>
+    public void RefreshPlayerInventoryAndSync(Action onComplete = null)
+    {
+        StartCoroutine(RefreshPlayerInventoryAndSyncCoroutine(onComplete));
+    }
+
+    private IEnumerator RefreshPlayerInventoryAndSyncCoroutine(Action onComplete)
+    {
+        yield return FetchPlayerInventoryCoroutine();  // 用带 SyncInventoryFromServer 的那个
+        onComplete?.Invoke();
+    }
+
+
     private IEnumerator FetchPlayerInventory()
     {
         yield return FetchGetJson<InventoryResponse>(ServerUrls.Player.InventoryById(_currentPlayerId), data =>

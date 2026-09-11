@@ -224,53 +224,61 @@ public class PlayerDataService : SingletonMono<PlayerDataService>
 
     private void OnEquipDecoration(EquipDecorationData data)
     {
-        LogDebug($"收到 EquipDecoration: TankId={data.TankId}, Category={data.Category}, DecId={data.DecorationId}");
+        if (NetServerManager.Instance == null) return;
 
-        NetServerManager.Instance?.EquipDecoration(
+        NetServerManager.Instance.EquipDecoration(
             data.TankId, data.Category, data.DecorationId,
             data.PosX, data.PosY, data.PosZ,
             data.ScaleX, data.ScaleY, data.ScaleZ,
             data.RotX, data.RotY, data.RotZ,
             (success, message, newRecordId) =>
             {
-                if (success)
+                if (!success)
                 {
-                    // 拉取最新装备状态
+                    GameUIManager.ShowMessage($"装备失败: {message}");
+                    return;
+                }
+
+                // 第 1 步：等背包刷新完（并且已同步到 PlayerDataManager）
+                NetServerManager.Instance.RefreshPlayerInventoryAndSync(() =>
+                {
+                    // 第 2 步：等装备状态刷新完
                     NetServerManager.Instance.FetchEquippedStatus(data.TankId, (equipped) =>
                     {
                         if (equipped != null && PlayerDataManager.Instance != null)
                             PlayerDataManager.Instance.UpdateEquippedDecorations(data.TankId, equipped);
 
+                        // 第 3 步：两个数据都 OK，只在这里触发一次 UI 刷新
                         CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
                     });
+                });
 
-                    GameUIManager.ShowMessage("装备成功");
-                }
-                else
-                {
-                    LogDebug($"装备失败: {message}");
-                    GameUIManager.ShowMessage($"装备失败: {message}");
-                }
+                GameUIManager.ShowMessage("装备成功");
             });
     }
 
     private void OnRemoveDecoration(RemoveDecorationData data)
     {
-        LogDebug($"收到 RemoveDecoration: TankId={data.TankId}, RecordId={data.RecordId}");
+        if (NetServerManager.Instance == null) return;
 
-        NetServerManager.Instance?.UnEquipDecoration(data.TankId, data.RecordId, (success, message) =>
+        NetServerManager.Instance.UnEquipDecoration(data.TankId, data.RecordId, (success, message) =>
         {
-            if (success)
+            if (!success)
             {
-                PlayerDataManager.Instance?.RemoveEquippedDecoration(data.TankId, data.RecordId);
-                CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
-                GameUIManager.ShowMessage("已卸下装饰");
-            }
-            else
-            {
-                LogDebug($"卸下装饰失败: {message}");
                 GameUIManager.ShowMessage($"卸下失败: {message}");
+                return;
             }
+
+            NetServerManager.Instance.RefreshPlayerInventoryAndSync(() =>
+            {
+                if (PlayerDataManager.Instance != null)
+                    PlayerDataManager.Instance.RemoveEquippedDecoration(data.TankId, data.RecordId);
+
+                // 只触发一次 UI 刷新
+                CommunicateEvent.Modify(FishTankMessage.DecorationDataUpdated.ToString());
+            });
+
+            GameUIManager.ShowMessage("已卸下装饰");
         });
     }
 

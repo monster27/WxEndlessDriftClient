@@ -67,13 +67,20 @@ public class UI_FishTankDecPrefab : MonoBehaviour
 
         if (isMovable)
         {
-            // 80/81：不唯一，不显示装备标记，显示两个数字
-            if (equippedMark != null) equippedMark.SetActive(false);
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // 80/81：不唯一，不显示装备标记
+            //   equippedCountText  = 已装备数量
+            //   unEquippedCountText = 背包剩余数量
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            if (equippedMark != null)
+                equippedMark.SetActive(false);
+
             if (equippedCountText != null)
             {
                 equippedCountText.text = _equippedCount.ToString();
                 equippedCountText.gameObject.SetActive(true);
             }
+
             if (unEquippedCountText != null)
             {
                 unEquippedCountText.text = _unEquippedCount.ToString();
@@ -82,19 +89,26 @@ public class UI_FishTankDecPrefab : MonoBehaviour
         }
         else
         {
-            // 82-84：唯一，显示装备标记，隐藏装备数量文本，显示未装备数量（1或0）
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // 82-84：唯一，显示装备标记
+            //   equippedCountText  = 隐藏
+            //   unEquippedCountText = 总拥有量（背包 + 已装备）
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
             if (equippedMark != null)
                 equippedMark.SetActive(_equipped);
+
             if (equippedCountText != null)
                 equippedCountText.gameObject.SetActive(false);
+
             if (unEquippedCountText != null)
             {
-                unEquippedCountText.text = _unEquippedCount > 0 ? "1" : "0";
+                // ★ _unEquippedCount 传入的已经是总拥有量（背包剩余 + 已装备）
+                unEquippedCountText.text = _unEquippedCount.ToString();
                 unEquippedCountText.gameObject.SetActive(true);
             }
         }
 
-        // 按钮交互：如果未拥有或未解锁，禁用点击
+        // 按钮交互：未拥有则禁用点击
         if (clickBtn != null)
             clickBtn.interactable = _owned;
     }

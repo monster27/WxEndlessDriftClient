@@ -46,6 +46,10 @@ public class FishTankDecorationPanel : MonoBehaviour
     private Action _onCloseCallback;
     private Action<FishTankDecData> _onItemClickCallback;
 
+    // ★ 拖动/边界处理相关
+    private FishTankMainPanel _mainPanel;
+    private int _currentOperatorCategory;
+
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // 初始化
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -101,6 +105,14 @@ public class FishTankDecorationPanel : MonoBehaviour
     public void SetCloseCallback(Action callback) { _onCloseCallback = callback; }
     public void SetItemClickCallback(Action<FishTankDecData> callback) { _onItemClickCallback = callback; }
 
+    /// <summary>
+    /// ★ 注入 mainPanel，供拖动边界判断使用
+    /// </summary>
+    public void SetMainPanel(FishTankMainPanel panel)
+    {
+        _mainPanel = panel;
+    }
+
     public void SetOperatorCallbacks(
         Action<int, float, float> onDragMove,
         Action<int, float, float> onDragEnd,
@@ -127,7 +139,6 @@ public class FishTankDecorationPanel : MonoBehaviour
     {
         if (!_isInitialized) return;
 
-        // ★ 不再拉取 _ownedDecorationIds，改为直接查背包数量
         _equippedStatus = PlayerDataService.Instance?.GetEquippedDecorations(_currentTankId)
                           ?? new Dictionary<int, List<DecorationEquipInfo>>();
 
@@ -144,6 +155,7 @@ public class FishTankDecorationPanel : MonoBehaviour
     public void ShowDecOperator(int tankId, int recordId, int category, int decorationId, RectTransform decorationRect)
     {
         if (decOperator == null) return;
+        _currentOperatorCategory = category;   // ★ 记录当前品类
         decOperator.ShowForDecoration(tankId, recordId, category, decorationId, decorationRect);
     }
 
@@ -165,6 +177,97 @@ public class FishTankDecorationPanel : MonoBehaviour
 
         if (newRect != null) decOperator.RebindTarget(newRect);
         else decOperator.Hide();
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // ★ 拖动边界处理
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    /// <summary>
+    /// 拖动装饰（带区域限制），由 View 的 OnDecDragMove 调用
+    /// </summary>
+    public void HandleDecDragMove(int recordId, float dx, float dy)
+    {
+        if (_mainPanel == null) return;
+
+        var rect = _mainPanel.GetDecorationRect(recordId);
+        if (rect == null) return;
+
+        Rect area = GetAreaForCategory(_currentOperatorCategory);
+        if (area.width <= 0f || area.height <= 0f)
+        {
+            // 没有区域信息，直接位移
+            rect.anchoredPosition += new Vector2(dx, dy);
+        }
+        else
+        {
+            Vector2 newPos = rect.anchoredPosition + new Vector2(dx, dy);
+            newPos = ClampToArea(newPos, rect, area);
+            rect.anchoredPosition = newPos;
+        }
+
+        RefreshDecOperatorPosition();
+    }
+
+    /// <summary>
+    /// 拖动结束后，返回相对服务器记录原点的最终 delta（clamp 后的真实位移）
+    /// </summary>
+    public Vector2 GetFinalDragDelta(int recordId)
+    {
+        if (_mainPanel == null) return Vector2.zero;
+
+        var rect = _mainPanel.GetDecorationRect(recordId);
+        if (rect == null) return Vector2.zero;
+
+        var info = PlayerDataManager.Instance?.GetDecorationInfoByRecordId(recordId);
+        float originX = info?.PositionX ?? 0f;
+        float originY = info?.PositionY ?? 0f;
+
+        return new Vector2(rect.anchoredPosition.x - originX,
+                           rect.anchoredPosition.y - originY);
+    }
+
+    /// <summary>
+    /// 80（摆饰）→ 底部区域 bottomAreaRect
+    /// 81（挂饰）→ 上部区域 upAreaRect
+    /// </summary>
+    private Rect GetAreaForCategory(int category)
+    {
+        if (_mainPanel == null) return new Rect();
+
+        if (category == 80) return _mainPanel.BottomRect;
+        if (category == 81)
+        {
+            Rect up = _mainPanel.UpRect;
+            // upAreaRect 未配置时退化为整个区域
+            return (up.width > 0f && up.height > 0f) ? up : _mainPanel.TotalRect;
+        }
+
+        // 其他品类不限制
+        return _mainPanel.TotalRect;
+    }
+
+    /// <summary>
+    /// 把位置钳制到区域内部（考虑装饰自身尺寸与缩放，含镜像）
+    /// </summary>
+    private Vector2 ClampToArea(Vector2 pos, RectTransform rect, Rect area)
+    {
+        Vector2 size = rect.rect.size;
+        float halfW = size.x * 0.5f * Mathf.Abs(rect.localScale.x);
+        float halfH = size.y * 0.5f * Mathf.Abs(rect.localScale.y);
+
+        float minX = area.xMin + halfW;
+        float maxX = area.xMax - halfW;
+        float minY = area.yMin + halfH;
+        float maxY = area.yMax - halfH;
+
+        if (minX > maxX) pos.x = (area.xMin + area.xMax) * 0.5f;
+        else pos.x = Mathf.Clamp(pos.x, minX, maxX);
+
+        if (minY > maxY) pos.y = (area.yMin + area.yMax) * 0.5f;
+        else pos.y = Mathf.Clamp(pos.y, minY, maxY);
+
+        return pos;
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -195,14 +298,13 @@ public class FishTankDecorationPanel : MonoBehaviour
             var config = configs[i];
             UI_FishTankDecPrefab item = _pool.Get();
             item.transform.SetParent(decorationContainer, false);
-            item.transform.SetSiblingIndex(i);   // ★ 强制按 ID 顺序
+            item.transform.SetSiblingIndex(i);
             item.gameObject.SetActive(true);
 
-            // ★ 从背包查真实数量（不再是 owned ? 1 : 0）
-            int ownedQuantity = PlayerDataService.Instance?.GetOwnedDecorationQuantity(config.id) ?? 0;
-            bool owned = ownedQuantity > 0;
+            // 背包剩余数量
+            int bagQuantity = PlayerDataService.Instance?.GetOwnedDecorationQuantity(config.id) ?? 0;
 
-            // 当前品类已装备数量
+            // 本槽位已装备数量
             int equippedCount = 0;
             if (_equippedStatus.TryGetValue(_currentCategory, out var list))
             {
@@ -212,10 +314,11 @@ public class FishTankDecorationPanel : MonoBehaviour
                 }
             }
 
-            // 80/81 跨品类统计；82-84 只统计当前品类
-            int totalEquippedCount = 0;
+            // 80/81 跨所有槽位统计；82-84 只统计当前槽位（唯一）
+            int totalEquippedCount;
             if (_currentCategory == 80 || _currentCategory == 81)
             {
+                totalEquippedCount = 0;
                 foreach (var kvp in _equippedStatus)
                 {
                     foreach (var info in kvp.Value)
@@ -230,10 +333,17 @@ public class FishTankDecorationPanel : MonoBehaviour
                 totalEquippedCount = equippedCount;
             }
 
+            // 总拥有数量 = 背包剩余 + 已装备
+            int ownedQuantity = bagQuantity + totalEquippedCount;
+            bool owned = ownedQuantity > 0;
             bool equipped = totalEquippedCount > 0;
-            int unEquippedCount = Mathf.Max(0, ownedQuantity - totalEquippedCount);
 
-            item.Init(config, owned, equipped, totalEquippedCount, unEquippedCount, _currentTankId, OnDecorationItemClickedInternal);
+            // 80/81 显示背包剩余；82-84 显示总拥有数量
+            int displayCount = (_currentCategory == 80 || _currentCategory == 81)
+                ? bagQuantity
+                : ownedQuantity;
+
+            item.Init(config, owned, equipped, totalEquippedCount, displayCount, _currentTankId, OnDecorationItemClickedInternal);
             _activeItems.Add(item);
         }
     }

@@ -60,6 +60,7 @@ public class FishTankView : BaseView
         if (decorationPanel != null)
         {
             decorationPanel.Init(enableDebugLog);
+            decorationPanel.SetMainPanel(mainPanel);
             decorationPanel.SetCloseCallback(OnDecorationPanelClosed);
             decorationPanel.SetItemClickCallback(OnDecorationItemClicked);
             decorationPanel.SetOperatorCallbacks(
@@ -114,7 +115,6 @@ public class FishTankView : BaseView
             mainPanel.SetFishVisible(true);
             mainPanel.SetBaitVisible(true);
 
-            // ★ 非装饰模式：装饰不可点，鱼缸可生成鱼饵
             mainPanel.SetDecorationMode(false);
         }
 
@@ -362,7 +362,6 @@ public class FishTankView : BaseView
             mainPanel.SetBaitVisible(false);
             mainPanel.ClearAllBaits();
 
-            // ★ 装饰可点，鱼缸区域不可点
             mainPanel.SetDecorationMode(true);
         }
 
@@ -385,7 +384,6 @@ public class FishTankView : BaseView
         if (decorationPanel != null) decorationPanel.Close();
         if (mainPanel != null)
         {
-            // ★ 装饰不可点，鱼缸区域可点
             mainPanel.SetDecorationMode(false);
         }
 
@@ -412,8 +410,7 @@ public class FishTankView : BaseView
         int decId = config.id;
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // 80/81：可多次装备（不唯一）
-        //   判断依据：背包里还有没有剩余
+        // 80/81：可多次装备
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if (category == 80 || category == 81)
         {
@@ -421,13 +418,18 @@ public class FishTankView : BaseView
 
             if (bagQty > 0)
             {
+                // ★ 用所属区域中心作为初始位置
+                Vector2 spawnPos = (mainPanel != null)
+                    ? mainPanel.GetDefaultSpawnPosition(category)
+                    : Vector2.zero;
+
                 var equipData = new EquipDecorationData
                 {
                     TankId = tankId,
                     Category = category,
                     DecorationId = decId,
-                    PosX = 0,
-                    PosY = 0,
+                    PosX = spawnPos.x,
+                    PosY = spawnPos.y,
                     PosZ = 0,
                     ScaleX = 1,
                     ScaleY = 1,
@@ -440,14 +442,13 @@ public class FishTankView : BaseView
             }
             else
             {
-                // 背包没剩余，提示
                 GameUIManager.ShowMessage("背包中没有多余的该装饰");
             }
             return;
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // 82-84：唯一（每类只能装备 1 个）
+        // 82-84：唯一
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if (category >= 82 && category <= 84)
         {
@@ -460,7 +461,6 @@ public class FishTankView : BaseView
 
             if (alreadyEquipped)
             {
-                // 已应用：重新应用一次（幂等，主要用于视觉反馈）
                 var applyData = new ApplyDecorationData
                 {
                     TankId = tankId,
@@ -472,7 +472,6 @@ public class FishTankView : BaseView
             }
             else
             {
-                // 未应用：装备（服务器会检查 82-84 每类上限为 1，满了会拒绝）
                 var equipData = new EquipDecorationData
                 {
                     TankId = tankId,
@@ -503,7 +502,6 @@ public class FishTankView : BaseView
 
         int recordId = dec.RecordId;
 
-        // 再点同一个装饰 → toggle 关闭
         if (decorationPanel.IsDecOperatorShowing && decorationPanel.CurrentDecOperatorRecordId == recordId)
         {
             decorationPanel.HideDecOperator();
@@ -522,18 +520,22 @@ public class FishTankView : BaseView
 
     private void OnDecDragMove(int recordId, float dx, float dy)
     {
-        if (mainPanel != null) mainPanel.MoveDecorationInstance(recordId, dx, dy);
-        if (decorationPanel != null) decorationPanel.RefreshDecOperatorPosition();
+        if (decorationPanel != null)
+            decorationPanel.HandleDecDragMove(recordId, dx, dy);
     }
 
     private void OnDecDragEnd(int recordId, float totalDx, float totalDy)
     {
+        Vector2 finalDelta = decorationPanel != null
+            ? decorationPanel.GetFinalDragDelta(recordId)
+            : new Vector2(totalDx, totalDy);
+
         var data = new MoveDecorationData
         {
             TankId = GetCurrentTank()?.tankId ?? 1,
             RecordId = recordId,
-            DeltaX = totalDx,
-            DeltaY = totalDy
+            DeltaX = finalDelta.x,
+            DeltaY = finalDelta.y
         };
         CommunicateEvent.Modify(FishTankMessage.MoveDecoration.ToString(), data);
     }

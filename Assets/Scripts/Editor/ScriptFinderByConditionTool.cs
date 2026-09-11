@@ -6,14 +6,122 @@ using System.IO;
 using System.Text;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System;
 
 public class ScriptFinderByConditionTool : Editor
 {
     private const string SERVER_PATH_KEY = "ZpfTool_ServerPath";
 
-    // 历史记录相关
     private static string _lastClassName = "";
     private static List<string> _previewFileNames = new List<string>();
+
+    // ============================================================
+    // 搜索结果结构
+    // ============================================================
+    public class ClassSearchResult
+    {
+        public string FilePath;
+        public string FileName;
+        public string RelativePath;
+        public bool ClassNameMatched;
+        public bool FileNameMatched;
+        public bool CommentMatched;
+        public string ClassDefs;
+
+        public bool HasValidMatch => ClassNameMatched || FileNameMatched;
+
+        public string MatchSource
+        {
+            get
+            {
+                if (ClassNameMatched && FileNameMatched) return "类名+文件名";
+                if (ClassNameMatched) return "类名";
+                if (FileNameMatched) return "文件名";
+                return "";
+            }
+        }
+    }
+
+    // ============================================================
+    // 核心匹配逻辑（提取为公共方法）
+    // ============================================================
+    // 规则：
+    //   1. 如果类声明匹配中至少有一个不在注释中 → 有效匹配（类名）
+    //   2. 如果类声明匹配全部在注释中 → 视为注释匹配（即使文件名匹配也不复制）
+    //   3. 如果类声明完全没匹配到，但文件名匹配 → 有效匹配（文件名）
+    //   4. 其他情况 → 不匹配，返回 null
+    // ============================================================
+    private static ClassSearchResult MatchFile(string filePath, string content, string className)
+    {
+        string searchPattern = $@"public\s+(?:partial\s+)?class\s+\S*{Regex.Escape(className)}\S*";
+        var matches = Regex.Matches(content, searchPattern, RegexOptions.IgnoreCase);
+
+        bool classNameMatched = false;   // 有非注释中的类声明匹配
+        bool commentMatched = false;     // 有注释中的类声明匹配
+        string classDefs = "";
+
+        foreach (Match match in matches)
+        {
+            if (IsInComment(content, match.Index))
+            {
+                commentMatched = true;
+                continue;
+            }
+
+            classNameMatched = true;
+
+            int startIndex = content.LastIndexOf('\n', match.Index) + 1;
+            int endIndex = content.IndexOf('\n', match.Index);
+            if (endIndex == -1) endIndex = content.Length;
+            string fullLine = content.Substring(startIndex, endIndex - startIndex).Trim();
+            classDefs += fullLine + "\n";
+        }
+
+        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath);
+        bool fileNameMatched = fileNameWithoutExt.IndexOf(className, StringComparison.OrdinalIgnoreCase) >= 0;
+
+        bool effectiveClassNameMatched;
+        bool effectiveFileNameMatched;
+        bool effectiveCommentMatched;
+
+        if (classNameMatched)
+        {
+            // 有至少一个非注释中的类声明匹配 → 有效
+            effectiveClassNameMatched = true;
+            effectiveFileNameMatched = fileNameMatched;
+            effectiveCommentMatched = false;
+        }
+        else if (commentMatched)
+        {
+            // 类声明匹配全部在注释中 → 视为注释匹配，文件名匹配也降级为无效
+            effectiveClassNameMatched = false;
+            effectiveFileNameMatched = false;
+            effectiveCommentMatched = true;
+        }
+        else if (fileNameMatched)
+        {
+            // 没有任何类声明匹配，但文件名匹配 → 有效
+            effectiveClassNameMatched = false;
+            effectiveFileNameMatched = true;
+            effectiveCommentMatched = false;
+        }
+        else
+        {
+            // 完全没匹配到
+            return null;
+        }
+
+        return new ClassSearchResult
+        {
+            FilePath = filePath,
+            FileName = Path.GetFileName(filePath),
+            RelativePath = filePath.Replace(Application.dataPath, "Assets"),
+            ClassNameMatched = effectiveClassNameMatched,
+            FileNameMatched = effectiveFileNameMatched,
+            CommentMatched = effectiveCommentMatched,
+            ClassDefs = classDefs.TrimEnd()
+        };
+    }
 
     // ============================================================
     // 获取编辑器工具脚本
@@ -684,37 +792,23 @@ public class ScriptFinderByConditionTool : Editor
     }
 
     // ============================================================
-    // 注释检测工具（重写版）
+    // 注释检测工具
     // ============================================================
 
-    /// <summary>
-    /// 判断 content 中 matchIndex 处是否位于注释中
-    /// 组合两种方式：
-    ///   1) 匹配所在行、匹配之前是否有 "//"（行注释）
-    ///   2) 扫描内容，判断是否处于跨行的块注释 /* */ 中
-    /// </summary>
     private static bool IsInComment(string content, int matchIndex)
     {
         if (string.IsNullOrEmpty(content) || matchIndex <= 0 || matchIndex >= content.Length)
             return false;
 
-        // ---------- 方法一：行注释检查 ----------
-        // 找到 match 所在行的起始位置
         int lineStart = content.LastIndexOf('\n', matchIndex - 1) + 1;
         string beforeMatchOnLine = content.Substring(lineStart, matchIndex - lineStart);
 
-        // 如果匹配之前同一行就出现了 //，说明这个匹配位于行注释中
         if (beforeMatchOnLine.Contains("//"))
             return true;
 
-        // ---------- 方法二：块注释检查 ----------
         return IsInBlockComment(content, matchIndex);
     }
 
-    /// <summary>
-    /// 扫描 content[0..matchIndex)，判断 matchIndex 处是否处于块注释 /* */ 中。
-    /// 会跳过字符串和字符常量。
-    /// </summary>
     private static bool IsInBlockComment(string content, int matchIndex)
     {
         bool inBlockComment = false;
@@ -727,7 +821,6 @@ public class ScriptFinderByConditionTool : Editor
             char c = content[i];
             char next = (i + 1 < content.Length) ? content[i + 1] : '\0';
 
-            // 块注释中
             if (inBlockComment)
             {
                 if (c == '*' && next == '/')
@@ -738,7 +831,6 @@ public class ScriptFinderByConditionTool : Editor
                 continue;
             }
 
-            // 普通字符串中
             if (inString)
             {
                 if (c == '\\' && !inVerbatimString) { i++; continue; }
@@ -751,7 +843,6 @@ public class ScriptFinderByConditionTool : Editor
                 continue;
             }
 
-            // 字符常量中
             if (inChar)
             {
                 if (c == '\\') { i++; continue; }
@@ -759,7 +850,6 @@ public class ScriptFinderByConditionTool : Editor
                 continue;
             }
 
-            // 非注释、非字符串状态
             if (c == '/' && next == '*') { inBlockComment = true; i++; continue; }
             if (c == '@' && next == '"') { inString = true; inVerbatimString = true; i++; continue; }
             if (c == '"') { inString = true; continue; }
@@ -879,7 +969,7 @@ public class ScriptFinderByConditionTool : Editor
         private Vector2 historyScrollPosition = Vector2.zero;
         private bool showHistory = true;
         private Vector2 scrollPosition = Vector2.zero;
-        private List<string> previewResults = new List<string>();
+        private List<ClassSearchResult> previewResults = new List<ClassSearchResult>();
         private bool showPreview = false;
 
         private void OnEnable()
@@ -917,7 +1007,7 @@ public class ScriptFinderByConditionTool : Editor
             GUILayout.Space(10);
 
             EditorGUILayout.LabelField("🔍 搜索指定类名的脚本", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField("搜索所有 C# 脚本中的 public class 或 public partial class  |  💡 支持部分匹配，自动忽略大小写，忽略被注释掉的类", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField("搜索所有 C# 脚本中的 public class 或 public partial class  |  💡 支持部分匹配，自动忽略大小写  |  💡 同时匹配文件名", EditorStyles.miniLabel);
 
             GUILayout.Space(8);
 
@@ -1049,27 +1139,25 @@ public class ScriptFinderByConditionTool : Editor
 
             if (showPreview)
             {
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"📄 匹配结果: {previewResults.Count} 个文件", EditorStyles.boldLabel);
-                if (previewResults.Count > 0)
-                {
-                    GUI.color = new Color(0.7f, 0.7f, 0.9f);
-                    EditorGUILayout.LabelField($"💡 点击文件名可定位到脚本", EditorStyles.miniLabel);
-                    GUI.color = Color.white;
-                }
-                EditorGUILayout.EndHorizontal();
+                var validResults = previewResults.Where(r => r.HasValidMatch).ToList();
+                var commentOnlyResults = previewResults.Where(r => !r.HasValidMatch && r.CommentMatched).ToList();
+
+                EditorGUILayout.LabelField($"📄 有效匹配: {validResults.Count} 个文件  |  ⚠️ 注释中匹配: {commentOnlyResults.Count} 个文件", EditorStyles.boldLabel);
 
                 GUILayout.Space(4);
 
-                if (previewResults.Count == 0)
+                scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.ExpandHeight(true));
+
+                // ---------- 有效匹配区域 ----------
+                EditorGUILayout.LabelField($"✅ 有效匹配（会被复制）: {validResults.Count} 个", EditorStyles.boldLabel);
+
+                if (validResults.Count == 0)
                 {
-                    EditorGUILayout.HelpBox($"未找到包含类名 \"{className}\" 的脚本文件（已忽略被注释掉的类）", MessageType.Info);
+                    EditorGUILayout.HelpBox("没有有效匹配的文件", MessageType.Info);
                 }
                 else
                 {
-                    scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, GUILayout.ExpandHeight(true));
-
-                    foreach (string fileName in previewResults)
+                    foreach (var result in validResults)
                     {
                         EditorGUILayout.BeginHorizontal();
 
@@ -1081,33 +1169,55 @@ public class ScriptFinderByConditionTool : Editor
                         linkStyle.fontSize = 13;
                         linkStyle.padding = new RectOffset(4, 4, 2, 2);
 
-                        if (GUILayout.Button(fileName, linkStyle, GUILayout.Height(24)))
+                        string displayText = $"{result.FileName}  [{result.MatchSource}]";
+                        if (GUILayout.Button(displayText, linkStyle, GUILayout.Height(24)))
                         {
-                            string filePath = FindScriptPath(fileName);
-                            if (!string.IsNullOrEmpty(filePath))
-                            {
-                                UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(filePath);
-                                if (obj != null)
-                                {
-                                    EditorGUIUtility.PingObject(obj);
-                                    Selection.activeObject = obj;
-                                }
-                                else
-                                {
-                                    EditorUtility.RevealInFinder(filePath);
-                                }
-                            }
+                            LocateScript(result.FilePath);
                         }
 
                         EditorGUILayout.EndHorizontal();
                     }
-
-                    EditorGUILayout.EndScrollView();
-
-                    GUILayout.Space(4);
-                    EditorGUILayout.LabelField("💡 点击文件名 → 在Project窗口中定位脚本", EditorStyles.miniLabel);
-                    EditorGUILayout.LabelField("💡 点击「复制完整内容」→ 复制所有匹配文件的完整代码到粘贴板", EditorStyles.miniLabel);
                 }
+
+                GUILayout.Space(10);
+
+                // ---------- 注释匹配区域 ----------
+                EditorGUILayout.LabelField("", GUI.skin.horizontalSlider);
+                EditorGUILayout.LabelField($"⚠️ 注释中匹配（不会被复制）: {commentOnlyResults.Count} 个", EditorStyles.boldLabel);
+
+                if (commentOnlyResults.Count == 0)
+                {
+                    EditorGUILayout.HelpBox("没有在注释中匹配的文件", MessageType.Info);
+                }
+                else
+                {
+                    foreach (var result in commentOnlyResults)
+                    {
+                        EditorGUILayout.BeginHorizontal();
+
+                        EditorGUILayout.LabelField("🚫", GUILayout.Width(25));
+
+                        GUIStyle linkStyle = new GUIStyle(EditorStyles.label);
+                        linkStyle.normal.textColor = Color.gray;
+                        linkStyle.hover.textColor = new Color(0.5f, 0.5f, 0.5f);
+                        linkStyle.fontSize = 13;
+                        linkStyle.padding = new RectOffset(4, 4, 2, 2);
+
+                        string displayText = $"{result.FileName}  [注释中]";
+                        if (GUILayout.Button(displayText, linkStyle, GUILayout.Height(24)))
+                        {
+                            LocateScript(result.FilePath);
+                        }
+
+                        EditorGUILayout.EndHorizontal();
+                    }
+                }
+
+                EditorGUILayout.EndScrollView();
+
+                GUILayout.Space(4);
+                EditorGUILayout.LabelField("💡 点击文件名 → 在Project窗口中定位脚本", EditorStyles.miniLabel);
+                EditorGUILayout.LabelField("💡 点击「复制完整内容」→ 仅复制有效匹配的代码，注释中的不复制", EditorStyles.miniLabel);
             }
             else
             {
@@ -1118,9 +1228,26 @@ public class ScriptFinderByConditionTool : Editor
             GUILayout.Space(6);
         }
 
+        private void LocateScript(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+                return;
+
+            string assetPath = filePath.Replace(Application.dataPath, "Assets");
+            UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
+            if (obj != null)
+            {
+                EditorGUIUtility.PingObject(obj);
+                Selection.activeObject = obj;
+            }
+            else
+            {
+                EditorUtility.RevealInFinder(filePath);
+            }
+        }
+
         private void OnLostFocus()
         {
-            // 防止窗口失去焦点时自动关闭
         }
 
         private void PerformPreview(string searchClass)
@@ -1136,15 +1263,13 @@ public class ScriptFinderByConditionTool : Editor
             Repaint();
         }
 
-        private List<string> SearchForClassNames(string className)
+        private List<ClassSearchResult> SearchForClassNames(string className)
         {
             if (string.IsNullOrEmpty(className))
-                return new List<string>();
+                return new List<ClassSearchResult>();
 
             string[] allCsFiles = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
-            List<string> matchedFiles = new List<string>();
-
-            string searchPattern = $@"public\s+(?:partial\s+)?class\s+\S*{Regex.Escape(className)}\S*";
+            List<ClassSearchResult> matchedFiles = new List<ClassSearchResult>();
 
             foreach (string filePath in allCsFiles)
             {
@@ -1157,49 +1282,25 @@ public class ScriptFinderByConditionTool : Editor
                         continue;
 
                     string content = File.ReadAllText(filePath, Encoding.UTF8);
-                    var matches = Regex.Matches(content, searchPattern, RegexOptions.IgnoreCase);
-
-                    bool hasValidMatch = false;
-                    foreach (Match match in matches)
+                    var result = MatchFile(filePath, content, className);
+                    if (result != null)
                     {
-                        // ✅ 过滤掉位于注释中的匹配
-                        if (IsInComment(content, match.Index))
-                            continue;
-
-                        hasValidMatch = true;
-                        break;
-                    }
-
-                    if (hasValidMatch)
-                    {
-                        matchedFiles.Add(Path.GetFileName(filePath));
+                        matchedFiles.Add(result);
                     }
                 }
                 catch
                 {
-                    // 忽略读取错误
                 }
             }
 
-            matchedFiles.Sort();
-            return matchedFiles;
-        }
-
-        private string FindScriptPath(string fileName)
-        {
-            if (string.IsNullOrEmpty(fileName))
-                return "";
-
-            string[] allCsFiles = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
-
-            foreach (string filePath in allCsFiles)
+            matchedFiles.Sort((a, b) =>
             {
-                if (Path.GetFileName(filePath) == fileName)
-                {
-                    return filePath.Replace(Application.dataPath, "Assets");
-                }
-            }
-            return "";
+                if (a.HasValidMatch && !b.HasValidMatch) return -1;
+                if (!a.HasValidMatch && b.HasValidMatch) return 1;
+                return string.Compare(a.FileName, b.FileName, StringComparison.Ordinal);
+            });
+
+            return matchedFiles;
         }
 
         private void SaveHistory()
@@ -1245,11 +1346,7 @@ public class ScriptFinderByConditionTool : Editor
             return;
         }
 
-        List<string> matchedFiles = new List<string>();
-        Dictionary<string, string> classDefinitions = new Dictionary<string, string>();
-        Dictionary<string, string> fileContents = new Dictionary<string, string>();
-
-        string searchPattern = $@"public\s+(?:partial\s+)?class\s+\S*{Regex.Escape(className)}\S*";
+        List<ClassSearchResult> allResults = new List<ClassSearchResult>();
 
         foreach (string filePath in allCsFiles)
         {
@@ -1262,32 +1359,10 @@ public class ScriptFinderByConditionTool : Editor
                     continue;
 
                 string content = File.ReadAllText(filePath, Encoding.UTF8);
-                var matches = Regex.Matches(content, searchPattern, RegexOptions.IgnoreCase);
-
-                bool hasValidMatch = false;
-                string classDefs = "";
-
-                foreach (Match match in matches)
+                var result = MatchFile(filePath, content, className);
+                if (result != null)
                 {
-                    // ✅ 过滤掉位于注释中的匹配
-                    if (IsInComment(content, match.Index))
-                        continue;
-
-                    hasValidMatch = true;
-
-                    int startIndex = content.LastIndexOf('\n', match.Index) + 1;
-                    int endIndex = content.IndexOf('\n', match.Index);
-                    if (endIndex == -1) endIndex = content.Length;
-
-                    string fullLine = content.Substring(startIndex, endIndex - startIndex).Trim();
-                    classDefs += fullLine + "\n";
-                }
-
-                if (hasValidMatch)
-                {
-                    matchedFiles.Add(filePath);
-                    fileContents[filePath] = content;
-                    classDefinitions[filePath] = classDefs;
+                    allResults.Add(result);
                 }
             }
             catch (System.Exception ex)
@@ -1301,55 +1376,97 @@ public class ScriptFinderByConditionTool : Editor
             return;
         }
 
-        if (matchedFiles.Count == 0)
+        var validResults = allResults.Where(r => r.HasValidMatch).ToList();
+        var commentOnlyResults = allResults.Where(r => !r.HasValidMatch && r.CommentMatched).ToList();
+
+        if (validResults.Count == 0 && commentOnlyResults.Count == 0)
         {
-            EditorUtility.DisplayDialog("提示", $"未找到包含类名 \"{className}\" 的脚本文件！（已忽略被注释掉的类）", "确定");
+            EditorUtility.DisplayDialog("提示", $"未找到包含类名或文件名 \"{className}\" 的脚本文件！", "确定");
             return;
         }
 
         StringBuilder outputContent = new StringBuilder();
 
+        // ============================================================
+        // 头部统计
+        // ============================================================
         outputContent.AppendLine("// ============================================");
-        outputContent.AppendLine($"// 包含类名 \"{className}\" 的脚本列表");
+        outputContent.AppendLine($"// 包含类名或文件名 \"{className}\" 的脚本列表");
         outputContent.AppendLine($"// 搜索时间: {System.DateTime.Now}");
-        outputContent.AppendLine($"// 找到文件数: {matchedFiles.Count}");
+        outputContent.AppendLine($"// 有效匹配文件数: {validResults.Count}");
+        outputContent.AppendLine($"// 注释中匹配文件数: {commentOnlyResults.Count}");
         outputContent.AppendLine("// ============================================");
         outputContent.AppendLine();
 
-        outputContent.AppendLine("// 📋 类定义列表：");
-        foreach (var kvp in classDefinitions.OrderBy(x => x.Key))
-        {
-            string relativePath = kvp.Key.Replace(Application.dataPath, "Assets");
-            outputContent.AppendLine($"// 📁 {relativePath}");
-            outputContent.AppendLine($"// {kvp.Value.TrimEnd()}");
-            outputContent.AppendLine();
-        }
-
+        // ============================================================
+        // 有效匹配列表
+        // ============================================================
         outputContent.AppendLine("// ============================================");
-        outputContent.AppendLine("// 📄 完整文件内容");
+        outputContent.AppendLine($"// ✅ 有效匹配文件列表（共 {validResults.Count} 个，以下内容会被复制）");
+        outputContent.AppendLine("// ============================================");
+        if (validResults.Count == 0)
+        {
+            outputContent.AppendLine("// (无)");
+        }
+        else
+        {
+            foreach (var result in validResults.OrderBy(x => x.FileName))
+            {
+                outputContent.AppendLine($"//   📁 {result.RelativePath}  [{result.MatchSource}]");
+                if (!string.IsNullOrEmpty(result.ClassDefs))
+                {
+                    outputContent.AppendLine($"//      类定义: {result.ClassDefs.Replace("\n", " | ")}");
+                }
+            }
+        }
+        outputContent.AppendLine();
+
+        // ============================================================
+        // 注释匹配列表（单独区域，不复制）
+        // ============================================================
+        outputContent.AppendLine("// ============================================");
+        outputContent.AppendLine($"// ⚠️ 注释中匹配文件列表（共 {commentOnlyResults.Count} 个，以下内容【不会】被复制）");
+        outputContent.AppendLine("// ============================================");
+        if (commentOnlyResults.Count == 0)
+        {
+            outputContent.AppendLine("// (无)");
+        }
+        else
+        {
+            foreach (var result in commentOnlyResults.OrderBy(x => x.FileName))
+            {
+                outputContent.AppendLine($"//   🚫 {result.RelativePath}  [注释中]");
+            }
+        }
+        outputContent.AppendLine();
+
+        // ============================================================
+        // 有效匹配的完整代码
+        // ============================================================
+        outputContent.AppendLine("// ============================================");
+        outputContent.AppendLine("// 📄 完整文件内容（仅有效匹配，注释中匹配的文件不在此列）");
         outputContent.AppendLine("// ============================================");
         outputContent.AppendLine();
 
         long totalSize = 0;
-        List<string> sortedFiles = new List<string>(matchedFiles);
-        sortedFiles.Sort();
+        var sortedValidResults = validResults.OrderBy(x => x.FileName).ToList();
 
-        foreach (string filePath in sortedFiles)
+        foreach (var result in sortedValidResults)
         {
             try
             {
-                string content = File.ReadAllText(filePath, Encoding.UTF8);
-                string relativePath = filePath.Replace(Application.dataPath, "Assets");
-                string fileName = Path.GetFileName(filePath);
-                long fileSize = new FileInfo(filePath).Length;
+                string content = File.ReadAllText(result.FilePath, Encoding.UTF8);
+                long fileSize = new FileInfo(result.FilePath).Length;
                 totalSize += fileSize;
 
-                string classDef = classDefinitions.ContainsKey(filePath) ? classDefinitions[filePath].TrimEnd() : "未找到";
-
                 outputContent.AppendLine("// ============================================");
-                outputContent.AppendLine($"// 📄 文件: {fileName}");
-                outputContent.AppendLine($"// 📂 路径: {relativePath}");
-                outputContent.AppendLine($"// 📋 类定义: {classDef}");
+                outputContent.AppendLine($"// 📄 文件: {result.FileName}");
+                outputContent.AppendLine($"// 📂 路径: {result.RelativePath}");
+                outputContent.AppendLine($"// 🔍 匹配来源: {result.MatchSource}");
+                if (!string.IsNullOrEmpty(result.ClassDefs))
+                {
+                    outputContent.AppendLine($"// 📋 类定义: {result.ClassDefs.Replace("\n", " | ")}");
+                }
                 outputContent.AppendLine($"// 📊 大小: {FormatFileSize(fileSize)}");
                 outputContent.AppendLine("// ============================================");
                 outputContent.AppendLine(content);
@@ -1358,39 +1475,45 @@ public class ScriptFinderByConditionTool : Editor
             }
             catch (System.Exception ex)
             {
-                Z_Logger.LogWarning($"读取文件失败: {filePath}, 错误: {ex.Message}");
+                Z_Logger.LogWarning($"读取文件失败: {result.FilePath}, 错误: {ex.Message}");
             }
         }
 
+        // ============================================================
+        // 尾部统计
+        // ============================================================
         outputContent.AppendLine("// ============================================");
         outputContent.AppendLine($"// 📊 统计信息");
         outputContent.AppendLine("// ============================================");
-        outputContent.AppendLine($"// 搜索类名: {className}");
-        outputContent.AppendLine($"// 总文件数: {sortedFiles.Count}");
+        outputContent.AppendLine($"// 搜索关键词: {className}");
+        outputContent.AppendLine($"// 有效文件数（已复制）: {sortedValidResults.Count}");
+        outputContent.AppendLine($"// 注释中忽略文件数（未复制）: {commentOnlyResults.Count}");
         outputContent.AppendLine($"// 总大小: {FormatFileSize(totalSize)}");
         outputContent.AppendLine("// ============================================");
 
         GUIUtility.systemCopyBuffer = outputContent.ToString();
 
-        string message = $"✅ 找到 {sortedFiles.Count} 个包含类名 \"{className}\" 的脚本！\n\n";
-        message += "📋 类定义列表:\n";
-        foreach (var kvp in classDefinitions.OrderBy(x => x.Key))
+        // ============================================================
+        // 弹窗提示
+        // ============================================================
+        string message = $"✅ 有效匹配 {sortedValidResults.Count} 个脚本（已复制）。\n";
+        message += $"⚠️ 注释中匹配 {commentOnlyResults.Count} 个脚本（未复制）。\n\n";
+
+        if (commentOnlyResults.Count > 0)
         {
-            string fileName = Path.GetFileName(kvp.Key);
-            string classDef = kvp.Value.TrimEnd().Replace("\n", ", ");
-            if (classDef.Length > 80)
-                classDef = classDef.Substring(0, 80) + "...";
-            message += $"  - {fileName}: {classDef}\n";
+            message += "🚫 以下文件在注释中匹配，未复制：\n";
+            foreach (var result in commentOnlyResults)
+            {
+                message += $"  - {result.FileName}\n";
+            }
+            message += "\n";
         }
 
-        message += $"\n📊 统计:\n";
-        message += $"  - 文件总数: {sortedFiles.Count}\n";
-        message += $"  - 总大小: {FormatFileSize(totalSize)}\n\n";
-        message += $"📋 完整内容已复制到粘贴板！";
+        message += "📋 有效匹配的完整内容已复制到粘贴板！";
 
         EditorUtility.DisplayDialog("搜索完成", message, "确定");
 
-        Z_Logger.Log($"✅ 找到 {sortedFiles.Count} 个包含类名 \"{className}\" 的脚本，总大小 {FormatFileSize(totalSize)}，内容已复制到粘贴板。");
+        Z_Logger.Log($"✅ 有效匹配 {sortedValidResults.Count} 个已复制，注释中忽略 {commentOnlyResults.Count} 个未复制。");
     }
 
     // ============================================================
