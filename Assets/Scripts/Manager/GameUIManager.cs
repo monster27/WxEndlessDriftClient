@@ -18,6 +18,8 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     public CollectionView collectionView;
 
     public FishTankView fishTankView;
+    public EggView eggView;
+    public PetView petView;   // ✅ 新增
 
     private AsyncOperationHandle<GameObject> _adPrefabHandle;
 
@@ -63,6 +65,15 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         {
             fishTankView.BaseViewInit();
         }
+        if (eggView != null)
+        {
+            eggView.BaseViewInit();
+        }
+        // ✅ 新增
+        if (petView != null)
+        {
+            petView.BaseViewInit();
+        }
 
         RegisterEvents();
     }
@@ -76,8 +87,13 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         CommunicateEvent.Register("UI_OpenMap", OpenMap);
         CommunicateEvent.Register("UI_OpenCollection", OpenCollection);
         CommunicateEvent.Register("UI_OpenFishTank", OpenFishTankView);
-
         CommunicateEvent.Register("UI_CloseFishTank", CloseFishTankView);
+        CommunicateEvent.Register("UI_OpenEgg", OpenEggView);
+        CommunicateEvent.Register("UI_CloseEgg", CloseEggView);
+
+        // ✅ 新增
+        CommunicateEvent.Register("UI_OpenPet", OpenPetView);
+        CommunicateEvent.Register("UI_ClosePet", ClosePetView);
 
         CommunicateEvent.Register<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, ShowTip);
         CommunicateEvent.Register<CommunicateEvent.AdvertisingRequest>(CommunicateEvent.EVENT_UI_SHOW_ADVERTISING, OnShowAdvertisingRequest);
@@ -228,6 +244,40 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         }
     }
 
+    public void OpenEggView()
+    {
+        if (eggView != null)
+        {
+            eggView.OpenEggView();
+        }
+    }
+
+    public void CloseEggView()
+    {
+        if (eggView != null)
+        {
+            eggView.CloseEggView();
+        }
+    }
+
+    // ✅ 新增
+    public void OpenPetView()
+    {
+        if (petView != null)
+        {
+            petView.OpenPetView();
+        }
+    }
+
+    // ✅ 新增
+    public void ClosePetView()
+    {
+        if (petView != null)
+        {
+            petView.ClosePetView();
+        }
+    }
+
     public FishTankView GetFishTankView()
     {
         return fishTankView;
@@ -237,9 +287,6 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
     // 鱼缸数据刷新
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    /// <summary>
-    /// 刷新鱼缸数据（由网络层调用）
-    /// </summary>
     public void RefreshFishTankData()
     {
         Z_Logger.Log("[GameUIManager] RefreshFishTankData 被调用");

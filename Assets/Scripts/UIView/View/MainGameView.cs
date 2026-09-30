@@ -19,6 +19,8 @@ public class MainGameView : BaseView
     public Button MapBtn;
     public Button homeBtn;
     public Button collectionBtn;
+    public Button eggBtn;
+    public Button petBtn;
 
     public Button menuOpenBtn;
     public Button menuCloseBtn;
@@ -60,7 +62,6 @@ public class MainGameView : BaseView
         CommunicateEvent.Register("BaitDataUpdated", OnBaitDataUpdated);
         CommunicateEvent.Register("FishBagDataUpdated", OnFishBagDataUpdated);
 
-        // ✅ 新增：等级奖励通知
         CommunicateEvent.Register<string>("OnLevelReward", OnLevelRewardReceived);
 
         if (bagBtn != null)
@@ -116,6 +117,16 @@ public class MainGameView : BaseView
             collectionBtn.onClick.AddListener(OnCollectionBtnClick);
         }
 
+        // ✅ 新增绑定
+        if (eggBtn != null)
+        {
+            eggBtn.onClick.AddListener(OnEggBtnClick);
+        }
+        if (petBtn != null)
+        {
+            petBtn.onClick.AddListener(OnPetBtnClick);
+        }
+
         if (mainTile != null)
         {
             Vector3 initialPos = mainTile.transform.position;
@@ -136,6 +147,26 @@ public class MainGameView : BaseView
 
         isInitialized = true;
     }
+
+    // ============================================================
+    // ✅ 新增：蛋 / 宠物按钮点击
+    // ============================================================
+
+    private void OnEggBtnClick()
+    {
+        Z_Logger.Log("[MainGameView] OnEggBtnClick - 点击蛋按钮");
+        CommunicateEvent.Modify("UI_OpenEgg");
+    }
+
+    private void OnPetBtnClick()
+    {
+        Z_Logger.Log("[MainGameView] OnPetBtnClick - 点击宠物按钮");
+        CommunicateEvent.Modify("UI_OpenPet");
+    }
+
+    // ============================================================
+    // 原有按钮点击
+    // ============================================================
 
     private void OnMapBtnClick()
     {
@@ -399,9 +430,6 @@ public class MainGameView : BaseView
         UpdateFishCountDisplay();
     }
 
-    /// <summary>
-    /// 接收等级奖励通知（客户端显示）
-    /// </summary>
     private void OnLevelRewardReceived(string rewardMessage)
     {
         Z_Logger.Log($"[MainGameView] 收到等级奖励: {rewardMessage}");
@@ -499,16 +527,6 @@ public class MainGameView : BaseView
         UpdateWeatherIcon(currentWeatherId);
     }
 
-    /// <summary>
-    /// 显示钓获结果
-    /// </summary>
-    /// <param name="itemName">物品名称</param>
-    /// <param name="weight">重量</param>
-    /// <param name="icon">图标</param>
-    /// <param name="starRatingId">星级ID</param>
-    /// <param name="itemId">物品ID</param>
-    /// <param name="isFish">是否为鱼类</param>
-    /// <param name="isFirstCatch">是否为首次钓获该鱼</param>
     public void ShowCatchResult(string itemName, float weight, Sprite icon, int starRatingId = 0, int itemId = 0, bool isFish = true, bool isFirstCatch = false)
     {
         Z_Logger.Log($"ShowCatchResult - itemId:{itemId}, isFish:{isFish}, isFirstCatch:{isFirstCatch}");
@@ -523,7 +541,6 @@ public class MainGameView : BaseView
             mainTile.EnqueueCatchResult(itemName, weight, icon);
         }
 
-        // ✅ 只有鱼类且是首次钓获时，才显示 newItemTip（垃圾不触发）
         if (newItemTip != null && itemId > 0 && isFish && isFirstCatch)
         {
             Z_Logger.Log($"[MainGameView] 首次钓获新鱼: {itemName}, 显示 newItemTip");
@@ -555,7 +572,6 @@ public class MainGameView : BaseView
         CommunicateEvent.Unregister("BaitDataUpdated", OnBaitDataUpdated);
         CommunicateEvent.Unregister("FishBagDataUpdated", OnFishBagDataUpdated);
 
-        // ✅ 取消注册等级奖励通知
         CommunicateEvent.Unregister<string>("OnLevelReward", OnLevelRewardReceived);
     }
 }

@@ -187,6 +187,8 @@ public class FishDetailData
     public float maxWeight;     // 钓到的最大重量
     public int location;        // 0=鱼篓, 1=鱼缸
     public int tankId;          // 所在鱼缸ID（location=1时有效）
+    /// <summary>喂食量预览（服务器算好，仅鱼篓数据有；鱼缸数据为 0）</summary>
+    public int feedRestored;
 }
 
 [Serializable]

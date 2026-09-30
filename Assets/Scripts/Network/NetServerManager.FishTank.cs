@@ -123,7 +123,8 @@ public partial class NetServerManager
                         calculatedPrice = item.calculatedPrice,
                         caughtTimestamp = item.caughtTimestamp,
                         location = 0,
-                        tankId = 0
+                        tankId = 0,
+                        feedRestored = item.feedRestored
                     });
                 }
                 dataSuccess = true;

@@ -1,0 +1,57 @@
+{
+    "eggs": [
+        {
+            "id": 10201,
+            "rarityId": 201,
+            "name": "普通蛋",
+            "description": "普通的蛋，可以孵化出普通宠物。",
+            "hatchTime": 60,
+            "skipCost": 100,
+            "upgradeRarityCost": 200
+        },
+        {
+            "id": 10202,
+            "rarityId": 202,
+            "name": "罕见蛋",
+            "description": "罕见的蛋，可以孵化出罕见宠物。",
+            "hatchTime": 120,
+            "skipCost": 200,
+            "upgradeRarityCost": 500
+        },
+        {
+            "id": 10203,
+            "rarityId": 203,
+            "name": "稀有蛋",
+            "description": "稀有的蛋，可以孵化出稀有宠物。",
+            "hatchTime": 300,
+            "skipCost": 400,
+            "upgradeRarityCost": 1000
+        },
+        {
+            "id": 10204,
+            "rarityId": 204,
+            "name": "史诗蛋",
+            "description": "史诗的蛋，可以孵化出史诗宠物。",
+            "hatchTime": 600,
+            "skipCost": 800,
+            "upgradeRarityCost": 2000
+        },
+        {
+            "id": 10205,
+            "rarityId": 205,
+            "name": "传说蛋",
+            "description": "传说的蛋，可以孵化出传说宠物。",
+            "hatchTime": 1200,
+            "skipCost": 1600,
+            "upgradeRarityCost": 5000
+        },
+        {
+            "id": 10206,
+            "rarityId": 206,
+            "name": "幻想蛋",
+            "description": "幻想的蛋，可以孵化出幻想宠物。",
+            "hatchTime": 2400,
+            "skipCost": 3200
+        }
+    ]
+}

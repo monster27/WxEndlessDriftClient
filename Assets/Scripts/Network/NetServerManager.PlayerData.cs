@@ -414,7 +414,8 @@ public partial class NetServerManager
                     isShiny = item.isShiny,
                     isLocked = item.isLocked,
                     location = 0,      // ✅ 鱼篓
-                    tankId = 0         // ✅ 鱼篓无 tankId
+                    tankId = 0,         // ✅ 鱼篓无 tankId
+                    feedRestored = item.feedRestored
                 });
             }
 
@@ -578,7 +579,8 @@ public partial class NetServerManager
                     calculatedPrice = item.calculatedPrice,  // ✅ 使用服务器返回的价格
                     caughtTimestamp = item.caughtTimestamp,
                     isShiny = item.isShiny,
-                    isLocked = item.isLocked
+                    isLocked = item.isLocked,
+                    feedRestored = item.feedRestored
                 });
             }
             int total = GetTotalFishCount();
@@ -901,7 +903,8 @@ public partial class NetServerManager
         public long caughtTimestamp;
         public bool isShiny;  // 是否闪光鱼
         public bool isLocked; // 是否锁定
-        public int calculatedPrice; // ✅ 服务器计算的售价
+        public int calculatedPrice; //  服务器计算的售价
+        public int feedRestored;
     }
     [Serializable] private class GoldResponse { public int gold; }
     [Serializable] private class CapacityResponse { public int capacity; }
@@ -1410,7 +1413,8 @@ public partial class NetServerManager
                                 calculatedPrice = item.calculatedPrice,
                                 caughtTimestamp = item.caughtTimestamp,
                                 isShiny = item.isShiny,
-                                isLocked = item.isLocked
+                                isLocked = item.isLocked,
+                                feedRestored = item.feedRestored
                             });
                         }
                         PlayerDataManager.Instance?.UpdateFishDetailData(fishBagDetailData);

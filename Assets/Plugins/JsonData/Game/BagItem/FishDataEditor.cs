@@ -31,6 +31,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
     private float editFlashProbability = 0.5f;
     private float editBaseWeight = 2.5f;
     private float editScale = 1.0f;
+    private int editFeedAmount = 5;   // ✅ 新增：喂食量
 
     private const string RELATIVE_PATH = "Addressables/JsonData/Game/BagItem/fishes.json";
 
@@ -48,9 +49,10 @@ public class FishDataEditor : BaseDataEditor<FishData>
     private float col12 = 80;  // 闪光概率
     private float col13 = 80;  // 品种ID
     private float col14 = 200; // 描述
-    private float col15 = 60;  //  Scale
+    private float col15 = 60;  // Scale
+    private float col16 = 80;  // ✅ 新增：喂食量
 
-    // ===== 新增：筛选相关 =====
+    // ===== 筛选相关 =====
     private int selectedIslandFilter = -1;
     private List<int> availableIslandIds = new List<int>();
     private string[] islandFilterOptions;
@@ -61,7 +63,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
     public static void ShowWindow()
     {
         FishDataEditor window = GetWindow<FishDataEditor>("水产数据编辑器");
-        window.minSize = new Vector2(1360, 600);
+        window.minSize = new Vector2(1440, 600);
         window.Show();
     }
 
@@ -84,6 +86,24 @@ public class FishDataEditor : BaseDataEditor<FishData>
         if (GUILayout.Button("刷新", EditorStyles.toolbarButton, GUILayout.Width(60))) LoadData();
         if (GUILayout.Button("新增", EditorStyles.toolbarButton, GUILayout.Width(60))) AddNewItem();
 
+        GUILayout.Space(10);
+
+        // ✅ 新增：批量按稀有度填充喂食量
+        GUI.backgroundColor = new Color(1f, 0.9f, 0.6f);
+        if (GUILayout.Button("批量填充喂食量", EditorStyles.toolbarButton, GUILayout.Width(110)))
+        {
+            if (EditorUtility.DisplayDialog("批量填充",
+                "将按稀有度自动填充 feedAmount：\n" +
+                "普通(201)=5, 罕见(202)=10, 稀有(203)=20,\n" +
+                "史诗(204)=40, 传说(205)=80, 幻想(206)=150\n\n" +
+                "会覆盖现有 feedAmount。确定吗？",
+                "确定", "取消"))
+            {
+                FillFeedAmountByRarity();
+            }
+        }
+        GUI.backgroundColor = Color.white;
+
         GUILayout.Space(20);
 
         EditorGUILayout.LabelField("筛选岛屿:", GUILayout.Width(60));
@@ -100,6 +120,33 @@ public class FishDataEditor : BaseDataEditor<FishData>
         EditorGUILayout.LabelField($"共 {GetFilteredDataList().Count} / {dataList.Count} 条数据", GUILayout.Width(130));
         EditorGUILayout.EndHorizontal();
         GUILayout.Space(5);
+    }
+
+    /// <summary>
+    /// ✅ 新增：按稀有度批量填充 feedAmount
+    /// </summary>
+    private void FillFeedAmountByRarity()
+    {
+        int count = 0;
+        foreach (var fish in dataList)
+        {
+            int value = fish.rarityId switch
+            {
+                201 => 5,    // 普通
+                202 => 10,   // 罕见
+                203 => 20,   // 稀有
+                204 => 40,   // 史诗
+                205 => 80,   // 传说
+                206 => 150,  // 幻想
+                _ => 5
+            };
+            fish.feedAmount = value;
+            count++;
+        }
+
+        SaveData();
+        LoadData();
+        EditorUtility.DisplayDialog("成功", $"已为 {count} 条鱼填充 feedAmount", "确定");
     }
 
     private void UpdateIslandFilterOptions()
@@ -175,6 +222,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
         DrawResizableColumn("闪光概率", ref col12, "col12");
         DrawResizableColumn("品种", ref col13, "col13");
         DrawResizableColumn("大小", ref col15, "col15");
+        DrawResizableColumn("喂食量", ref col16, "col16");   // ✅ 新增列
         DrawResizableColumn("描述", ref col14, "col14");
 
         EditorGUILayout.LabelField("操作", GUILayout.Width(100));
@@ -240,11 +288,13 @@ public class FishDataEditor : BaseDataEditor<FishData>
         EditorGUILayout.LabelField($"{item.struggleTime}秒", GUILayout.Width(col11));
         EditorGUILayout.LabelField($"{item.flashProbability}", GUILayout.Width(col12));
 
-        // 显示品种名称
         string speciesName = GetSpeciesName(item.fishSpeciesId);
         EditorGUILayout.LabelField(speciesName, GUILayout.Width(col13));
 
         EditorGUILayout.LabelField($"{item.scale:F2}", GUILayout.Width(col15));
+
+        // ✅ 新增：显示喂食量
+        EditorGUILayout.LabelField(item.feedAmount.ToString(), GUILayout.Width(col16));
 
         string descStr = item.description.Length > 15 ? item.description.Substring(0, 15) + "..." : item.description;
         EditorGUILayout.LabelField(descStr, GUILayout.Width(col14));
@@ -297,6 +347,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
         editFlashProbability = item.flashProbability;
         editBaseWeight = item.baseWeight;
         editScale = item.scale;
+        editFeedAmount = item.feedAmount;   // ✅ 新增
     }
 
     private void DrawEditPanel()
@@ -399,6 +450,11 @@ public class FishDataEditor : BaseDataEditor<FishData>
 
             EditorGUILayout.LabelField("Scale:", GUILayout.Width(50));
             editScale = EditorGUILayout.FloatField(editScale, GUILayout.Width(60));
+
+            // ✅ 新增：喂食量
+            EditorGUILayout.LabelField("喂食量:", GUILayout.Width(50));
+            editFeedAmount = EditorGUILayout.IntField(editFeedAmount, GUILayout.Width(60));
+            EditorGUILayout.LabelField("(喂宠物恢复的饥饿度)", GUILayout.Width(150));
             EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.EndVertical();
@@ -428,7 +484,6 @@ public class FishDataEditor : BaseDataEditor<FishData>
 
     private void DrawFishSpeciesSelector()
     {
-        // 获取当前选中的枚举值
         FishSpeciesTypeForEditor currentType;
         if (System.Enum.IsDefined(typeof(FishSpeciesTypeForEditor), editFishSpeciesId))
         {
@@ -439,10 +494,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
             currentType = FishSpeciesTypeForEditor.全屏游动类;
         }
 
-        // 下拉选择
         FishSpeciesTypeForEditor newType = (FishSpeciesTypeForEditor)EditorGUILayout.EnumPopup(currentType, GUILayout.Width(150));
-
-        // 将枚举值转换为ID存储
         editFishSpeciesId = (int)newType;
     }
 
@@ -502,6 +554,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
             item.flashProbability = editFlashProbability;
             item.baseWeight = editBaseWeight;
             item.scale = editScale;
+            item.feedAmount = editFeedAmount;   // ✅ 新增
         }
     }
 
@@ -548,6 +601,9 @@ public class FishDataEditor : BaseDataEditor<FishData>
         editBaseWeight = EditorGUILayout.FloatField(editBaseWeight, GUILayout.Width(80));
         EditorGUILayout.LabelField("Scale:", GUILayout.Width(45));
         editScale = EditorGUILayout.FloatField(editScale, GUILayout.Width(60));
+        // ✅ 新增：喂食量
+        EditorGUILayout.LabelField("喂食量:", GUILayout.Width(50));
+        editFeedAmount = EditorGUILayout.IntField(editFeedAmount, GUILayout.Width(60));
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
@@ -566,6 +622,8 @@ public class FishDataEditor : BaseDataEditor<FishData>
             "• 偏向岛屿列表：为空表示无偏向，多个ID请用英文逗号分隔\n" +
             "• 其他偏向列表（时间/鱼饵/天气）：用法同上\n" +
             "• Scale：鱼的显示大小缩放，默认1.0\n" +
+            "• 喂食量：作为宠物食物时恢复的饥饿度（新鱼默认5）\n" +
+            "• 工具栏「批量填充喂食量」：按稀有度自动填充\n" +
             "• 筛选：可通过工具栏下拉菜单按存在岛屿筛选数据",
             MessageType.Info
         );
@@ -646,7 +704,8 @@ public class FishDataEditor : BaseDataEditor<FishData>
             struggleTime = 5,
             flashProbability = 0.5f,
             baseWeight = 1.0f,
-            scale = 1.0f
+            scale = 1.0f,
+            feedAmount = 5   // ✅ 新增
         };
 
         dataList.Add(newFish);
@@ -684,7 +743,8 @@ public class FishDataEditor : BaseDataEditor<FishData>
             struggleTime = editStruggleTime,
             flashProbability = editFlashProbability,
             baseWeight = editBaseWeight,
-            scale = editScale
+            scale = editScale,
+            feedAmount = editFeedAmount   // ✅ 新增
         };
 
         if (!string.IsNullOrEmpty(editPreferredIslandIds))
@@ -743,6 +803,7 @@ public class FishDataEditor : BaseDataEditor<FishData>
         editFlashProbability = 0.5f;
         editBaseWeight = 1.0f;
         editScale = 1.0f;
+        editFeedAmount = 5;   // ✅ 新增
 
         EditorUtility.DisplayDialog("成功", "新增成功", "确定");
     }

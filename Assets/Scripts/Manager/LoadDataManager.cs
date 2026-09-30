@@ -26,6 +26,11 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     private string fishTankDecorationsJsonPath = "JsonData/Game/BagItem/fishTankDec";
     private string fishTankConfigJsonPath = "JsonData/BaseFramework/fishTankConfig";
 
+    // ✅ 新增路径
+    private string eggsJsonPath = "JsonData/BaseFramework/eggs";
+    private string insectsJsonPath = "JsonData/BaseFramework/insects";
+    private string petsJsonPath = "JsonData/BaseFramework/pets";
+
     // 数据存储
     public List<IslandData> islands = new List<IslandData>();
     public List<RarityData> rarities = new List<RarityData>();
@@ -47,9 +52,14 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     public SceneDataWrapper sceneDataWrapper = new SceneDataWrapper();
     public bool isSceneDataLoaded = false;
     public List<FishTankDecData> fishTankDecorations = new List<FishTankDecData>();
-    public List<FishTankData> fishTanks = new List<FishTankData>(); 
+    public List<FishTankData> fishTanks = new List<FishTankData>();
     public List<FishTankLevelData> fishTankLevels = new List<FishTankLevelData>();
     public float baseEarningRate = 0;
+
+    // ✅ 新增数据存储
+    public List<EggData> eggs = new List<EggData>();
+    public List<InsectData> insects = new List<InsectData>();
+    public List<PetData> pets = new List<PetData>();
 
     private StringBuilder dataLog = new StringBuilder();
     public bool isDataLoaded = false;
@@ -104,7 +114,12 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         await LoadSceneData();
         await LoadUITextsData();
         await LoadFishTankDecorationData();
-        await LoadFishTankConfigData(); 
+        await LoadFishTankConfigData();
+
+        // ✅ 新增加载
+        await LoadEggData();
+        await LoadInsectData();
+        await LoadPetData();
 
         dataLog.AppendLine("===================================");
         isDataLoaded = true;
@@ -411,6 +426,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         }
         dataLog.AppendLine($"✗ 鱼缸装饰数据: 加载失败");
     }
+
     private async Task LoadFishTankConfigData()
     {
         string json = await RWJsonData.LoadJson(fishTankConfigJsonPath);
@@ -433,6 +449,51 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         dataLog.AppendLine($"✗ 鱼缸配置数据: 加载失败或文件不存在");
     }
 
+    // ==================== ✅ 新增：蛋 / 昆虫 / 宠物 加载 ====================
+
+    private async Task LoadEggData()
+    {
+        string json = await RWJsonData.LoadJson(eggsJsonPath);
+        var wrapper = RWJsonData.ParseJson<EggListWrapper>(json);
+        eggs = (wrapper != null && wrapper.eggs != null) ? wrapper.eggs : new List<EggData>();
+        if (eggs.Count > 0)
+        {
+            dataLog.AppendLine($"✓ 蛋数据: 成功加载 {eggs.Count} 条");
+            foreach (var item in eggs)
+                dataLog.AppendLine($"    - ID: {item.id}, 稀有度: {item.rarityId}, 名称: {item.name}");
+        }
+        else dataLog.AppendLine($"✗ 蛋数据: 加载失败");
+    }
+
+    private async Task LoadInsectData()
+    {
+        string json = await RWJsonData.LoadJson(insectsJsonPath);
+        var wrapper = RWJsonData.ParseJson<InsectListWrapper>(json);
+        insects = (wrapper != null && wrapper.insects != null) ? wrapper.insects : new List<InsectData>();
+        if (insects.Count > 0)
+        {
+            dataLog.AppendLine($"✓ 昆虫数据: 成功加载 {insects.Count} 条");
+            foreach (var item in insects)
+                dataLog.AppendLine($"    - ID: {item.id}, 稀有度: {item.rarityId}, 名称: {item.name}");
+        }
+        else dataLog.AppendLine($"✗ 昆虫数据: 加载失败");
+    }
+
+    private async Task LoadPetData()
+    {
+        string json = await RWJsonData.LoadJson(petsJsonPath);
+        var wrapper = RWJsonData.ParseJson<PetListWrapper>(json);
+        pets = (wrapper != null && wrapper.pets != null) ? wrapper.pets : new List<PetData>();
+        if (pets.Count > 0)
+        {
+            dataLog.AppendLine($"✓ 宠物数据: 成功加载 {pets.Count} 条");
+            foreach (var item in pets)
+                dataLog.AppendLine($"    - ID: {item.id}, 稀有度: {item.rarityId}, 名称: {item.name}");
+        }
+        else dataLog.AppendLine($"✗ 宠物数据: 加载失败");
+    }
+
+    // ==================== 场景数据加载 ====================
 
     public async Task LoadSceneData()
     {
@@ -740,18 +801,12 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
 
     // ==================== 鱼缸装饰查询方法 ====================
 
-    /// <summary>
-    /// 根据ID获取鱼缸装饰数据
-    /// </summary>
     public FishTankDecData GetFishTankDecorationById(int id)
     {
         foreach (var item in fishTankDecorations) if (item.id == id) return item;
         return null;
     }
 
-    /// <summary>
-    /// 根据分类ID获取鱼缸装饰列表
-    /// </summary>
     public List<FishTankDecData> GetFishTankDecorationsByCategory(int categoryId)
     {
         var result = new List<FishTankDecData>();
@@ -760,44 +815,29 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         return result;
     }
 
-    /// <summary>
-    /// 获取鱼缸装饰名称
-    /// </summary>
     public string GetFishTankDecorationName(int id)
     {
         var item = GetFishTankDecorationById(id);
         return item?.name ?? "未知装饰";
     }
 
-    /// <summary>
-    /// 根据ID获取鱼缸数据
-    /// </summary>
     public FishTankData GetFishTankById(int id)
     {
         foreach (var item in fishTanks) if (item.id == id) return item;
         return null;
     }
 
-    /// <summary>
-    /// 获取所有鱼缸数据
-    /// </summary>
     public List<FishTankData> GetAllFishTanks()
     {
         return new List<FishTankData>(fishTanks);
     }
 
-    /// <summary>
-    /// 获取特殊鱼缸（type = "special"）
-    /// </summary>
     public FishTankData GetSpecialFishTank()
     {
         foreach (var item in fishTanks) if (item.type == "special") return item;
         return null;
     }
 
-    /// <summary>
-    /// 获取普通鱼缸列表
-    /// </summary>
     public List<FishTankData> GetNormalFishTanks()
     {
         var result = new List<FishTankData>();
@@ -805,40 +845,83 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         return result;
     }
 
-    /// <summary>
-    /// 根据等级获取鱼缸等级数据
-    /// </summary>
     public FishTankLevelData GetFishTankLevel(int level)
     {
         foreach (var item in fishTankLevels) if (item.level == level) return item;
         return null;
     }
 
-    /// <summary>
-    /// 获取所有等级数据
-    /// </summary>
     public List<FishTankLevelData> GetAllFishTankLevels()
     {
         return new List<FishTankLevelData>(fishTankLevels);
     }
 
-    /// <summary>
-    /// 获取鱼缸名称
-    /// </summary>
     public string GetFishTankName(int id)
     {
         var item = GetFishTankById(id);
         return item?.name ?? "未知鱼缸";
     }
 
-    /// <summary>
-    /// 获取最大等级
-    /// </summary>
     public int GetMaxFishTankLevel()
     {
         int max = 0;
         foreach (var item in fishTankLevels) if (item.level > max) max = item.level;
         return max;
+    }
+
+    // ==================== ✅ 新增：蛋 / 昆虫 / 宠物 查询 ====================
+
+    public EggData GetEggById(int id)
+    {
+        foreach (var item in eggs) if (item.id == id) return item;
+        return null;
+    }
+    public string GetEggName(int id) => GetEggById(id)?.name ?? "未知蛋";
+
+    /// <summary>获取所有蛋种类（按 id 升序）</summary>
+    public List<EggData> GetAllEggs()
+    {
+        var sorted = new List<EggData>(eggs);
+        sorted.Sort((a, b) => a.id.CompareTo(b.id));
+        return sorted;
+    }
+
+    public List<EggData> GetEggsByRarity(int rarityId)
+    {
+        var result = new List<EggData>();
+        foreach (var item in eggs)
+            if (item.rarityId == rarityId) result.Add(item);
+        return result;
+    }
+
+    public InsectData GetInsectById(int id)
+    {
+        foreach (var item in insects) if (item.id == id) return item;
+        return null;
+    }
+    public string GetInsectName(int id) => GetInsectById(id)?.name ?? "未知昆虫";
+
+    public List<InsectData> GetInsectsByRarity(int rarityId)
+    {
+        var result = new List<InsectData>();
+        foreach (var item in insects)
+            if (item.rarityId == rarityId) result.Add(item);
+        return result;
+    }
+
+    public PetData GetPetById(int id)
+    {
+        foreach (var item in pets) if (item.id == id) return item;
+        return null;
+    }
+    public string GetPetName(int id) => GetPetById(id)?.name ?? "未知宠物";
+
+    public List<PetData> GetPetsByRarity(int rarityId)
+    {
+        var result = new List<PetData>();
+        foreach (var item in pets)
+            if (item.rarityId == rarityId) result.Add(item);
+        return result;
     }
 
     // ==================== 事件处理 ====================
@@ -913,15 +996,8 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         }
     }
 
-    // ============================================================
-    // 在 LoadDataManager.cs 文件末尾，所有方法之后，最后一个 } 之前
-    // ============================================================
-
     // ==================== 鱼缸配置查询方法（兼容旧接口） ====================
 
-    /// <summary>
-    /// 获取鱼缸配置
-    /// </summary>
     public FishTankConfig GetFishTankConfig(int tankId)
     {
         var tank = GetFishTankById(tankId);
@@ -937,9 +1013,6 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         };
     }
 
-    /// <summary>
-    /// 获取所有鱼缸配置
-    /// </summary>
     public List<FishTankConfig> GetAllFishTankConfigs()
     {
         var result = new List<FishTankConfig>();
@@ -957,9 +1030,6 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         return result;
     }
 
-    /// <summary>
-    /// 获取鱼缸购买价格
-    /// </summary>
     public int GetFishTankPurchaseCost(int tankId)
     {
         var tank = GetFishTankById(tankId);

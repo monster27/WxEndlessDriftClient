@@ -1,0 +1,70 @@
+{
+    "baseCapacity": 20,
+    "levels": [
+        {
+            "level": 1,
+            "capacity": 20,
+            "upgradeCost": 200,
+            "upgradeDescription": "升级到下一等级需200金币"
+        },
+        {
+            "level": 2,
+            "capacity": 25,
+            "upgradeCost": 400,
+            "upgradeDescription": "升级到下一等级需400金币"
+        },
+        {
+            "level": 3,
+            "capacity": 30,
+            "upgradeCost": 700,
+            "upgradeDescription": "升级到下一等级需700金币"
+        },
+        {
+            "level": 4,
+            "capacity": 40,
+            "upgradeCost": 1200,
+            "upgradeDescription": "升级到下一等级需1200金币"
+        },
+        {
+            "level": 5,
+            "capacity": 50,
+            "upgradeCost": 2000,
+            "upgradeDescription": "升级到下一等级需2000金币"
+        },
+        {
+            "level": 6,
+            "capacity": 65,
+            "upgradeCost": 3200,
+            "upgradeDescription": "升级到下一等级需3200金币"
+        },
+        {
+            "level": 7,
+            "capacity": 80,
+            "upgradeCost": 5000,
+            "upgradeDescription": "升级到下一等级需5000金币"
+        },
+        {
+            "level": 8,
+            "capacity": 100,
+            "upgradeCost": 8000,
+            "upgradeDescription": "升级到下一等级需8000金币"
+        },
+        {
+            "level": 9,
+            "capacity": 130,
+            "upgradeCost": 12000,
+            "upgradeDescription": "升级到下一等级需12000金币"
+        },
+        {
+            "level": 10,
+            "capacity": 160,
+            "upgradeCost": 0,
+            "upgradeDescription": "已满级"
+        }
+    ],
+    "notes": [
+        "宠物栏初始1级，20格",
+        "每升1级增加格子数",
+        "level 10 是满级，upgradeCost=0 表示不可升级"
+    ]
+}

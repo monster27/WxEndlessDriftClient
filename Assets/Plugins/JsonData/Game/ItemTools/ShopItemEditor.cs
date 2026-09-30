@@ -358,18 +358,26 @@ public class ShopItemEditor : EditorWindow
         var baitItems = shopItems.Where(s => GetItemType(s.itemId) == 2).ToList();
         var skinItems = shopItems.Where(s => GetItemType(s.itemId) == 4 || GetItemType(s.itemId) == 5).ToList();
         var collectionInfoItems = shopItems.Where(s => GetItemType(s.itemId) == 7).ToList();
-        var islandInfoItems = shopItems.Where(s => GetItemType(s.itemId) == 8).ToList();  
+        var islandInfoItems = shopItems.Where(s => GetItemType(s.itemId) == 8).ToList();
         var otherItems = shopItems.Where(s => GetItemType(s.itemId) == 3 || GetItemType(s.itemId) == 6).ToList();
         var fishTankDecItems = shopItems.Where(s => GetItemType(s.itemId) == 9).ToList();
+        var eggItems = shopItems.Where(s => GetItemType(s.itemId) == 10).ToList();
+        var petItems = shopItems.Where(s => GetItemType(s.itemId) == 11).ToList();
+        var insectItems = shopItems.Where(s => GetItemType(s.itemId) == 12).ToList();        // ✅ 新增
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField($"🐟 水产: {fishItems.Count} 件", GUILayout.Width(120));
         EditorGUILayout.LabelField($"🎣 饵料: {baitItems.Count} 件", GUILayout.Width(120));
         EditorGUILayout.LabelField($"🎨 皮肤: {skinItems.Count} 件", GUILayout.Width(120));
         EditorGUILayout.LabelField($"📖 图鉴情报: {collectionInfoItems.Count} 件", GUILayout.Width(140));
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField($"🏝️ 岛屿情报: {islandInfoItems.Count} 件", GUILayout.Width(140));
         EditorGUILayout.LabelField($"📦 室内外装饰: {otherItems.Count} 件", GUILayout.Width(120));
         EditorGUILayout.LabelField($"🐠 鱼缸装饰: {fishTankDecItems.Count} 件", GUILayout.Width(140));
+        EditorGUILayout.LabelField($"🥚 蛋: {eggItems.Count} 件", GUILayout.Width(120));
+        EditorGUILayout.LabelField($"🐾 宠物: {petItems.Count} 件", GUILayout.Width(120));
+        EditorGUILayout.LabelField($"🦋 昆虫: {insectItems.Count} 件", GUILayout.Width(120));    // ✅ 新增
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.EndVertical();
@@ -610,6 +618,9 @@ public class ShopItemEditor : EditorWindow
             case 7: return "📖";
             case 8: return "🏝️";
             case 9: return "🐠";
+            case 10: return "🥚";
+            case 11: return "🐾";
+            case 12: return "🦋";       // ✅ 新增
             default: return "📦";
         }
     }

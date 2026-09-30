@@ -65,7 +65,6 @@ public class ItemCategoryDataEditor : EditorWindow
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("物品分类框架", EditorStyles.boldLabel);
 
-        // ✅ 新增：复制文件名按钮
         if (GUILayout.Button("📋 复制文件名", GUILayout.Width(100), GUILayout.Height(20)))
         {
             string fileName = Path.GetFileName(DATA_PATH);
@@ -109,7 +108,21 @@ public class ItemCategoryDataEditor : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
         GUI.backgroundColor = new Color(0.85f, 0.9f, 1f);
-        EditorGUILayout.LabelField($"（{category.id}）{category.code}.{category.name} 【ID范围: {category.startId} - {category.endId}】", EditorStyles.boldLabel, GUILayout.Height(25));
+
+        // ✅ 主分类图标
+        string icon = category.id switch
+        {
+            10 => "🦋",   // 昆虫
+            11 => "🐾",   // 宠物
+            12 => "🥚",   // 蛋
+            _ => ""
+        };
+
+        string displayText = string.IsNullOrEmpty(icon)
+            ? $"（{category.id}）{category.code}.{category.name} 【ID范围: {category.startId} - {category.endId}】"
+            : $"{icon} （{category.id}）{category.code}.{category.name} 【ID范围: {category.startId} - {category.endId}】";
+
+        EditorGUILayout.LabelField(displayText, EditorStyles.boldLabel, GUILayout.Height(25));
         GUI.backgroundColor = Color.white;
         EditorGUILayout.EndHorizontal();
 
@@ -142,7 +155,6 @@ public class ItemCategoryDataEditor : EditorWindow
     {
         EditorGUILayout.BeginHorizontal();
 
-        // 根据ID显示不同的图标
         string icon = subCat.id switch
         {
             70 => "🏝️",  // 岛屿情报
@@ -171,7 +183,7 @@ public class ItemCategoryDataEditor : EditorWindow
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.LabelField("=== 分类规则 ===", EditorStyles.boldLabel);
 
-        string helpText = @"（1）A.水产      【1001 - 1999】（分类ID: 11）
+        string helpText = @"（1）A.水产      【1001 - 1999】（分类ID: 1）
 （2）B.饵料      鱼饵（21）【2001-2499】- 窝料（22）【2501-2799】
 （3）C.装备      钓竿（31）【3001-3099】- 钓线（32）【3101-3199】- 钓钩（33）【3201-3299】- 技能一（34）【3301-3399】- 技能二（35）【3401-3499】- 人物（36）【3501-3599】
 （4）D.室外装饰皮肤  鱼篓装饰（41）【4001-4099】- 帐篷装饰（42）【4101-4199】- 提示器装饰（43）【4201-4299】
@@ -179,7 +191,10 @@ public class ItemCategoryDataEditor : EditorWindow
 （6）G.情报      岛屿情报（70）【7001-7099】- 图鉴情报（71）【7101-7199】
 （7）H.鱼缸装饰  摆设（80）【8001-8199】- 挂饰（81）【8201-8399】- 边框（82）【8401-8599】- 底面（83）【8601-8799】- 背景（84）【8801-8999】
 （8）I.垃圾      【9001 - 9020】
-（9）S.特殊      不在其他分类范围内的物品（分类ID: 99）";
+（9）J.昆虫      【10001 - 10099】（分类ID: 10）
+（10）K.宠物     【10101 - 10199】（分类ID: 11）
+（11）L.蛋       【10201 - 10299】（分类ID: 12）
+（12）S.特殊     不在其他分类范围内的物品（分类ID: 99）";
 
         EditorGUILayout.HelpBox(helpText, MessageType.Info);
         EditorGUILayout.EndVertical();

@@ -1,0 +1,46 @@
+{
+    "pets": [
+        {
+            "id": 10101,
+            "rarityId": 201,
+            "name": "小猫",
+            "description": "普通的小猫，活泼好动。",
+            "maxHunger": 100
+        },
+        {
+            "id": 10102,
+            "rarityId": 202,
+            "name": "小狗",
+            "description": "罕见的小狗，忠诚可靠。",
+            "maxHunger": 120
+        },
+        {
+            "id": 10103,
+            "rarityId": 203,
+            "name": "狐狸",
+            "description": "稀有的狐狸，聪明机警。",
+            "maxHunger": 150
+        },
+        {
+            "id": 10104,
+            "rarityId": 204,
+            "name": "龙猫",
+            "description": "史诗的龙猫，毛茸茸的，很可爱。",
+            "maxHunger": 200
+        },
+        {
+            "id": 10105,
+            "rarityId": 205,
+            "name": "白虎",
+            "description": "传说的白虎，威风凛凛。",
+            "maxHunger": 250
+        },
+        {
+            "id": 10106,
+            "rarityId": 206,
+            "name": "麒麟",
+            "description": "幻想的麒麟，传说中的神兽。",
+            "maxHunger": 300
+        }
+    ]
+}

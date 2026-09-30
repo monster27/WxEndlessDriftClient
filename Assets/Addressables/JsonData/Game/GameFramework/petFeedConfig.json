@@ -1,0 +1,22 @@
+{
+    "baseInterval": 7200,
+    "levels": [
+        { "level": 1,  "interval": 7200, "upgradeCost": 0,     "upgradeDescription": "未升级，每2小时自动喂食一次" },
+        { "level": 2,  "interval": 5400, "upgradeCost": 500,   "upgradeDescription": "升级到下一等级需500金币" },
+        { "level": 3,  "interval": 3600, "upgradeCost": 1000,  "upgradeDescription": "升级到下一等级需1000金币" },
+        { "level": 4,  "interval": 2700, "upgradeCost": 2000,  "upgradeDescription": "升级到下一等级需2000金币" },
+        { "level": 5,  "interval": 1800, "upgradeCost": 4000,  "upgradeDescription": "升级到下一等级需4000金币" },
+        { "level": 6,  "interval": 1500, "upgradeCost": 8000,  "upgradeDescription": "升级到下一等级需8000金币" },
+        { "level": 7,  "interval": 1200, "upgradeCost": 15000, "upgradeDescription": "升级到下一等级需15000金币" },
+        { "level": 8,  "interval": 900,  "upgradeCost": 30000, "upgradeDescription": "升级到下一等级需30000金币" },
+        { "level": 9,  "interval": 600,  "upgradeCost": 50000, "upgradeDescription": "升级到下一等级需50000金币" },
+        { "level": 10, "interval": 300,  "upgradeCost": 0,     "upgradeDescription": "已满级，每5分钟自动喂食一次" }
+    ],
+    "notes": [
+        "baseInterval：未升级时的基础间隔（秒），默认7200秒（2小时）",
+        "levels[].interval：该等级的自动喂食间隔（秒）",
+        "levels[].upgradeCost：升级到下一等级消耗金币（0=满级）",
+        "自动喂食功能初始可用（level 1）",
+        "过滤配置参考 FishBagSelectPanel（稀有度/星级/闪光/鱼种类）"
+    ]
+}

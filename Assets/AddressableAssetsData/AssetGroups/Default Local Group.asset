@@ -228,6 +228,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b56b6ce6480f0d438b467fad97ccb56
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/10104.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0bbca4db83e152e4490ec9b29ad69481
     m_Address: Assets/Addressables/UI/Icon/TimeIcon/403.png
     m_ReadOnly: 0
@@ -275,6 +280,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0ee22b6f9cfd33340a176803010f0356
+    m_Address: Assets/Addressables/UI/Icon/InsectIcons/10003.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0ee47d8e8b4ae5444a261c7452883cb6
     m_Address: Assets/Textures/0605/Character interface/Common/Upgrade icon.png
@@ -388,6 +398,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1344b734fbb87f14f916c8c0b9b95436
+    m_Address: Assets/Addressables/Prefabs/Game_FishTankDecOperaPrefab.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1375eabda40f90042b8aafc23bf60774
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u80CC\u5305\u754C\u9762/\u5E95\u56FE.png"
@@ -573,6 +588,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1da08e70f7f1b0f459334597bbc6965c
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/10102.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1da968b857046e74598591b066837ea8
     m_Address: Assets/Addressables/UI/Icon/RarityBackground/201.png
     m_ReadOnly: 0
@@ -741,6 +761,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2743e858657c94040b3a36009d869ad8
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/10103.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 27841564c7756b140b7e103716a3fec3
     m_Address: "Assets/Textures/0605/Collection/\u88C5\u9970\u7269\u9875\u9762\u793A\u610F.png"
     m_ReadOnly: 0
@@ -868,6 +893,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2d95efc309e422048acb10ca322d80f1
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/10204.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2e2e99af2ea9b2f43a4f467cad26eaa8
     m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5552.png
@@ -1085,6 +1115,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3b189257974f85542a51275935ab558a
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/10106.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3b3afba1b8bf2fe479509b5d7fc91daa
     m_Address: Assets/Textures/0605/backpack/Toilet icon.png
     m_ReadOnly: 0
@@ -1251,6 +1286,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 45d27eb1e18ecb34f99e7d771af2f053
+    m_Address: Assets/Addressables/Prefabs/UI_FishTankFish.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4665eaf4c31fa0249a2b90eb0bcbb6b2
     m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5452.png
@@ -1449,6 +1489,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 52b18d63acf520c4cbe85b08ae92cc2b
+    m_Address: Assets/Addressables/Prefabs/UI_FishTankDec.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 52bc045ad3f787a47bf4043914dbec20
     m_Address: Assets/Textures/0605/Collection/Purple.png
     m_ReadOnly: 0
@@ -1496,6 +1541,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 574ced2a940aa8b44bba48fc0c350bb1
+    m_Address: Assets/Addressables/JsonData/BaseFramework/insects.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5782771878f4c854cab6c5687d219a62
     m_Address: "Assets/Textures/0712/Other/\u9C7C\u94A9\u9875\u9762\u793A\u610F\u56FE.png"
@@ -1635,6 +1685,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5f939f8b59c8bac478cb94c6c3b77fb7
+    m_Address: Assets/Addressables/UI/Icon/InsectIcons/10002.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5fc62cc1d9ca8a54cb08b24e0eeacc03
     m_Address: Assets/Atlases/Assets/Textures/0605/Homepage/Homepage.spriteatlas
     m_ReadOnly: 0
@@ -1760,6 +1815,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 65008181fe8f46240a47f05d95a9b9f0
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/petStorage.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6556243fa87462148bb4066051d6ff4e
     m_Address: Assets/Atlases/Assets/Addressables/UI/Icon/OutdoorSkinIcons/OutdoorSkinIcons.spriteatlas
     m_ReadOnly: 0
@@ -1804,6 +1864,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6659de16f25ff5748b7094ee6fb515c7
     m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8202.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 66ae1ca728259b54dbe8b0572b36d785
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/10101.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -1909,6 +1974,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6b6e5dca8f157a04fb6a5c8e14a1cb75
+    m_Address: Assets/Addressables/Prefabs/UI_FishTankDecBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6bbd6a174ceb9314691f626c3a1fb5cf
     m_Address: "Assets/Textures/0605/Homepage/\u4E3B\u9875\u9762\u793A\u610F\u56FE.png"
     m_ReadOnly: 0
@@ -1926,6 +1996,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6e324a3d2a757864b94f8999e0130064
+    m_Address: Assets/Addressables/JsonData/BaseFramework/eggs.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6e3ee3c9c38ee0843bd5d183cc49e86c
     m_Address: "Assets/\u66FF\u6362\u6280\u80FD\u9875\u9762\u793A\u610F\u56FE.png"
@@ -2079,6 +2154,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 77481e8b6efeea8498db88915140b0df
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/10205.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 77bb9595bcb5ac64ea16ea9e46b9e276
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/RightTopUI/MenuCloseIcon.png"
     m_ReadOnly: 0
@@ -2205,6 +2285,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7eaa581fd8329b040a97cd366c772886
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/0.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7f0db3cf23c93fc4eac01cb3a52388ee
     m_Address: Assets/Plugins/IngameDebugConsole/Sprites/IconResizeAllDirections.psd
     m_ReadOnly: 0
@@ -2227,6 +2312,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 801f1f7869993444aa110ea5b9caf04b
+    m_Address: Assets/Addressables/UI/Icon/InsectIcons/10005.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8028cbcdac0b26a4db0212eab88fd922
     m_Address: Assets/Addressables/UI/Icon/FishIcons/102/1002.png
@@ -2295,6 +2385,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 835a4c2554dd93b4fb447630c1098da0
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/10203.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 83ab54572f944eb47829e3b1eac13537
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/BottomUI/HomeIcon.png"
     m_ReadOnly: 0
@@ -2319,6 +2414,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8668b743978cc2e478de7ba7e0bb3dfa
+    m_Address: Assets/Addressables/UI/Icon/InsectIcons/10004.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 868a20e8d4803ee4d865a964d754a728
     m_Address: Assets/Addressables/JsonData/Ability/fishing_components.json
@@ -2517,6 +2617,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 92cfdfd6506d26d4a93c203a44b8fb4c
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/petFeedConfig.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 92f6fe08dcb5c0345b806a064e509a01
     m_Address: Assets/Addressables/GameScene/Scene/102/EnvTreasureBox.png
     m_ReadOnly: 0
@@ -2577,6 +2682,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 97963687aa4ee74448f0172ba39085ab
+    m_Address: Assets/Addressables/UI/Icon/InsectIcons/10001.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 97b1d7088aaa39c42a3f468bcfe22928
     m_Address: Assets/Addressables/UI/Icon/FishIcons/1003.png
     m_ReadOnly: 0
@@ -2588,6 +2698,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 982ebba8befbe764ab14f13088ba17e2
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/10202.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 988dd596e692d2a498f221e9b4bcc730
     m_Address: "Assets/Textures/0605/Character interface/\u9C7C\u7AFF\u4FE1\u606F\u9875\u9762/\u9C7C\u7AFF\u4FE1\u606F\u9875\u9762\u793A\u610F\u56FE.png"
@@ -2666,6 +2781,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9c12c7d83b07d8d46917a9096494a0ce
+    m_Address: Assets/Addressables/UI/Icon/InsectIcons/10006.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9c5d05dddcc3592469ea41efd0499c27
     m_Address: "Assets/Textures/0605/fish basket/\u9C7C\u7BD3\u9875\u9762\u793A\u610F\u56FE.png"
@@ -2865,6 +2985,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a77328ad436544d42a39fc8f9efbe6b0
+    m_Address: Assets/Addressables/JsonData/BaseFramework/pets.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a7df79d1e41cd214e92902489af2cb9e
     m_Address: Assets/Textures/0605/Collection/decorative icon.png
     m_ReadOnly: 0
@@ -2882,6 +3007,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a844f126cd9e11b49b0ac4c021bc9dda
+    m_Address: Assets/Addressables/Prefabs/UI_FishTankDecOperator.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a8a0a815ef4a5c949a1844aca1618d00
     m_Address: "Assets/Textures/0605/Character interface/\u6280\u80FD\u4FE1\u606F\u9875\u9762\u793A\u610F\u56FE\uFF08\u672A\u88C5\u5907\uFF09.png"
@@ -2912,6 +3042,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a992184ed764b6b438c447e877305c68
+    m_Address: Assets/Addressables/Prefabs/Game_FishTankDecPrefab.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a993a48c37596a94ab63f98f54551adc
     m_Address: Assets/Textures/0605/fish basket/Gold Coin Icon.png
@@ -3041,6 +3176,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b086a6e1f16215749aa05645775044f9
+    m_Address: Assets/Addressables/Prefabs/UI_EggBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b17b4775f3187ea48b3bdf86dc16e6e0
     m_Address: Assets/Addressables/UI/Icon/BaitIcons/2007.png
@@ -3264,6 +3404,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b95ae6a8ff17825428dcbda5a5c41c0f
+    m_Address: Assets/Addressables/Prefabs/UI_PetFeedBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b9b54fe8a242dd84b96ef181b2f5ee28
     m_Address: Assets/Textures/0605/backpack/Sea worm icon.png
@@ -3559,6 +3704,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cebc5e3a544d2b84c907e38ba09f36e0
+    m_Address: Assets/Addressables/Prefabs/UI_FishTankBait.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ced7fe9325b35b6458611900503155d3
     m_Address: Assets/Addressables/UI/Icon/BaitIcons/2003.png
     m_ReadOnly: 0
@@ -3613,6 +3763,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d0cada410cc469740a4b5441a7b67895
+    m_Address: Assets/Addressables/Prefabs/UI_PetBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d0d5cf2216c05db4395479afef9ffe11
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5546\u57CE\u754C\u9762/\u4E8C\u7EA7\u754C\u9762\u793A\u610F.png"
@@ -3813,6 +3968,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dfcdf7a8e8133e441b4d909d61bae687
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/10105.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: dfd6cd580207cd04296447d5658189aa
     m_Address: Assets/Textures/0605/store/Purchase background.png
     m_ReadOnly: 0
@@ -3945,6 +4105,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e5f7fd3991a4de446950508427749e67
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/10206.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e7239ee3465c64f4db3352327d9e701d
     m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8001.png
@@ -4154,6 +4319,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f3755ec8938f9ab4da4dc12c8c726f53
+    m_Address: Assets/Addressables/Prefabs/UI_FishTankStoreBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f3f0804df51711b47ae17bdd2b89b9ed
     m_Address: Assets/Addressables/UI/Icon/OutdoorSkinIcons/4101.png
     m_ReadOnly: 0
@@ -4357,6 +4527,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fed19afdf7a0d0e4fb4f6c1d1dd57c82
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/10201.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ff4adaf576781f844b1f7cc1f95e6ff2
     m_Address: Assets/Addressables/UI/Icon/FishIcons/1006_s.png

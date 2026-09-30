@@ -466,6 +466,7 @@ public class FishData
     public float maxWeight;  // 最大重量
     public int baseExp;
     public float scale = 1.0f;  // Scale 参数
+    public int feedAmount = 5;
 }
 
 /// <summary>
@@ -528,5 +529,57 @@ public class ItemCategoryListWrapper
 }
 
 #endregion
+
+// ==================== 蛋 ====================
+[System.Serializable]
+public class EggData
+{
+    public int id;
+    public int rarityId;
+    public string name;
+    public string description;
+    public int hatchTime;
+    public int skipCost;
+    public int upgradeRarityCost;
+    public bool CanUpgradeRarity => upgradeRarityCost > 0;
+}
+[System.Serializable]
+public class EggListWrapper
+{
+    public List<EggData> eggs;
+}
+
+// ==================== 昆虫 ====================
+[System.Serializable]
+public class InsectData
+{
+    public int id;
+    public int rarityId;
+    public string name = "";
+    public string description = "";
+}
+
+[System.Serializable]
+public class InsectListWrapper
+{
+    public List<InsectData> insects;
+}
+
+// ==================== 宠物 ====================
+[System.Serializable]
+public class PetData
+{
+    public int id;
+    public int rarityId;
+    public string name = "";
+    public string description = "";
+    public int maxHunger;
+}
+
+[System.Serializable]
+public class PetListWrapper
+{
+    public List<PetData> pets;
+}
 
 #endregion

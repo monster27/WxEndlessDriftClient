@@ -30,13 +30,16 @@ public class ItemDataEditor : EditorWindow
     private bool showCollectionInfoList = true;
     private bool showIslandInfoList = true;
     private bool showFishTankDecList = true;
+    private bool showEggList = true;
+    private bool showPetList = true;
+    private bool showInsectList = true;   // ✅ 新增
 
     // ===== 筛选相关 =====
-    private int selectedTypeFilter = -1; // -1=全部
+    private int selectedTypeFilter = -1;
     private string[] typeFilterOptions;
 
     // ===== 水产岛屿筛选 =====
-    private int selectedFishIslandFilter = -1; // -1=全部
+    private int selectedFishIslandFilter = -1;
     private string[] fishIslandFilterOptions;
 
     [MenuItem("Tools/游戏内容/3.物品通用数据/2.编辑价格数据")]
@@ -73,7 +76,6 @@ public class ItemDataEditor : EditorWindow
 
         GUILayout.Space(20);
 
-        // ===== 类型筛选下拉框 =====
         EditorGUILayout.LabelField("筛选类型:", GUILayout.Width(60));
 
         if (selectedTypeFilter >= typeFilterOptions.Length)
@@ -84,7 +86,6 @@ public class ItemDataEditor : EditorWindow
 
         GUILayout.Space(10);
 
-        // ===== 水产岛屿筛选（仅当筛选类型为"水产"或"全部"时可用）=====
         bool enableIslandFilter = (selectedTypeFilter == -1) ||
                                   (selectedTypeFilter < typeFilterOptions.Length &&
                                    typeFilterOptions[selectedTypeFilter + 1].Contains("水产"));
@@ -292,18 +293,24 @@ public class ItemDataEditor : EditorWindow
         List<ItemData> trashItems = filteredItems.FindAll(item => item.itemType == 3);
         List<ItemData> nestBaitItems = filteredItems.FindAll(item => item.itemType == 6);
         List<ItemData> collectionInfoItems = filteredItems.FindAll(item => item.itemType == 7);
-        List<ItemData> islandInfoItems = filteredItems.FindAll(item => item.itemType == 8); 
+        List<ItemData> islandInfoItems = filteredItems.FindAll(item => item.itemType == 8);
         List<ItemData> otherItems = filteredItems.FindAll(item => item.itemType == 4 || item.itemType == 5);
         List<ItemData> fishTankDecItems = filteredItems.FindAll(item => item.itemType == 9);
+        List<ItemData> eggItems = filteredItems.FindAll(item => item.itemType == 10);
+        List<ItemData> petItems = filteredItems.FindAll(item => item.itemType == 11);
+        List<ItemData> insectItems = filteredItems.FindAll(item => item.itemType == 12);      // ✅ 新增
 
         DrawItemGroup("🐟 水产数据", fishItems, ref showFishList);
         DrawItemGroup("🎣 饵料数据", baitItems, ref showBaitList);
         DrawItemGroup("🗑️ 垃圾数据", trashItems, ref showTrashList);
         DrawItemGroup("🪣 窝料数据", nestBaitItems, ref showNestBaitList);
         DrawItemGroup("📖 图鉴情报数据", collectionInfoItems, ref showCollectionInfoList);
-        DrawItemGroup("🏝️ 岛屿情报数据", islandInfoItems, ref showIslandInfoList); 
+        DrawItemGroup("🏝️ 岛屿情报数据", islandInfoItems, ref showIslandInfoList);
         DrawItemGroup("📦 室内外装饰数据", otherItems, ref showOtherList);
         DrawItemGroup("🐠 鱼缸装饰数据", fishTankDecItems, ref showFishTankDecList);
+        DrawItemGroup("🥚 蛋数据", eggItems, ref showEggList);
+        DrawItemGroup("🐾 宠物数据", petItems, ref showPetList);
+        DrawItemGroup("🦋 昆虫数据", insectItems, ref showInsectList);                        // ✅ 新增
 
         EditorGUILayout.EndScrollView();
         GUILayout.Space(5);
@@ -395,6 +402,9 @@ public class ItemDataEditor : EditorWindow
             case 7: return "图鉴情报";
             case 8: return "岛屿情报";
             case 9: return "鱼缸装饰";
+            case 10: return "蛋";
+            case 11: return "宠物";
+            case 12: return "昆虫";      // ✅ 新增
             default: return "未知";
         }
     }

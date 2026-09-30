@@ -24,7 +24,8 @@
             "baseWeight": 0.800000011920929,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 6
         },
         {
             "id": 1002,
@@ -50,7 +51,8 @@
             "baseWeight": 0.15000000596046449,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 5
         },
         {
             "id": 1003,
@@ -76,7 +78,8 @@
             "baseWeight": 0.30000001192092898,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 5
         },
         {
             "id": 1004,
@@ -102,7 +105,8 @@
             "baseWeight": 1.5,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 8
         },
         {
             "id": 1005,
@@ -128,7 +132,8 @@
             "baseWeight": 0.5,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 6
         },
         {
             "id": 1006,
@@ -154,7 +159,8 @@
             "baseWeight": 12.0,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 18
         },
         {
             "id": 1007,
@@ -180,7 +186,8 @@
             "baseWeight": 0.6000000238418579,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 14
         },
         {
             "id": 1008,
@@ -206,7 +213,8 @@
             "baseWeight": 0.20000000298023225,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 12
         },
         {
             "id": 1009,
@@ -232,7 +240,8 @@
             "baseWeight": 8.0,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 16
         },
         {
             "id": 1010,
@@ -258,7 +267,8 @@
             "baseWeight": 15.0,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 32
         },
         {
             "id": 1011,
@@ -284,7 +294,8 @@
             "baseWeight": 20.0,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 35
         },
         {
             "id": 1012,
@@ -310,7 +321,8 @@
             "baseWeight": 24.0,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 28
         },
         {
             "id": 1013,
@@ -336,7 +348,8 @@
             "baseWeight": 26.0,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 65
         },
         {
             "id": 1014,
@@ -362,7 +375,8 @@
             "baseWeight": 28.0,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 55
         },
         {
             "id": 1015,
@@ -388,7 +402,8 @@
             "baseWeight": 30.0,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 120
         },
         {
             "id": 1021,
@@ -415,7 +430,8 @@
             "baseWeight": 2.5,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 7
         },
         {
             "id": 1022,
@@ -443,7 +459,8 @@
             "baseWeight": 5.0,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 15
         },
         {
             "id": 1023,
@@ -472,7 +489,8 @@
             "baseWeight": 15.0,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 60
         },
         {
             "id": 1024,
@@ -501,7 +519,8 @@
             "baseWeight": 8.0,
             "maxWeight": 0.0,
             "baseExp": 0,
-            "scale": 1.0
+            "scale": 1.0,
+            "feedAmount": 26
         }
     ]
 }

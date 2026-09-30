@@ -1,7 +1,7 @@
 {
     "categories": [
         {
-            "id": 11,
+            "id": 1,
             "name": "水产",
             "code": "A",
             "description": "A.水产",
@@ -109,6 +109,33 @@
             "subCategories": [
                 { "id": 91, "name": "垃圾", "description": "钓到的垃圾物品", "startId": 9001, "endId": 9020 }
             ]
+        },
+        {
+            "id": 10,
+            "name": "昆虫",
+            "code": "J",
+            "description": "J.昆虫",
+            "startId": 10001,
+            "endId": 10099,
+            "subCategories": []
+        },
+        {
+            "id": 11,
+            "name": "宠物",
+            "code": "K",
+            "description": "K.宠物",
+            "startId": 10101,
+            "endId": 10199,
+            "subCategories": []
+        },
+        {
+            "id": 12,
+            "name": "蛋",
+            "code": "L",
+            "description": "L.蛋",
+            "startId": 10201,
+            "endId": 10299,
+            "subCategories": []
         },
         {
             "id": 99,

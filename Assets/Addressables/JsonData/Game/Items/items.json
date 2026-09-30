@@ -7,7 +7,7 @@
             "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1001",
             "collectionInfoPages": [],
             "isUnique": false
@@ -19,7 +19,7 @@
             "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1002",
             "collectionInfoPages": [],
             "isUnique": false
@@ -31,7 +31,7 @@
             "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1003",
             "collectionInfoPages": [],
             "isUnique": false
@@ -43,7 +43,7 @@
             "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1004",
             "collectionInfoPages": [],
             "isUnique": false
@@ -55,7 +55,7 @@
             "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1005",
             "collectionInfoPages": [],
             "isUnique": false
@@ -67,7 +67,7 @@
             "sellPrice": 20,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1006",
             "collectionInfoPages": [],
             "isUnique": false
@@ -79,7 +79,7 @@
             "sellPrice": 20,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1007",
             "collectionInfoPages": [],
             "isUnique": false
@@ -91,7 +91,7 @@
             "sellPrice": 20,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1008",
             "collectionInfoPages": [],
             "isUnique": false
@@ -103,7 +103,7 @@
             "sellPrice": 20,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1009",
             "collectionInfoPages": [],
             "isUnique": false
@@ -115,7 +115,7 @@
             "sellPrice": 40,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1010",
             "collectionInfoPages": [],
             "isUnique": false
@@ -127,7 +127,7 @@
             "sellPrice": 40,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1011",
             "collectionInfoPages": [],
             "isUnique": false
@@ -139,7 +139,7 @@
             "sellPrice": 40,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1012",
             "collectionInfoPages": [],
             "isUnique": false
@@ -151,7 +151,7 @@
             "sellPrice": 80,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1013",
             "collectionInfoPages": [],
             "isUnique": false
@@ -163,7 +163,7 @@
             "sellPrice": 80,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1014",
             "collectionInfoPages": [],
             "isUnique": false
@@ -175,7 +175,7 @@
             "sellPrice": 100,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1015",
             "collectionInfoPages": [],
             "isUnique": false
@@ -187,7 +187,7 @@
             "sellPrice": 5,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1021",
             "collectionInfoPages": [],
             "isUnique": false
@@ -199,7 +199,7 @@
             "sellPrice": 10,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1022",
             "collectionInfoPages": [],
             "isUnique": false
@@ -211,7 +211,7 @@
             "sellPrice": 15,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1023",
             "collectionInfoPages": [],
             "isUnique": false
@@ -223,7 +223,7 @@
             "sellPrice": 20,
             "buyPrice": -1,
             "itemType": 1,
-            "categoryId": 11,
+            "categoryId": 1,
             "iconPath": "UI/Icon/FishIcons/1024",
             "collectionInfoPages": [],
             "isUnique": false
@@ -835,7 +835,7 @@
             "categoryId": 80,
             "iconPath": "UI/Icon/FishTankDecIcons/8001",
             "collectionInfoPages": [],
-            "isUnique": false
+            "isUnique": true
         },
         {
             "id": 8002,
@@ -847,7 +847,7 @@
             "categoryId": 80,
             "iconPath": "UI/Icon/FishTankDecIcons/8002",
             "collectionInfoPages": [],
-            "isUnique": false
+            "isUnique": true
         },
         {
             "id": 8201,
@@ -859,7 +859,7 @@
             "categoryId": 81,
             "iconPath": "UI/Icon/FishTankDecIcons/8201",
             "collectionInfoPages": [],
-            "isUnique": false
+            "isUnique": true
         },
         {
             "id": 8202,
@@ -871,7 +871,7 @@
             "categoryId": 81,
             "iconPath": "UI/Icon/FishTankDecIcons/8202",
             "collectionInfoPages": [],
-            "isUnique": false
+            "isUnique": true
         },
         {
             "id": 8401,
@@ -942,6 +942,222 @@
             "itemType": 9,
             "categoryId": 84,
             "iconPath": "UI/Icon/FishTankDecIcons/8802",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10201,
+            "name": "普通蛋",
+            "description": "普通的蛋，可以孵化出普通宠物。",
+            "sellPrice": 11,
+            "buyPrice": 1,
+            "itemType": 10,
+            "categoryId": 12,
+            "iconPath": "UI/Icon/EggIcons/10201",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10202,
+            "name": "罕见蛋",
+            "description": "罕见的蛋，可以孵化出罕见宠物。",
+            "sellPrice": 12,
+            "buyPrice": 2,
+            "itemType": 10,
+            "categoryId": 12,
+            "iconPath": "UI/Icon/EggIcons/10202",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10203,
+            "name": "稀有蛋",
+            "description": "稀有的蛋，可以孵化出稀有宠物。",
+            "sellPrice": 13,
+            "buyPrice": 3,
+            "itemType": 10,
+            "categoryId": 12,
+            "iconPath": "UI/Icon/EggIcons/10203",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10204,
+            "name": "史诗蛋",
+            "description": "史诗的蛋，可以孵化出史诗宠物。",
+            "sellPrice": 14,
+            "buyPrice": 4,
+            "itemType": 10,
+            "categoryId": 12,
+            "iconPath": "UI/Icon/EggIcons/10204",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10205,
+            "name": "传说蛋",
+            "description": "传说的蛋，可以孵化出传说宠物。",
+            "sellPrice": 15,
+            "buyPrice": 5,
+            "itemType": 10,
+            "categoryId": 12,
+            "iconPath": "UI/Icon/EggIcons/10205",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10206,
+            "name": "幻想蛋",
+            "description": "幻想的蛋，可以孵化出幻想宠物。",
+            "sellPrice": 2000,
+            "buyPrice": 6,
+            "itemType": 10,
+            "categoryId": 12,
+            "iconPath": "UI/Icon/EggIcons/10206",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10101,
+            "name": "小猫",
+            "description": "普通的小猫，活泼好动。",
+            "sellPrice": 21,
+            "buyPrice": 1,
+            "itemType": 11,
+            "categoryId": 11,
+            "iconPath": "UI/Icon/PetIcons/10101",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10102,
+            "name": "小狗",
+            "description": "罕见的小狗，忠诚可靠。",
+            "sellPrice": 22,
+            "buyPrice": 2,
+            "itemType": 11,
+            "categoryId": 11,
+            "iconPath": "UI/Icon/PetIcons/10102",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10103,
+            "name": "狐狸",
+            "description": "稀有的狐狸，聪明机警。",
+            "sellPrice": 23,
+            "buyPrice": 3,
+            "itemType": 11,
+            "categoryId": 11,
+            "iconPath": "UI/Icon/PetIcons/10103",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10104,
+            "name": "龙猫",
+            "description": "史诗的龙猫，毛茸茸的，很可爱。",
+            "sellPrice": 24,
+            "buyPrice": 4,
+            "itemType": 11,
+            "categoryId": 11,
+            "iconPath": "UI/Icon/PetIcons/10104",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10105,
+            "name": "白虎",
+            "description": "传说的白虎，威风凛凛。",
+            "sellPrice": 25,
+            "buyPrice": 5,
+            "itemType": 11,
+            "categoryId": 11,
+            "iconPath": "UI/Icon/PetIcons/10105",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10106,
+            "name": "麒麟",
+            "description": "幻想的麒麟，传说中的神兽。",
+            "sellPrice": 1000,
+            "buyPrice": 6,
+            "itemType": 11,
+            "categoryId": 11,
+            "iconPath": "UI/Icon/PetIcons/10106",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10001,
+            "name": "蝴蝶",
+            "description": "常见的蝴蝶，普通昆虫。",
+            "sellPrice": 1,
+            "buyPrice": -1,
+            "itemType": 12,
+            "categoryId": 10,
+            "iconPath": "UI/Icon/InsectIcons/10001",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10002,
+            "name": "蜜蜂",
+            "description": "罕见的蜜蜂，会采蜜。",
+            "sellPrice": 2,
+            "buyPrice": -1,
+            "itemType": 12,
+            "categoryId": 10,
+            "iconPath": "UI/Icon/InsectIcons/10002",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10003,
+            "name": "甲虫",
+            "description": "稀有的甲虫，外壳坚硬。",
+            "sellPrice": 3,
+            "buyPrice": -1,
+            "itemType": 12,
+            "categoryId": 10,
+            "iconPath": "UI/Icon/InsectIcons/10003",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10004,
+            "name": "蜻蜓",
+            "description": "史诗的蜻蜓，飞行速度极快。",
+            "sellPrice": 4,
+            "buyPrice": -1,
+            "itemType": 12,
+            "categoryId": 10,
+            "iconPath": "UI/Icon/InsectIcons/10004",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10005,
+            "name": "萤火虫",
+            "description": "传说的萤火虫，夜晚会发光。",
+            "sellPrice": 5,
+            "buyPrice": -1,
+            "itemType": 12,
+            "categoryId": 10,
+            "iconPath": "UI/Icon/InsectIcons/10005",
+            "collectionInfoPages": [],
+            "isUnique": true
+        },
+        {
+            "id": 10006,
+            "name": "幻影蝶",
+            "description": "幻想的幻影蝶，极其罕见，传说中才会出现。",
+            "sellPrice": 6,
+            "buyPrice": -1,
+            "itemType": 12,
+            "categoryId": 10,
+            "iconPath": "UI/Icon/InsectIcons/10006",
             "collectionInfoPages": [],
             "isUnique": true
         }

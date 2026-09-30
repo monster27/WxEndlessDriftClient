@@ -402,6 +402,178 @@ public class Res2AAPathTool : EditorWindow
         return !string.IsNullOrEmpty(GetSelectedFolderPath());
     }
 
+    // ==================== 重置 Addressable 路径 ====================
+
+    [MenuItem("Assets/重置 Addressable 路径", false, 32)]
+    public static void ResetAddressablePaths()
+    {
+        string folderPath = GetSelectedFolderPath();
+
+        if (string.IsNullOrEmpty(folderPath))
+        {
+            EditorUtility.DisplayDialog("提示", "请先选中一个文件夹！", "确定");
+            return;
+        }
+
+        if (!EditorUtility.DisplayDialog(
+            "确认重置",
+            $"将把文件夹中所有 Addressable 条目的地址重置为完整资源路径：\n\n" +
+            "• 保留 \"Assets/\" 前缀\n" +
+            "• 保留文件扩展名\n" +
+            "• 保留完整目录结构\n\n" +
+            $"📁 {folderPath}\n\n" +
+            "例如：\n" +
+            "Assets/Addressables/UI/Icon/NestBaitIcons/2501.png\n\n" +
+            "⚠️ 此操作会覆盖现有地址！",
+            "确认",
+            "取消"))
+        {
+            return;
+        }
+
+        ProcessResetAddressablePaths(folderPath);
+    }
+
+    private static void ProcessResetAddressablePaths(string folderPath)
+    {
+        folderPath = NormalizeFolderPath(folderPath);
+
+        AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
+        if (settings == null)
+        {
+            EditorUtility.DisplayDialog("错误", "未找到 Addressable 设置！\n请先初始化 Addressables", "确定");
+            return;
+        }
+
+        string fullPath = Path.Combine(Application.dataPath, folderPath.Replace("Assets/", ""));
+
+        if (!Directory.Exists(fullPath))
+        {
+            EditorUtility.DisplayDialog("错误", $"目录不存在：\n{fullPath}", "确定");
+            return;
+        }
+
+        string[] allFiles = Directory.GetFiles(fullPath, "*.*", SearchOption.AllDirectories);
+
+        List<string> assetPaths = new List<string>();
+        int skippedCount = 0;
+
+        foreach (string file in allFiles)
+        {
+            string relativePath = file.Replace(Application.dataPath, "Assets").Replace('\\', '/');
+
+            if (file.EndsWith(".meta") ||
+                file.EndsWith(".cs") ||
+                file.EndsWith(".asmdef") ||
+                file.EndsWith(".asmref") ||
+                file.EndsWith(".DS_Store"))
+            {
+                skippedCount++;
+                continue;
+            }
+
+            Object obj = AssetDatabase.LoadAssetAtPath<Object>(relativePath);
+            if (obj != null)
+            {
+                assetPaths.Add(relativePath);
+            }
+            else
+            {
+                skippedCount++;
+                Debug.LogWarning($"[重置路径] ⚠️ 无法加载: {relativePath}");
+            }
+        }
+
+        if (assetPaths.Count == 0)
+        {
+            EditorUtility.DisplayDialog("提示",
+                $"未找到可处理的资源文件！\n\n" +
+                $"总文件数: {allFiles.Length}\n" +
+                $"跳过的文件: {skippedCount}",
+                "确定");
+            return;
+        }
+
+        int resetCount = 0;
+        int skipNotAddressableCount = 0;
+        int skipSameCount = 0;
+
+        settings.SetDirty(AddressableAssetSettings.ModificationEvent.BatchModification, null, true, true);
+
+        for (int i = 0; i < assetPaths.Count; i++)
+        {
+            string assetPath = assetPaths[i];
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+
+            EditorUtility.DisplayProgressBar(
+                "重置 Addressable 路径",
+                $"处理: {Path.GetFileName(assetPath)} ({i + 1}/{assetPaths.Count})",
+                (float)i / assetPaths.Count
+            );
+
+            AddressableAssetEntry entry = settings.FindAssetEntry(guid);
+            if (entry == null)
+            {
+                skipNotAddressableCount++;
+                continue;
+            }
+
+            string newAddress = GenerateAddressFromPath(assetPath);
+
+            if (entry.address == newAddress)
+            {
+                skipSameCount++;
+                continue;
+            }
+
+            Debug.Log($"[重置路径] 🔄 {assetPath}\n  旧地址: {entry.address}\n  新地址: {newAddress}");
+            entry.SetAddress(newAddress, false);
+            resetCount++;
+        }
+
+        settings.SetDirty(AddressableAssetSettings.ModificationEvent.BatchModification, null, true, true);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        EditorUtility.ClearProgressBar();
+
+        string msg = $"✅ 重置完成！\n\n" +
+                     $"📁 {folderPath}\n" +
+                     $"🔄 重置: {resetCount} 个资源\n" +
+                     $"⏭️ 非 Addressable: {skipNotAddressableCount} 个\n" +
+                     $"⏭️ 地址未变: {skipSameCount} 个\n" +
+                     $"⏭️ 跳过文件: {skippedCount} 个\n";
+
+        Debug.Log($"[重置路径] ===== 完成 =====\n" +
+                  $"  文件夹: {folderPath}\n" +
+                  $"  重置: {resetCount} 个\n" +
+                  $"  非Addressable: {skipNotAddressableCount} 个\n" +
+                  $"  地址未变: {skipSameCount} 个\n" +
+                  $"  跳过: {skippedCount} 个");
+
+        EditorUtility.DisplayDialog("重置完成", msg, "确定");
+    }
+
+    /// <summary>
+    /// 根据资源路径生成 Addressable 地址
+    /// 直接返回完整的资源路径（包含 Assets/ 前缀和扩展名）
+    /// 例如：Assets/Addressables/UI/Icon/NestBaitIcons/2501.png
+    /// </summary>
+    private static string GenerateAddressFromPath(string assetPath)
+    {
+        if (string.IsNullOrEmpty(assetPath))
+            return assetPath;
+
+        // 统一使用 / 分隔符，直接返回完整路径
+        return assetPath.Replace('\\', '/');
+    }
+
+    [MenuItem("Assets/重置 Addressable 路径", true)]
+    private static bool ValidateResetAddressablePaths()
+    {
+        return !string.IsNullOrEmpty(GetSelectedFolderPath());
+    }
+
     // ==================== 窗口版 ====================
 
     [MenuItem("Tools/通用/文本替换 Res→AA")]
@@ -486,7 +658,7 @@ public class Res2AAPathTool : EditorWindow
 
         EditorGUILayout.Space();
 
-        // 两个操作按钮
+        // 操作按钮
         EditorGUILayout.BeginHorizontal();
         GUI.backgroundColor = new Color(0.4f, 0.7f, 1f);
         if (GUILayout.Button("替换路径", GUILayout.Height(30)))
@@ -522,6 +694,23 @@ public class Res2AAPathTool : EditorWindow
             }
             ProcessMarkFolder(normalized);
         }
+        GUI.backgroundColor = new Color(1f, 0.7f, 0.2f);
+        if (GUILayout.Button("重置路径", GUILayout.Height(30)))
+        {
+            if (string.IsNullOrEmpty(targetFolder))
+            {
+                EditorUtility.DisplayDialog("提示", "请选择文件夹！", "确定");
+                return;
+            }
+            string normalized = NormalizeFolderPath(targetFolder);
+            string fullPath = Path.Combine(Application.dataPath, normalized.Replace("Assets/", ""));
+            if (!Directory.Exists(fullPath))
+            {
+                EditorUtility.DisplayDialog("错误", $"目录不存在：\n{normalized}", "确定");
+                return;
+            }
+            ProcessResetAddressablePaths(normalized);
+        }
         GUI.backgroundColor = Color.white;
         EditorGUILayout.EndHorizontal();
 
@@ -530,7 +719,8 @@ public class Res2AAPathTool : EditorWindow
         EditorGUILayout.HelpBox(
             "📌 右键菜单说明：\n" +
             "• 路径替换 Resources→Addressables：替换脚本中的路径字符串\n" +
-            "• 标记文件夹为 Addressable：将文件夹内所有资源标记为 Addressable（包含 .json）",
+            "• 标记文件夹为 Addressable：将文件夹内所有资源标记为 Addressable（包含 .json）\n" +
+            "• 重置 Addressable 路径：将地址重置为完整资源路径（含 Assets/ 前缀和扩展名）",
             MessageType.Info
         );
     }
