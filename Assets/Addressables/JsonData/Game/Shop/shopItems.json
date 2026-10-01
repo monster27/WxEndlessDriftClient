@@ -430,7 +430,7 @@
             "stock": 99,
             "isOnSale": true,
             "categoryId": 12,
-            "isUnique": false
+            "isUnique": true
         },
         {
             "itemId": 10202,
@@ -438,7 +438,7 @@
             "stock": 99,
             "isOnSale": true,
             "categoryId": 12,
-            "isUnique": false
+            "isUnique": true
         },
         {
             "itemId": 10203,
@@ -446,7 +446,7 @@
             "stock": 99,
             "isOnSale": true,
             "categoryId": 12,
-            "isUnique": false
+            "isUnique": true
         },
         {
             "itemId": 10204,
@@ -454,7 +454,7 @@
             "stock": 99,
             "isOnSale": true,
             "categoryId": 12,
-            "isUnique": false
+            "isUnique": true
         },
         {
             "itemId": 10205,
@@ -462,7 +462,7 @@
             "stock": 99,
             "isOnSale": true,
             "categoryId": 12,
-            "isUnique": false
+            "isUnique": true
         },
         {
             "itemId": 10206,
@@ -470,7 +470,7 @@
             "stock": 99,
             "isOnSale": true,
             "categoryId": 12,
-            "isUnique": false
+            "isUnique": true
         },
         {
             "itemId": 10101,
@@ -478,7 +478,7 @@
             "stock": 99,
             "isOnSale": true,
             "categoryId": 11,
-            "isUnique": false
+            "isUnique": true
         },
         {
             "itemId": 10102,
@@ -486,7 +486,7 @@
             "stock": 99,
             "isOnSale": true,
             "categoryId": 11,
-            "isUnique": false
+            "isUnique": true
         },
         {
             "itemId": 10103,
@@ -494,7 +494,7 @@
             "stock": 99,
             "isOnSale": true,
             "categoryId": 11,
-            "isUnique": false
+            "isUnique": true
         },
         {
             "itemId": 10104,
@@ -502,7 +502,7 @@
             "stock": 99,
             "isOnSale": true,
             "categoryId": 11,
-            "isUnique": false
+            "isUnique": true
         },
         {
             "itemId": 10105,
@@ -510,7 +510,7 @@
             "stock": 99,
             "isOnSale": true,
             "categoryId": 11,
-            "isUnique": false
+            "isUnique": true
         },
         {
             "itemId": 10106,
@@ -518,7 +518,7 @@
             "stock": 99,
             "isOnSale": true,
             "categoryId": 11,
-            "isUnique": false
+            "isUnique": true
         }
     ]
 }

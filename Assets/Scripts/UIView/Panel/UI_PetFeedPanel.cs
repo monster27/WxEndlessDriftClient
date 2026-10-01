@@ -5,6 +5,7 @@
 // ============================================================
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -32,6 +33,7 @@ public class UI_PetFeedPanel : MonoBehaviour
 
     private int _petInstanceId = -1;
     private Action _onClosed;
+    private Action _onFed;   // ✅ 新增：喂食成功回调
 
     private List<UI_PetFeedPrefab> _feedPrefabs = new List<UI_PetFeedPrefab>();
     private List<FishDetailData> _fishList = new List<FishDetailData>();
@@ -40,6 +42,8 @@ public class UI_PetFeedPanel : MonoBehaviour
     private int _remainingSeconds = 0;
     private bool _autoFeedEnabled = false;
     private Coroutine _timerCoroutine;
+
+    private bool _isOpen = false;
 
     // ============================================================
     // 生命周期
@@ -50,25 +54,64 @@ public class UI_PetFeedPanel : MonoBehaviour
         if (feedBtn != null) feedBtn.onClick.AddListener(OnFeedClick);
         if (selectConfigBtn != null) selectConfigBtn.onClick.AddListener(OnSelectConfigClick);
         if (closeBtn != null) closeBtn.onClick.AddListener(Close);
+
+        Z_Logger.Log("[UI_PetFeedPanel] Awake 完成");
+    }
+
+    private void OnEnable()
+    {
+        CommunicateEvent.Register("FishBagDataUpdated", OnFishBagUpdated);
+        Z_Logger.Log("[UI_PetFeedPanel] OnEnable，注册 FishBagDataUpdated");
+    }
+
+    private void OnDisable()
+    {
+        CommunicateEvent.Unregister("FishBagDataUpdated", OnFishBagUpdated);
+        Z_Logger.Log("[UI_PetFeedPanel] OnDisable，注销 FishBagDataUpdated");
+    }
+
+    // ============================================================
+    // 事件回调
+    // ============================================================
+
+    private void OnFishBagUpdated()
+    {
+        Z_Logger.Log($"[UI_PetFeedPanel] OnFishBagUpdated: _isOpen={_isOpen}, activeSelf={gameObject.activeSelf}");
+        if (_isOpen && gameObject.activeSelf)
+        {
+            RefreshFishList();
+        }
     }
 
     // ============================================================
     // 打开 / 关闭
     // ============================================================
 
-    public void Open(int petInstanceId, Action onClosed = null)
+    /// <summary>
+    /// 打开喂食面板
+    /// </summary>
+    /// <param name="petInstanceId">要喂的宠物实例ID</param>
+    /// <param name="onClosed">面板关闭时的回调</param>
+    /// <param name="onFed">喂食成功时的回调（✅ 新增）</param>
+    public void Open(int petInstanceId, Action onClosed = null, Action onFed = null)
     {
         _petInstanceId = petInstanceId;
         _onClosed = onClosed;
+        _onFed = onFed;
         _selectedFishId = -1;
+        _isOpen = true;
+
+        Z_Logger.Log($"[UI_PetFeedPanel] Open: petInstanceId={petInstanceId}");
 
         gameObject.SetActive(true);
 
-        // 拉自动喂食状态
         if (NetServerManager.Instance != null)
         {
+            // 拉自动喂食状态
             NetServerManager.Instance.FetchAutoFeedStatus((success, data) =>
             {
+                Z_Logger.Log($"[UI_PetFeedPanel] FetchAutoFeedStatus 回调: success={success}, " +
+                             $"level={data?.level}, enabled={data?.enabled}, remaining={data?.remainingSeconds}");
                 if (success && data != null)
                 {
                     _remainingSeconds = data.remainingSeconds;
@@ -76,6 +119,13 @@ public class UI_PetFeedPanel : MonoBehaviour
                     UpdateAutoFeedTimer();
                 }
             });
+
+            // ✅ 主动拉一次最新鱼篓数据，确保打开时不是旧数据
+            NetServerManager.Instance.FetchPlayerFishBag();
+        }
+        else
+        {
+            Z_Logger.LogWarning("[UI_PetFeedPanel] Open: NetServerManager.Instance 为 null");
         }
 
         RefreshFishList();
@@ -84,6 +134,8 @@ public class UI_PetFeedPanel : MonoBehaviour
 
     public void Close()
     {
+        Z_Logger.Log($"[UI_PetFeedPanel] Close: petInstanceId={_petInstanceId}");
+        _isOpen = false;
         StopTimerCoroutine();
         gameObject.SetActive(false);
         _onClosed?.Invoke();
@@ -95,16 +147,15 @@ public class UI_PetFeedPanel : MonoBehaviour
 
     private void RefreshFishList()
     {
-        // 从 PlayerDataManager 拿所有鱼详情
         _fishList = GetAllFishDetailList();
+
+        Z_Logger.Log($"[UI_PetFeedPanel] RefreshFishList: 共 {_fishList.Count} 条鱼");
 
         // 按 caughtTimestamp 升序
         _fishList.Sort((a, b) => a.caughtTimestamp.CompareTo(b.caughtTimestamp));
 
-        // 池
         EnsureFeedPrefabs(_fishList.Count);
 
-        // 填数据
         for (int i = 0; i < _feedPrefabs.Count; i++)
         {
             if (i < _fishList.Count)
@@ -118,15 +169,25 @@ public class UI_PetFeedPanel : MonoBehaviour
                 _feedPrefabs[i].gameObject.SetActive(false);
             }
         }
+
+        _selectedFishId = -1;
     }
 
     private List<FishDetailData> GetAllFishDetailList()
     {
         var result = new List<FishDetailData>();
-        if (PlayerDataManager.Instance == null) return result;
+        if (PlayerDataManager.Instance == null)
+        {
+            Z_Logger.LogWarning("[UI_PetFeedPanel] GetAllFishDetailList: PlayerDataManager.Instance 为 null");
+            return result;
+        }
 
         var dict = PlayerDataManager.Instance.GetFishDetailData();
-        if (dict == null) return result;
+        if (dict == null)
+        {
+            Z_Logger.LogWarning("[UI_PetFeedPanel] GetAllFishDetailList: GetFishDetailData() 返回 null");
+            return result;
+        }
 
         foreach (var kv in dict)
         {
@@ -172,7 +233,6 @@ public class UI_PetFeedPanel : MonoBehaviour
 
     private void OnFishSelected(UI_PetFeedPrefab prefab)
     {
-        // 单选：其他全部取消
         foreach (var p in _feedPrefabs)
         {
             if (p != null && p != prefab)
@@ -182,6 +242,8 @@ public class UI_PetFeedPanel : MonoBehaviour
         }
 
         _selectedFishId = prefab.IsSelected ? prefab.FishDetailId : -1;
+
+        Z_Logger.Log($"[UI_PetFeedPanel] OnFishSelected: fishDetailId={prefab.FishDetailId}, isSelected={prefab.IsSelected}, _selectedFishId={_selectedFishId}");
     }
 
     // ============================================================
@@ -196,17 +258,25 @@ public class UI_PetFeedPanel : MonoBehaviour
             return;
         }
 
-        NetServerManager.Instance.FeedPet(_petInstanceId, _selectedFishId, (success, message, restored, hunger) =>
-        {
-            ShowTip(message);
-            if (success)
+        Z_Logger.Log($"[UI_PetFeedPanel] OnFeedClick: petInstanceId={_petInstanceId}, fishInstanceId={_selectedFishId}");
+
+        NetServerManager.Instance.FeedPet(_petInstanceId, _selectedFishId,
+            (success, message, restored, hunger) =>
             {
-                // 刷新鱼篓
-                NetServerManager.Instance.FetchPlayerFishBag();
-                RefreshFishList();
-                _selectedFishId = -1;
-            }
-        });
+                Z_Logger.Log($"[UI_PetFeedPanel] FeedPet 回调: success={success}, message={message}, restored={restored}, currentHunger={hunger}");
+
+                ShowTip(message);
+                if (success)
+                {
+                    // 刷新鱼列表（鱼被消耗了）
+                    RefreshFishList();
+                    _selectedFishId = -1;
+
+                    // ✅ 通知外部（UI_PetInfoPanel）刷新
+                    Z_Logger.Log("[UI_PetFeedPanel] 触发 _onFed 回调");
+                    _onFed?.Invoke();
+                }
+            });
     }
 
     // ============================================================
@@ -217,6 +287,7 @@ public class UI_PetFeedPanel : MonoBehaviour
     {
         StopTimerCoroutine();
         _timerCoroutine = StartCoroutine(TimerTick());
+        Z_Logger.Log("[UI_PetFeedPanel] 倒计时协程启动");
     }
 
     private void StopTimerCoroutine()
@@ -225,10 +296,11 @@ public class UI_PetFeedPanel : MonoBehaviour
         {
             StopCoroutine(_timerCoroutine);
             _timerCoroutine = null;
+            Z_Logger.Log("[UI_PetFeedPanel] 倒计时协程停止");
         }
     }
 
-    private System.Collections.IEnumerator TimerTick()
+    private IEnumerator TimerTick()
     {
         while (true)
         {
@@ -271,6 +343,7 @@ public class UI_PetFeedPanel : MonoBehaviour
             return;
         }
 
+        Z_Logger.Log("[UI_PetFeedPanel] OnSelectConfigClick: 打开过滤面板");
         filterPanel.OpenPanel();
     }
 

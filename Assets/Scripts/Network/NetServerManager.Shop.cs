@@ -196,6 +196,15 @@ public partial class NetServerManager
 
                         PlayerDataManager.Instance?.SyncInventoryFromServer();
 
+                        // ★ 买的是宠物（itemType == 11），刷新宠物列表
+                        global::ItemData boughtItemData = LoadDataManager.Instance?.GetItemById(itemId);
+                        if (boughtItemData != null && boughtItemData.itemType == 11)
+                        {
+                            Z_Logger.Log($"[NetServerManager] 购买的是宠物（itemType=11），刷新宠物列表: itemId={itemId}");
+                            FetchPlayerPets();
+                            FetchPetStorageStatus();
+                        }
+
                         CommunicateEvent.Modify("Mall_PurchaseSuccess", itemId);
                         CommunicateEvent.Modify("Bag_RefreshItems");
                         CommunicateEvent.Modify<(int, int)>(CommunicateEvent.EVENT_ITEM_QUANTITY_CHANGED, (itemId, playerInventory[itemId]));

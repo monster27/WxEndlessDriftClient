@@ -46,27 +46,40 @@ public partial class NetServerManager
 
     private IEnumerator FetchPlayerPetsCoroutine(Action<bool, List<PlayerPetData>> onComplete)
     {
-        if (!CheckNetworkConnection())
-        {
-            onComplete?.Invoke(false, null);
-            yield break;
-        }
+        if (!CheckNetworkConnection()) { onComplete?.Invoke(false, null); yield break; }
 
         string url = $"/api/player/{_currentPlayerId}/pets";
         Z_Logger.Log($"[NetServerManager] 获取宠物列表: {url}");
 
-        yield return FetchGetJson<PetsListResponse>(url, data =>
+        using (var request = UnityWebRequest.Get(serverUrl + url))
         {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Z_Logger.LogError($"[NetServerManager] 获取宠物列表失败: {request.error}");
+                onComplete?.Invoke(false, null);
+                yield break;
+            }
+
+            string json = request.downloadHandler.text;
+            Z_Logger.Log($"[NetServerManager] 宠物列表原始JSON: {json}");  
+
+            var data = JsonUtility.FromJson<PetsListResponse>(json);
             if (data != null && data.success)
             {
                 playerPetsCache = data.pets ?? new List<PlayerPetData>();
                 Z_Logger.Log($"[NetServerManager] 宠物列表加载完成，共 {playerPetsCache.Count} 只");
 
-                // 同步到 PlayerDataManager（由它广播事件）
-                if (PlayerDataManager.Instance != null)
+                if (playerPetsCache.Count > 0)
                 {
-                    PlayerDataManager.Instance.UpdatePlayerPets(playerPetsCache);
+                    var p = playerPetsCache[0];
+                    Z_Logger.Log($"[NetServerManager] 第1只宠物: petInstanceId={p.petInstanceId}, petId={p.petId}, name={p.name}, rarityId={p.rarityId}, isActive={p.isActive}");
                 }
+
+                if (PlayerDataManager.Instance != null)
+                    PlayerDataManager.Instance.UpdatePlayerPets(playerPetsCache);
 
                 onComplete?.Invoke(true, playerPetsCache);
             }
@@ -75,7 +88,7 @@ public partial class NetServerManager
                 Z_Logger.LogWarning("[NetServerManager] 获取宠物列表失败");
                 onComplete?.Invoke(false, null);
             }
-        }, "宠物列表");
+        }
     }
 
     public void FetchPlayerPet(int instanceId, Action<bool, PlayerPetData> onComplete = null)
@@ -220,9 +233,9 @@ public partial class NetServerManager
 
         string url = $"/api/player/{_currentPlayerId}/pets/{instanceId}/feed";
         var requestData = new Dictionary<string, object>
-        {
-            { "fishInstanceId", fishInstanceId }
-        };
+    {
+        { "fishInstanceId", fishInstanceId }
+    };
 
         Z_Logger.Log($"[NetServerManager] 喂食宠物: instanceId={instanceId}, fishInstanceId={fishInstanceId}");
 
@@ -230,10 +243,11 @@ public partial class NetServerManager
         {
             if (resp != null && resp.success)
             {
-                // 更新本地宠物饥饿度
+                // 1. 更新本地宠物饥饿度
                 var pet = playerPetsCache.Find(p => p.petInstanceId == instanceId);
                 if (pet != null) pet.hunger = resp.currentHunger;
 
+                // 2. 同步到 PlayerDataManager（会广播 PetHungerChanged + PetsUpdated）
                 if (PlayerDataManager.Instance != null)
                 {
                     PlayerDataManager.Instance.UpdateLocalPetHunger(instanceId, resp.currentHunger);
@@ -241,10 +255,11 @@ public partial class NetServerManager
 
                 Z_Logger.Log($"[NetServerManager] 喂食成功，恢复 {resp.restored} 点");
 
-                // 鱼被消耗了，刷新鱼篓
-                FetchPlayerFishBag();
-
-                onComplete?.Invoke(true, resp.message, resp.restored, resp.currentHunger);
+                // 3. ✅ 刷新鱼篓，等数据更新完再通知 UI
+                FetchPlayerFishBag(success =>
+                {
+                    onComplete?.Invoke(true, resp.message, resp.restored, resp.currentHunger);
+                });
             }
             else
             {
@@ -355,60 +370,60 @@ public partial class NetServerManager
     // 直接购买宠物（测试用）
     // ============================================================
 
-    public void BuyPet(int petId, Action<bool, string, PlayerPetData> onComplete = null)
-    {
-        StartCoroutine(BuyPetCoroutine(petId, onComplete));
-    }
+    //public void BuyPet(int petId, Action<bool, string, PlayerPetData> onComplete = null)
+    //{
+    //    StartCoroutine(BuyPetCoroutine(petId, onComplete));
+    //}
 
-    private IEnumerator BuyPetCoroutine(int petId, Action<bool, string, PlayerPetData> onComplete)
-    {
-        if (!CheckNetworkConnection())
-        {
-            onComplete?.Invoke(false, "网络未连接", null);
-            yield break;
-        }
+    //private IEnumerator BuyPetCoroutine(int petId, Action<bool, string, PlayerPetData> onComplete)
+    //{
+    //    if (!CheckNetworkConnection())
+    //    {
+    //        onComplete?.Invoke(false, "网络未连接", null);
+    //        yield break;
+    //    }
 
-        string url = $"/api/player/{_currentPlayerId}/pets/buy";
-        var requestData = new Dictionary<string, object>
-        {
-            { "petId", petId }
-        };
+    //    string url = $"/api/player/{_currentPlayerId}/pets/buy";
+    //    var requestData = new Dictionary<string, object>
+    //    {
+    //        { "petId", petId }
+    //    };
 
-        Z_Logger.Log($"[NetServerManager] 直接购买宠物: petId={petId}");
+    //    Z_Logger.Log($"[NetServerManager] 直接购买宠物: petId={petId}");
 
-        yield return SendRequest<BuyPetResponse>(url, requestData, resp =>
-        {
-            if (resp != null && resp.success)
-            {
-                Z_Logger.Log($"[NetServerManager] 购买宠物成功: petInstanceId={resp.pet?.petInstanceId}");
+    //    yield return SendRequest<BuyPetResponse>(url, requestData, resp =>
+    //    {
+    //        if (resp != null && resp.success)
+    //        {
+    //            Z_Logger.Log($"[NetServerManager] 购买宠物成功: petInstanceId={resp.pet?.petInstanceId}");
 
-                // 1. 加入本地缓存
-                if (resp.pet != null)
-                {
-                    playerPetsCache.Add(resp.pet);
+    //            // 1. 加入本地缓存
+    //            if (resp.pet != null)
+    //            {
+    //                playerPetsCache.Add(resp.pet);
 
-                    // 2. 同步到 PlayerDataManager
-                    if (PlayerDataManager.Instance != null)
-                    {
-                        PlayerDataManager.Instance.AddPet(resp.pet);
-                        PlayerDataManager.Instance.LocalIncreasePetStorageUsed();
-                    }
-                }
+    //                // 2. 同步到 PlayerDataManager
+    //                if (PlayerDataManager.Instance != null)
+    //                {
+    //                    PlayerDataManager.Instance.AddPet(resp.pet);
+    //                    PlayerDataManager.Instance.LocalIncreasePetStorageUsed();
+    //                }
+    //            }
 
-                // 3. 刷新金币
-                StartCoroutine(FetchPlayerGold());
+    //            // 3. 刷新金币
+    //            StartCoroutine(FetchPlayerGold());
 
-                onComplete?.Invoke(true, resp.message, resp.pet);
-            }
-            else
-            {
-                onComplete?.Invoke(false, resp?.message ?? "购买失败", null);
-            }
-        }, err =>
-        {
-            onComplete?.Invoke(false, "网络请求失败", null);
-        }, forcePost: true);
-    }
+    //            onComplete?.Invoke(true, resp.message, resp.pet);
+    //        }
+    //        else
+    //        {
+    //            onComplete?.Invoke(false, resp?.message ?? "购买失败", null);
+    //        }
+    //    }, err =>
+    //    {
+    //        onComplete?.Invoke(false, "网络请求失败", null);
+    //    }, forcePost: true);
+    //}
 
     // ============================================================
     // 卖宠物
@@ -928,13 +943,13 @@ public partial class NetServerManager
         public int remainingSeconds;
     }
 
-    [Serializable]
-    private class BuyPetResponse
-    {
-        public bool success;
-        public string message;
-        public PlayerPetData pet;
-    }
+    //[Serializable]
+    //private class BuyPetResponse
+    //{
+    //    public bool success;
+    //    public string message;
+    //    public PlayerPetData pet;
+    //}
 
     [Serializable]
     private class SellPetResponse

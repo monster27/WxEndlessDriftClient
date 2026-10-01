@@ -28,6 +28,7 @@ public class UI_PetFeedPrefab : MonoBehaviour
 
     private FishDetailData _fish;
     private ItemData _itemData;   // ✅ 从 items.json 拿 iconPath / name
+    private FishData _fishData;   // ✅ 从 fishes.json 拿 rarityId
     private bool _isSelected = false;
     private Action<UI_PetFeedPrefab> _onSelected;
 
@@ -64,6 +65,11 @@ public class UI_PetFeedPrefab : MonoBehaviour
             ? LoadDataManager.Instance.GetItemById(fish.fishId)
             : null;
 
+        // ✅ 从 fishes.json 拿 FishData（rarityId / baseWeight / feedAmount）
+        _fishData = LoadDataManager.Instance != null
+            ? LoadDataManager.Instance.GetFishById(fish.fishId)
+            : null;
+
         RefreshDisplay();
         UpdateSelectedVisual();
     }
@@ -82,9 +88,7 @@ public class UI_PetFeedPrefab : MonoBehaviour
             string displayName = _itemData?.name;
             if (string.IsNullOrEmpty(displayName))
             {
-                var fishData = LoadDataManager.Instance != null
-                    ? LoadDataManager.Instance.GetFishById(_fish.fishId) : null;
-                displayName = fishData?.name ?? $"鱼{_fish.fishId}";
+                displayName = _fishData?.name ?? $"鱼{_fish.fishId}";
             }
             nameText.text = displayName;
         }
@@ -96,9 +100,7 @@ public class UI_PetFeedPrefab : MonoBehaviour
             if (restored <= 0)
             {
                 // 兜底：如果服务器没返回，客户端自己算
-                var fishData = LoadDataManager.Instance != null
-                    ? LoadDataManager.Instance.GetFishById(_fish.fishId) : null;
-                restored = CalcFeedRestored(fishData, _fish.weight);
+                restored = CalcFeedRestored(_fishData, _fish.weight);
             }
             feedAmountText.text = $"+{restored}";
         }
@@ -175,10 +177,9 @@ public class UI_PetFeedPrefab : MonoBehaviour
         if (rarityBgImage == null || _fish == null) return;
 
         int rarityId = 0;
-        var fishData = LoadDataManager.Instance != null
-            ? LoadDataManager.Instance.GetFishById(_fish.fishId) : null;
-        if (fishData != null) rarityId = fishData.rarityId;
+        if (_fishData != null) rarityId = _fishData.rarityId;
 
+        // 稀有度背景路径：UI/Icon/RarityBackground/{rarityId}
         string path = $"UI/Icon/RarityBackground/{rarityId}";
         AssetManager.LoadFromAddressables<Sprite>(path, (sprite, handle) =>
         {

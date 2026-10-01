@@ -587,9 +587,26 @@ public partial class PlayerDataManager : SingletonMono<PlayerDataManager>
         return fishDetailData != null ? new Dictionary<int, List<FishDetailData>>(fishDetailData) : new Dictionary<int, List<FishDetailData>>();
     }
 
+    //public void UpdateFishDetailData(Dictionary<int, List<FishDetailData>> newDetailData)
+    //{
+    //    fishDetailData = newDetailData ?? new Dictionary<int, List<FishDetailData>>();
+    //}
     public void UpdateFishDetailData(Dictionary<int, List<FishDetailData>> newDetailData)
     {
         fishDetailData = newDetailData ?? new Dictionary<int, List<FishDetailData>>();
+
+        // ✅ 同步 fishInventory 汇总（数量）
+        fishInventory.Clear();
+        foreach (var kvp in fishDetailData)
+        {
+            fishInventory[kvp.Key] = kvp.Value.Count;
+        }
+
+        Z_Logger.Log($"[PlayerDataManager] 鱼详情数据已更新: {fishDetailData.Count} 种鱼");
+
+        // ✅ 广播事件，通知 UI 刷新
+        CommunicateEvent.Modify("FishBagDataUpdated");
+        CommunicateEvent.Modify("Bag_RefreshItems");
     }
 
     public List<FishDetailData> GetFishDetailDataById(int fishId)

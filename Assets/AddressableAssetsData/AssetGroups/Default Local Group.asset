@@ -3066,6 +3066,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aa5ba55087c8ebe4e8d27e564deced9d
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/0.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: abba91bda02b5f740a7dbde9b6c5ff20
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u7194\u5CA9\u706B\u5C71\u5927\u6D77/\u80CC\u666F.png"
     m_ReadOnly: 0

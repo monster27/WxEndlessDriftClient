@@ -6,7 +6,7 @@ using System.Collections.Generic;
 //using Z_Logger = Utils.Z_Logger;
 using System;
 
-public partial class NetServerManager 
+public partial class NetServerManager
 {
     private float heartbeatTimer = 0f;
     private int missedHeartbeats = 0;
@@ -101,6 +101,10 @@ public partial class NetServerManager
         }
     }
 
+    /// <summary>
+    /// 心跳协程：每 HEARTBEAT_INTERVAL 秒触发一次心跳
+    /// ✅ 统一调用 SendHeartbeatRequest，不再走旧的 SendHeartbeat
+    /// </summary>
     private IEnumerator SendHeartbeatCoroutine()
     {
         while (isConnected && this != null)
@@ -110,32 +114,8 @@ public partial class NetServerManager
             if (!isConnected || this == null)
                 yield break;
 
-            SendHeartbeat();
+            yield return SendHeartbeatRequest();
         }
-    }
-
-    private void SendHeartbeat()
-    {
-        if (!isConnected)
-            return;
-
-        var requestData = new Dictionary<string, object>
-        {
-            { "playerId", _currentPlayerId },
-            { "clientTime", System.DateTimeOffset.UtcNow.ToUnixTimeSeconds() }
-        };
-
-        StartCoroutine(SendRequest<object>(ServerUrls.Player.Heartbeat(_currentPlayerId), requestData,
-            onSuccess: (response) =>
-            {
-                Z_Logger.LogColor("[NetServerManager] 心跳发送成功", "cyan");
-            },
-            onError: (error) =>
-            {
-                Z_Logger.LogWarning("[NetServerManager] 心跳发送失败: " + error);
-            },
-            forcePost: true
-        ));
     }
 
     #endregion
@@ -155,17 +135,25 @@ public partial class NetServerManager
         }
     }
 
+    /// <summary>
+    /// 心跳请求（协程）
+    /// ✅ 走 /api/player/{playerId}/heartbeat
+    /// ✅ 处理 mallDataRefreshed（商城刷新）
+    /// ✅ 处理 petHungerDirty（宠物饥饿度刷新，看到 true 就拉 /pets）
+    /// </summary>
     private IEnumerator SendHeartbeatRequest()
     {
-        Z_Logger.Log("[NetServerManager] SendHeartbeat 被调用");
+        Z_Logger.Log("[NetServerManager] SendHeartbeatRequest 被调用");
 
         long clientTime = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var requestData = new Dictionary<string, object>
-    {
-        { "clientTime", clientTime }
-    };
+        {
+            { "playerId", _currentPlayerId },        // ✅ 补上 playerId
+            { "clientTime", clientTime }
+        };
 
-        yield return SendRequest<HeartbeatResponse>(ServerUrls.Heartbeat.HeartbeatApi, requestData,
+        // ✅ 走 /api/player/{playerId}/heartbeat（和 mallDataRefreshed 走的一致）
+        yield return SendRequest<HeartbeatResponse>(ServerUrls.Player.Heartbeat(_currentPlayerId), requestData,
             (response) =>
             {
                 if (response != null)
@@ -176,11 +164,18 @@ public partial class NetServerManager
                     missedHeartbeats = 0;
                     networkState = NetUtils.NetworkState.Connected;
 
-                    // ✅ 检测商城数据刷新标记
+                    // ✅ 商城数据刷新
                     if (response.mallDataRefreshed)
                     {
                         Z_Logger.Log("[NetServerManager] 服务器通知商城数据已刷新，立即同步");
                         SyncMallItemsFromServer();
+                    }
+
+                    // ✅ 宠物饥饿度刷新（照抄 mallDataRefreshed 模式）
+                    if (response.petHungerDirty)
+                    {
+                        Z_Logger.Log("[NetServerManager] 服务器通知宠物饥饿度已变化，拉取最新宠物列表");
+                        FetchPlayerPets();
                     }
                 }
             },
@@ -190,6 +185,4 @@ public partial class NetServerManager
                 isConnected = false;
             });
     }
-
-
 }

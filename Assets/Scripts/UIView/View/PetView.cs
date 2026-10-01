@@ -33,6 +33,9 @@ public class PetView : BaseView
     public Text storageText;
     public Button upgradeStorageBtn;
 
+    [Header("选中总价")]
+    public Text sellPriceText; 
+
     [Header("子面板")]
     public UI_PetInfoPanel petInfoPanel;
     public UI_PetFeedPanel petFeedPanel;
@@ -56,9 +59,7 @@ public class PetView : BaseView
         if (isInitialized) return;
         base.BaseViewInit();
 
-        // ✅ 初始化时关闭子面板
         CloseAllSubPanels();
-
         BindButtons();
 
         CommunicateEvent.Register(PlayerDataManager.PetMessage.PetsUpdated.ToString(), OnPetsUpdated);
@@ -92,7 +93,6 @@ public class PetView : BaseView
     protected override void PreHide()
     {
         base.PreHide();
-
         CloseAllSubPanels();
     }
 
@@ -107,15 +107,8 @@ public class PetView : BaseView
     // 公开方法
     // ============================================================
 
-    public void OpenPetView()
-    {
-        ShowView();
-    }
-
-    public void ClosePetView()
-    {
-        HideView();
-    }
+    public void OpenPetView() => ShowView();
+    public void ClosePetView() => HideView();
 
     // ============================================================
     // 按钮绑定
@@ -139,15 +132,8 @@ public class PetView : BaseView
     // 事件回调
     // ============================================================
 
-    private void OnPetsUpdated()
-    {
-        Refresh();
-    }
-
-    private void OnStorageUpdated()
-    {
-        RefreshStorageText();
-    }
+    private void OnPetsUpdated() => Refresh();
+    private void OnStorageUpdated() => RefreshStorageText();
 
     // ============================================================
     // 刷新
@@ -175,6 +161,7 @@ public class PetView : BaseView
         }
 
         RefreshStorageText();
+        RefreshSellPriceText();     // ★ 新增
     }
 
     private void RefreshStorageText()
@@ -182,14 +169,24 @@ public class PetView : BaseView
         if (storageText == null) return;
 
         var status = PlayerDataManager.Instance != null ? PlayerDataManager.Instance.PetStorageStatus : null;
-        if (status != null)
+        storageText.text = status != null ? $"{status.used}/{status.capacity}" : "0/0";
+    }
+
+    /// <summary>刷新"选中宠物总售价"</summary>
+    private void RefreshSellPriceText()
+    {
+        if (sellPriceText == null) return;
+
+        int total = 0;
+        foreach (var p in _petPrefabs)
         {
-            storageText.text = $"{status.used}/{status.capacity}";
+            if (p != null && p.gameObject.activeSelf && p.IsSelected)
+            {
+                total += GetPetSellPrice(p.PetId);
+            }
         }
-        else
-        {
-            storageText.text = "0/0";
-        }
+
+        sellPriceText.text = total.ToString();
     }
 
     private List<PlayerPetData> SortPets(IReadOnlyList<PlayerPetData> pets)
@@ -256,7 +253,8 @@ public class PetView : BaseView
 
     private void OnPetSelectionChanged(UI_PetPrefab prefab)
     {
-        // 只更新按钮显示
+        // 单个勾选变化 → 刷新总价
+        RefreshSellPriceText();
     }
 
     // ============================================================
@@ -284,6 +282,8 @@ public class PetView : BaseView
                 p.SetSelection(newState);
             }
         }
+
+        RefreshSellPriceText();     // ★ 新增
     }
 
     // ============================================================
@@ -311,13 +311,9 @@ public class PetView : BaseView
         GameUIManager.ShowInfoMessage(desc, () =>
         {
             if (ids.Count == 1)
-            {
                 NetServerManager.Instance.SellPet(ids[0], OnSellResult);
-            }
             else
-            {
                 NetServerManager.Instance.SellPetsBatch(ids, OnSellResult);
-            }
         });
     }
 
@@ -395,16 +391,8 @@ public class PetView : BaseView
             }
         }
 
-        if (ids.Count == 0)
-        {
-            ShowTip("请选择一只宠物");
-            return;
-        }
-        if (ids.Count > 1)
-        {
-            ShowTip("只能查看一只宠物");
-            return;
-        }
+        if (ids.Count == 0) { ShowTip("请选择一只宠物"); return; }
+        if (ids.Count > 1) { ShowTip("只能查看一只宠物"); return; }
 
         int targetId = ids[0];
         int startIdx = _sortedPets.FindIndex(p => p.petInstanceId == targetId);

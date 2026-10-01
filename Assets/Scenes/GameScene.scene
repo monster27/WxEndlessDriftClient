@@ -32341,7 +32341,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -112.5, y: -35.228607}
+  m_AnchoredPosition: {x: -112.5, y: -35.228638}
   m_SizeDelta: {x: 131, y: 123}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &601651148
@@ -91086,7 +91086,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 937ae082ea85d3244b343d37c807b2fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  icon: {fileID: 794955708}
+  icon: {fileID: 69383673}
   rarityBgImage: {fileID: 794955708}
   nameText: {fileID: 1344343175}
   hungerText: {fileID: 1105575422}
@@ -107284,9 +107284,10 @@ MonoBehaviour:
   selectAllBtn: {fileID: 1121545717}
   sellBtn: {fileID: 1505135926}
   lockBtn: {fileID: 458155135}
-  viewInfoBtn: {fileID: 0}
+  viewInfoBtn: {fileID: 727519498}
   storageText: {fileID: 495879860}
-  upgradeStorageBtn: {fileID: 727519498}
+  upgradeStorageBtn: {fileID: 1286479681}
+  sellPriceText: {fileID: 1992947813}
   petInfoPanel: {fileID: 1716773567}
   petFeedPanel: {fileID: 851150393}
 --- !u!1 &2050784081

@@ -189,24 +189,89 @@ public partial class PlayerDataManager
     // 数据更新入口（由 NetServerManager 调用）
     // ============================================================
 
-    /// <summary>更新宠物列表（全量覆盖）</summary>
+    /// <summary>
+    /// 更新宠物列表（逐个更新，保留对象引用）
+    /// ✅ 不整个替换 List，避免 UI 持有快照时引用脱钩
+    /// ✅ 按 petInstanceId 匹配，更新字段；不在 incoming 里的移除；不在 _playerPets 里的添加
+    /// ✅ 方案 A：心跳看到 petHungerDirty=true 时，客户端调 FetchPlayerPets() 走这里更新
+    /// </summary>
     public void UpdatePlayerPets(List<PlayerPetData> pets)
     {
-        _playerPets = pets ?? new List<PlayerPetData>();
+        if (pets == null)
+        {
+            _playerPets.Clear();
+            _activePetInstanceId = -1;
+            _isPetDataLoaded = true;
+            NotifyPetDataChanged(PetMessage.PetsUpdated);
+            return;
+        }
+
+        // 1. 建立 incoming 索引
+        var incoming = new Dictionary<int, PlayerPetData>();
+        foreach (var p in pets)
+        {
+            if (p != null) incoming[p.petInstanceId] = p;
+        }
+
+        // 2. 移除不在 incoming 里的旧对象
+        for (int i = _playerPets.Count - 1; i >= 0; i--)
+        {
+            if (!incoming.ContainsKey(_playerPets[i].petInstanceId))
+            {
+                _playerPets.RemoveAt(i);
+            }
+        }
+
+        // 3. 逐个更新 / 添加
+        foreach (var newPet in pets)
+        {
+            if (newPet == null) continue;
+
+            var existing = _playerPets.FirstOrDefault(p => p.petInstanceId == newPet.petInstanceId);
+            if (existing != null)
+            {
+                // ✅ 逐字段更新，保留对象引用
+                existing.petId = newPet.petId;
+                existing.rarityId = newPet.rarityId;
+                existing.name = newPet.name;
+                existing.nickname = newPet.nickname;
+                existing.level = newPet.level;
+                existing.exp = newPet.exp;
+                existing.isActive = newPet.isActive;
+                existing.isDefault = newPet.isDefault;
+                existing.isLocked = newPet.isLocked;
+                existing.obtainedAt = newPet.obtainedAt;
+                existing.lastInsectCatchTime = newPet.lastInsectCatchTime;
+                existing.nextInsectCatchTime = newPet.nextInsectCatchTime;
+                existing.hunger = newPet.hunger;
+                existing.maxHunger = newPet.maxHunger;
+                existing.hungerRemainingSeconds = newPet.hungerRemainingSeconds;
+            }
+            else
+            {
+                _playerPets.Add(newPet);
+            }
+        }
+
         _isPetDataLoaded = true;
 
+        // 4. 更新出战 ID
         var active = _playerPets.FirstOrDefault(p => p.isActive);
         _activePetInstanceId = active?.petInstanceId ?? -1;
 
-        // 同步图鉴（全量覆盖时，用已有列表补图鉴）
+        // 5. 补图鉴
         foreach (var p in _playerPets)
         {
             _petCollectionUnlocked.Add(p.petId);
         }
 
-        Z_Logger.Log($"[PlayerDataManager] 宠物列表更新: {_playerPets.Count} 只，出战: {_activePetInstanceId}");
+        Z_Logger.Log($"[PlayerDataManager] 宠物列表更新（逐个）: {_playerPets.Count} 只，出战: {_activePetInstanceId}");
         NotifyPetDataChanged(PetMessage.PetsUpdated);
     }
+
+    // ❌ 已删除 UpdateLocalPetsHunger(List<PetHungerKV>)
+    //    原因：方案 A 不再用心跳带全量 petHunger，客户端看到 petHungerDirty 就拉 /pets，
+    //          走 UpdatePlayerPets 更新
 
     /// <summary>添加一只宠物（孵化后，去重）</summary>
     public void AddPet(PlayerPetData pet)
@@ -309,7 +374,7 @@ public partial class PlayerDataManager
         }
     }
 
-    /// <summary>本地更新宠物饥饿度</summary>
+    /// <summary>本地更新宠物饥饿度（喂食后调用，方案 A 保留）</summary>
     public void UpdateLocalPetHunger(int instanceId, int newHunger)
     {
         var pet = GetPetByInstanceId(instanceId);

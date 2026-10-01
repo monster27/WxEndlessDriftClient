@@ -955,7 +955,7 @@
             "categoryId": 12,
             "iconPath": "UI/Icon/EggIcons/10201",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10202,
@@ -967,7 +967,7 @@
             "categoryId": 12,
             "iconPath": "UI/Icon/EggIcons/10202",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10203,
@@ -979,7 +979,7 @@
             "categoryId": 12,
             "iconPath": "UI/Icon/EggIcons/10203",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10204,
@@ -991,7 +991,7 @@
             "categoryId": 12,
             "iconPath": "UI/Icon/EggIcons/10204",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10205,
@@ -1003,7 +1003,7 @@
             "categoryId": 12,
             "iconPath": "UI/Icon/EggIcons/10205",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10206,
@@ -1015,7 +1015,7 @@
             "categoryId": 12,
             "iconPath": "UI/Icon/EggIcons/10206",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10101,
@@ -1027,7 +1027,7 @@
             "categoryId": 11,
             "iconPath": "UI/Icon/PetIcons/10101",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10102,
@@ -1039,7 +1039,7 @@
             "categoryId": 11,
             "iconPath": "UI/Icon/PetIcons/10102",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10103,
@@ -1051,7 +1051,7 @@
             "categoryId": 11,
             "iconPath": "UI/Icon/PetIcons/10103",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10104,
@@ -1063,7 +1063,7 @@
             "categoryId": 11,
             "iconPath": "UI/Icon/PetIcons/10104",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10105,
@@ -1075,7 +1075,7 @@
             "categoryId": 11,
             "iconPath": "UI/Icon/PetIcons/10105",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10106,
@@ -1087,7 +1087,7 @@
             "categoryId": 11,
             "iconPath": "UI/Icon/PetIcons/10106",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10001,
@@ -1099,7 +1099,7 @@
             "categoryId": 10,
             "iconPath": "UI/Icon/InsectIcons/10001",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10002,
@@ -1111,7 +1111,7 @@
             "categoryId": 10,
             "iconPath": "UI/Icon/InsectIcons/10002",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10003,
@@ -1123,7 +1123,7 @@
             "categoryId": 10,
             "iconPath": "UI/Icon/InsectIcons/10003",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10004,
@@ -1135,7 +1135,7 @@
             "categoryId": 10,
             "iconPath": "UI/Icon/InsectIcons/10004",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10005,
@@ -1147,7 +1147,7 @@
             "categoryId": 10,
             "iconPath": "UI/Icon/InsectIcons/10005",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         },
         {
             "id": 10006,
@@ -1159,7 +1159,7 @@
             "categoryId": 10,
             "iconPath": "UI/Icon/InsectIcons/10006",
             "collectionInfoPages": [],
-            "isUnique": true
+            "isUnique": false
         }
     ]
 }
