@@ -39807,12 +39807,15 @@ MonoBehaviour:
   _poolSize: 10
   _startPoint: {fileID: 1260270889}
   _endPoint: {fileID: 615279483}
+  _insectStartPoint: {fileID: 23283212}
   _arcHeight: 5
   _container: {fileID: 985682326}
   _shader: {fileID: 4800000, guid: 2126a80b725e6464e95915be105e6f10, type: 3}
   _renderQueue: 3000
   _flyDuration: 1
+  _insectFlyDuration: 0.8
   _defaultScale: 1
+  _insectDefaultScale: 1
   _defaultTexture: {fileID: 2800000, guid: a72b085a73980bf46a1594ab2f8b92ac, type: 3}
 --- !u!1 &703870099
 GameObject:

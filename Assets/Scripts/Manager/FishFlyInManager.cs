@@ -9,6 +9,7 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
     [SerializeField] private int _poolSize = 10;
     [SerializeField] private Transform _startPoint;
     [SerializeField] private Transform _endPoint;
+    [SerializeField] private Transform _insectStartPoint;
     [SerializeField] private float _arcHeight = 10f;
     [SerializeField] private Transform _container;
     [SerializeField] private Shader _shader;
@@ -16,7 +17,9 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
 
     [Header("=== 飞入参数 ===")]
     [SerializeField] private float _flyDuration = 0.8f;
+    [SerializeField] private float _insectFlyDuration = 0.8f;
     [SerializeField] private float _defaultScale = 1.0f;
+    [SerializeField] private float _insectDefaultScale = 1.0f;
     [SerializeField] private Texture2D _defaultTexture;
 
     private Queue<FishFlyInCtrl> _pool = new Queue<FishFlyInCtrl>();
@@ -84,9 +87,22 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
                 }
 
                 float flip = SceneMatManager.Instance != null && SceneMatManager.Instance.CurrentSceneFlip ? 1f : 0f;
-                float scale = isFish ? CalculateFishScale(weight) : _defaultScale;
 
-                Fly(texture, flip, scale);
+                // ✅ 按 itemId 段判断是否是昆虫
+                bool isInsect = itemId >= 10001 && itemId <= 10099;
+
+                if (isInsect)
+                {
+                    // 昆虫：走昆虫起点
+                    Z_Logger.Log($"[FishFlyInManager] 昆虫飞入: itemId={itemId}");
+                    FlyInsect(texture, flip, _insectDefaultScale);
+                }
+                else
+                {
+                    // 鱼 / 垃圾：走鱼起点
+                    float scale = isFish ? CalculateFishScale(weight) : _defaultScale;
+                    Fly(texture, flip, scale);
+                }
             }
             else
             {
@@ -94,6 +110,83 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
             }
         });
     }
+
+    /// <summary>
+    /// 昆虫飞入鱼篓
+    /// </summary>
+    /// <param name="itemId">昆虫ID（10001~10099）</param>
+    /// <param name="scale">缩放，<=0 用默认值</param>
+    public void FlyInsect(int itemId, float scale = 0f)
+    {
+        if (!_isInitialized)
+        {
+            Z_Logger.LogWarning("[FishFlyInManager] 未初始化，请先调用 Init()!");
+            return;
+        }
+
+        AssetManager.LoadFromAddressables<Sprite>(GetIconPath(itemId), (sprite, handle) =>
+        {
+            _spriteHandle = handle;
+            if (sprite == null)
+            {
+                Z_Logger.LogError($"[FishFlyInManager] 无法加载昆虫图标: itemId={itemId}");
+                return;
+            }
+
+            Texture2D texture = sprite.texture;
+            if (texture == null)
+            {
+                Z_Logger.LogError($"[FishFlyInManager] 无法获取昆虫纹理: itemId={itemId}");
+                return;
+            }
+
+            float flip = SceneMatManager.Instance != null && SceneMatManager.Instance.CurrentSceneFlip ? 1f : 0f;
+            float finalScale = scale > 0f ? scale : _insectDefaultScale;
+
+            FlyInsect(texture, flip, finalScale);
+        });
+    }
+    /// <summary>
+    /// 昆虫飞入鱼篓（直接传纹理，跳过加载）
+    /// </summary>
+    public void FlyInsect(Texture2D texture, float flip, float scale)
+    {
+        if (!_isInitialized)
+        {
+            Z_Logger.LogError("[FishFlyInManager] 未初始化，请先调用 Init()!");
+            return;
+        }
+
+        var ctrl = GetFish();
+        if (ctrl == null) return;
+
+        // ✅ 用昆虫起点（没配置就降级用鱼起点）
+        Vector3 start = _insectStartPoint != null ? _insectStartPoint.position : _startPoint.position;
+        Vector3 end = _endPoint.position;
+
+        Vector3 mid = new Vector3(
+            (start.x + end.x) / 2f,
+            _arcHeight,
+            (start.z + end.z) / 2f
+        );
+
+        if (texture != null)
+        {
+            ctrl.SetMainTexture(texture);
+        }
+        else if (_defaultTexture != null)
+        {
+            ctrl.SetMainTexture(_defaultTexture);
+        }
+
+        ctrl.SetFlip(flip);
+        ctrl.SetRenderQueue(_renderQueue);
+
+        ctrl.Fly(start, mid, end, scale, _insectFlyDuration, OnFlyComplete);
+
+        Z_Logger.Log($"[FishFlyInManager] 昆虫飞入: scale={scale:F2}, duration={_insectFlyDuration:F2}");
+    }
+
 
     private string GetIconPath(int itemId)
     {

@@ -311,14 +311,23 @@ public partial class NetServerManager
         lastCatchTimestamp = lastCatch.caughtTimestamp;
 
         // ✅ 在检测到新钓获时（而非动画开始时）检查是否为首次获取
-        // 因为动画回调中的 FetchFishInventoryFromServer 可能已更新 fishInventory，
-        // 导致后续排队捕获的首次判断失效
         int currentCount = 0;
         fishInventory.TryGetValue(lastCatch.fishId, out currentCount);
         lastCatch.isFirstCatch = (currentCount == 0);
 
         float struggleTime = lastCatch.struggleTime > 0 ? lastCatch.struggleTime : 1.5f;
-        Z_Logger.Log($"[NetServerManager] 检测到新钓获: {lastCatch.fishName} (ID:{lastCatch.fishId}), {lastCatch.weight}kg, 挣扎{struggleTime}秒, 时间戳:{lastCatch.caughtTimestamp}, 首次:{lastCatch.isFirstCatch}");
+        Z_Logger.Log($"[NetServerManager] 检测到新钓获: {lastCatch.fishName} (ID:{lastCatch.fishId}), {lastCatch.weight}kg, 挣扎{struggleTime}秒, 时间戳:{lastCatch.caughtTimestamp}, 首次:{lastCatch.isFirstCatch}, 昆虫:{lastCatch.isInsect}");
+
+        // ✅ 昆虫：不播收竿动画，直接飞入鱼篓
+        if (lastCatch.isInsect)
+        {
+            Z_Logger.Log($"[NetServerManager] 昆虫直接飞入，跳过收竿动画: {lastCatch.fishName}");
+            ShowCatchResultFromServer(lastCatch);
+            StartCoroutine(FetchFishInventoryFromServer());
+            return;
+        }
+
+        // ===== 以下为鱼 / 垃圾的原有逻辑 =====
 
         // ✅ 如果正在播放收竿动画或鱼篓已满，将捕获加入队列，等动画结束后再显示
         if (isPlayingReelAnimation || isFishBagFull)
@@ -341,8 +350,11 @@ public partial class NetServerManager
 
         pendingCatchInfo = catchInfo;
 
-        // ⭐ 获取鱼类稀有度颜色并设置到鱼饵提示动画
-        SetFishTipColorByFishId(catchInfo.fishId, struggleTime);
+        // ⭐ 昆虫不走鱼类稀有度逻辑
+        if (!catchInfo.isInsect)
+        {
+            SetFishTipColorByFishId(catchInfo.fishId, struggleTime);
+        }
 
         NotifyPlayReelAnimation(struggleTime, () =>
         {
@@ -621,7 +633,8 @@ public partial class NetServerManager
         // ✅ 异步加载图标
         LoadItemIcon(catchInfo.fishId, (icon) =>
         {
-            bool isFish = IsFishItem(catchInfo.fishId);
+            // ✅ 昆虫直接看服务器标记；非昆虫才走 IsFishItem 判断
+            bool isFish = !catchInfo.isInsect && IsFishItem(catchInfo.fishId);
 
             GameUIManager.Instance?.ShowCatchResult(
                 catchInfo.fishName,
@@ -791,9 +804,10 @@ public partial class NetServerManager
         public int expEarned;
         public bool isTrash;
         public float struggleTime;
-        public int starRatingId;      // ✅ 新增：星级ID
-        public long caughtTimestamp;  // ✅ 新增：捕获时间戳
-        public bool isShiny;          // ✅ 新增：是否闪光鱼
-        public bool isFirstCatch;     // ✅ 客户端本地设置：是否为首次钓获该鱼
+        public int starRatingId;      //  星级ID
+        public long caughtTimestamp;  //  捕获时间戳
+        public bool isShiny;          //  是否闪光鱼
+        public bool isFirstCatch;     //  客户端本地设置：是否为首次钓获该鱼
+        public bool isInsect;         //  是否是昆虫（服务器下发）
     }
 }
