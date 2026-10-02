@@ -109,7 +109,7 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
                 Z_Logger.LogError($"[FishFlyInManager] 无法加载物品图标: itemId={itemId}");
             }
         });
-    }
+    } 
 
     /// <summary>
     /// 昆虫飞入鱼篓
