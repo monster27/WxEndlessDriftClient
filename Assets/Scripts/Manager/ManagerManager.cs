@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Text;
 using UnityEngine.SceneManagement;
 using static SceneMatManager;
+using System.Collections;
 
 public class ManagerManager : SingletonMono<ManagerManager>
 {
@@ -178,17 +179,40 @@ public class ManagerManager : SingletonMono<ManagerManager>
     /// </summary>
     private void OnNetServerInitialized()
     {
-        Z_Logger.Log("[ManagerManager] NetServerManager 初始化完成，开始应用数据...");
+        Z_Logger.Log("[ManagerManager] NetServerManager 初始化完成，等待 SceneMatManager 就绪...");
 
-        // 取消订阅，防止重复触发
         if (NetServerManager.Instance != null)
         {
             NetServerManager.Instance.OnInitializationComplete -= OnNetServerInitialized;
         }
 
-        // ====================================================================
-        // 场景切换 - 根据服务器数据切换场景
-        // ====================================================================
+        // ✅ 等待 SceneMatManager 初始化完成，再切场景/应用皮肤
+        StartCoroutine(WaitForSceneMatThenFinish());
+    }
+
+    private IEnumerator WaitForSceneMatThenFinish()
+    {
+        // 等 SceneMatManager 就绪（最多等 5 秒）
+        float timeout = 5f;
+        float elapsed = 0f;
+
+        while (elapsed < timeout)
+        {
+            if (SceneMatManager.Instance != null && SceneMatManager.Instance.IsInitialized)
+            {
+                Z_Logger.Log($"[ManagerManager] SceneMatManager 已就绪（等待 {elapsed:F2}秒）");
+                break;
+            }
+            yield return null;
+            elapsed += Time.unscaledDeltaTime;
+        }
+
+        if (SceneMatManager.Instance == null || !SceneMatManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogError("[ManagerManager] SceneMatManager 等待超时，强制继续");
+        }
+
+        // ✅ 切场景（此时 SceneMatManager 已就绪，场景数据已加载）
         if (NetServerManager.Instance != null && NetServerManager.Instance.IsInitialized)
         {
             int sceneId = EnvManager.Instance.currentSceneId;
@@ -201,18 +225,7 @@ public class ManagerManager : SingletonMono<ManagerManager>
             }
         }
 
-        // ====================================================================
-        // 应用皮肤（此时服务器数据已返回）
-        // ====================================================================
-        if (SkinManager.Instance != null)
-        {
-            // SkinManager 会通过事件自动应用皮肤
-            Z_Logger.Log("[ManagerManager] 皮肤数据将自动应用");
-        }
-
-        // ====================================================================
-        // 触发所有加载完成事件
-        // ====================================================================
+        // ✅ 触发所有加载完成（此时 SkinManager.ApplyAllSkins 会正常跑）
         OnAllLoadingComplete();
     }
 

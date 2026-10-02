@@ -16,6 +16,7 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
         { 41, SceneMatManager.RenderElementType.FishBag },
         { 42, SceneMatManager.RenderElementType.Tent },
         { 43, SceneMatManager.RenderElementType.FishTip },
+        { 44, SceneMatManager.RenderElementType.Pet },
         { 51, SceneMatManager.RenderElementType.Indoor_Wall },
         { 52, SceneMatManager.RenderElementType.Indoor_Floor },
         { 53, SceneMatManager.RenderElementType.Indoor_Stair },
@@ -97,12 +98,21 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
     {
         CommunicateEvent.Register<Dictionary<int, int>>(CommunicateEvent.EVENT_SKIN_DATA_UPDATED, OnSkinDataUpdated);
         CommunicateEvent.Register<string>(CommunicateEvent.EVENT_ALL_LOADING_COMPLETE, OnAllLoadingComplete);
+        // ✅ 宠物列表更新（登录 / 孵化 / 卖 等，无参兜底）
+        CommunicateEvent.Register(CommunicateEvent.EVENT_PETS_UPDATED, OnPetsUpdated);
+
+        // ✅ 出战宠物变更（带 petId，直接换贴图）
+        CommunicateEvent.Register<int>(CommunicateEvent.EVENT_PET_ACTIVE_CHANGED, OnPetActiveChanged);
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
         CommunicateEvent.Unregister<Dictionary<int, int>>(CommunicateEvent.EVENT_SKIN_DATA_UPDATED, OnSkinDataUpdated);
         CommunicateEvent.Unregister<string>(CommunicateEvent.EVENT_ALL_LOADING_COMPLETE, OnAllLoadingComplete);
+
+        CommunicateEvent.Unregister(CommunicateEvent.EVENT_PETS_UPDATED, OnPetsUpdated);
+        CommunicateEvent.Unregister<int>(CommunicateEvent.EVENT_PET_ACTIVE_CHANGED, OnPetActiveChanged);
     }
 
     private void OnAllLoadingComplete(string message)
@@ -110,14 +120,13 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
         Z_Logger.Log("[SkinManager] 收到所有加载完成事件，开始应用皮肤");
         isSceneMatReady = true;
 
-        // ✅ 主动从 NetServerManager 同步皮肤数据（降级方案，不依赖 EVENT_SKIN_DATA_UPDATED 事件）
-        // 解决事件时序问题导致服务器皮肤数据未流向 SkinManager 的问题
+        // ✅ 主动同步服务器皮肤数据
         SyncSkinsFromNetServer();
 
-        if (hasPendingSkins && equippedSkins.Count > 0)
-        {
-            ApplyAllSkins();
-        }
+        // ✅ 无条件应用：此刻 SceneMat 已就绪（ManagerManager 保证）
+        //    ApplyAllSkins 内部会注入 activePet.petId，
+        //    如果宠物数据还没到，44 槽位会 Remove 掉——那是"没数据就不设"，符合原则
+        ApplyAllSkins();
     }
 
     /// <summary>
@@ -221,6 +230,19 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
     {
         Z_Logger.Log($"[SkinManager] 开始应用所有皮肤，已装备 {equippedSkins.Count} 个");
 
+        // ✅ 先把当前出战宠物的 petId 注入到 equippedSkins[44]
+        var activePet = PlayerDataManager.Instance?.GetActivePet();
+        if (activePet != null && activePet.petId > 0)
+        {
+            equippedSkins[44] = activePet.petId;
+            Z_Logger.Log($"[SkinManager] 注入出战宠物: petId={activePet.petId}");
+        }
+        else
+        {
+            equippedSkins.Remove(44);
+            Z_Logger.Log("[SkinManager] 没有出战宠物，跳过宠物贴图");
+        }
+
         // 合并已装备皮肤和默认皮肤：已装备的优先，未装备的使用默认值
         var allSkins = new Dictionary<int, int>(DefaultSkins);
         foreach (var kvp in equippedSkins)
@@ -266,6 +288,52 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
         }
     }
 
+    /// <summary>
+    /// 宠物列表更新（登录 / 孵化 / 卖 等）— 兜底，无参
+    /// </summary>
+    private void OnPetsUpdated()
+    {
+        Z_Logger.Log("[SkinManager] 收到 PetsUpdated");
+
+        if (SceneMatManager.Instance == null || !SceneMatManager.Instance.IsInitialized)
+        {
+            // 这不该发生：宠物更新事件应该在 SceneMat 就绪后才到
+            Z_Logger.LogError("[SkinManager] PetsUpdated 到达时 SceneMatManager 未就绪，上游顺序有问题");
+            return;
+        }
+
+        var activePet = PlayerDataManager.Instance?.GetActivePet();
+        if (activePet == null || activePet.petId <= 0)
+        {
+            Z_Logger.Log("[SkinManager] 没有出战宠物，跳过");
+            return;
+        }
+
+        ApplySkinRender(44, activePet.petId);
+    }
+
+    /// <summary>
+    /// 出战宠物变更（带 petId，直接用）
+    /// </summary>
+    private void OnPetActiveChanged(int petId)
+    {
+        Z_Logger.Log($"[SkinManager] 收到 PetActiveChanged: petId={petId}");
+
+        if (petId <= 0)
+        {
+            Z_Logger.LogWarning("[SkinManager] petId 无效，跳过");
+            return;
+        }
+
+        if (SceneMatManager.Instance == null || !SceneMatManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogError("[SkinManager] PetActiveChanged 到达时 SceneMatManager 未就绪，上游顺序有问题");
+            return;
+        }
+
+        ApplySkinRender(44, petId);
+    }
+
     private void ApplySkinRender(int slotType, int skinId)
     {
         if (!slotTypeToRenderType.TryGetValue(slotType, out SceneMatManager.RenderElementType renderType))
@@ -301,14 +369,20 @@ public class SkinManager : SingletonMonoFromScene<SkinManager>
 
     private string GetSkinPath(int slotType, int skinId)
     {
+        // ✅ 宠物槽位：skinId 实际是 petId（10101 这种）
+        if (slotType == 44)
+        {
+            var itemData = LoadDataManager.Instance?.GetItemById(skinId);
+            if (itemData != null && !string.IsNullOrEmpty(itemData.iconPath))
+                return itemData.iconPath;
+            Z_Logger.LogWarning($"[SkinManager] 宠物：找不到 petId={skinId} 的 iconPath");
+            return "";
+        }
+
         if (slotType >= 41 && slotType <= 43)
-        {
             return OUTDOOR_SKIN_PATH_PREFIX + skinId;
-        }
         else if (slotType >= 51)
-        {
             return INDOOR_SKIN_PATH_PREFIX + skinId;
-        }
         return "";
     }
 }

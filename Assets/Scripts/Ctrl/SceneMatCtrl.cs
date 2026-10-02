@@ -276,17 +276,32 @@ public class SceneMatCtrl : MonoBehaviour
 
         Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - 📂 加载纹理: {path}");
 
-        var (texture, handle) = await AssetManager.LoadFromAddressablesAsync<Texture2D>(path);
+        Texture2D texture = null;
 
-        // 异步回调回来时对象可能已销毁
-        if (this == null || gameObject == null)
+        // ✅ 先尝试按 Texture2D 加载
+        var (texHandle, textureHandle) = await AssetManager.LoadFromAddressablesAsync<Texture2D>(path);
+        texture = texHandle;
+
+        if (this == null || gameObject == null) return;
+
+        // ✅ Texture2D 失败 → 降级按 Sprite 加载
+        if (texture == null)
         {
-            return;
+            Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - Texture2D 加载失败，尝试按 Sprite 加载: {path}");
+
+            var (sprite, spriteHandle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(path);
+
+            if (this == null || gameObject == null) return;
+
+            if (sprite != null)
+            {
+                texture = sprite.texture;
+            }
         }
 
         if (texture == null)
         {
-            Z_Logger.LogError($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - ❌ 无法加载纹理: {path}");
+            Z_Logger.LogError($"[{LOG_TAG}] {gameObject.name}.SetMainTextureByPath() - ❌ 无法加载纹理(Texture2D/Sprite): {path}");
             return;
         }
 

@@ -129,6 +129,13 @@ public static partial class CommunicateEvent
     /// <summary>【服务器向客户端发送通知】皮肤装备变更</summary>
     public const string EVENT_SKIN_EQUIPPED = "S2C_EVENT_SKIN_EQUIPPED";
 
+    /// <summary>【Manager层数据推送】宠物列表更新（登录首次加载 / 孵化 / 卖 / 改名 / 喂食 等）</summary>
+    public const string EVENT_PETS_UPDATED = "S2C_EVENT_PETS_UPDATED";
+
+    /// <summary>【Manager层数据推送】出战宠物变更</summary>
+    /// <param name="petId">宠物所属ID（icon 用的 ID，如 10101）(int)</param>
+    public const string EVENT_PET_ACTIVE_CHANGED = "S2C_EVENT_PET_ACTIVE_CHANGED";
+
     /// <summary>【其他事件】所有加载完成</summary>
     public const string EVENT_ALL_LOADING_COMPLETE = "OTHER_EVENT_ALL_LOADING_COMPLETE";
 

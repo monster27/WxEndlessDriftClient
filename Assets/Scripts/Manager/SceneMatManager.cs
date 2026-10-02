@@ -381,10 +381,17 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
             return;
         }
 
+        // ✅ 防御：场景数据必须已加载
+        if (!isDataLoaded)
+        {
+            Z_Logger.LogError($"[SceneMatManager] 切换场景失败: 场景数据尚未加载，sceneId={sceneId}。这是上游顺序问题。");
+            return;
+        }
+
         SceneData targetSceneData = GetSceneData(sceneId);
         if (targetSceneData == null)
         {
-            Z_Logger.LogWarning($"[SceneMatManager] 场景 {sceneId} 不存在，创建默认场景数据");
+            Z_Logger.LogWarning($"[SceneMatManager] 场景 {sceneId} 不存在于配置中，创建默认场景数据");
             CreateDefaultSceneData(sceneId);
         }
 

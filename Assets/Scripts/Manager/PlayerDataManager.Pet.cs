@@ -356,8 +356,17 @@ public partial class PlayerDataManager
             p.isActive = (p.petInstanceId == instanceId);
 
         _activePetInstanceId = instanceId;
-        Z_Logger.Log($"[PlayerDataManager] 本地设置出战宠物: instanceId={instanceId}");
-        NotifyPetDataChanged(PetMessage.PetActiveChanged);
+
+        // ✅ 拿"所属ID"（petId，如 10101），这就是 icon 用的 ID
+        var activePet = GetActivePet();
+        int petId = activePet?.petId ?? 0;
+
+        Z_Logger.Log($"[PlayerDataManager] 本地设置出战宠物: instanceId={instanceId}, petId={petId}");
+
+        // ✅ 广播出战宠物变更，带 petId
+        CommunicateEvent.Modify<int>(CommunicateEvent.EVENT_PET_ACTIVE_CHANGED, petId);
+
+        // 兜底：宠物列表更新
         NotifyPetDataChanged(PetMessage.PetsUpdated);
     }
 
@@ -497,7 +506,34 @@ public partial class PlayerDataManager
 
     private void NotifyPetDataChanged(PetMessage message)
     {
-        CommunicateEvent.Modify(message.ToString());
+        string eventName = ConvertPetMessageToEventName(message);
+        if (string.IsNullOrEmpty(eventName))
+        {
+            Z_Logger.LogWarning($"[PlayerDataManager] PetMessage {message} 没有对应的事件常量，跳过广播");
+            return;
+        }
+        CommunicateEvent.Modify(eventName);
+    }
+
+    /// <summary>
+    /// 把 PetMessage 映射到 CommunicateEvent 常量
+    /// </summary>
+    private string ConvertPetMessageToEventName(PetMessage message)
+    {
+        switch (message)
+        {
+            case PetMessage.PetsUpdated: return CommunicateEvent.EVENT_PETS_UPDATED;
+            case PetMessage.PetActiveChanged: return CommunicateEvent.EVENT_PET_ACTIVE_CHANGED;
+            // 以下保持原有字符串（未加常量的事件，不改也能跑）
+            case PetMessage.PetRenamed: return "PetRenamed";
+            case PetMessage.PetHungerChanged: return "PetHungerChanged";
+            case PetMessage.PetLockChanged: return "PetLockChanged";
+            case PetMessage.PetStorageUpdated: return "PetStorageUpdated";
+            case PetMessage.PetCollectionUpdated: return "PetCollectionUpdated";
+            case PetMessage.AutoFeedStatusUpdated: return "AutoFeedStatusUpdated";
+            case PetMessage.AutoFeedFilterUpdated: return "AutoFeedFilterUpdated";
+            default: return null;
+        }
     }
 
     // ============================================================
