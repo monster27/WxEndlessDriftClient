@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 
@@ -216,106 +217,57 @@ public enum FishSpeciesType
 
 #region 场景数据
 
-/// <summary>
-/// 可序列化的三维向量（使用float字段，兼容其他C#引擎）
-/// </summary>
-[System.Serializable]
+[Serializable]
+public class SceneDataWrapper
+{
+    public List<SceneData> scenes = new List<SceneData>();
+    public List<SceneElementData> indoorElements = new List<SceneElementData>();
+}
+
+[Serializable]
+public class SceneData
+{
+    public string sceneId;
+    public string sceneName;
+    public bool isFlipped;
+    public List<SceneElementData> elements = new List<SceneElementData>();
+    public List<SceneElementData> mirrorElements = new List<SceneElementData>();
+}
+
+[Serializable]
+public class SceneElementData
+{
+    public string id;
+    public string name;
+    public SceneElementTransformData transform;
+}
+
+[Serializable]
+public class SceneElementTransformData
+{
+    public SerializableVector3 position;
+    public SerializableVector3 scale;
+}
+
+[Serializable]
 public class SerializableVector3
 {
     public float x;
     public float y;
     public float z;
 
-    public SerializableVector3()
-    {
-        x = 0f;
-        y = 0f;
-        z = 0f;
-    }
-
+    public SerializableVector3() { }
     public SerializableVector3(float x, float y, float z)
     {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this.x = x; this.y = y; this.z = z;
     }
 
-    /// <summary>
-    /// 从Unity Vector3转换
-    /// </summary>
     public static SerializableVector3 FromUnityVector(float x, float y, float z)
     {
         return new SerializableVector3(x, y, z);
     }
 }
 
-/// <summary>
-/// 场景元素变换数据
-/// </summary>
-[System.Serializable]
-public class SceneElementTransformData
-{
-    public SerializableVector3 position;
-    public SerializableVector3 scale;
-
-    public SceneElementTransformData()
-    {
-        position = new SerializableVector3(0f, 0f, 0f);
-        scale = new SerializableVector3(1f, 1f, 1f);
-    }
-}
-
-/// <summary>
-/// 场景元素数据
-/// </summary>
-[System.Serializable]
-public class SceneElementData
-{
-    public string id;
-    public string name;
-    public SceneElementTransformData transform;
-
-    public SceneElementData()
-    {
-        id = "";
-        name = "";
-        transform = new SceneElementTransformData();
-    }
-}
-
-/// <summary>
-/// 场景数据
-/// </summary>
-[System.Serializable]
-public class SceneData
-{
-    public string sceneId;
-    public string sceneName;
-    public bool isFlipped;
-    public List<SceneElementData> elements;
-
-    public SceneData()
-    {
-        sceneId = "";
-        sceneName = "";
-        isFlipped = false;
-        elements = new List<SceneElementData>();
-    }
-}
-
-/// <summary>
-/// 场景数据列表包装器
-/// </summary>
-[System.Serializable]
-public class SceneDataWrapper
-{
-    public List<SceneData> scenes;
-
-    public SceneDataWrapper()
-    {
-        scenes = new List<SceneData>();
-    }
-}
 
 #endregion
 
@@ -557,6 +509,7 @@ public class InsectData
     public int rarityId;
     public string name = "";
     public string description = "";
+    public float scale = 1.0f;
 }
 
 [System.Serializable]

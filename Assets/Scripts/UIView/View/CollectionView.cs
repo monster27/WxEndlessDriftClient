@@ -101,8 +101,16 @@ public class CollectionView : BaseView
                 {
                     NetServerManager.Instance.FetchPurchasedCollectionInfo(() =>
                     {
-                        UpdateCategoryToggle(0);
-                        RefreshCurrentPage();
+                        // ✅ 拉宠物列表（填充 _petCollectionUnlocked）
+                        NetServerManager.Instance.FetchPlayerPets((petOk, pets) =>
+                        {
+                            // ✅ 拉昆虫列表（填充 _insectCollectionUnlocked）
+                            NetServerManager.Instance.FetchPlayerInsects((insectOk, insects) =>
+                            {
+                                UpdateCategoryToggle(0);
+                                RefreshCurrentPage();
+                            });
+                        });
                     });
                 });
             });
@@ -178,6 +186,14 @@ public class CollectionView : BaseView
         return null;
     }
 
+    /// <summary>
+    /// ✅ 当前分类的 ID（1=鱼类，3=昆虫，5=宠物，...）
+    /// </summary>
+    private int GetCurrentCategoryId()
+    {
+        return GetCurrentCategory()?.id ?? 0;
+    }
+
     private void RefreshCurrentPage()
     {
         ClearPrefabs();
@@ -219,15 +235,20 @@ public class CollectionView : BaseView
     private void UpdateCompletion(CollectionPage page)
     {
         float completion = 0;
+        int categoryId = GetCurrentCategoryId();
 
-        var progress = GetServerProgress(page.id);
-        if (progress != null)
+        // ✅ 昆虫(3) / 宠物(5)：直接本地算，不依赖服务器
+        if (categoryId == 3 || categoryId == 5)
         {
-            completion = progress.completionPercent;
+            completion = CalculatePageCompletion(page);
         }
         else
         {
-            completion = CalculatePageCompletion(page);
+            var progress = GetServerProgress(page.id);
+            if (progress != null)
+                completion = progress.completionPercent;
+            else
+                completion = CalculatePageCompletion(page);
         }
 
         completionText.text = Mathf.FloorToInt(completion).ToString();
@@ -238,30 +259,56 @@ public class CollectionView : BaseView
         if (page.entries == null || page.entries.Count == 0)
             return 0;
 
-        bool isFishCategory = currentCategoryIndex == 0;
+        int categoryId = GetCurrentCategoryId();
         float completedConditions = 0;
         float totalConditions = 0;
 
-        if (isFishCategory)
+        switch (categoryId)
         {
-            totalConditions = page.entries.Count * 3f;
-            foreach (int entryId in page.entries)
-            {
-                int level = GetFishCollectionLevel(entryId);
-                completedConditions += level;
-            }
-        }
-        else
-        {
-            totalConditions = page.entries.Count;
-            foreach (int entryId in page.entries)
-            {
-                int quantity = PlayerDataManager.Instance?.GetItemQuantity(entryId) ?? 0;
-                if (quantity > 0)
+            case 1:  // 鱼类：3 个条件
                 {
-                    completedConditions++;
+                    totalConditions = page.entries.Count * 3f;
+                    foreach (int entryId in page.entries)
+                    {
+                        int level = GetFishCollectionLevel(entryId);
+                        completedConditions += level;
+                    }
                 }
-            }
+                break;
+
+            case 3:  // 昆虫：1 个条件
+                {
+                    totalConditions = page.entries.Count;
+                    foreach (int entryId in page.entries)
+                    {
+                        if (PlayerDataManager.Instance?.IsInsectUnlockedInCollection(entryId) ?? false)
+                            completedConditions++;
+                    }
+                }
+                break;
+
+            case 5:  // 宠物：1 个条件
+                {
+                    totalConditions = page.entries.Count;
+                    foreach (int entryId in page.entries)
+                    {
+                        if (PlayerDataManager.Instance?.IsPetUnlockedInCollection(entryId) ?? false)
+                            completedConditions++;
+                    }
+                }
+                break;
+
+            default:  // 其他：查背包
+                {
+                    totalConditions = page.entries.Count;
+                    foreach (int entryId in page.entries)
+                    {
+                        int quantity = PlayerDataManager.Instance?.GetItemQuantity(entryId) ?? 0;
+                        if (quantity > 0)
+                            completedConditions++;
+                    }
+                }
+                break;
         }
 
         return totalConditions > 0 ? completedConditions / totalConditions * 100f : 0;
@@ -288,22 +335,38 @@ public class CollectionView : BaseView
     private void UpdateRewardButton(CollectionPage page)
     {
         bool hasAvailableReward = false;
+        int categoryId = GetCurrentCategoryId();
 
-        var progress = GetServerProgress(page.id);
-        if (progress != null && progress.availableRewards != null)
-        {
-            hasAvailableReward = progress.availableRewards.Count > 0;
-        }
-        else
+        // ✅ 昆虫(3) / 宠物(5)：直接本地算，不依赖服务器
+        if (categoryId == 3 || categoryId == 5)
         {
             float completion = CalculatePageCompletion(page);
-
             foreach (var reward in page.rewards)
             {
                 if (completion >= reward.percent && reward.rewardId > 0)
                 {
                     hasAvailableReward = true;
                     break;
+                }
+            }
+        }
+        else
+        {
+            var progress = GetServerProgress(page.id);
+            if (progress != null && progress.availableRewards != null)
+            {
+                hasAvailableReward = progress.availableRewards.Count > 0;
+            }
+            else
+            {
+                float completion = CalculatePageCompletion(page);
+                foreach (var reward in page.rewards)
+                {
+                    if (completion >= reward.percent && reward.rewardId > 0)
+                    {
+                        hasAvailableReward = true;
+                        break;
+                    }
                 }
             }
         }
@@ -337,6 +400,7 @@ public class CollectionView : BaseView
 
     private void CreateCollectionPrefabs(CollectionPage page)
     {
+        if (page.entries == null) return;
         foreach (int entryId in page.entries)
         {
             CreatePrefab(entryId, page.pageName);
@@ -387,10 +451,14 @@ public class CollectionView : BaseView
 
         if (collectionPrefab != null)
         {
+            int categoryId = GetCurrentCategoryId();
             CollectionInfoState infoState = GetEntryInfoState(entryId);
-            collectionPrefab.Init(entryId, currentCategoryIndex == 0, infoState, pageName);
 
-            if (currentCategoryIndex == 0 && infoState == CollectionInfoState.Obtained)
+            // ✅ 第二个参数：是否鱼类（categoryId == 1）
+            collectionPrefab.Init(entryId, categoryId == 1, infoState, pageName);
+
+            // ✅ 鱼类特有：图鉴等级、闪光
+            if (categoryId == 1 && infoState == CollectionInfoState.Obtained)
             {
                 int level = GetFishCollectionLevel(entryId);
                 collectionPrefab.SetCollectionLevel(level);
@@ -407,15 +475,35 @@ public class CollectionView : BaseView
     private CollectionInfoState GetEntryInfoState(int entryId)
     {
         bool hasObtained = false;
-        if (currentCategoryIndex == 0)
+        int categoryId = GetCurrentCategoryId();
+
+        switch (categoryId)
         {
-            int catchCount = PlayerDataManager.Instance?.GetFishCatchCount(entryId) ?? 0;
-            hasObtained = catchCount > 0;
-        }
-        else
-        {
-            int itemCount = PlayerDataManager.Instance?.GetItemQuantity(entryId) ?? 0;
-            hasObtained = itemCount > 0;
+            case 1:  // 鱼类
+                {
+                    int catchCount = PlayerDataManager.Instance?.GetFishCatchCount(entryId) ?? 0;
+                    hasObtained = catchCount > 0;
+                }
+                break;
+
+            case 3:  // ✅ 昆虫
+                {
+                    hasObtained = PlayerDataManager.Instance?.IsInsectUnlockedInCollection(entryId) ?? false;
+                }
+                break;
+
+            case 5:  // ✅ 宠物
+                {
+                    hasObtained = PlayerDataManager.Instance?.IsPetUnlockedInCollection(entryId) ?? false;
+                }
+                break;
+
+            default:
+                {
+                    int itemCount = PlayerDataManager.Instance?.GetItemQuantity(entryId) ?? 0;
+                    hasObtained = itemCount > 0;
+                }
+                break;
         }
 
         if (hasObtained)
@@ -461,7 +549,8 @@ public class CollectionView : BaseView
     {
         if (collInfoPanel != null)
         {
-            collInfoPanel.ShowInfo(prefab.EntryId, currentCategoryIndex == 0);
+            int categoryId = GetCurrentCategoryId();
+            collInfoPanel.ShowInfo(prefab.EntryId, categoryId == 1);
         }
     }
 

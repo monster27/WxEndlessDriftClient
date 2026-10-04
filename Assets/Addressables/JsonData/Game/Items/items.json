@@ -802,6 +802,44 @@
             "isUnique": true
         },
         {
+            "id": 7301,
+            "name": "昆虫图鉴图鉴情报",
+            "description": "解锁昆虫图鉴的图鉴情报，解锁后可查看该页面所有相关条目",
+            "sellPrice": -1,
+            "buyPrice": 30,
+            "itemType": 7,
+            "categoryId": 71,
+            "iconPath": "UI/Icon/CollectionIcons/7301",
+            "collectionInfoPages": [
+                10001,
+                10002,
+                10003,
+                10004,
+                10005,
+                10006
+            ],
+            "isUnique": true
+        },
+        {
+            "id": 7501,
+            "name": "宠物图鉴图鉴情报",
+            "description": "解锁宠物图鉴的图鉴情报，解锁后可查看该页面所有相关条目",
+            "sellPrice": -1,
+            "buyPrice": 40,
+            "itemType": 7,
+            "categoryId": 71,
+            "iconPath": "UI/Icon/CollectionIcons/7501",
+            "collectionInfoPages": [
+                10101,
+                10102,
+                10103,
+                10104,
+                10105,
+                10106
+            ],
+            "isUnique": true
+        },
+        {
             "id": 7001,
             "name": "融冠岛岛屿情报",
             "description": "解锁融冠岛的岛屿情报，解锁后可查看该岛屿相关的图鉴条目",
@@ -818,7 +856,7 @@
             "name": "彩虹岛岛屿情报",
             "description": "解锁彩虹岛的岛屿情报，解锁后可查看该岛屿相关的图鉴条目",
             "sellPrice": 0,
-            "buyPrice": -1,
+            "buyPrice": 2,
             "itemType": 8,
             "categoryId": 70,
             "iconPath": "UI/Icon/IslandInfoIcons/7002",

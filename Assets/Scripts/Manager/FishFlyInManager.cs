@@ -86,22 +86,29 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
                     return;
                 }
 
-                float flip = SceneMatManager.Instance != null && SceneMatManager.Instance.CurrentSceneFlip ? 1f : 0f;
+                // ★ 改为 CurrentIsFlipped
+                float flip = SceneMatManager.Instance != null && SceneMatManager.Instance.CurrentIsFlipped ? 1f : 0f;
 
                 // ✅ 按 itemId 段判断是否是昆虫
                 bool isInsect = itemId >= 10001 && itemId <= 10099;
 
                 if (isInsect)
                 {
-                    // 昆虫：走昆虫起点
-                    Z_Logger.Log($"[FishFlyInManager] 昆虫飞入: itemId={itemId}");
-                    FlyInsect(texture, flip, _insectDefaultScale);
+                    // ★ 读取 InsectData.scale，与默认值相乘
+                    float configScale = GetInsectConfigScale(itemId);
+                    float finalScale = _insectDefaultScale * configScale;
+
+                    Z_Logger.Log($"[FishFlyInManager] 昆虫飞入: itemId={itemId}, scale={finalScale:F2}");
+                    FlyInsect(texture, flip, finalScale);
                 }
                 else
                 {
-                    // 鱼 / 垃圾：走鱼起点
-                    float scale = isFish ? CalculateFishScale(weight) : _defaultScale;
-                    Fly(texture, flip, scale);
+                    // ★ 读取 FishData.scale，与重量缩放相乘
+                    float baseFlyScale = isFish ? CalculateFishScale(weight) : _defaultScale;
+                    float configScale = isFish ? GetFishConfigScale(itemId) : 1f;
+                    float finalScale = baseFlyScale * configScale;
+
+                    Fly(texture, flip, finalScale);
                 }
             }
             else
@@ -109,13 +116,13 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
                 Z_Logger.LogError($"[FishFlyInManager] 无法加载物品图标: itemId={itemId}");
             }
         });
-    } 
+    }
 
     /// <summary>
     /// 昆虫飞入鱼篓
     /// </summary>
     /// <param name="itemId">昆虫ID（10001~10099）</param>
-    /// <param name="scale">缩放，<=0 用默认值</param>
+    /// <param name="scale">缩放，&lt;=0 用默认值（默认值 = _insectDefaultScale * InsectData.scale）</param>
     public void FlyInsect(int itemId, float scale = 0f)
     {
         if (!_isInitialized)
@@ -140,12 +147,24 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
                 return;
             }
 
-            float flip = SceneMatManager.Instance != null && SceneMatManager.Instance.CurrentSceneFlip ? 1f : 0f;
-            float finalScale = scale > 0f ? scale : _insectDefaultScale;
+            // ★ 改为 CurrentIsFlipped
+            float flip = SceneMatManager.Instance != null && SceneMatManager.Instance.CurrentIsFlipped ? 1f : 0f;
+
+            // ★ 若调用方未传 scale，则用 默认值 × JSON 配置
+            float finalScale;
+            if (scale > 0f)
+            {
+                finalScale = scale;
+            }
+            else
+            {
+                finalScale = _insectDefaultScale * GetInsectConfigScale(itemId);
+            }
 
             FlyInsect(texture, flip, finalScale);
         });
     }
+
     /// <summary>
     /// 昆虫飞入鱼篓（直接传纹理，跳过加载）
     /// </summary>
@@ -187,7 +206,6 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
         Z_Logger.Log($"[FishFlyInManager] 昆虫飞入: scale={scale:F2}, duration={_insectFlyDuration:F2}");
     }
 
-
     private string GetIconPath(int itemId)
     {
         if (LoadDataManager.Instance?.items == null) return "";
@@ -209,6 +227,28 @@ public class FishFlyInManager : SingletonMonoFromScene<FishFlyInManager>
         float maxScale = 1.5f;
         float scale = baseScale + (weight / 50f) * (maxScale - baseScale);
         return Mathf.Clamp(scale, baseScale, maxScale);
+    }
+
+    /// <summary>
+    /// 读取 FishData.scale；找不到或异常返回 1
+    /// </summary>
+    private float GetFishConfigScale(int fishId)
+    {
+        var fishData = LoadDataManager.Instance?.GetFishById(fishId);
+        if (fishData != null && fishData.scale > 0f)
+            return fishData.scale;
+        return 1f;
+    }
+
+    /// <summary>
+    /// 读取 InsectData.scale；找不到或异常返回 1
+    /// </summary>
+    private float GetInsectConfigScale(int insectId)
+    {
+        var insectData = LoadDataManager.Instance?.GetInsectById(insectId);
+        if (insectData != null && insectData.scale > 0f)
+            return insectData.scale;
+        return 1f;
     }
 
     public void Fly(Texture2D texture, float flip, float scale)

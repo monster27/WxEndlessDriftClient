@@ -522,6 +522,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1b314ffb6e297dd408942fdd4ec6befe
+    m_Address: Assets/Addressables/UI/Icon/CollectionIcons/7301.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1b93dde5b84ccb34e99172ee4438bbde
     m_Address: Assets/Addressables/UI/Icon/FishIcons/1008_Outline.png
     m_ReadOnly: 0
@@ -2274,7 +2279,7 @@ MonoBehaviour:
     - default
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7d223ce798bf90b48a17ab6ce815acb1
-    m_Address: Assets/Addressables/JsonData/Game/SceneTransData/mainTransData.json
+    m_Address: Assets/Addressables/JsonData/Game/SceneTransData/islandsTransData.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
@@ -3199,6 +3204,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b1afdebf779607c43afb33fda846fecf
+    m_Address: Assets/Addressables/UI/Icon/CollectionIcons/7501.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b23745b952c3c0a46af11f76d34ee9d5
     m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5002.png
     m_ReadOnly: 0
@@ -3303,12 +3313,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b51048e1dece34048ab4a9cfc827a760
     m_Address: Assets/Addressables/UI/Icon/FishIcons/102/1003.png
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b543d23c33d0e0b4ca737b65e02ab24a
-    m_Address: Assets/Addressables/JsonData/BaseFramework/islands.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - default

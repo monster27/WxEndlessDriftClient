@@ -21,6 +21,10 @@ public class UI_FishTankFish : MonoBehaviour
     // ===== 大小参数 =====
     [SerializeField] private float baseHeight = 50f;
     [SerializeField] private float baseScale = 1f;
+    /// <summary>
+    /// JSON（FishData.scale）传入的配置缩放，仅在鱼缸显示时生效
+    /// </summary>
+    private float _configScale = 1f;
 
     // ===== 物理参数 =====
     private float moveSpeedMin = 0.35f;
@@ -150,6 +154,8 @@ public class UI_FishTankFish : MonoBehaviour
     {
         EnsureComponents();
 
+        _configScale = 1f; 
+
         _directionChangeInterval = UnityEngine.Random.Range(2f, 6f);
         _currentDirection = UnityEngine.Random.Range(0, 2) == 0 ? 1 : -1;
         _verticalDirection = UnityEngine.Random.Range(0, 2) == 0 ? 1 : -1;
@@ -217,7 +223,7 @@ public class UI_FishTankFish : MonoBehaviour
     {
         EnsureComponents();
         if (_rect == null) return;
-        _rect.sizeDelta = _baseSize * baseScale;
+        _rect.sizeDelta = _baseSize * baseScale * _configScale;
         ApplyShapeToRenderer();
     }
 
@@ -265,7 +271,16 @@ public class UI_FishTankFish : MonoBehaviour
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    public void SetBaseHeight(float height) { /* 固定为 50，忽略 */ }
+    /// <summary>
+    /// 设置 JSON 配置的缩放系数（FishData.scale）
+    /// 必须在 SetTexture 之前调用，或在贴图已加载后调用也可立即生效
+    /// </summary>
+    public void SetConfigScale(float scale)
+    {
+        EnsureComponents();
+        _configScale = Mathf.Max(0.01f, scale);
+        ApplyBaseSize();
+    }
 
     public void SetPhysicsParams(
         float moveMin, float moveMax,

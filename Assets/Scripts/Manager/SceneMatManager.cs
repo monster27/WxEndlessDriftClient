@@ -26,26 +26,26 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         EnvTreasureBox,
         Player,
         Weather,
-        Indoor_Floor = 30,           // 室内装饰-地板
-        Indoor_Wall,                 // 室内装饰-墙壁
-        Indoor_Stair,                // 室内装饰-楼梯
-        Indoor_LightStrip,           // 室内装饰-灯带
-        Indoor_HungDecoration,       // 室内装饰-挂饰
-        Indoor_Telescope,            // 室内装饰-望远镜
-        Indoor_InsectRoom,           // 室内装饰-昆虫房
-        Indoor_FishTank,             // 室内装饰-鱼缸
-        Indoor_PetHouse,             // 室内装饰-宠物屋
-        Indoor_Panda,                // 室内装饰-熊猫
-        Indoor_Parrot,               // 室内装饰-鹦鹉
-        Indoor_Table,                // 室内装饰-桌子
-        FishTank_Backgroundk = 60,   // 鱼缸--装饰_背景 (对应子分类84)
-        FishTank_Bottom,             // 鱼缸--装饰_底面 (对应子分类83)
-        FishTank_Mask,               // 鱼缸--装饰_遮罩 
-        FishTank_Frame,              // 鱼缸--装饰_边框 (对应子分类82)
-        FishTank_Decoration,         // 鱼缸--装饰_摆设 (对应子分类80)
-        FishTank_Hang,               // 鱼缸--装饰_挂饰 (对应子分类81)
-        FishTank_Fish,               // 鱼缸--装饰_鱼类 
-        FishTank_Btn = 70,           // 鱼缸--装饰_按钮
+        Indoor_Floor = 30,
+        Indoor_Wall,
+        Indoor_Stair,
+        Indoor_LightStrip,
+        Indoor_HungDecoration,
+        Indoor_Telescope,
+        Indoor_InsectRoom,
+        Indoor_FishTank,
+        Indoor_PetHouse,
+        Indoor_Panda,
+        Indoor_Parrot,
+        Indoor_Table,
+        //FishTank_Backgroundk = 60,
+        //FishTank_Bottom,
+        //FishTank_Mask,
+        //FishTank_Frame,
+        //FishTank_Decoration,
+        //FishTank_Hang,
+        //FishTank_Fish,
+        //FishTank_Btn = 70,
     }
 
     // ========== 渲染队列层级 ==========
@@ -66,7 +66,10 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
     [SerializeField] private string currentSceneId = "101";
     [SerializeField] public string currentSceneName = "场景";
 
-    [SerializeField] private bool currentSceneFlip = false;
+    /// <summary>
+    /// 是否使用镜像数据（勾选后：6 个元素用 mirrorElements + Shader _Flip 翻转）
+    /// </summary>
+    [SerializeField] public bool currentIsFlipped = false;
 
     [Header("=== 渲染队列配置 ===")]
     [SerializeField] private int timeLayerQueue = 1000;
@@ -75,7 +78,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
     [SerializeField] private int effectLayerQueue = 4000;
 
     [Header("=== 数据路径 ===")]
-    [SerializeField] public string sceneDataPath = "JsonData/Game/SceneTransData/mainTransData";
+    [SerializeField] public string sceneDataPath = "JsonData/Game/SceneTransData/islandsTransData";
 
     [Header("=== 控制器列表 ===")]
     [SerializeField] private List<SceneMatCtrl> sceneControllers = new List<SceneMatCtrl>();
@@ -90,25 +93,32 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
     // ========== 公共属性 ==========
     public string CurrentSceneId => currentSceneId;
     public string CurrentSceneName => currentSceneName;
+    public bool CurrentIsFlipped => currentIsFlipped;
     public List<SceneMatCtrl> SceneControllers => sceneControllers;
-    public bool CurrentSceneFlip => currentSceneFlip;
     public bool IsInitialized => isInitialized;
 
     // ========== Unity生命周期 ==========
     public async void Init()
     {
         InitializeRenderQueueMap();
-        Z_Logger.Log($"[SceneMatManager] Awake - 渲染队列映射初始化完成");
+        Z_Logger.Log($"[SceneMatManager] Init - 渲染队列映射初始化完成");
 
-        Z_Logger.Log($"[SceneMatManager] Start - 开始初始化场景系统");
+        Z_Logger.Log($"[SceneMatManager] Init - 开始初始化场景系统");
 
         FindAndRegisterAllControllers();
         await LoadSceneData();
         ApplySceneData(currentSceneId);
         UpdateAllControllersRenderQueue();
+        CommunicateEvent.Register("UI_ToggleFishingSpot", OnToggleFishingSpot);
 
         isInitialized = true;
         Z_Logger.Log($"[SceneMatManager] Start - ✅ 场景系统初始化完成");
+    }
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        CommunicateEvent.Unregister("UI_ToggleFishingSpot", OnToggleFishingSpot);
     }
 
     public void InitializeRenderQueueMap()
@@ -175,7 +185,6 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
     public async Task LoadSceneData()
     {
 #if UNITY_EDITOR
-        // 编辑器模式：直接从本地文件加载
         try
         {
             string filePath = Path.Combine(Application.dataPath, "Addressables/", sceneDataPath + ".json");
@@ -188,6 +197,9 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
                 {
                     sceneDataWrapper = new SceneDataWrapper();
                 }
+                if (sceneDataWrapper.indoorElements == null)
+                    sceneDataWrapper.indoorElements = new List<SceneElementData>();
+
                 isDataLoaded = true;
                 Z_Logger.Log($"[SceneMatManager] 从本地文件加载场景数据完成，共 {sceneDataWrapper.scenes.Count} 个场景");
                 return;
@@ -208,7 +220,6 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
             return;
         }
 #else
-        // ✅ 运行模式：从 LoadDataManager 加载
         if (LoadDataManager.Instance != null && LoadDataManager.Instance.isSceneDataLoaded)
         {
             sceneDataWrapper = LoadDataManager.Instance.sceneDataWrapper;
@@ -267,44 +278,72 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 
         currentSceneId = sceneId;
         currentSceneName = sceneData.sceneName;
-        currentSceneFlip = sceneData.isFlipped;
 
-        ApplySceneFlip(currentSceneFlip);
-
-        int loadedCount = 0;
-        foreach (var elementData in sceneData.elements)
+        // 1. 应用室外默认（跳过室内元素）
+        if (sceneData.elements != null)
         {
-            SceneMatCtrl controller = GetController(elementData.id);
-            if (controller == null)
+            foreach (var elementData in sceneData.elements)
             {
-                Z_Logger.LogWarning($"[SceneMatManager] 未找到控制器: {elementData.id}");
-                continue;
+                if (elementData == null) continue;
+                if (IsIndoorElementId(elementData.id)) continue;   // ★ 跳过室内
+                ApplyElementData(elementData);
             }
-
-            if (elementData.transform != null)
-            {
-                Vector3 position = ToUnityVector(elementData.transform.position);
-                Vector3 scale = ToUnityVector(elementData.transform.scale);
-                controller.SetTransformData(position, scale);
-            }
-
-            if (controller.ParamType != SceneMatCtrl.ParameterType.SceneParameter) continue;
-
-            if (!string.IsNullOrEmpty(elementData.name))
-            {
-                string imagePath = RESOURCE_BASE_PATH + sceneId + "/" + elementData.name;
-                controller.SetMainTextureByPath(imagePath);
-            }
-
-            controller.SetSceneId(sceneId);
-            loadedCount++;
         }
 
-        ApplyStaticParameters();
+        // 2. 如果 currentIsFlipped 为 true，用 mirrorElements 覆盖
+        if (currentIsFlipped && sceneData.mirrorElements != null)
+        {
+            Z_Logger.Log($"[SceneMatManager] 镜像模式开启，应用 mirrorElements，共 {sceneData.mirrorElements.Count} 个");
+            foreach (var mirrorData in sceneData.mirrorElements)
+            {
+                ApplyElementData(mirrorData);
+            }
+        }
 
-        Z_Logger.Log($"[SceneMatManager] 应用场景数据完成: {sceneId}, 名称: {currentSceneName}, 镜像: {currentSceneFlip}, 加载元素: {loadedCount} 个");
+        // 3. 应用室内（全局唯一）
+        if (sceneDataWrapper.indoorElements != null)
+        {
+            foreach (var indoorData in sceneDataWrapper.indoorElements)
+            {
+                ApplyElementData(indoorData);
+            }
+        }
+
+        // 4. 应用 Shader 翻转
+        ApplySceneFlip(currentIsFlipped);
+
+        Z_Logger.Log($"[SceneMatManager] 应用场景数据完成: {sceneId}, 名称: {currentSceneName}, IsFlipped: {currentIsFlipped}");
 
         AdjustCameraBySceneFlip();
+    }
+
+    private void ApplyElementData(SceneElementData elementData)
+    {
+        if (elementData == null) return;
+
+        SceneMatCtrl controller = GetController(elementData.id);
+        if (controller == null)
+        {
+            Z_Logger.LogWarning($"[SceneMatManager] 未找到控制器: {elementData.id}");
+            return;
+        }
+
+        if (elementData.transform != null)
+        {
+            Vector3 position = ToUnityVector(elementData.transform.position);
+            Vector3 scale = ToUnityVector(elementData.transform.scale);
+            controller.SetTransformData(position, scale);
+        }
+
+        if (controller.ParamType != SceneMatCtrl.ParameterType.SceneParameter) return;
+
+        if (!string.IsNullOrEmpty(elementData.name))
+        {
+            string imagePath = RESOURCE_BASE_PATH + currentSceneId + "/" + elementData.name;
+            controller.SetMainTextureByPath(imagePath);
+        }
+
+        controller.SetSceneId(currentSceneId);
     }
 
     public UnityEngine.Vector3 ToUnityVector(SerializableVector3 v)
@@ -320,7 +359,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
             return;
         }
 
-        if (currentSceneFlip)
+        if (currentIsFlipped)
         {
             CameraManager.Instance.MoveToXSmooth(CameraManager.Instance.maxX, 5f);
         }
@@ -351,7 +390,6 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         {
             if (controller != null && controller.IsInitialized)
             {
-                // ✅ 使用带元素偏移的版本
                 int queueValue = GetRenderQueueValue(controller.RenderQueue, controller.ElementId);
                 controller.SetRenderQueueValue(queueValue);
             }
@@ -365,7 +403,6 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         {
             if (controller != null && controller.IsInitialized)
             {
-                // ✅ 使用带元素偏移的版本
                 int queueValue = GetRenderQueueValue(controller.RenderQueue, controller.ElementId);
                 controller.SetRenderQueueValue(queueValue);
             }
@@ -381,7 +418,6 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
             return;
         }
 
-        // ✅ 防御：场景数据必须已加载
         if (!isDataLoaded)
         {
             Z_Logger.LogError($"[SceneMatManager] 切换场景失败: 场景数据尚未加载，sceneId={sceneId}。这是上游顺序问题。");
@@ -412,7 +448,8 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
             sceneId = sceneId,
             sceneName = $"场景_{sceneId}",
             isFlipped = false,
-            elements = new List<SceneElementData>()
+            elements = new List<SceneElementData>(),
+            mirrorElements = new List<SceneElementData>()
         };
 
         sceneDataWrapper.scenes.Add(newScene);
@@ -429,19 +466,13 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
 
     public void SetSceneFlip(bool isFlipped)
     {
-        currentSceneFlip = isFlipped;
+        currentIsFlipped = isFlipped;
         ApplySceneFlip(isFlipped);
-
-        var sceneData = GetSceneData(currentSceneId);
-        if (sceneData != null)
-        {
-            sceneData.isFlipped = isFlipped;
-        }
     }
 
     public bool GetSceneFlip()
     {
-        return currentSceneFlip;
+        return currentIsFlipped;
     }
 
     // ========== 渲染队列控制 ==========
@@ -451,17 +482,10 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         return renderQueueMap.TryGetValue(level, out int val) ? val : 2999;
     }
 
-    /// <summary>
-    /// 获取带 RenderElementType 偏移的渲染队列值
-    /// </summary>
     public int GetRenderQueueValue(RenderQueueLevel level, RenderElementType elementType)
     {
-        // 1. 获取基础队列值
         int baseQueue = GetRenderQueueValue(level);
-
-        // 2. 加上元素枚举偏移（跳过 None=0）
         int offset = elementType == RenderElementType.None ? 0 : (int)elementType;
-
         return baseQueue + offset;
     }
 
@@ -534,8 +558,9 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
             {
                 sceneId = currentSceneId,
                 sceneName = currentSceneName,
-                isFlipped = currentSceneFlip,
-                elements = new List<SceneElementData>()
+                isFlipped = currentIsFlipped,
+                elements = new List<SceneElementData>(),
+                mirrorElements = new List<SceneElementData>()
             };
             sceneDataWrapper.scenes.Add(currentSceneData);
             isNewScene = true;
@@ -543,7 +568,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         else
         {
             currentSceneData.sceneName = currentSceneName;
-            currentSceneData.isFlipped = currentSceneFlip;
+            currentSceneData.isFlipped = currentIsFlipped;
         }
 
         if (string.IsNullOrEmpty(currentSceneName) && currentSceneData != null)
@@ -556,6 +581,9 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         foreach (var controller in sceneControllers)
         {
             if (controller == null) continue;
+
+            // ★ 跳过室内元素（它们属于 indoorElements）
+            if (IsIndoorElementId(controller.ElementId.ToString())) continue;
 
             var transformData = controller.GetTransformData();
 
@@ -584,7 +612,7 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
             currentSceneData.elements.Add(element);
         }
 
-        currentSceneData.isFlipped = currentSceneFlip;
+        currentSceneData.isFlipped = currentIsFlipped;
 
         Z_Logger.Log($"[SceneMatManager] 场景数据更新: {currentSceneData.sceneId}, 元素: {currentSceneData.elements.Count}");
     }
@@ -596,12 +624,13 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         return JsonUtility.ToJson(sceneDataWrapper, true);
     }
 
+    /// <summary>
+    /// 保存到文件（★ 不再自动调 CollectDataFromControllers，由调用方决定）
+    /// </summary>
     public void SaveSceneDataToFile(string filePath)
     {
         try
         {
-            CollectDataFromControllers();
-
             string json = JsonUtility.ToJson(sceneDataWrapper, true);
 
             string directory = Path.GetDirectoryName(filePath);
@@ -628,6 +657,9 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         }
     }
 
+    /// <summary>
+    /// 保存到默认路径（★ 不再自动调 CollectDataFromControllers）
+    /// </summary>
     public void SaveToDefaultPath()
     {
 #if UNITY_EDITOR
@@ -635,7 +667,6 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         SaveSceneDataToFile(fullPath);
         UnityEditor.AssetDatabase.Refresh();
 #else
-        CollectDataFromControllers();
         if (LoadDataManager.Instance != null)
         {
             LoadDataManager.Instance.sceneDataWrapper = sceneDataWrapper;
@@ -659,6 +690,53 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
         }
 
         Z_Logger.Log($"[SceneMatManager] 找到并注册了 {foundControllers.Length} 个控制器");
+    }
+
+    /// <summary>
+    /// 设置指定元素的 Flip（供编辑器使用，不暴露 SceneMatCtrl 类型）
+    /// </summary>
+    public void SetControllerFlip(string elementId, bool flip)
+    {
+        var ctrl = GetController(elementId);
+        if (ctrl != null) ctrl.SetFlip(flip);
+    }
+
+    /// <summary>
+    /// 获取场景数据包装器（供编辑器读取 indoorElements 等）
+    /// </summary>
+    public SceneDataWrapper GetSceneDataWrapper()
+    {
+        return sceneDataWrapper;
+    }
+
+    /// <summary>
+    /// 根据元素 ID 获取其 Transform（供编辑器使用）
+    /// </summary>
+    public Transform GetControllerTransform(string elementId)
+    {
+        var ctrl = GetController(elementId);
+        return ctrl != null ? ctrl.transform : null;
+    }
+
+    /// <summary>
+    /// 获取全局室内元素列表
+    /// </summary>
+    public List<SceneElementData> GetIndoorElements()
+    {
+        if (sceneDataWrapper == null) return new List<SceneElementData>();
+        return sceneDataWrapper.indoorElements ?? new List<SceneElementData>();
+    }
+
+    public Dictionary<string, Vector3[]> CollectAllElementSnapshots()
+    {
+        var result = new Dictionary<string, Vector3[]>();
+        foreach (var ctrl in sceneControllers)
+        {
+            if (ctrl == null) continue;
+            string id = ctrl.ElementId.ToString();
+            result[id] = new Vector3[] { ctrl.transform.position, ctrl.transform.localScale };
+        }
+        return result;
     }
 
     public void RefreshAllControllers()
@@ -685,5 +763,34 @@ public class SceneMatManager : SingletonMonoFromScene<SceneMatManager>
                 Z_Logger.Log($"[SceneMatManager] {controller.ElementId}: 材质={mat?.name ?? "null"}, 渲染队列={mat?.renderQueue ?? 0}");
             }
         }
+    }
+    /// <summary>
+    /// 判断元素 ID 是否属于室内元素（Indoor_*，枚举值 30~41）
+    /// </summary>
+    private bool IsIndoorElementId(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return false;
+        if (System.Enum.TryParse<RenderElementType>(id, out var type))
+        {
+            int v = (int)type;
+            return v >= 30 && v <= 41;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 收到换钓点请求：翻转 currentIsFlipped，重新应用场景，再广播镜像状态变化
+    /// </summary>
+    private void OnToggleFishingSpot()
+    {
+        currentIsFlipped = !currentIsFlipped;
+
+        Z_Logger.Log($"[SceneMatManager] 换钓点，currentIsFlipped -> {currentIsFlipped}");
+
+        // 重新应用场景（会应用 elements / mirrorElements / indoorElements + ApplySceneFlip）
+        ApplySceneData(currentSceneId);
+
+        // ★ 广播镜像状态变化，让摄像机等模块知道
+        CommunicateEvent.Modify<bool>("SceneMirrorChanged", currentIsFlipped);
     }
 }

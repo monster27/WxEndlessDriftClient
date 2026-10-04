@@ -9,6 +9,10 @@ using System.Linq;
 public class CollectionDataEditor : EditorWindow
 {
     private const string RELATIVE_PATH = "Addressables/JsonData/BaseFramework/collection.json";
+    private const string FISHES_PATH = "Addressables/JsonData/Game/BagItem/fishes.json";
+    private const string PETS_PATH = "Addressables/JsonData/BaseFramework/pets.json";
+    private const string INSECTS_PATH = "Addressables/JsonData/BaseFramework/insects.json";
+    private const string SCENES_PATH = "Addressables/JsonData/Game/SceneTransData/islandsTransData.json";
 
     private List<CollectionCategory> categories = new List<CollectionCategory>();
     private Vector2 listScrollPosition = Vector2.zero;
@@ -20,16 +24,13 @@ public class CollectionDataEditor : EditorWindow
     private enum EditMode { List, CategoryEdit, PageEdit }
     private EditMode currentMode = EditMode.List;
 
-    // 新增分类字段
     private int newCategoryId = 1;
     private string newCategoryName = "";
     private string newCategoryIcon = "";
 
-    // 新增页面字段
     private int newPageId = 7101;
     private string newPageName = "";
 
-    // 批量添加条目
     private string batchEntryInput = "";
 
     [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/7100_图鉴情报")]
@@ -164,13 +165,11 @@ public class CollectionDataEditor : EditorWindow
         EditorGUILayout.LabelField($"页面列表 (共 {cat.pages.Count} 页)", EditorStyles.boldLabel);
         EditorGUILayout.BeginVertical("box", GUILayout.ExpandHeight(true));
 
-        // 页面列表
         for (int i = 0; i < cat.pages.Count; i++)
         {
             DrawPageItem(cat.pages[i], i);
         }
 
-        // 新增页面
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("新增页面:", GUILayout.Width(60));
         newPageId = EditorGUILayout.IntField(newPageId, GUILayout.Width(60));
@@ -181,19 +180,33 @@ public class CollectionDataEditor : EditorWindow
         GUI.backgroundColor = Color.white;
         EditorGUILayout.EndHorizontal();
 
-        // 按岛屿自动添加鱼类按钮（仅鱼类图鉴）
-        if (cat.id == 1)
-        {
-            EditorGUILayout.BeginHorizontal();
-            GUI.backgroundColor = new Color(0.6f, 0.8f, 1f);
-            if (GUILayout.Button("🐟 按岛屿自动添加鱼类", GUILayout.Width(180)))
-            {
-                AddFishesByIsland(selectedCategoryIndex);
-            }
-            GUI.backgroundColor = Color.white;
-            EditorGUILayout.LabelField("根据fishes.json中的islandId按岛屿分组添加", EditorStyles.miniLabel);
-            EditorGUILayout.EndHorizontal();
-        }
+        // ==================== 4 个生成按钮 ====================
+        GUILayout.Space(5);
+        EditorGUILayout.LabelField("批量生成图鉴:", EditorStyles.boldLabel);
+        EditorGUILayout.BeginHorizontal();
+
+        GUI.backgroundColor = new Color(0.6f, 0.8f, 1f);
+        if (GUILayout.Button("🐟 按岛屿生成鱼类图鉴", GUILayout.Width(180)))
+            GenerateFishCollection();
+
+        GUI.backgroundColor = new Color(0.9f, 0.7f, 1f);
+        if (GUILayout.Button("🐠 生成幻鱼图鉴", GUILayout.Width(140)))
+            GenerateMythicalFishCollection();
+
+        GUI.backgroundColor = new Color(0.7f, 1f, 0.7f);
+        if (GUILayout.Button("🐾 生成宠物图鉴", GUILayout.Width(140)))
+            GeneratePetCollection();
+
+        GUI.backgroundColor = new Color(1f, 0.9f, 0.6f);
+        if (GUILayout.Button("🦋 生成昆虫图鉴", GUILayout.Width(140)))
+            GenerateInsectCollection();
+
+        GUI.backgroundColor = Color.white;
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.LabelField(
+            "鱼类：按 islandId 分组；206 的鱼归入幻鱼图鉴；宠物/昆虫各一页",
+            EditorStyles.miniLabel);
 
         EditorGUILayout.EndVertical();
     }
@@ -294,8 +307,6 @@ public class CollectionDataEditor : EditorWindow
             DrawPageEditMode();
     }
 
-    #region Category Edit Mode
-
     private void DrawCategoryEditMode()
     {
         if (selectedCategoryIndex < 0 || selectedCategoryIndex >= categories.Count)
@@ -382,7 +393,6 @@ public class CollectionDataEditor : EditorWindow
         EditorGUILayout.LabelField($"条目数: {page.entries.Count}", GUILayout.Width(80));
         EditorGUILayout.EndHorizontal();
 
-        // 奖励列表
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("奖励:", GUILayout.Width(40));
         string rewardStr = "";
@@ -393,7 +403,6 @@ public class CollectionDataEditor : EditorWindow
             OpenRewardEditor(selectedCategoryIndex, index);
         EditorGUILayout.EndHorizontal();
 
-        // 条目列表
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("条目:", GUILayout.Width(40));
         string entryStr = string.Join(", ", page.entries.Take(10));
@@ -406,10 +415,6 @@ public class CollectionDataEditor : EditorWindow
         EditorGUILayout.EndVertical();
         GUILayout.Space(5);
     }
-
-    #endregion
-
-    #region Page Edit Mode
 
     private void DrawPageEditMode()
     {
@@ -466,7 +471,6 @@ public class CollectionDataEditor : EditorWindow
         EditorGUILayout.EndVertical();
         GUILayout.Space(10);
 
-        // 奖励编辑
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.LabelField("奖励列表 (每10%一个)", EditorStyles.boldLabel);
 
@@ -487,11 +491,9 @@ public class CollectionDataEditor : EditorWindow
         EditorGUILayout.EndVertical();
         GUILayout.Space(10);
 
-        // 条目编辑
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.LabelField($"条目列表 (共 {page.entries.Count} 个)", EditorStyles.boldLabel);
 
-        // 批量添加
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("批量添加(逗号分隔):", GUILayout.Width(130));
         batchEntryInput = EditorGUILayout.TextField(batchEntryInput, GUILayout.Width(300));
@@ -502,7 +504,6 @@ public class CollectionDataEditor : EditorWindow
         EditorGUILayout.EndHorizontal();
         GUILayout.Space(5);
 
-        // 条目列表
         for (int i = 0; i < page.entries.Count; i++)
         {
             EditorGUILayout.BeginHorizontal();
@@ -530,8 +531,6 @@ public class CollectionDataEditor : EditorWindow
 
         EditorGUILayout.EndScrollView();
     }
-
-    #endregion
 
     #endregion
 
@@ -599,52 +598,12 @@ public class CollectionDataEditor : EditorWindow
     {
         categories = new List<CollectionCategory>
         {
-            new CollectionCategory
-            {
-                id = 1,
-                name = "鱼类图鉴",
-                icon = "icon_fish",
-                pages = new List<CollectionPage>
-                {
-                    new CollectionPage { id = 7101, pageName = "融冠群岛", rewards = CreateDefaultRewards(), entries = new List<int>{ 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015 } },
-                    new CollectionPage { id = 7102, pageName = "珊瑚环心岛", rewards = CreateDefaultRewards(), entries = new List<int>{ 1021, 1022, 1023, 1024 } }
-                }
-            },
-            new CollectionCategory
-            {
-                id = 2,
-                name = "幻鱼图鉴",
-                icon = "icon_mythical",
-                pages = new List<CollectionPage>()
-            },
-            new CollectionCategory
-            {
-                id = 3,
-                name = "昆虫图鉴",
-                icon = "icon_insect",
-                pages = new List<CollectionPage>()
-            },
-            new CollectionCategory
-            {
-                id = 4,
-                name = "人物图鉴",
-                icon = "icon_character",
-                pages = new List<CollectionPage>()
-            },
-            new CollectionCategory
-            {
-                id = 5,
-                name = "宠物图鉴",
-                icon = "icon_pet",
-                pages = new List<CollectionPage>()
-            },
-            new CollectionCategory
-            {
-                id = 6,
-                name = "皮肤图鉴",
-                icon = "icon_Skin",
-                pages = new List<CollectionPage>()
-            }
+            new CollectionCategory { id = 1, name = "鱼类图鉴", icon = "icon_fish", pages = new List<CollectionPage>() },
+            new CollectionCategory { id = 2, name = "幻鱼图鉴", icon = "icon_mythical", pages = new List<CollectionPage>() },
+            new CollectionCategory { id = 3, name = "昆虫图鉴", icon = "icon_insect", pages = new List<CollectionPage>() },
+            new CollectionCategory { id = 4, name = "人物图鉴", icon = "icon_character", pages = new List<CollectionPage>() },
+            new CollectionCategory { id = 5, name = "宠物图鉴", icon = "icon_pet", pages = new List<CollectionPage>() },
+            new CollectionCategory { id = 6, name = "皮肤图鉴", icon = "icon_Skin", pages = new List<CollectionPage>() }
         };
 
         SaveData();
@@ -774,85 +733,416 @@ public class CollectionDataEditor : EditorWindow
         }
     }
 
-    private void AddFishesByIsland(int categoryIndex)
-    {
-        string fishesPath = Path.Combine(Application.dataPath, "Addressables/JsonData/Game/BagItem/fishes.json");
+    #endregion
 
-        if (!File.Exists(fishesPath))
+    #region 图鉴生成（4 个按钮的核心逻辑）
+
+    // ========== 通用：读取 JSON ==========
+    private string GetDataPath(string relative)
+    {
+        return Path.Combine(Application.dataPath, relative);
+    }
+
+    // ========== 通用：获取分类 ==========
+    private CollectionCategory GetCategoryById(int id)
+    {
+        return categories.FirstOrDefault(c => c.id == id);
+    }
+
+    // ========== 通用：获取岛屿名映射 ==========
+    private Dictionary<int, string> LoadIslandNameMap()
+    {
+        var map = new Dictionary<int, string>();
+        string path = GetDataPath(SCENES_PATH);
+        if (!File.Exists(path))
         {
-            EditorUtility.DisplayDialog("错误", $"未找到鱼类数据文件: {fishesPath}", "确定");
+            Z_Logger.LogWarning($"[图鉴生成] 未找到场景文件: {path}");
+            return map;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(path);
+            var wrapper = JsonUtility.FromJson<SceneDataWrapper>(json);
+            if (wrapper?.scenes != null)
+            {
+                foreach (var scene in wrapper.scenes)
+                {
+                    if (int.TryParse(scene.sceneId, out int id))
+                        map[id] = scene.sceneName;
+                }
+            }
+        }
+        catch (System.Exception e)
+        {
+            Z_Logger.LogError($"[图鉴生成] 解析场景文件失败: {e.Message}");
+        }
+        return map;
+    }
+
+    // ========== 通用：生成 page id（分类id * 100 + 7000 + 序号） ==========
+    private int GenerateNextPageId(CollectionCategory cat)
+    {
+        int baseId = 7000 + cat.id * 100;
+        int maxSuffix = 0;
+        foreach (var p in cat.pages)
+        {
+            int suffix = p.id - baseId;
+            if (suffix > maxSuffix) maxSuffix = suffix;
+        }
+        return baseId + maxSuffix + 1;
+    }
+
+    // ========== 通用：比较 entries ==========
+    private bool AreEntriesEqual(List<int> a, List<int> b)
+    {
+        if (a == null || b == null) return false;
+        if (a.Count != b.Count) return false;
+        var sa = a.OrderBy(x => x).ToList();
+        var sb = b.OrderBy(x => x).ToList();
+        for (int i = 0; i < sa.Count; i++)
+            if (sa[i] != sb[i]) return false;
+        return true;
+    }
+
+    // ========== 通用：生成入口 ==========
+    /// <summary>
+    /// 处理一批页面数据，返回待确认的差异列表
+    /// </summary>
+    private List<PageDiff> ApplyPages(
+        CollectionCategory cat,
+        List<(string pageName, List<int> entries)> pageDataList)
+    {
+        var diffs = new List<PageDiff>();
+
+        foreach (var (pageName, newEntries) in pageDataList)
+        {
+            var existing = cat.pages.FirstOrDefault(p => p.pageName == pageName);
+            if (existing == null)
+            {
+                // 不存在 → 新建
+                cat.pages.Add(new CollectionPage
+                {
+                    id = GenerateNextPageId(cat),
+                    pageName = pageName,
+                    rewards = CreateDefaultRewards(),
+                    entries = newEntries.OrderBy(x => x).ToList()
+                });
+            }
+            else
+            {
+                // 存在 → 比较
+                if (!AreEntriesEqual(existing.entries, newEntries))
+                {
+                    diffs.Add(new PageDiff
+                    {
+                        page = existing,
+                        newEntries = newEntries.OrderBy(x => x).ToList(),
+                        oldEntries = existing.entries.OrderBy(x => x).ToList()
+                    });
+                }
+            }
+        }
+
+        // 页面按 id 排序
+        cat.pages = cat.pages.OrderBy(p => p.id).ToList();
+        return diffs;
+    }
+
+    private class PageDiff
+    {
+        public CollectionPage page;
+        public List<int> newEntries;
+        public List<int> oldEntries;
+    }
+
+    // ========== 汇总确认差异 ==========
+    private bool ConfirmDiffs(List<PageDiff> diffs)
+    {
+        if (diffs.Count == 0) return true;
+
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"检测到 {diffs.Count} 个页面内容与现有数据不同，是否替换？");
+        sb.AppendLine();
+        foreach (var d in diffs)
+        {
+            sb.AppendLine($"【{d.page.pageName}】");
+            sb.AppendLine($"  现有条目数: {d.oldEntries.Count}");
+            sb.AppendLine($"  新条目数: {d.newEntries.Count}");
+            sb.AppendLine($"  现有: {string.Join(",", d.oldEntries.Take(20))}{(d.oldEntries.Count > 20 ? "..." : "")}");
+            sb.AppendLine($"  新数据: {string.Join(",", d.newEntries.Take(20))}{(d.newEntries.Count > 20 ? "..." : "")}");
+            sb.AppendLine();
+        }
+
+        return EditorUtility.DisplayDialog("内容不同", sb.ToString(), "全部替换", "取消");
+    }
+
+    // ============================================================
+    // 【按钮 1】鱼类图鉴：按岛屿分组（排除 206）
+    // ============================================================
+    private void GenerateFishCollection()
+    {
+        string path = GetDataPath(FISHES_PATH);
+        if (!File.Exists(path))
+        {
+            EditorUtility.DisplayDialog("错误", $"未找到鱼类文件:\n{path}", "确定");
+            return;
+        }
+
+        var cat = GetCategoryById(1);
+        if (cat == null)
+        {
+            EditorUtility.DisplayDialog("错误", "未找到分类 id=1（鱼类图鉴）", "确定");
             return;
         }
 
         try
         {
-            string json = File.ReadAllText(fishesPath);
-            var wrapper = JsonUtility.FromJson<FishWrapper>(json);
-
-            if (wrapper == null || wrapper.fishes == null || wrapper.fishes.Count == 0)
+            string json = File.ReadAllText(path);
+            var wrapper = JsonUtility.FromJson<FishListWrapper>(json);
+            if (wrapper?.fishes == null || wrapper.fishes.Count == 0)
             {
-                EditorUtility.DisplayDialog("错误", "鱼类数据为空", "确定");
+                EditorUtility.DisplayDialog("提示", "鱼类数据为空", "确定");
                 return;
             }
 
-            var fishesByIsland = wrapper.fishes.GroupBy(f => f.islandId)
+            // 排除 206（幻鱼）
+            var normalFishes = wrapper.fishes.Where(f => f.rarityId != 206).ToList();
+            if (normalFishes.Count == 0)
+            {
+                EditorUtility.DisplayDialog("提示", "没有非幻鱼数据（206）", "确定");
+                return;
+            }
+
+            var islandMap = LoadIslandNameMap();
+            var groups = normalFishes.GroupBy(f => f.islandId)
                 .OrderBy(g => g.Key)
                 .ToList();
 
-            if (fishesByIsland.Count == 0)
+            var pageDataList = new List<(string, List<int>)>();
+            foreach (var g in groups)
             {
-                EditorUtility.DisplayDialog("提示", "未找到任何鱼类数据", "确定");
+                string pageName = islandMap.TryGetValue(g.Key, out var name)
+                    ? name
+                    : $"岛屿{g.Key}";
+                var entries = g.Select(f => f.id).OrderBy(x => x).ToList();
+                pageDataList.Add((pageName, entries));
+            }
+
+            var diffs = ApplyPages(cat, pageDataList);
+
+            if (!ConfirmDiffs(diffs))
+            {
+                Z_Logger.Log("[图鉴生成] 用户取消了鱼类替换");
                 return;
             }
 
-            var cat = categories[categoryIndex];
-            int newPageId = cat.pages.Count > 0 ? cat.pages.Max(p => p.id) + 1 : 7101;
-            int totalAdded = 0;
+            foreach (var d in diffs)
+                d.page.entries = d.newEntries;
 
-            foreach (var islandGroup in fishesByIsland)
-            {
-                int islandId = islandGroup.Key;
-                var fishIds = islandGroup.Select(f => f.id).OrderBy(id => id).ToList();
-
-                string pageName = $"岛屿{islandId}鱼类";
-                var existingPage = cat.pages.FirstOrDefault(p => p.pageName == pageName);
-
-                if (existingPage != null)
-                {
-                    foreach (int fishId in fishIds)
-                    {
-                        if (!existingPage.entries.Contains(fishId))
-                        {
-                            existingPage.entries.Add(fishId);
-                            totalAdded++;
-                        }
-                    }
-                    existingPage.entries.Sort();
-                }
-                else
-                {
-                    cat.pages.Add(new CollectionPage
-                    {
-                        id = newPageId++,
-                        pageName = pageName,
-                        rewards = CreateDefaultRewards(),
-                        entries = fishIds
-                    });
-                    totalAdded += fishIds.Count;
-                }
-            }
-
-            cat.pages = cat.pages.OrderBy(p => p.id).ToList();
             SaveData();
             LoadData();
-            EditorUtility.DisplayDialog("成功", $"按岛屿分组添加完成！共添加 {totalAdded} 条鱼类，生成 {fishesByIsland.Count} 个页面", "确定");
+            EditorUtility.DisplayDialog("成功",
+                $"鱼类图鉴生成完成！\n生成 {pageDataList.Count} 个页面（按岛屿）\n替换 {diffs.Count} 个页面",
+                "确定");
         }
         catch (System.Exception e)
         {
-            EditorUtility.DisplayDialog("错误", $"解析鱼类数据失败: {e.Message}", "确定");
-            Z_Logger.LogError($"AddFishesByIsland error: {e}");
+            EditorUtility.DisplayDialog("错误", $"解析失败: {e.Message}", "确定");
+            Z_Logger.LogError($"GenerateFishCollection error: {e}");
         }
     }
+
+    // ============================================================
+    // 【按钮 2】幻鱼图鉴：仅 206，单页
+    // ============================================================
+    private void GenerateMythicalFishCollection()
+    {
+        string path = GetDataPath(FISHES_PATH);
+        if (!File.Exists(path))
+        {
+            EditorUtility.DisplayDialog("错误", $"未找到鱼类文件:\n{path}", "确定");
+            return;
+        }
+
+        var cat = GetCategoryById(2);
+        if (cat == null)
+        {
+            EditorUtility.DisplayDialog("错误", "未找到分类 id=2（幻鱼图鉴）", "确定");
+            return;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(path);
+            var wrapper = JsonUtility.FromJson<FishListWrapper>(json);
+            if (wrapper?.fishes == null)
+            {
+                EditorUtility.DisplayDialog("提示", "鱼类数据为空", "确定");
+                return;
+            }
+
+            var mythical = wrapper.fishes.Where(f => f.rarityId == 206)
+                .Select(f => f.id).OrderBy(x => x).ToList();
+
+            if (mythical.Count == 0)
+            {
+                EditorUtility.DisplayDialog("提示", "没有幻鱼（206）数据", "确定");
+                return;
+            }
+
+            var pageDataList = new List<(string, List<int>)>
+            {
+                ("幻鱼图鉴", mythical)
+            };
+
+            var diffs = ApplyPages(cat, pageDataList);
+
+            if (!ConfirmDiffs(diffs))
+            {
+                Z_Logger.Log("[图鉴生成] 用户取消了幻鱼替换");
+                return;
+            }
+
+            foreach (var d in diffs)
+                d.page.entries = d.newEntries;
+
+            SaveData();
+            LoadData();
+            EditorUtility.DisplayDialog("成功",
+                $"幻鱼图鉴生成完成！共 {mythical.Count} 条\n替换 {diffs.Count} 个页面",
+                "确定");
+        }
+        catch (System.Exception e)
+        {
+            EditorUtility.DisplayDialog("错误", $"解析失败: {e.Message}", "确定");
+            Z_Logger.LogError($"GenerateMythicalFishCollection error: {e}");
+        }
+    }
+
+    // ============================================================
+    // 【按钮 3】宠物图鉴：单页
+    // ============================================================
+    private void GeneratePetCollection()
+    {
+        string path = GetDataPath(PETS_PATH);
+        if (!File.Exists(path))
+        {
+            EditorUtility.DisplayDialog("错误", $"未找到宠物文件:\n{path}", "确定");
+            return;
+        }
+
+        var cat = GetCategoryById(5);
+        if (cat == null)
+        {
+            EditorUtility.DisplayDialog("错误", "未找到分类 id=5（宠物图鉴）", "确定");
+            return;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(path);
+            var wrapper = JsonUtility.FromJson<PetListWrapper>(json);
+            if (wrapper?.pets == null || wrapper.pets.Count == 0)
+            {
+                EditorUtility.DisplayDialog("提示", "宠物数据为空", "确定");
+                return;
+            }
+
+            var entries = wrapper.pets.Select(p => p.id).OrderBy(x => x).ToList();
+
+            var pageDataList = new List<(string, List<int>)>
+            {
+                ("宠物图鉴", entries)
+            };
+
+            var diffs = ApplyPages(cat, pageDataList);
+
+            if (!ConfirmDiffs(diffs))
+            {
+                Z_Logger.Log("[图鉴生成] 用户取消了宠物替换");
+                return;
+            }
+
+            foreach (var d in diffs)
+                d.page.entries = d.newEntries;
+
+            SaveData();
+            LoadData();
+            EditorUtility.DisplayDialog("成功",
+                $"宠物图鉴生成完成！共 {entries.Count} 条\n替换 {diffs.Count} 个页面",
+                "确定");
+        }
+        catch (System.Exception e)
+        {
+            EditorUtility.DisplayDialog("错误", $"解析失败: {e.Message}", "确定");
+            Z_Logger.LogError($"GeneratePetCollection error: {e}");
+        }
+    }
+
+    // ============================================================
+    // 【按钮 4】昆虫图鉴：单页
+    // ============================================================
+    private void GenerateInsectCollection()
+    {
+        string path = GetDataPath(INSECTS_PATH);
+        if (!File.Exists(path))
+        {
+            EditorUtility.DisplayDialog("错误", $"未找到昆虫文件:\n{path}", "确定");
+            return;
+        }
+
+        var cat = GetCategoryById(3);
+        if (cat == null)
+        {
+            EditorUtility.DisplayDialog("错误", "未找到分类 id=3（昆虫图鉴）", "确定");
+            return;
+        }
+
+        try
+        {
+            string json = File.ReadAllText(path);
+            var wrapper = JsonUtility.FromJson<InsectListWrapper>(json);
+            if (wrapper?.insects == null || wrapper.insects.Count == 0)
+            {
+                EditorUtility.DisplayDialog("提示", "昆虫数据为空", "确定");
+                return;
+            }
+
+            var entries = wrapper.insects.Select(i => i.id).OrderBy(x => x).ToList();
+
+            var pageDataList = new List<(string, List<int>)>
+            {
+                ("昆虫图鉴", entries)
+            };
+
+            var diffs = ApplyPages(cat, pageDataList);
+
+            if (!ConfirmDiffs(diffs))
+            {
+                Z_Logger.Log("[图鉴生成] 用户取消了昆虫替换");
+                return;
+            }
+
+            foreach (var d in diffs)
+                d.page.entries = d.newEntries;
+
+            SaveData();
+            LoadData();
+            EditorUtility.DisplayDialog("成功",
+                $"昆虫图鉴生成完成！共 {entries.Count} 条\n替换 {diffs.Count} 个页面",
+                "确定");
+        }
+        catch (System.Exception e)
+        {
+            EditorUtility.DisplayDialog("错误", $"解析失败: {e.Message}", "确定");
+            Z_Logger.LogError($"GenerateInsectCollection error: {e}");
+        }
+    }
+
+    #endregion
+
+    #region Helpers
 
     private bool IsCategoryIdDuplicate(int id, int excludeIndex)
     {
@@ -899,54 +1189,6 @@ public class CollectionDataEditor : EditorWindow
     }
 
     #endregion
-
-    //#region Data Classes
-
-    //[System.Serializable]
-    //public class Reward
-    //{
-    //    public int percent;
-    //    public int rewardId;
-    //    public int rewardAmount;
-    //}
-
-    //[System.Serializable]
-    //public class CollectionPage
-    //{
-    //    public int id;
-    //    public string pageName;
-    //    public List<Reward> rewards;
-    //    public List<int> entries;
-    //}
-
-    //[System.Serializable]
-    //public class CollectionCategory
-    //{
-    //    public int id;
-    //    public string name;
-    //    public string icon;
-    //    public List<CollectionPage> pages;
-    //}
-
-    //[System.Serializable]
-    //public class CollectionRoot
-    //{
-    //    public List<CollectionCategory> categories;
-    //}
-
-    //[System.Serializable]
-    //public class CollectionWrapper
-    //{
-    //    public CollectionRoot collection;
-    //}
-
-    //[System.Serializable]
-    //public class FishWrapper
-    //{
-    //    public List<FishData> fishes;
-    //}
-
-    //#endregion
 }
 
 // ==================== PageEntryEditorWindow.cs ====================
@@ -979,7 +1221,6 @@ public class PageEntryEditorWindow : EditorWindow
         EditorGUILayout.LabelField($"当前条目数: {targetPage.entries.Count}", EditorStyles.miniLabel);
         GUILayout.Space(10);
 
-        // 新增条目
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("新增条目ID:", GUILayout.Width(80));
         newEntryId = EditorGUILayout.IntField(newEntryId, GUILayout.Width(80));
@@ -1000,7 +1241,6 @@ public class PageEntryEditorWindow : EditorWindow
         EditorGUILayout.EndHorizontal();
         GUILayout.Space(10);
 
-        // 批量添加
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("批量添加(逗号分隔):", GUILayout.Width(120));
         entryInput = EditorGUILayout.TextField(entryInput, GUILayout.Width(200));
@@ -1011,7 +1251,6 @@ public class PageEntryEditorWindow : EditorWindow
         EditorGUILayout.EndHorizontal();
         GUILayout.Space(10);
 
-        // 条目列表
         EditorGUILayout.LabelField("条目列表:", EditorStyles.boldLabel);
         EditorGUILayout.BeginVertical("box", GUILayout.Height(300));
         scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);

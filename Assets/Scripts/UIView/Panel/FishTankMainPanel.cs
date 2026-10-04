@@ -374,7 +374,8 @@ public class FishTankMainPanel : MonoBehaviour
             };
             fish.Init(fishSpeciesData, null);
 
-            fish.SetBaseHeight(baseHeight);
+            // 先设置 JSON 配置缩放，再设置贴图，SetTexture 内部会用 _configScale
+            fish.SetConfigScale(fishData.scale);
             fish.UniformScale = uniformScale * UnityEngine.Random.Range(0.8f, 1.2f);
             fish.EnableDebugLog = enableDebugLog;
             fish.SetTexture(sprite.texture);

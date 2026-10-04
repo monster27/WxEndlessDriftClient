@@ -261,6 +261,10 @@ public class SceneMatCtrl : MonoBehaviour
         if (texture == null || material == null) return;
 
         Z_Logger.Log($"[{LOG_TAG}] {gameObject.name}.SetMainTexture() - 🖼️ 设置主纹理: {texture.name}");
+        Z_Logger.Log($"[SceneMat] {gameObject.name}.SetMainTexture() - " +
+             $"material={material.name} (ID={material.GetInstanceID()}), " +
+             $"texture={texture.name}, " +
+             $"ElementId={ElementId}");
         mainTexture = texture;
         material.SetTexture(MainTex, texture);
         OnMainTextureChanged?.Invoke(texture);

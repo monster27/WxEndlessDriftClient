@@ -78,10 +78,10 @@
             "code": "G",
             "description": "G.情报",
             "startId": 7000,
-            "endId": 7199,
+            "endId": 7700,
             "subCategories": [
                 { "id": 70, "name": "岛屿情报", "description": "各岛屿图鉴情报", "startId": 7001, "endId": 7099 },
-                { "id": 71, "name": "图鉴情报", "description": "各场景图鉴情报", "startId": 7101, "endId": 7199 }
+                { "id": 71, "name": "图鉴情报", "description": "各场景图鉴情报", "startId": 7101, "endId": 7700 }
             ]
         },
         {

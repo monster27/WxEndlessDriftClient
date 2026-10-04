@@ -21,6 +21,7 @@ public class MainGameView : BaseView
     public Button collectionBtn;
     public Button eggBtn;
     public Button petBtn;
+    public Button fishingSpotBtn;   // ★ 换钓点按钮
 
     public Button menuOpenBtn;
     public Button menuCloseBtn;
@@ -126,6 +127,10 @@ public class MainGameView : BaseView
         {
             petBtn.onClick.AddListener(OnPetBtnClick);
         }
+        if (fishingSpotBtn != null)
+        {
+            fishingSpotBtn.onClick.AddListener(OnFishingSpotBtnClick);
+        }
 
         if (mainTile != null)
         {
@@ -163,7 +168,11 @@ public class MainGameView : BaseView
         Z_Logger.Log("[MainGameView] OnPetBtnClick - 点击宠物按钮");
         CommunicateEvent.Modify("UI_OpenPet");
     }
-
+    private void OnFishingSpotBtnClick()
+    {
+        Z_Logger.Log("[MainGameView] OnFishingSpotBtnClick - 点击换钓点");
+        CommunicateEvent.Modify("UI_ToggleFishingSpot");
+    }
     // ============================================================
     // 原有按钮点击
     // ============================================================

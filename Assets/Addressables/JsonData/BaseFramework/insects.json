@@ -4,37 +4,43 @@
             "id": 10001,
             "rarityId": 201,
             "name": "蝴蝶",
-            "description": "常见的蝴蝶，普通昆虫。"
+            "description": "常见的蝴蝶，普通昆虫。",
+            "scale": 1.0
         },
         {
             "id": 10002,
             "rarityId": 202,
             "name": "蜜蜂",
-            "description": "罕见的蜜蜂，会采蜜。"
+            "description": "罕见的蜜蜂，会采蜜。",
+            "scale": 1.0
         },
         {
             "id": 10003,
             "rarityId": 203,
             "name": "甲虫",
-            "description": "稀有的甲虫，外壳坚硬。"
+            "description": "稀有的甲虫，外壳坚硬。",
+            "scale": 1.0
         },
         {
             "id": 10004,
             "rarityId": 204,
             "name": "蜻蜓",
-            "description": "史诗的蜻蜓，飞行速度极快。"
+            "description": "史诗的蜻蜓，飞行速度极快。",
+            "scale": 1.0
         },
         {
             "id": 10005,
             "rarityId": 205,
             "name": "萤火虫",
-            "description": "传说的萤火虫，夜晚会发光。"
+            "description": "传说的萤火虫，夜晚会发光。",
+            "scale": 1.0
         },
         {
             "id": 10006,
             "rarityId": 206,
             "name": "幻影蝶",
-            "description": "幻想的幻影蝶，极其罕见，传说中才会出现。"
+            "description": "幻想的幻影蝶，极其罕见，传说中才会出现。",
+            "scale": 1.0
         }
     ]
 }

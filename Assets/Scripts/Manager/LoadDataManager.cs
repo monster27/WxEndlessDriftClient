@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 public class LoadDataManager : SingletonMono<LoadDataManager>
 {
     [Header("JSON文件路径")]
-    private string islandsJsonPath = "JsonData/BaseFramework/islands";
+ //   private string islandsJsonPath = "JsonData/BaseFramework/islands";
     private string raritiesJsonPath = "JsonData/BaseFramework/rarities";
     private string baitsJsonPath = "JsonData/Game/BagItem/baits";
     private string nestBaitsJsonPath = "JsonData/Game/BagItem/nestBaits";
@@ -22,7 +22,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     private string fishingComponentsJsonPath = "JsonData/Ability/fishing_components";
     private string charactersJsonPath = "JsonData/BaseFramework/characters";
     private string uiTextsJsonPath = "JsonData/Game/GameFramework/uiTexts";
-    private string sceneDataPath = "JsonData/Game/SceneTransData/mainTransData";
+    private string sceneDataPath = "JsonData/Game/SceneTransData/islandsTransData";
     private string fishTankDecorationsJsonPath = "JsonData/Game/BagItem/fishTankDec";
     private string fishTankConfigJsonPath = "JsonData/BaseFramework/fishTankConfig";
 
@@ -96,6 +96,7 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         dataLog.Clear();
         dataLog.AppendLine("========== 数据加载日志 ==========");
 
+        await LoadSceneData();
         await LoadIslandData();
         await LoadRarityData();
         await LoadBaitData();
@@ -111,7 +112,6 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         await LoadAbilityData();
         await LoadFishingComponentsData();
         await LoadCharactersData();
-        await LoadSceneData();
         await LoadUITextsData();
         await LoadFishTankDecorationData();
         await LoadFishTankConfigData();
@@ -131,18 +131,42 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         }
     }
 
+    /// <summary>
+    /// 从 sceneDataWrapper.scenes 派生岛屿列表
+    /// （岛屿数据的唯一来源是 islandsTransData.json）
+    /// </summary>
     private async Task LoadIslandData()
     {
-        string json = await RWJsonData.LoadJson(islandsJsonPath);
-        var wrapper = RWJsonData.ParseJson<IslandListWrapper>(json);
-        islands = (wrapper != null && wrapper.islands != null) ? wrapper.islands : new List<IslandData>();
+        islands.Clear();
+
+        if (sceneDataWrapper == null || sceneDataWrapper.scenes == null)
+        {
+            dataLog.AppendLine($"✗ 岛屿数据: sceneDataWrapper 为空");
+            return;
+        }
+
+        foreach (var scene in sceneDataWrapper.scenes)
+        {
+            if (scene == null) continue;
+            if (!int.TryParse(scene.sceneId, out int islandId)) continue;
+
+            islands.Add(new IslandData
+            {
+                id = islandId,
+                name = scene.sceneName
+            });
+        }
+
         if (islands.Count > 0)
         {
-            dataLog.AppendLine($"✓ 岛屿数据: 成功加载 {islands.Count} 个岛屿");
+            dataLog.AppendLine($"✓ 岛屿数据: 从 islandsTransData 派生 {islands.Count} 个岛屿");
             foreach (var item in islands)
                 dataLog.AppendLine($"    - ID: {item.id}, 名称: {item.name}");
         }
-        else dataLog.AppendLine($"✗ 岛屿数据: 加载失败");
+        else
+        {
+            dataLog.AppendLine($"✗ 岛屿数据: islandsTransData 中没有场景");
+        }
     }
 
     private async Task LoadRarityData()

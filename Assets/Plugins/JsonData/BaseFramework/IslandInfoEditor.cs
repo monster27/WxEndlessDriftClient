@@ -13,7 +13,8 @@ using System.Linq;
 /// </summary>
 public class IslandInfoEditor : EditorWindow
 {
-    private const string ISLAND_DATA_PATH = "Addressables/JsonData/BaseFramework/islands.json";
+    //private const string ISLAND_DATA_PATH = "Addressables/JsonData/BaseFramework/islands.json";
+    private const string SCENE_DATA_PATH = "Addressables/JsonData/Game/SceneTransData/islandsTransData.json";
     private const string CATEGORY_DATA_PATH = "Addressables/JsonData/Game/GameFramework/itemCategories.json";
     private const string ISLAND_INFO_DATA_PATH = "Addressables/JsonData/Game/GameFramework/islandInfo.json";
 
@@ -57,7 +58,7 @@ public class IslandInfoEditor : EditorWindow
 
         if (!isDataLoaded || islandDataList.Count == 0)
         {
-            EditorGUILayout.HelpBox("请确保 islands.json 存在且包含岛屿数据", MessageType.Info);
+            EditorGUILayout.HelpBox("请确保 json 存在且包含岛屿数据", MessageType.Info);
             return;
         }
 
@@ -92,28 +93,40 @@ public class IslandInfoEditor : EditorWindow
 
     private void LoadIslandData()
     {
-        string fullPath = Path.Combine(Application.dataPath, ISLAND_DATA_PATH);
+        string fullPath = Path.Combine(Application.dataPath, SCENE_DATA_PATH);
         islandDataList.Clear();
 
         if (!File.Exists(fullPath))
         {
-            Z_Logger.LogWarning($"[岛屿情报编辑器] 岛屿数据文件不存在: {fullPath}");
+            Z_Logger.LogWarning($"[岛屿情报编辑器] 场景数据文件不存在: {fullPath}");
             return;
         }
 
         try
         {
             string json = File.ReadAllText(fullPath);
-            var wrapper = JsonUtility.FromJson<IslandListWrapper>(json);
-            if (wrapper?.islands != null)
+            var wrapper = JsonUtility.FromJson<SceneDataWrapper>(json);
+
+            if (wrapper?.scenes != null)
             {
-                islandDataList = wrapper.islands;
-                Z_Logger.Log($"[岛屿情报编辑器] 加载岛屿: {islandDataList.Count} 个");
+                foreach (var scene in wrapper.scenes)
+                {
+                    if (scene == null) continue;
+                    if (!int.TryParse(scene.sceneId, out int islandId)) continue;
+
+                    islandDataList.Add(new IslandData
+                    {
+                        id = islandId,
+                        name = scene.sceneName
+                    });
+                }
+
+                Z_Logger.Log($"[岛屿情报编辑器] 从 islandsTransData 加载岛屿: {islandDataList.Count} 个");
             }
         }
         catch (System.Exception e)
         {
-            Z_Logger.LogError($"[岛屿情报编辑器] 加载岛屿数据失败: {e.Message}");
+            Z_Logger.LogError($"[岛屿情报编辑器] 加载场景数据失败: {e.Message}");
         }
     }
 
@@ -332,7 +345,7 @@ public class IslandInfoEditor : EditorWindow
         // ✅ 重新生成后询问是否自动保存
         int saveChoice = EditorUtility.DisplayDialogComplex(
             "重新生成完成",
-            $"已从 islands.json 重新生成 {islandInfoList.Count} 个岛屿情报。\n\n是否自动保存到文件？",
+            $"已从 json 重新生成 {islandInfoList.Count} 个岛屿情报。\n\n是否自动保存到文件？",
             "自动保存",
             "不保存",
             "取消"
@@ -462,7 +475,7 @@ public class IslandInfoEditor : EditorWindow
         }
 
         GUILayout.FlexibleSpace();
-        EditorGUILayout.LabelField("💡 岛屿情报由 islands.json 自动生成，仅用于数据提取", EditorStyles.miniLabel);
+        EditorGUILayout.LabelField("💡 岛屿情报由 json 自动生成，仅用于数据提取", EditorStyles.miniLabel);
 
         EditorGUILayout.EndHorizontal();
     }

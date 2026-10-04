@@ -86,16 +86,38 @@ public class CollInfoPanel : MonoBehaviour
     private void ShowNonFishInfo(int entryId)
     {
         var itemData = LoadDataManager.Instance?.GetItemById(entryId);
+
+        string entryName = "未知物品";
+        string entryDesc = "暂无描述";
+
         if (itemData != null)
         {
-            nameText.text = itemData.name;
-            descriptionText.text = itemData.description ?? "暂无描述";
+            entryName = itemData.name;
+            entryDesc = itemData.description ?? "暂无描述";
         }
-        else
+
+        // ✅ 昆虫 / 宠物：走专用配置拿名字和描述（更准）
+        if (entryId >= 10001 && entryId <= 10099)
         {
-            nameText.text = "未知物品";
-            descriptionText.text = "暂无描述";
+            var insect = LoadDataManager.Instance?.GetInsectById(entryId);
+            if (insect != null)
+            {
+                entryName = insect.name;
+                entryDesc = insect.description ?? entryDesc;
+            }
         }
+        else if (entryId >= 10101 && entryId <= 10199)
+        {
+            var pet = LoadDataManager.Instance?.GetPetById(entryId);
+            if (pet != null)
+            {
+                entryName = pet.name;
+                entryDesc = pet.description ?? entryDesc;
+            }
+        }
+
+        nameText.text = entryName;
+        descriptionText.text = entryDesc;
 
         weatherText.gameObject.SetActive(false);
         timeText.gameObject.SetActive(false);
@@ -153,11 +175,6 @@ public class CollInfoPanel : MonoBehaviour
             }
         }
         return string.Join(", ", names);
-    }
-
-    private int GetCatchCount(int fishId)
-    {
-        return 0;
     }
 
     public void Hide()

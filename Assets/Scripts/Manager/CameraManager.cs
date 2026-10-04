@@ -25,7 +25,7 @@ public class CameraManager : MonoBehaviour
     public float smoothSpeed = 10f;
 
     [Header("移动设置")]
-    [Tooltip("启用后，手指右滑摄像头左移，手指左滑摄像头右移")]
+    [Tooltip("启用后，手指右滑摄像头左移，手指左滑摄像头右移，主要是操作习惯，一次设置之后就不用改了，跟场景参数无关")]
     public bool isMirrored = false;
 
     [Header("UI检测")]
@@ -48,6 +48,12 @@ public class CameraManager : MonoBehaviour
     private float cameraStartX;
     private float lastTouchX;
 
+    /// <summary>
+    /// 场景镜像状态（换钓点切换），true = 摄像机在最右，false = 在最左
+    /// </summary>
+    private bool isSceneMirrored = false;
+
+    public bool IsSceneMirrored => isSceneMirrored;
     // UI检测缓存
     private PointerEventData pointerEventData;
     private GraphicRaycaster[] graphicRaycasters;
@@ -83,9 +89,15 @@ public class CameraManager : MonoBehaviour
         }
 
         isIndoorMode = false;
+
+        CommunicateEvent.Register<bool>("SceneMirrorChanged", OnSceneMirrorChanged);
         Z_Logger.Log("[CameraManager] 初始化完成，室外模式");
     }
-
+    private void OnDestroy()
+    {
+        CommunicateEvent.Unregister<bool>("SceneMirrorChanged", OnSceneMirrorChanged);
+        if (Instance == this) Instance = null;
+    }
     private void Update()
     {
         // 室内模式不可移动
@@ -497,5 +509,21 @@ public class CameraManager : MonoBehaviour
     public float GetSavedOutdoorX()
     {
         return savedOutdoorX;
+    }
+
+    /// <summary>
+    /// 收到镜像状态变化：true 移到最右，false 移到最左
+    /// </summary>
+    private void OnSceneMirrorChanged(bool isMirrored)
+    {
+        if (isIndoorMode) return;
+        isSceneMirrored = isMirrored;
+
+        if (isMirrored)
+            MoveToXSmooth(maxX, 5f);
+        else
+            MoveToXSmooth(minX, 5f);
+
+        Z_Logger.Log($"[CameraManager] 场景镜像状态: {isMirrored}, 摄像机 -> {(isMirrored ? "maxX" : "minX")}");
     }
 }

@@ -82,8 +82,12 @@ public class UI_CollectionPrefab : MonoBehaviour
         infoState = state;
         this.pageName = pageName ?? "";
 
+        // ✅ 先拿到 itemData（后面 icon / 稀有度 / 闪光都要用）
+        itemData = LoadDataManager.Instance?.GetItemById(entryId);
+
         StartCoroutine(UpdateDisplayByStateCoroutine());
 
+        // ✅ 闪光按钮只对鱼类显示
         if (!isFish && shinyToggleButton != null)
         {
             shinyToggleButton.gameObject.SetActive(false);
@@ -110,7 +114,7 @@ public class UI_CollectionPrefab : MonoBehaviour
     }
 
     /// <summary>
-    /// 通用 AA 加载 Sprite 协程（修正版：返回 handle）
+    /// 通用 AA 加载 Sprite 协程
     /// </summary>
     private IEnumerator LoadSpriteCoroutine(string key, System.Action<Sprite, AsyncOperationHandle<Sprite>> onLoaded)
     {
@@ -156,65 +160,25 @@ public class UI_CollectionPrefab : MonoBehaviour
     /// <summary>
     /// 显示已获取情报状态
     /// </summary>
+    /// <summary>
+    /// 显示已获取情报状态
+    /// </summary>
     private IEnumerator ShowInfoObtainedStateCoroutine()
     {
-        if (isFish)
+        // ✅ 统一：先拿名字
+        string entryName = GetEntryName();
+        nameText.text = entryName;
+
+        // ✅ 加载 outline 图标
+        Sprite outlineSprite = null;
+        yield return StartCoroutine(LoadOutlineIconCoroutineInternal((sprite) => outlineSprite = sprite));
+
+        if (outlineSprite != null)
         {
-            Sprite outlineSprite = null;
-            yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/FishIcons/{entryId}_Outline", (sprite, handle) =>
-            {
-                outlineSprite = sprite;
-                _outlineHandle = handle;
-            }));
-            if (outlineSprite == null)
-            {
-                yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/FishIcons/{entryId}", (sprite, handle) =>
-                {
-                    outlineSprite = sprite;
-                    _outlineHandle = handle;
-                }));
-            }
-            if (outlineSprite != null)
-            {
-                SetIcon(outlineSprite);
-            }
-
-            var fishData = LoadDataManager.Instance?.GetFishById(entryId);
-            if (fishData != null)
-            {
-                nameText.text = fishData.name;
-            }
-
-            yield return StartCoroutine(UpdateRarityBackgroundCoroutine());
+            SetIcon(outlineSprite);
         }
-        else
-        {
-            itemData = LoadDataManager.Instance?.GetItemById(entryId);
-            if (itemData != null)
-            {
-                nameText.text = itemData.name;
-                Sprite outlineSprite = null;
-                yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/ItemIcons/{entryId}_Outline", (sprite, handle) =>
-                {
-                    outlineSprite = sprite;
-                    _outlineHandle = handle;
-                }));
-                if (outlineSprite == null)
-                {
-                    yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/ItemIcons/{entryId}", (sprite, handle) =>
-                    {
-                        outlineSprite = sprite;
-                        _outlineHandle = handle;
-                    }));
-                }
-                if (outlineSprite != null)
-                {
-                    SetIcon(outlineSprite);
-                }
-            }
 
-            yield return StartCoroutine(UpdateRarityBackgroundCoroutine());
-        }
+        yield return StartCoroutine(UpdateRarityBackgroundCoroutine());
 
         if (levelImage != null) levelImage.gameObject.SetActive(false);
         if (shinyImage != null) shinyImage.gameObject.SetActive(false);
@@ -225,6 +189,56 @@ public class UI_CollectionPrefab : MonoBehaviour
         {
             button.interactable = true;
         }
+    }
+
+    /// <summary>
+    /// 加载 outline 图标（鱼类 / 非鱼统一）
+    /// </summary>
+    private IEnumerator LoadOutlineIconCoroutineInternal(System.Action<Sprite> onLoaded)
+    {
+        Sprite result = null;
+
+        if (isFish)
+        {
+            // 鱼类：FishIcons/{entryId}_Outline → FishIcons/{entryId}
+            yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/FishIcons/{entryId}_Outline", (sprite, handle) =>
+            {
+                result = sprite;
+                if (sprite != null) _outlineHandle = handle;
+            }));
+            if (result == null)
+            {
+                yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/FishIcons/{entryId}", (sprite, handle) =>
+                {
+                    result = sprite;
+                    if (sprite != null) _outlineHandle = handle;
+                }));
+            }
+        }
+        else
+        {
+            // ✅ 非鱼：走 itemData.iconPath
+            if (itemData != null && !string.IsNullOrEmpty(itemData.iconPath))
+            {
+                // 先试 iconPath + "_Outline"
+                yield return StartCoroutine(LoadSpriteCoroutine(itemData.iconPath + "_Outline", (sprite, handle) =>
+                {
+                    result = sprite;
+                    if (sprite != null) _outlineHandle = handle;
+                }));
+                // 没有的话，降级用 iconPath 本身
+                if (result == null)
+                {
+                    yield return StartCoroutine(LoadSpriteCoroutine(itemData.iconPath, (sprite, handle) =>
+                    {
+                        result = sprite;
+                        if (sprite != null) _outlineHandle = handle;
+                    }));
+                }
+            }
+        }
+
+        onLoaded?.Invoke(result);
     }
 
     /// <summary>
@@ -279,20 +293,33 @@ public class UI_CollectionPrefab : MonoBehaviour
 
     private IEnumerator LoadNonFishDataCoroutine()
     {
-        itemData = LoadDataManager.Instance?.GetItemById(entryId);
+        // ✅ 非鱼：走 itemData.iconPath
+        if (itemData == null)
+        {
+            itemData = LoadDataManager.Instance?.GetItemById(entryId);
+        }
+
         if (itemData != null)
         {
             nameText.text = itemData.name;
+
             Sprite itemSprite = null;
-            yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/ItemIcons/{entryId}", (sprite, handle) =>
+            if (!string.IsNullOrEmpty(itemData.iconPath))
             {
-                itemSprite = sprite;
-                _iconHandle = handle;
-            }));
+                yield return StartCoroutine(LoadSpriteCoroutine(itemData.iconPath, (sprite, handle) =>
+                {
+                    itemSprite = sprite;
+                    _iconHandle = handle;
+                }));
+            }
             if (itemSprite != null)
             {
                 SetIcon(itemSprite);
             }
+        }
+        else
+        {
+            nameText.text = $"未知道具#{entryId}";
         }
 
         yield return StartCoroutine(UpdateRarityBackgroundCoroutine());
@@ -391,6 +418,24 @@ public class UI_CollectionPrefab : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 获取条目的显示名（鱼类 / 非鱼统一）
+    /// </summary>
+    private string GetEntryName()
+    {
+        if (isFish)
+        {
+            var fishData = LoadDataManager.Instance?.GetFishById(entryId);
+            if (fishData != null) return fishData.name;
+        }
+        else
+        {
+            var item = LoadDataManager.Instance?.GetItemById(entryId);
+            if (item != null) return item.name;
+        }
+        return $"#{entryId}";
+    }
+
     private IEnumerator UpdateRarityBackgroundCoroutine()
     {
         if (rarityBackgroundImage == null)
@@ -398,17 +443,7 @@ public class UI_CollectionPrefab : MonoBehaviour
             yield break;
         }
 
-        int rarityId = 0;
-        var fishData = LoadDataManager.Instance?.GetFishById(entryId);
-        if (fishData != null)
-        {
-            rarityId = fishData.rarityId;
-        }
-
-        if (rarityId <= 0)
-        {
-            rarityId = 0;
-        }
+        int rarityId = GetEntryRarityId();
 
         Sprite raritySprite = null;
         yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/RarityBackground/{rarityId}", (sprite, handle) =>
@@ -425,6 +460,7 @@ public class UI_CollectionPrefab : MonoBehaviour
         }
         else
         {
+            // 降级用默认背景 0
             if (rarityId != 0)
             {
                 Sprite defaultSprite = null;
@@ -443,6 +479,36 @@ public class UI_CollectionPrefab : MonoBehaviour
             }
             rarityBackgroundImage.gameObject.SetActive(false);
         }
+    }
+
+    /// <summary>
+    /// ✅ 根据 entryId 拿稀有度ID（鱼类走 FishData，非鱼走 InsectData/PetData/ItemData）
+    /// </summary>
+    private int GetEntryRarityId()
+    {
+        if (isFish)
+        {
+            var fishData = LoadDataManager.Instance?.GetFishById(entryId);
+            return fishData?.rarityId ?? 0;
+        }
+
+        // 非鱼：按类别判断
+        // 昆虫：10001~10099
+        if (entryId >= 10001 && entryId <= 10099)
+        {
+            var insect = LoadDataManager.Instance?.GetInsectById(entryId);
+            return insect?.rarityId ?? 0;
+        }
+
+        // 宠物：10101~10199
+        if (entryId >= 10101 && entryId <= 10199)
+        {
+            var pet = LoadDataManager.Instance?.GetPetById(entryId);
+            return pet?.rarityId ?? 0;
+        }
+
+        // 其他非鱼：默认 0
+        return 0;
     }
 
     public void SetCollectionLevel(int level)

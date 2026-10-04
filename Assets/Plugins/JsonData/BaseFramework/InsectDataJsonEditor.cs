@@ -19,6 +19,7 @@ public class InsectDataJsonEditor : EditorWindow
     private int editRarityId = 201;
     private string editName = "";
     private string editDescription = "";
+    private float editScale = 1.0f;
 
     private string[] rarityOptions = new string[]
     {
@@ -28,7 +29,7 @@ public class InsectDataJsonEditor : EditorWindow
 
     private string FullPath => Path.Combine(Application.dataPath, RELATIVE_PATH);
 
-    [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/10001_昆虫",false,1001)]
+    [MenuItem("Tools/游戏内容/2.物品内部数据(记得编辑通用数据)/10001_昆虫", false, 1001)]
     public static void ShowWindow()
     {
         var window = GetWindow<InsectDataJsonEditor>("昆虫数据编辑器");
@@ -82,7 +83,8 @@ public class InsectDataJsonEditor : EditorWindow
         EditorGUILayout.LabelField($"[{item.id}]", GUILayout.Width(70));
         EditorGUILayout.LabelField(GetRarityName(item.rarityId), GUILayout.Width(80));
         EditorGUILayout.LabelField(item.name, GUILayout.Width(120));
-        EditorGUILayout.LabelField(item.description, GUILayout.Width(250));
+        EditorGUILayout.LabelField($"scale:{item.scale:F2}", GUILayout.Width(80));
+        EditorGUILayout.LabelField(item.description, GUILayout.Width(200));
 
         GUI.backgroundColor = Color.white;
         GUILayout.FlexibleSpace();
@@ -140,6 +142,13 @@ public class InsectDataJsonEditor : EditorWindow
             item.description = EditorGUILayout.TextField(item.description);
             EditorGUILayout.EndHorizontal();
 
+            // ★ 新增：Scale 输入
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("缩放(Scale):", GUILayout.Width(60));
+            item.scale = EditorGUILayout.FloatField(item.scale);
+            EditorGUILayout.LabelField("（用于鱼缸 / 飞入动画等显示）", EditorStyles.miniLabel);
+            EditorGUILayout.EndHorizontal();
+
             GUILayout.Space(10);
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
@@ -184,6 +193,12 @@ public class InsectDataJsonEditor : EditorWindow
         editDescription = EditorGUILayout.TextField(editDescription, GUILayout.Width(400));
         EditorGUILayout.EndHorizontal();
 
+        // ★ 新增：快速新增的 Scale 输入
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("缩放(Scale):", GUILayout.Width(70));
+        editScale = EditorGUILayout.FloatField(editScale, GUILayout.Width(80));
+        EditorGUILayout.EndHorizontal();
+
         EditorGUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
         GUI.backgroundColor = Color.green;
@@ -193,7 +208,7 @@ public class InsectDataJsonEditor : EditorWindow
 
         EditorGUILayout.EndVertical();
         GUILayout.Space(10);
-        EditorGUILayout.HelpBox("提示：昆虫的ID从 10001 开始，稀有度使用 201-206（与鱼类共用）", MessageType.Info);
+        EditorGUILayout.HelpBox("提示：昆虫的ID从 10001 开始，稀有度使用 201-206（与鱼类共用）；Scale 用于显示缩放，默认 1.0", MessageType.Info);
     }
 
     private string GetRarityName(int rarityId)
@@ -243,7 +258,7 @@ public class InsectDataJsonEditor : EditorWindow
             int maxId = dataList.Max(e => e.id);
             newId = maxId + 1;
         }
-        dataList.Add(new InsectData { id = newId, rarityId = 201, name = "新昆虫", description = "" });
+        dataList.Add(new InsectData { id = newId, rarityId = 201, name = "新昆虫", description = "", scale = 1.0f });
         selectedIndex = dataList.Count - 1;
         SaveData();
         LoadData();
@@ -267,7 +282,8 @@ public class InsectDataJsonEditor : EditorWindow
             id = editId,
             rarityId = editRarityId,
             name = editName,
-            description = editDescription
+            description = editDescription,
+            scale = editScale
         });
         dataList = dataList.OrderBy(e => e.id).ToList();
         SaveData();
@@ -276,6 +292,7 @@ public class InsectDataJsonEditor : EditorWindow
         editId = dataList.Count > 0 ? dataList.Max(e => e.id) + 1 : START_ID;
         editName = "";
         editDescription = "";
+        editScale = 1.0f;
 
         EditorUtility.DisplayDialog("成功", "新增成功", "确定");
     }
