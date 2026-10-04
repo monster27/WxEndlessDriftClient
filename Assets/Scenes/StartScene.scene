@@ -2911,6 +2911,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff65c793e797cf441b35c6fb67ba79d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fishBagCapacity: 9
 --- !u!1 &1828167491
 GameObject:
   m_ObjectHideFlags: 0
