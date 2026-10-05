@@ -10,64 +10,64 @@ using static PlayerDataManager;
 public class FishTankMainPanel : MonoBehaviour
 {
     [Header("===== 鱼缸区域(UI RectTransform) =====")]
-    [SerializeField] private RectTransform totalAreaRect;
-    [SerializeField] private RectTransform bottomAreaRect;
-    [SerializeField] private RectTransform upAreaRect;
+    public RectTransform totalAreaRect;
+    public RectTransform bottomAreaRect;
+    public RectTransform upAreaRect;
 
     [Header("===== 容器 =====")]
-    [SerializeField] private RectTransform fishContainer;
-    [SerializeField] private RectTransform baitContainer;
-    [SerializeField] private RectTransform decorationContainer;
+    public RectTransform fishContainer;
+    public RectTransform baitContainer;
+    public RectTransform decorationContainer;
 
     [Header("===== 预制体 =====")]
-    [SerializeField] private GameObject fishPrefab;
-    [SerializeField] private GameObject baitPrefab;
-    [SerializeField] private GameObject decPrefab;
+    public GameObject fishPrefab;
+    public GameObject baitPrefab;
+    public GameObject decPrefab;
 
     [Header("===== 82/83/84 贴图 Image =====")]
-    [SerializeField] private Image backgroundBorderImage;
-    [SerializeField] private Image backgroundBottomImage;
-    [SerializeField] private Image backgroundImage;
+    public Image backgroundBorderImage;
+    public Image backgroundBottomImage;
+    public Image backgroundImage;
 
     [Header("===== 鱼行为参数（像素单位） =====")]
-    [SerializeField] private float baseHeight = 30f;
-    [SerializeField] private float uniformScale = 1f;
-    [SerializeField] private float directionChangeIntervalMin = 2f;
-    [SerializeField] private float directionChangeIntervalMax = 8f;
+    public float baseHeight = 30f;
+    public float uniformScale = 1f;
+    public float directionChangeIntervalMin = 2f;
+    public float directionChangeIntervalMax = 8f;
 
     [Header("===== 物理参数（像素/秒） =====")]
-    [SerializeField] private float moveSpeedMin = 30f;
-    [SerializeField] private float moveSpeedMax = 80f;
-    [SerializeField] private float verticalSpeedRatio = 0.4f;
+    public float moveSpeedMin = 30f;
+    public float moveSpeedMax = 80f;
+    public float verticalSpeedRatio = 0.4f;
     [Range(0f, 1f)]
-    [SerializeField] private float verticalMoveProbability = 0.3f;
-    [SerializeField] private float accelerationMin = 2.5f;
-    [SerializeField] private float accelerationMax = 5.0f;
-    [SerializeField] private float dragForce = 0.8f;
-    [SerializeField] private float chargeDurationMin = 0.4f;
-    [SerializeField] private float chargeDurationMax = 1f;
-    [SerializeField] private float chargeScaleX = 0.6f;
-    [SerializeField] private float chargeScaleY = 1.35f;
-    [SerializeField] private float chargeSpeedRatio = 0.15f;
-    [SerializeField] private float sprintDurationMin = 1.5f;
-    [SerializeField] private float sprintDurationMax = 3.5f;
+    public float verticalMoveProbability = 0.3f;
+    public float accelerationMin = 2.5f;
+    public float accelerationMax = 5.0f;
+    public float dragForce = 0.8f;
+    public float chargeDurationMin = 0.4f;
+    public float chargeDurationMax = 1f;
+    public float chargeScaleX = 0.6f;
+    public float chargeScaleY = 1.35f;
+    public float chargeSpeedRatio = 0.15f;
+    public float sprintDurationMin = 1.5f;
+    public float sprintDurationMax = 3.5f;
 
     [Header("===== 鱼饵系统 =====")]
-    [SerializeField] private float baitTriggerRadius = 500f;
-    [SerializeField] private float baitEatRadius = 40f;
+    public float baitTriggerRadius = 500f;
+    public float baitEatRadius = 40f;
     [SerializeField, Range(0.05f, 2f)]
     private float baitFallSpeedRatio = 0.25f;
-    [SerializeField] private float baitChaseDurationMin = 0.5f;
-    [SerializeField] private float baitChaseDurationMax = 0.8f;
-    [SerializeField] private float baitChaseSpeedMultiplier = 5f;
-    [SerializeField] private float baitScale = 1f;
-    [SerializeField] private int baitPoolInitSize = 5;
+    public float baitChaseDurationMin = 0.5f;
+    public float baitChaseDurationMax = 0.8f;
+    public float baitChaseSpeedMultiplier = 5f;
+    public float baitScale = 1f;
+    public int baitPoolInitSize = 5;
 
     [Header("===== 对象池 =====")]
-    [SerializeField] private int fishPoolInitialCapacity = 10;
+    public int fishPoolInitialCapacity = 10;
 
     [Header("===== 调试 =====")]
-    [SerializeField] private bool enableDebugLog = false;
+    public bool enableDebugLog = false;
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     private int _currentTankIndex = 0;
@@ -129,7 +129,7 @@ public class FishTankMainPanel : MonoBehaviour
         SetupClickHandler();
         EnsureDecorationOnTop();
         _hasInitialized = true;
-        Debug.Log("[FishTankMainPanel] Init 完成");
+        Z_Logger.Log("[FishTankMainPanel] Init 完成");
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -629,7 +629,16 @@ public class FishTankMainPanel : MonoBehaviour
         var decComp = go.GetComponent<UI_FishTankDec>();
         if (decComp == null) decComp = go.AddComponent<UI_FishTankDec>();
 
-        decComp.Init(info.Id, category, tankId, info.DecorationId, OnDecorationInstanceClicked);
+        // 从 JSON 配置表取宽高（不是玩家数据）
+        int w = 100, h = 100;
+        var cfg = LoadDataManager.Instance?.GetFishTankDecorationById(info.DecorationId);
+        if (cfg != null && (cfg.categoryId == 80 || cfg.categoryId == 81))
+        {
+            w = cfg.width <= 0 ? 100 : cfg.width;
+            h = cfg.height <= 0 ? 100 : cfg.height;
+        }
+
+        decComp.Init(info.Id, category, tankId, info.DecorationId, w, h, OnDecorationInstanceClicked);
 
         decComp.SetInteractable(_isDecorationMode);
 

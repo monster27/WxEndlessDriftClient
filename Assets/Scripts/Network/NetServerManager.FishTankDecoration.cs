@@ -18,25 +18,16 @@ public partial class NetServerManager
     // 公开接口
     // ============================================================
 
-    /// <summary>
-    /// 获取玩家已拥有的所有装饰ID列表（从背包）
-    /// </summary>
     public void FetchOwnedDecorations(Action<List<int>> onComplete = null)
     {
         StartCoroutine(FetchOwnedDecorationsCoroutine(onComplete));
     }
 
-    /// <summary>
-    /// 获取指定鱼缸各槽位的装备实例列表（含变换数据）
-    /// </summary>
     public void FetchEquippedStatus(int tankId, Action<Dictionary<int, List<DecorationEquipInfo>>> onComplete = null)
     {
         StartCoroutine(FetchEquippedStatusCoroutine(tankId, onComplete));
     }
 
-    /// <summary>
-    /// 装备装饰到指定鱼缸的槽位（每次创建新实例）
-    /// </summary>
     public void EquipDecoration(int tankId, int slotType, int decorationId,
         float? posX = null, float? posY = null, float? posZ = null,
         float? scaleX = null, float? scaleY = null, float? scaleZ = null,
@@ -47,25 +38,16 @@ public partial class NetServerManager
             posX, posY, posZ, scaleX, scaleY, scaleZ, rotX, rotY, rotZ, onComplete));
     }
 
-    /// <summary>
-    /// 按槽位卸下装饰（卸下该槽位最早的一个实例，保留兼容）
-    /// </summary>
     public void UnequipDecoration(int tankId, int slotType, Action<bool, string> onComplete = null)
     {
         StartCoroutine(UnequipDecorationCoroutine(tankId, slotType, onComplete));
     }
 
-    /// <summary>
-    /// 按记录ID卸下装饰（推荐使用，精确控制）
-    /// </summary>
     public void UnEquipDecoration(int tankId, int recordId, Action<bool, string> onComplete = null)
     {
         StartCoroutine(UnequipDecorationByIdCoroutine(recordId, onComplete));
     }
 
-    /// <summary>
-    /// 镜像装饰（通过 update-transform 修改 RotationY）
-    /// </summary>
     public void MirrorDecoration(int tankId, int recordId, float rotationY, Action<bool, string> onComplete = null)
     {
         StartCoroutine(UpdateTransformCoroutine(recordId,
@@ -75,9 +57,6 @@ public partial class NetServerManager
             onComplete));
     }
 
-    /// <summary>
-    /// 移动装饰（通过 update-transform 修改 PositionX / PositionY）
-    /// </summary>
     public void MoveDecoration(int tankId, int recordId, float posX, float posY, Action<bool, string> onComplete = null)
     {
         StartCoroutine(UpdateTransformCoroutine(recordId,
@@ -87,9 +66,6 @@ public partial class NetServerManager
             onComplete));
     }
 
-    /// <summary>
-    /// 应用纹理装饰（82/83/84）—— 由于这三类每类只能装备 1 个，装备成功即已应用，无需额外网络请求
-    /// </summary>
     public void ApplyTextureDecoration(int tankId, int category, int decorationId, Action<bool, string> onComplete = null)
     {
         onComplete?.Invoke(true, "应用成功");
@@ -143,11 +119,16 @@ public partial class NetServerManager
         onComplete?.Invoke(new List<int>());
     }
 
+    /// <summary>
+    /// 获取装备状态
+    /// 成功：返回真实字典（可能为空）
+    /// 失败：返回 null（调用方需判空，避免误清空本地缓存）
+    /// </summary>
     private IEnumerator FetchEquippedStatusCoroutine(int tankId, Action<Dictionary<int, List<DecorationEquipInfo>>> onComplete)
     {
         if (!CheckNetworkConnection())
         {
-            onComplete?.Invoke(new Dictionary<int, List<DecorationEquipInfo>>());
+            onComplete?.Invoke(null);   // ★ 改为 null
             yield break;
         }
 
@@ -187,7 +168,7 @@ public partial class NetServerManager
             }
         }
 
-        onComplete?.Invoke(new Dictionary<int, List<DecorationEquipInfo>>());
+        onComplete?.Invoke(null);   // ★ 改为 null
     }
 
     private IEnumerator EquipDecorationCoroutine(int tankId, int slotType, int decorationId,
@@ -210,7 +191,6 @@ public partial class NetServerManager
             { "DecorationId", decorationId }
         };
 
-        // 只有 80/81 才传递变换数据
         if (slotType == 80 || slotType == 81)
         {
             if (posX.HasValue) requestData["PositionX"] = posX.Value;
@@ -394,9 +374,6 @@ public partial class NetServerManager
         onComplete?.Invoke(false, "网络请求失败");
     }
 
-    /// <summary>
-    /// 更新装饰变换的统一协程（移动 / 镜像共用）
-    /// </summary>
     private IEnumerator UpdateTransformCoroutine(
         int recordId,
         float? posX, float? posY, float? posZ,

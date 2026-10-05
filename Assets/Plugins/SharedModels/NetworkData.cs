@@ -258,4 +258,6 @@ public class DecorationEquipInfo
     public float RotationX { get; set; }
     public float RotationY { get; set; }
     public float RotationZ { get; set; }
+    public int Width { get; set; } = 100; 
+    public int Height { get; set; } = 100; 
 }

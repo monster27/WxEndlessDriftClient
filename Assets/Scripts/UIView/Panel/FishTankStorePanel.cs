@@ -544,7 +544,7 @@ public class FishTankStorePanel : MonoBehaviour
             var item = go.GetComponent<UI_FishTankStorePrefab>();
             if (item == null)
             {
-                Debug.LogError("UI_FishItemPool: 预制体缺少 UI_FishTankStorePrefab 组件");
+                Z_Logger.LogError("UI_FishItemPool: 预制体缺少 UI_FishTankStorePrefab 组件");
                 return null;
             }
             _allObjects.Add(item);

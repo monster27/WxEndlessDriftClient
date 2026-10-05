@@ -442,9 +442,25 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
             if (wrapper != null && wrapper.items != null)
             {
                 fishTankDecorations = wrapper.items;
+
+                // ★ 80/81 宽高兜底为 100
+                foreach (var item in fishTankDecorations)
+                {
+                    if (item.categoryId == 80 || item.categoryId == 81)
+                    {
+                        if (item.width <= 0) item.width = 100;
+                        if (item.height <= 0) item.height = 100;
+                    }
+                }
+
                 dataLog.AppendLine($"✓ 鱼缸装饰数据: 成功加载 {fishTankDecorations.Count} 个装饰");
                 foreach (var item in fishTankDecorations)
-                    dataLog.AppendLine($"    - ID: {item.id}, 名称: {item.name}, 分类ID: {item.categoryId}");
+                {
+                    string sizeInfo = (item.categoryId == 80 || item.categoryId == 81)
+                        ? $", 宽: {item.width}, 高: {item.height}"
+                        : "";
+                    dataLog.AppendLine($"    - ID: {item.id}, 名称: {item.name}, 分类ID: {item.categoryId}{sizeInfo}");
+                }
                 return;
             }
         }
@@ -891,6 +907,28 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
         int max = 0;
         foreach (var item in fishTankLevels) if (item.level > max) max = item.level;
         return max;
+    }
+    /// <summary>
+    /// 获取装饰宽高（仅 80/81 有效，其余返回 (0,0)）
+    /// </summary>
+    public Vector2Int GetFishTankDecorationSize(int id)
+    {
+        var item = GetFishTankDecorationById(id);
+        if (item == null) return Vector2Int.zero;
+        if (item.categoryId != 80 && item.categoryId != 81) return Vector2Int.zero;
+        int w = item.width <= 0 ? 100 : item.width;
+        int h = item.height <= 0 ? 100 : item.height;
+        return new Vector2Int(w, h);
+    }
+
+    /// <summary>
+    /// 判断该装饰是否支持设置宽高
+    /// </summary>
+    public bool IsDecorationSizeSupported(int id)
+    {
+        var item = GetFishTankDecorationById(id);
+        if (item == null) return false;
+        return item.categoryId == 80 || item.categoryId == 81;
     }
 
     // ==================== ✅ 新增：蛋 / 昆虫 / 宠物 查询 ====================

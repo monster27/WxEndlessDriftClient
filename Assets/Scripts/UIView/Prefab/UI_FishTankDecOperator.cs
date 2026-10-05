@@ -116,6 +116,8 @@ public class UI_FishTankDecOperator : MonoBehaviour
         if (panelRoot != null) panelRoot.SetActive(true);
         else gameObject.SetActive(true);
 
+        transform.SetAsLastSibling();
+
         UpdatePosition();
 
         _isDragging = false;

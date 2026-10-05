@@ -76,7 +76,7 @@ public class FishTankDecorationDataEditor : EditorWindow
         DrawTopToolbar();
         EditorGUILayout.BeginHorizontal();
 
-        EditorGUILayout.BeginVertical(GUILayout.Width(660));
+        EditorGUILayout.BeginVertical(GUILayout.Width(620));
         DrawSearchFilter();
         DrawQuickCreate();
         DrawDecorationList();
@@ -536,21 +536,21 @@ public class FishTankDecorationDataEditor : EditorWindow
                 if (wrapper != null && wrapper.items != null)
                 {
                     decorationList = wrapper.items.ToList();
-                    // 80/81 兜底
+                    // 兜底
                     foreach (var d in decorationList)
                     {
                         if (d.categoryId == 80 || d.categoryId == 81)
                         {
-                            if (d.width <= 0) d.width = 100;
+                            if (d.width  <= 0) d.width  = 100;
                             if (d.height <= 0) d.height = 100;
                         }
                     }
-                    Z_Logger.Log($"成功加载 {decorationList.Count} 条鱼缸装饰数据");
+                    Debug.Log($"成功加载 {decorationList.Count} 条鱼缸装饰数据");
                 }
             }
             catch (Exception e)
             {
-                Z_Logger.LogError($"加载数据失败: {e.Message}");
+                Debug.LogError($"加载数据失败: {e.Message}");
             }
         }
 
@@ -573,7 +573,7 @@ public class FishTankDecorationDataEditor : EditorWindow
         File.WriteAllText(fullPath, json);
 
         AssetDatabase.Refresh();
-        Z_Logger.Log($"保存成功: {fullPath}");
+        Debug.Log($"保存成功: {fullPath}");
     }
 
     private void QuickCreateDecoration()
@@ -601,7 +601,7 @@ public class FishTankDecorationDataEditor : EditorWindow
             description = "",
             categoryId = categoryId,
             bonus = newBonus,
-            width = hasSize ? newWidth : 0,
+            width  = hasSize ? newWidth  : 0,
             height = hasSize ? newHeight : 0
         };
 

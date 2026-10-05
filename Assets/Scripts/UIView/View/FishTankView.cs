@@ -5,14 +5,17 @@ using static PlayerDataManager;
 
 public class FishTankView : BaseView
 {
+    [Header("===== 编辑器预览（仅编辑器用） =====")]
+    public UI_FishTankDec editorPreviewDec;
+
     [Header("===== 调试 =====")]
     public bool enableDebugLog = false;
 
     [Header("===== 子面板 =====")]
-    [SerializeField] private FishTankMainPanel mainPanel;
-    [SerializeField] private FishTankMainOperatePanel mainOperatePanel;
-    [SerializeField] private FishTankManagerPanel managerPanel;
-    [SerializeField] private FishTankDecorationPanel decorationPanel;
+    public FishTankMainPanel mainPanel;
+    public FishTankMainOperatePanel mainOperatePanel;
+    public FishTankManagerPanel managerPanel;
+    public FishTankDecorationPanel decorationPanel;
 
     private int _currentTankIndex = 0;
     private bool _isManagerOpen = false;
@@ -28,6 +31,10 @@ public class FishTankView : BaseView
     {
         if (isInitialized) return;
         base.BaseViewInit();
+
+        // ★ 运行时隐藏编辑器预览物体
+        if (editorPreviewDec != null)
+            editorPreviewDec.gameObject.SetActive(false);
 
         if (mainPanel != null)
         {
@@ -409,16 +416,12 @@ public class FishTankView : BaseView
         int category = config.categoryId;
         int decId = config.id;
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // 80/81：可多次装备
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if (category == 80 || category == 81)
         {
             int bagQty = PlayerDataService.Instance?.GetOwnedDecorationQuantity(decId) ?? 0;
 
             if (bagQty > 0)
             {
-                // ★ 用所属区域中心作为初始位置
                 Vector2 spawnPos = (mainPanel != null)
                     ? mainPanel.GetDefaultSpawnPosition(category)
                     : Vector2.zero;
@@ -447,9 +450,6 @@ public class FishTankView : BaseView
             return;
         }
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // 82-84：唯一
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if (category >= 82 && category <= 84)
         {
             var equipped = PlayerDataService.Instance?.GetEquippedDecorations(tankId);
@@ -573,8 +573,10 @@ public class FishTankView : BaseView
 
         NetServerManager.Instance.FetchEquippedStatus(tankId, (result) =>
         {
+            // ★ 失败返回 null，此时不动本地缓存，只用旧缓存重绘
             if (result != null && PlayerDataManager.Instance != null)
                 PlayerDataManager.Instance.UpdateEquippedDecorations(tankId, result);
+
             RenderDecorationsForCurrentTank();
         });
     }
