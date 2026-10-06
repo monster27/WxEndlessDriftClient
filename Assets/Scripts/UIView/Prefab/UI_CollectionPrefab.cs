@@ -33,7 +33,6 @@ public class UI_CollectionPrefab : MonoBehaviour
 
     // ===== AA 加载句柄（用于释放资源） =====
     private AsyncOperationHandle<Sprite> _iconHandle;
-    private AsyncOperationHandle<Sprite> _outlineHandle;
     private AsyncOperationHandle<Sprite> _levelHandle;
     private AsyncOperationHandle<Sprite> _rarityHandle;
     private AsyncOperationHandle<Sprite> _unknownHandle;
@@ -60,7 +59,6 @@ public class UI_CollectionPrefab : MonoBehaviour
     {
         // 释放所有 AA 资源
         ReleaseHandle(ref _iconHandle);
-        ReleaseHandle(ref _outlineHandle);
         ReleaseHandle(ref _levelHandle);
         ReleaseHandle(ref _rarityHandle);
         ReleaseHandle(ref _unknownHandle);
@@ -139,7 +137,7 @@ public class UI_CollectionPrefab : MonoBehaviour
         }));
         if (unknownSprite != null)
         {
-            SetIcon(unknownSprite);
+            SetIcon(unknownSprite, false); // ✅ 未获取图标用纯白
         }
 
         nameText.text = "???";
@@ -158,10 +156,8 @@ public class UI_CollectionPrefab : MonoBehaviour
     }
 
     /// <summary>
-    /// 显示已获取情报状态
-    /// </summary>
-    /// <summary>
-    /// 显示已获取情报状态
+    /// 显示已获取情报状态（未实际获取物品）
+    /// ✅ 直接加载正常图标，颜色设为纯黑
     /// </summary>
     private IEnumerator ShowInfoObtainedStateCoroutine()
     {
@@ -169,13 +165,36 @@ public class UI_CollectionPrefab : MonoBehaviour
         string entryName = GetEntryName();
         nameText.text = entryName;
 
-        // ✅ 加载 outline 图标
-        Sprite outlineSprite = null;
-        yield return StartCoroutine(LoadOutlineIconCoroutineInternal((sprite) => outlineSprite = sprite));
+        // ✅ 直接加载正常图标（鱼类 / 非鱼统一）
+        Sprite normalSprite = null;
 
-        if (outlineSprite != null)
+        if (isFish)
         {
-            SetIcon(outlineSprite);
+            yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/FishIcons/{entryId}", (sprite, handle) =>
+            {
+                normalSprite = sprite;
+                _iconHandle = handle;
+            }));
+        }
+        else
+        {
+            if (itemData == null)
+            {
+                itemData = LoadDataManager.Instance?.GetItemById(entryId);
+            }
+            if (itemData != null && !string.IsNullOrEmpty(itemData.iconPath))
+            {
+                yield return StartCoroutine(LoadSpriteCoroutine(itemData.iconPath, (sprite, handle) =>
+                {
+                    normalSprite = sprite;
+                    _iconHandle = handle;
+                }));
+            }
+        }
+
+        if (normalSprite != null)
+        {
+            SetIcon(normalSprite, true); // ✅ 纯黑
         }
 
         yield return StartCoroutine(UpdateRarityBackgroundCoroutine());
@@ -189,56 +208,6 @@ public class UI_CollectionPrefab : MonoBehaviour
         {
             button.interactable = true;
         }
-    }
-
-    /// <summary>
-    /// 加载 outline 图标（鱼类 / 非鱼统一）
-    /// </summary>
-    private IEnumerator LoadOutlineIconCoroutineInternal(System.Action<Sprite> onLoaded)
-    {
-        Sprite result = null;
-
-        if (isFish)
-        {
-            // 鱼类：FishIcons/{entryId}_Outline → FishIcons/{entryId}
-            yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/FishIcons/{entryId}_Outline", (sprite, handle) =>
-            {
-                result = sprite;
-                if (sprite != null) _outlineHandle = handle;
-            }));
-            if (result == null)
-            {
-                yield return StartCoroutine(LoadSpriteCoroutine($"UI/Icon/FishIcons/{entryId}", (sprite, handle) =>
-                {
-                    result = sprite;
-                    if (sprite != null) _outlineHandle = handle;
-                }));
-            }
-        }
-        else
-        {
-            // ✅ 非鱼：走 itemData.iconPath
-            if (itemData != null && !string.IsNullOrEmpty(itemData.iconPath))
-            {
-                // 先试 iconPath + "_Outline"
-                yield return StartCoroutine(LoadSpriteCoroutine(itemData.iconPath + "_Outline", (sprite, handle) =>
-                {
-                    result = sprite;
-                    if (sprite != null) _outlineHandle = handle;
-                }));
-                // 没有的话，降级用 iconPath 本身
-                if (result == null)
-                {
-                    yield return StartCoroutine(LoadSpriteCoroutine(itemData.iconPath, (sprite, handle) =>
-                    {
-                        result = sprite;
-                        if (sprite != null) _outlineHandle = handle;
-                    }));
-                }
-            }
-        }
-
-        onLoaded?.Invoke(result);
     }
 
     /// <summary>
@@ -279,7 +248,7 @@ public class UI_CollectionPrefab : MonoBehaviour
         }));
         if (fishSprite != null)
         {
-            SetIcon(fishSprite);
+            SetIcon(fishSprite, false); // ✅ 正常图标用纯白
         }
 
         var fishData = LoadDataManager.Instance?.GetFishById(entryId);
@@ -314,7 +283,7 @@ public class UI_CollectionPrefab : MonoBehaviour
             }
             if (itemSprite != null)
             {
-                SetIcon(itemSprite);
+                SetIcon(itemSprite, false); // ✅ 正常图标用纯白
             }
         }
         else
@@ -396,24 +365,30 @@ public class UI_CollectionPrefab : MonoBehaviour
 
         if (loadedSprite != null)
         {
-            SetIcon(loadedSprite);
+            SetIcon(loadedSprite, false); // ✅ 正常图标用纯白
         }
     }
 
     /// <summary>
     /// 设置图标
     /// </summary>
-    private void SetIcon(Sprite sprite)
+    /// <param name="sprite">要显示的精灵</param>
+    /// <param name="isOutline">是否是 Outline 状态（Outline 显示纯黑，正常显示纯白）</param>
+    private void SetIcon(Sprite sprite, bool isOutline = false)
     {
+        Color targetColor = isOutline ? Color.black : Color.white;
+
         if (icon != null)
         {
             icon.sprite = sprite;
+            icon.color = targetColor;
             icon.gameObject.SetActive(true);
         }
 
         if (levelHightLightMask != null)
         {
             levelHightLightMask.sprite = sprite;
+            levelHightLightMask.color = targetColor;
             levelHightLightMask.gameObject.SetActive(true);
         }
     }
