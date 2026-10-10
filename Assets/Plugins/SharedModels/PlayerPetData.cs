@@ -2,6 +2,7 @@ using System;
 
 /// <summary>
 /// 宠物实例数据（服务器 ↔ 客户端传输）
+/// ★ 修复：isDefault 从属性改为字段，JsonUtility 才能反序列化
 /// </summary>
 [Serializable]
 public class PlayerPetData
@@ -35,8 +36,8 @@ public class PlayerPetData
     public long lastInsectCatchTime;
 
     /// <summary>下次可抓昆虫时间（Unix秒）</summary>
-    /// 
     public long nextInsectCatchTime;
+
     /// <summary>当前饥饿度</summary>
     public int hunger;
 
@@ -46,8 +47,11 @@ public class PlayerPetData
     /// <summary>剩余可捕捉昆虫的秒数（饥饿度耗尽倒计时）</summary>
     public int hungerRemainingSeconds;
 
-    /// <summary>是否默认宠物（第一只，不可出售）</summary>
-    public bool isDefault { get; set; }
+    /// <summary>
+    /// 是否默认宠物（第一只，不可出售）
+    /// ★ 修复：原来是 { get; set; } 属性，JsonUtility 不处理属性，改成字段
+    /// </summary>
+    public bool isDefault = false;
 
     /// <summary>是否锁定（锁定后不可出售）</summary>
     public bool isLocked = false;

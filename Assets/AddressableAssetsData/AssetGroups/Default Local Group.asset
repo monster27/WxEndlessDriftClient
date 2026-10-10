@@ -29,12 +29,6 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 008369f845a04764b88d368ffea81db1
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1011_Outline.png
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 00e63b3ffcc5c3347b2c4a6b7a16efef
     m_Address: Assets/Addressables/UI/Icon/FishIcons/1010_s.png
     m_ReadOnly: 0
@@ -527,12 +521,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1b93dde5b84ccb34e99172ee4438bbde
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1008_Outline.png
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1bad58078814f1e4aa09182dd1118a7f
     m_Address: Assets/Textures/0605/Character interface/Fishing rod background.png
     m_ReadOnly: 0
@@ -618,12 +606,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1ed37214952b616418c8b0d8278b2484
     m_Address: Assets/Addressables/UI/Icon/Equipment/Rod/3003.png
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1ef070dadd8ce12408b9fd5d032acd5f
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1005_Outline.png
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
@@ -822,12 +804,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2a6ed26192e5e0b49a1249e6f0a0a2a8
     m_Address: Assets/Addressables/UI/Icon/BaitIcons/2005_.png
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 2b5639b192835384eaa237752b1a2e7c
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1009_Outline.png
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
@@ -1160,12 +1136,6 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 3e175f2338987a540b0a486ba3ad4493
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1013_Outline.png
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3ed773e927bfd934597e076e10e0a2ee
     m_Address: Assets/Textures/0605/Character interface/Common/Using the background.png
     m_ReadOnly: 0
@@ -1222,12 +1192,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4174e0bf301cd4a49bc1c0524f07ef71
     m_Address: Assets/Textures/0605/store/Select column.png
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 41df0c3f33086af4898270b7609adc0f
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1002_Outline.png
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
@@ -1341,12 +1305,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4a614b6b0cdcf9f4783eaefe872b885b
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u80CC\u5305\u754C\u9762/\u9C7C\u9975\u7A9D\u6599.png"
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4a6cff63a5d25a041ae19f2d2ed358cf
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1004_Outline.png
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
@@ -1606,20 +1564,8 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 5c774d67c56edbc43bafde7a5440e387
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1007_Outline.png
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5c804d2cba78a1349a849a2decb26522
     m_Address: Assets/Atlases/Assets/Textures/0712/fish basket/fish basket.spriteatlas
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 5cc45ed9eedca704197b715712f41817
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1014_Outline.png
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
@@ -1721,12 +1667,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 607d929c751fcf343a7bd3c09bc163e8
     m_Address: Assets/Atlases/Assets/Assets.spriteatlas
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 6086c24f41be54647895106428d72e88
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1010_Outline.png
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
@@ -1960,12 +1900,6 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 6a21d0376ca5dec4d82c2bbebbeade78
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1012_Outline.png
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6af247b9f3fda524f89e45b18dbffa0c
     m_Address: "Assets/Textures/0605/Character interface/\u9C7C\u7AFF\u4FE1\u606F\u9875\u9762/Fishing
       rod background icon.png"
@@ -2130,12 +2064,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 75e7d2f2a70e07f44b467ef029d7f374
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5546\u57CE\u754C\u9762/\u786E\u8BA4.png"
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 7601b89525db2894abeccba00a534755
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1006_Outline.png
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
@@ -2878,12 +2806,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a00077e6afccbc043ad84a5694436e42
     m_Address: "Assets/Atlases/Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/LeftMiddleUI/LeftMiddleUI.spriteatlas"
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a0015d92987ae28478b0c5f1bddb5de5
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1003_Outline.png
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
@@ -4280,12 +4202,6 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f07c3c1b8d9a22240a5a4c5012a2ef59
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1001_Outline.png
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f08e970c5d58e9349975f86beaa5429d
     m_Address: Assets/Atlases/Assets/Addressables/UI/Icon/NestBaitIcons/NestBaitIcons.spriteatlas
     m_ReadOnly: 0
@@ -4406,12 +4322,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f88677df267a41d6be1e7a6133e7d227
     m_Address: Assets/TextMesh Pro/Examples & Extras/Textures/Brushed Metal 3.jpg
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f8c92ee0d7fb9a14688c9b7593e06a48
-    m_Address: Assets/Addressables/UI/Icon/FishIcons/1015_Outline.png
     m_ReadOnly: 0
     m_SerializedLabels:
     - default

@@ -34,7 +34,7 @@ public class PetView : BaseView
     public Button upgradeStorageBtn;
 
     [Header("选中总价")]
-    public Text sellPriceText; 
+    public Text sellPriceText;
 
     [Header("子面板")]
     public UI_PetInfoPanel petInfoPanel;
@@ -59,12 +59,23 @@ public class PetView : BaseView
         if (isInitialized) return;
         base.BaseViewInit();
 
+        // 引用校验（Inspector 拖拽，不兜底，直接报错）
+        if (petInfoPanel == null)
+            Z_Logger.LogError("[PetView] petInfoPanel 未在 Inspector 绑定");
+        if (petFeedPanel == null)
+            Z_Logger.LogError("[PetView] petFeedPanel 未在 Inspector 绑定");
+
         CloseAllSubPanels();
         BindButtons();
 
-        CommunicateEvent.Register(PlayerDataManager.PetMessage.PetsUpdated.ToString(), OnPetsUpdated);
+        // ★ 修复：PetsUpdated 必须用常量，与 PlayerDataManager 广播一致
+        CommunicateEvent.Register(CommunicateEvent.EVENT_PETS_UPDATED, OnPetsUpdated);
         CommunicateEvent.Register(PlayerDataManager.PetMessage.PetStorageUpdated.ToString(), OnStorageUpdated);
         CommunicateEvent.Register(PlayerDataManager.PetMessage.PetLockChanged.ToString(), OnPetsUpdated);
+
+        // 初始化子面板（注册事件 + 绑按钮）
+        if (petInfoPanel != null) petInfoPanel.Init();
+        if (petFeedPanel != null) petFeedPanel.Init();
 
         isInitialized = true;
     }
@@ -81,13 +92,14 @@ public class PetView : BaseView
 
         CloseAllSubPanels();
 
+        // ★ 修复：先刷本地缓存（可能为空），再拉网络，网络回来后由事件驱动再刷
+        Refresh();
+
         if (NetServerManager.Instance != null)
         {
             NetServerManager.Instance.FetchPlayerPets();
             NetServerManager.Instance.FetchPetStorageStatus();
         }
-
-        Refresh();
     }
 
     protected override void PreHide()
@@ -98,9 +110,14 @@ public class PetView : BaseView
 
     private void OnDestroy()
     {
-        CommunicateEvent.Unregister(PlayerDataManager.PetMessage.PetsUpdated.ToString(), OnPetsUpdated);
+        // ★ 修复：注销事件名必须和注册时一致
+        CommunicateEvent.Unregister(CommunicateEvent.EVENT_PETS_UPDATED, OnPetsUpdated);
         CommunicateEvent.Unregister(PlayerDataManager.PetMessage.PetStorageUpdated.ToString(), OnStorageUpdated);
         CommunicateEvent.Unregister(PlayerDataManager.PetMessage.PetLockChanged.ToString(), OnPetsUpdated);
+
+        // 销毁子面板（注销事件）
+        if (petInfoPanel != null) petInfoPanel.Dispose();
+        if (petFeedPanel != null) petFeedPanel.Dispose();
     }
 
     // ============================================================
@@ -161,7 +178,7 @@ public class PetView : BaseView
         }
 
         RefreshStorageText();
-        RefreshSellPriceText();     // ★ 新增
+        RefreshSellPriceText();
     }
 
     private void RefreshStorageText()
@@ -253,7 +270,6 @@ public class PetView : BaseView
 
     private void OnPetSelectionChanged(UI_PetPrefab prefab)
     {
-        // 单个勾选变化 → 刷新总价
         RefreshSellPriceText();
     }
 
@@ -283,7 +299,7 @@ public class PetView : BaseView
             }
         }
 
-        RefreshSellPriceText();     // ★ 新增
+        RefreshSellPriceText();
     }
 
     // ============================================================

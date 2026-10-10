@@ -69,22 +69,25 @@ public class UI_FishTankDecPrefab : MonoBehaviour
         {
             // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
             // 80/81：不唯一，不显示装备标记
-            //   equippedCountText  = 已装备数量
-            //   unEquippedCountText = 背包剩余数量
+            //   已装备数量（equippedCountText）：暂时不显示
+            //   未装备数量（unEquippedCountText）：>0 才显示
             // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
             if (equippedMark != null)
                 equippedMark.SetActive(false);
 
+            // 已装备数量：暂时不显示（保留原代码，注释掉）
             if (equippedCountText != null)
             {
-                equippedCountText.text = _equippedCount.ToString();
-                equippedCountText.gameObject.SetActive(true);
+                // equippedCountText.text = _equippedCount.ToString();
+                // equippedCountText.gameObject.SetActive(true);
+                equippedCountText.gameObject.SetActive(false);
             }
 
+            // 未装备数量：>0 才显示，=0 时隐藏
             if (unEquippedCountText != null)
             {
                 unEquippedCountText.text = _unEquippedCount.ToString();
-                unEquippedCountText.gameObject.SetActive(true);
+                unEquippedCountText.gameObject.SetActive(_unEquippedCount > 0);
             }
         }
         else

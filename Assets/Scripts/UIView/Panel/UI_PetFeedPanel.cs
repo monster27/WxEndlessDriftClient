@@ -33,7 +33,7 @@ public class UI_PetFeedPanel : MonoBehaviour
 
     private int _petInstanceId = -1;
     private Action _onClosed;
-    private Action _onFed;   // ✅ 新增：喂食成功回调
+    private Action _onFed;
 
     private List<UI_PetFeedPrefab> _feedPrefabs = new List<UI_PetFeedPrefab>();
     private List<FishDetailData> _fishList = new List<FishDetailData>();
@@ -44,43 +44,52 @@ public class UI_PetFeedPanel : MonoBehaviour
     private Coroutine _timerCoroutine;
 
     private bool _isOpen = false;
+    private bool _isInitialized = false;
 
     // ============================================================
-    // 生命周期
+    // 初始化 / 销毁（由 PetView 统一调度）
     // ============================================================
 
-    private void Awake()
+    /// <summary>
+    /// 初始化：只绑按钮，不注册事件
+    /// 事件（FishBagDataUpdated）在 Open() 时注册，Close() 时注销
+    /// 由 PetView.BaseViewInit() 调用
+    /// </summary>
+    public void Init()
     {
+        if (_isInitialized) return;
+
         if (feedBtn != null) feedBtn.onClick.AddListener(OnFeedClick);
         if (selectConfigBtn != null) selectConfigBtn.onClick.AddListener(OnSelectConfigClick);
         if (closeBtn != null) closeBtn.onClick.AddListener(Close);
 
-        Z_Logger.Log("[UI_PetFeedPanel] Awake 完成");
+        _isInitialized = true;
+        Z_Logger.Log("[UI_PetFeedPanel] Init 完成，按钮已绑定");
     }
 
-    private void OnEnable()
+    /// <summary>
+    /// 销毁：如果还开着，先 Close 再清理
+    /// 由 PetView.OnDestroy() 调用
+    /// </summary>
+    public void Dispose()
     {
-        CommunicateEvent.Register("FishBagDataUpdated", OnFishBagUpdated);
-        Z_Logger.Log("[UI_PetFeedPanel] OnEnable，注册 FishBagDataUpdated");
-    }
+        if (!_isInitialized) return;
 
-    private void OnDisable()
-    {
-        CommunicateEvent.Unregister("FishBagDataUpdated", OnFishBagUpdated);
-        Z_Logger.Log("[UI_PetFeedPanel] OnDisable，注销 FishBagDataUpdated");
-    }
-
-    // ============================================================
-    // 事件回调
-    // ============================================================
-
-    private void OnFishBagUpdated()
-    {
-        Z_Logger.Log($"[UI_PetFeedPanel] OnFishBagUpdated: _isOpen={_isOpen}, activeSelf={gameObject.activeSelf}");
-        if (_isOpen && gameObject.activeSelf)
+        if (_isOpen)
         {
-            RefreshFishList();
+            // 强制关闭，触发注销 + 回调清理
+            Close();
         }
+
+        if (feedBtn != null) feedBtn.onClick.RemoveListener(OnFeedClick);
+        if (selectConfigBtn != null) selectConfigBtn.onClick.RemoveListener(OnSelectConfigClick);
+        if (closeBtn != null) closeBtn.onClick.RemoveListener(Close);
+
+        _feedPrefabs.Clear();
+        _fishList.Clear();
+
+        _isInitialized = false;
+        Z_Logger.Log("[UI_PetFeedPanel] Dispose 完成");
     }
 
     // ============================================================
@@ -92,9 +101,16 @@ public class UI_PetFeedPanel : MonoBehaviour
     /// </summary>
     /// <param name="petInstanceId">要喂的宠物实例ID</param>
     /// <param name="onClosed">面板关闭时的回调</param>
-    /// <param name="onFed">喂食成功时的回调（✅ 新增）</param>
+    /// <param name="onFed">喂食成功时的回调</param>
     public void Open(int petInstanceId, Action onClosed = null, Action onFed = null)
     {
+        // 防重：已经打开就直接忽略
+        if (_isOpen)
+        {
+            Z_Logger.LogWarning($"[UI_PetFeedPanel] Open 被忽略：面板已经打开 (petInstanceId={_petInstanceId})");
+            return;
+        }
+
         _petInstanceId = petInstanceId;
         _onClosed = onClosed;
         _onFed = onFed;
@@ -104,6 +120,9 @@ public class UI_PetFeedPanel : MonoBehaviour
         Z_Logger.Log($"[UI_PetFeedPanel] Open: petInstanceId={petInstanceId}");
 
         gameObject.SetActive(true);
+
+        // ✅ 打开时注册鱼篓更新事件
+        CommunicateEvent.Register("FishBagDataUpdated", OnFishBagUpdated);
 
         if (NetServerManager.Instance != null)
         {
@@ -120,7 +139,7 @@ public class UI_PetFeedPanel : MonoBehaviour
                 }
             });
 
-            // ✅ 主动拉一次最新鱼篓数据，确保打开时不是旧数据
+            // 主动拉一次最新鱼篓数据
             NetServerManager.Instance.FetchPlayerFishBag();
         }
         else
@@ -134,11 +153,36 @@ public class UI_PetFeedPanel : MonoBehaviour
 
     public void Close()
     {
+        if (!_isOpen) return;
+
         Z_Logger.Log($"[UI_PetFeedPanel] Close: petInstanceId={_petInstanceId}");
         _isOpen = false;
+
+        // ✅ 关闭时注销鱼篓更新事件
+        CommunicateEvent.Unregister("FishBagDataUpdated", OnFishBagUpdated);
+
         StopTimerCoroutine();
         gameObject.SetActive(false);
-        _onClosed?.Invoke();
+
+        // 回调 + 清理
+        var closedCb = _onClosed;
+        _onClosed = null;
+        _onFed = null;
+
+        closedCb?.Invoke();
+    }
+
+    // ============================================================
+    // 事件回调
+    // ============================================================
+
+    private void OnFishBagUpdated()
+    {
+        Z_Logger.Log($"[UI_PetFeedPanel] OnFishBagUpdated: _isOpen={_isOpen}, activeSelf={gameObject.activeSelf}");
+        if (_isOpen && gameObject.activeSelf)
+        {
+            RefreshFishList();
+        }
     }
 
     // ============================================================
@@ -194,7 +238,7 @@ public class UI_PetFeedPanel : MonoBehaviour
             if (kv.Value == null) continue;
             foreach (var fish in kv.Value)
             {
-                // 只显示鱼篓里的鱼（location == 0）
+                // 只显示鱼篓里的鱼（location == 0）且未锁定
                 if (fish.location == 0 && !fish.isLocked)
                 {
                     result.Add(fish);
@@ -272,7 +316,7 @@ public class UI_PetFeedPanel : MonoBehaviour
                     RefreshFishList();
                     _selectedFishId = -1;
 
-                    // ✅ 通知外部（UI_PetInfoPanel）刷新
+                    // 通知外部（UI_PetInfoPanel）刷新
                     Z_Logger.Log("[UI_PetFeedPanel] 触发 _onFed 回调");
                     _onFed?.Invoke();
                 }

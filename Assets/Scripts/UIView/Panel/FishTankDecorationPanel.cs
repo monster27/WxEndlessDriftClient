@@ -293,16 +293,29 @@ public class FishTankDecorationPanel : MonoBehaviour
 
         if (configs.Count == 0) return;
 
+        // ★ 80/81 是可堆叠的"摆饰/挂饰"：背包剩余 <= 0 时不显示该项
+        bool isStackableCategory = (_currentCategory == 80 || _currentCategory == 81);
+
+        int visibleIndex = 0;
+
         for (int i = 0; i < configs.Count; i++)
         {
             var config = configs[i];
-            UI_FishTankDecPrefab item = _pool.Get();
-            item.transform.SetParent(decorationContainer, false);
-            item.transform.SetSiblingIndex(i);
-            item.gameObject.SetActive(true);
 
             // 背包剩余数量
             int bagQuantity = PlayerDataService.Instance?.GetOwnedDecorationQuantity(config.id) ?? 0;
+
+            // ★ 80/81：背包剩余 <= 0 → 不显示该项
+            if (isStackableCategory && bagQuantity <= 0)
+            {
+                continue;
+            }
+
+            UI_FishTankDecPrefab item = _pool.Get();
+            item.transform.SetParent(decorationContainer, false);
+            item.transform.SetSiblingIndex(visibleIndex);
+            item.gameObject.SetActive(true);
+            visibleIndex++;
 
             // 本槽位已装备数量
             int equippedCount = 0;
@@ -339,9 +352,7 @@ public class FishTankDecorationPanel : MonoBehaviour
             bool equipped = totalEquippedCount > 0;
 
             // 80/81 显示背包剩余；82-84 显示总拥有数量
-            int displayCount = (_currentCategory == 80 || _currentCategory == 81)
-                ? bagQuantity
-                : ownedQuantity;
+            int displayCount = isStackableCategory ? bagQuantity : ownedQuantity;
 
             item.Init(config, owned, equipped, totalEquippedCount, displayCount, _currentTankId, OnDecorationItemClickedInternal);
             _activeItems.Add(item);
