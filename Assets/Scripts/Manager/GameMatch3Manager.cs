@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 消消乐流程控制层
+/// </summary>
 public class Match3Manager : MonoBehaviour
 {
     [Header("===== 调试 =====")]
@@ -37,9 +40,6 @@ public class Match3Manager : MonoBehaviour
     private int _bestScore;
     private Coroutine _swapCoroutine;
 
-    // ★ 时间显示节流
-    private float _lastTimeDisplayed = -1f;
-
     // ============================================================
     // 生命周期
     // ============================================================
@@ -67,13 +67,7 @@ public class Match3Manager : MonoBehaviour
             if (_timeLeft < 0f) _timeLeft = 0f;
         }
 
-        // ★ 只在秒数变化时才调 View
-        float rounded = Mathf.CeilToInt(_timeLeft);
-        if (!Mathf.Approximately(rounded, _lastTimeDisplayed))
-        {
-            _lastTimeDisplayed = rounded;
-            view?.SetTime(_timeLeft);
-        }
+        view?.SetTime(_timeLeft);
 
         if (_timeLeft <= 0f && !_isTimeUp) _isTimeUp = true;
 
@@ -118,7 +112,7 @@ public class Match3Manager : MonoBehaviour
     {
         if (configJson == null)
         {
-            Z_Logger.LogError("[Match3Manager] configJson 未绑定");
+            Z_Logger.LogError("[Match3Manager] configJson 未绑定，使用默认配置");
             _config = new GameMatch3ConfigWrapper();
             return;
         }
@@ -126,7 +120,7 @@ public class Match3Manager : MonoBehaviour
         try
         {
             _config = JsonUtility.FromJson<GameMatch3ConfigWrapper>(configJson.text);
-            if (_config == null) throw new Exception("null");
+            if (_config == null) throw new Exception("解析结果为 null");
         }
         catch (Exception e)
         {
@@ -141,6 +135,7 @@ public class Match3Manager : MonoBehaviour
     {
         if (_score <= _bestScore) return;
         _bestScore = _score;
+        // TODO: 后期迁移到服务器
         PlayerPrefs.SetInt(BEST_SCORE_KEY, _bestScore);
         PlayerPrefs.Save();
     }
@@ -165,7 +160,6 @@ public class Match3Manager : MonoBehaviour
         _selected = null;
         _cachedMoves.Clear();
         _hintIndex = -1;
-        _lastTimeDisplayed = -1f;
 
         _hintCount = _config.props.hintBaseCount * playerLevel;
         _refreshCount = _config.props.refreshBaseCount * playerLevel;
@@ -176,7 +170,6 @@ public class Match3Manager : MonoBehaviour
         if (view != null)
         {
             view.InitBoard(_rows, _cols, _colorCount);
-            view.ClearBoard();           // ★ 回收旧 tile
             view.BuildBoard(_board);
             view.ClearHints();
             view.ClearAllSelected();
@@ -236,12 +229,17 @@ public class Match3Manager : MonoBehaviour
         StartSwapRoutine(first.x, first.y, r, c);
     }
 
+    // ============================================================
+    // 玩家滑动
+    // ============================================================
+
     private void HandleTileSwapped(int r1, int c1, int r2, int c2)
     {
         if (_isGameOver || _isResolving) return;
         if (!IsInBoard(r1, c1) || !IsInBoard(r2, c2)) return;
         if (!IsAdjacent(r1, c1, r2, c2)) return;
 
+        // 清除所有选中（滑动时可能有前一次点击残留的选中态）
         ClearAllSelections();
         ClearHintHighlight();
 
@@ -263,6 +261,7 @@ public class Match3Manager : MonoBehaviour
         _isResolving = true;
         view.SetInputLocked(true);
 
+        // ★ 进入交换流程前，清空所有选中态
         ClearAllSelections();
         ClearHintHighlight();
 
@@ -274,9 +273,12 @@ public class Match3Manager : MonoBehaviour
         bool isSpecial1 = s1 != GameMatch3BoardLogic.SPECIAL_NONE;
         bool isSpecial2 = s2 != GameMatch3BoardLogic.SPECIAL_NONE;
 
+        // 逻辑交换
         GameMatch3BoardLogic.Swap(_board, r1, c1, r2, c2);
 
-        // A：两个都是特殊
+        // ─────────────────────────────────────────────────────────
+        // 情况 A：两个都是特殊方块 → 组合效果
+        // ─────────────────────────────────────────────────────────
         if (isSpecial1 && isSpecial2)
         {
             yield return StartCoroutine(view.PlaySwapAnim(r1, c1, r2, c2));
@@ -287,7 +289,9 @@ public class Match3Manager : MonoBehaviour
             yield break;
         }
 
-        // B：魔力鸟 + 普通
+        // ─────────────────────────────────────────────────────────
+        // 情况 B：魔力鸟 + 普通
+        // ─────────────────────────────────────────────────────────
         bool hasMagic = s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD
                      || s2 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD;
 
@@ -301,7 +305,9 @@ public class Match3Manager : MonoBehaviour
             yield break;
         }
 
-        // C：普通交换
+        // ─────────────────────────────────────────────────────────
+        // 情况 C：普通交换 → 检查三连
+        // ─────────────────────────────────────────────────────────
         bool isValid = GameMatch3BoardLogic.HasMatchAt(_board, r1, c1)
                     || GameMatch3BoardLogic.HasMatchAt(_board, r2, c2);
 
@@ -320,8 +326,12 @@ public class Match3Manager : MonoBehaviour
         FinishSwapRoutine();
     }
 
+    /// <summary>
+    /// 统一结束交换流程
+    /// </summary>
     private void FinishSwapRoutine()
     {
+        // ★ 再次保证所有选中态清空
         ClearAllSelections();
 
         _isResolving = false;
@@ -330,7 +340,7 @@ public class Match3Manager : MonoBehaviour
     }
 
     // ============================================================
-    // 魔力鸟 + 普通
+    // 魔力鸟 + 普通方块
     // ============================================================
 
     private IEnumerator ResolveMagicBirdSwap(int r1, int c1, int r2, int c2)
@@ -377,7 +387,7 @@ public class Match3Manager : MonoBehaviour
     }
 
     // ============================================================
-    // 特殊组合
+    // 特殊 + 特殊 组合
     // ============================================================
 
     private IEnumerator ResolveSpecialCombo(int r1, int c1, int r2, int c2, int s1, int s2)
@@ -388,6 +398,7 @@ public class Match3Manager : MonoBehaviour
         clearSet.Add(new Vector2Int(r1, c1));
         clearSet.Add(new Vector2Int(r2, c2));
 
+        // 情况 1：双魔力鸟 → 全屏
         if (s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD
          && s2 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD)
         {
@@ -395,6 +406,7 @@ public class Match3Manager : MonoBehaviour
                 for (int c = 0; c < _cols; c++)
                     clearSet.Add(new Vector2Int(r, c));
         }
+        // 情况 2：魔力鸟 + 其他特殊
         else if (s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD
               || s2 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD)
         {
@@ -406,15 +418,18 @@ public class Match3Manager : MonoBehaviour
             foreach (var p in sameColor)
             {
                 clearSet.Add(p);
+
                 if (GameMatch3BoardLogic.IsSpecial(_board[p.x, p.y]))
                     specialQueue.Enqueue(p);
             }
         }
+        // 情况 3：直线 + 直线 → 十字
         else if (IsLineType(s1) && IsLineType(s2))
         {
             AddRow(clearSet, r1);
             AddCol(clearSet, c1);
         }
+        // 情况 4：直线 + 爆炸 → 十字 + 3×3
         else if (IsLineType(s1) && s2 == GameMatch3BoardLogic.SPECIAL_BOMB)
         {
             AddRow(clearSet, r1);
@@ -427,6 +442,7 @@ public class Match3Manager : MonoBehaviour
             AddCol(clearSet, c2);
             AddSquare(clearSet, r1, c1, 1);
         }
+        // 情况 5：爆炸 + 爆炸 → 5×5
         else if (s1 == GameMatch3BoardLogic.SPECIAL_BOMB
               && s2 == GameMatch3BoardLogic.SPECIAL_BOMB)
         {
@@ -491,6 +507,7 @@ public class Match3Manager : MonoBehaviour
     {
         int combo = 0;
 
+        // ★ 进入连锁前，清空所有选中态
         ClearAllSelections();
         ClearHintHighlight();
 
@@ -500,6 +517,9 @@ public class Match3Manager : MonoBehaviour
             if (matches.Count == 0) break;
 
             combo++;
+
+            // ★ 每轮消除前再清一次，防止动画期间用户点击产生的选中残留
+            ClearAllSelections();
 
             var clearSet = new HashSet<Vector2Int>();
             var specialQueue = new Queue<Vector2Int>();
@@ -536,12 +556,14 @@ public class Match3Manager : MonoBehaviour
             yield return StartCoroutine(view.PlayDropRefillAnim(_board));
         }
 
+        // 死局 → 洗牌
         if (!GameMatch3BoardLogic.HasValidMove(_board))
         {
             LogDebug("死局，自动洗牌");
             yield return StartCoroutine(ShuffleRoutine());
         }
 
+        // ★ 连锁结束后，清空所有状态
         ClearAllSelections();
         view.ClearHints();
         _cachedMoves.Clear();
@@ -624,6 +646,7 @@ public class Match3Manager : MonoBehaviour
     {
         GameMatch3BoardLogic.ShuffleBoard(_board, _colorCount);
 
+        // ★ 洗牌前也清空选中
         ClearAllSelections();
 
         if (view != null)
@@ -639,6 +662,7 @@ public class Match3Manager : MonoBehaviour
         if (_isGameOver || _isResolving) return;
         if (_hintCount <= 0) { LogDebug("提示次数已用完"); return; }
 
+        // ★ 提示时也要清空选中（避免选中框和提示框叠在一起）
         ClearAllSelections();
 
         if (_cachedMoves.Count == 0)
@@ -672,6 +696,7 @@ public class Match3Manager : MonoBehaviour
         _refreshCount--;
         view.SetProps(_hintCount, _refreshCount, _timeAddCount);
 
+        // ★ 刷新前清空选中
         ClearAllSelections();
         ClearHintHighlight();
 
@@ -687,7 +712,6 @@ public class Match3Manager : MonoBehaviour
         _timeLeft += _config.time.timeAddSeconds;
         if (_timeLeft > 0f) _isTimeUp = false;
 
-        _lastTimeDisplayed = -1f;   // 强制刷新
         view.SetTime(_timeLeft);
         view.SetProps(_hintCount, _refreshCount, _timeAddCount);
     }
@@ -703,6 +727,9 @@ public class Match3Manager : MonoBehaviour
         _hintIndex = -1;
     }
 
+    /// <summary>
+    /// ★ 统一清空所有选中态
+    /// </summary>
     private void ClearAllSelections()
     {
         _selected = null;
@@ -718,6 +745,7 @@ public class Match3Manager : MonoBehaviour
         if (_isGameOver) return;
         _isGameOver = true;
 
+        // ★ 结算前清空选中
         ClearAllSelections();
 
         SaveBestScore();
@@ -734,6 +762,7 @@ public class Match3Manager : MonoBehaviour
     private void HandleCloseClicked()
     {
         gameObject.SetActive(false);
+        // TODO: 通知宿主关闭
     }
 
     // ============================================================
