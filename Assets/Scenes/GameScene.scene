@@ -28418,7 +28418,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &512944273
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47486,7 +47486,7 @@ MonoBehaviour:
   enableDebugLog: 0
   view: {fileID: 512944273}
   configJson: {fileID: 4900000, guid: 8e5aff25e4156d745aedcd05e7a9f8b0, type: 3}
-  playerLevel: 5
+  playerLevel: 100
 --- !u!1 &863968036
 GameObject:
   m_ObjectHideFlags: 0
