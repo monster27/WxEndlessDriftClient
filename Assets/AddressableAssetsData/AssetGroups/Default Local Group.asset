@@ -156,6 +156,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 077944a06d71fd348a956d75321950f9
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/5.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0780c771810879240833f1277d31624c
     m_Address: Assets/Addressables/GameScene/Player/Ani/3401/Idle_Stand.png
     m_ReadOnly: 0
@@ -179,6 +184,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 08a5dc8bad211dd48be2874469b7754c
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/4.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 08aeb98172f4d9b428d9b43af5395aa3
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9752\u8272.png"
@@ -551,6 +561,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1c6a5cb9d2bf3284b9cdac792072cae0
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/select.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1c8f3d1ceeebdfb40a8cf2c26d76d66f
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u706B\u5C71\u5730\u9762\u7269\u54C1/\u9F9F.png"
     m_ReadOnly: 0
@@ -784,6 +799,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 292275d5dcb0a1b4394bae97d3250637
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/overlay_line_v.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 294b472db6d3911429a38d91788c63ca
     m_Address: Assets/Addressables/UI/Icon/BaitIcons/2005.png
     m_ReadOnly: 0
@@ -910,6 +930,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2fdaadb7301f2ac4e9090d2540cd4c4e
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/highlight.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2fe7a20169277b64fb899e9ed563ce4f
     m_Address: Assets/Addressables/JsonData/BaseFramework/fishTankConfig.json
@@ -1924,6 +1949,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6c5f991f590832146809366be50ccf09
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/overlay_line_h.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6d4b691e7f01fd14e82782186a728237
     m_Address: Assets/Textures/0605/Collection/Pet icon.png
     m_ReadOnly: 0
@@ -2532,6 +2562,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 91e49fc50fdb93b458c67a568ec92e3e
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/magicbird.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 91f6a019f193f8e4a8e60c0331dbbbfd
     m_Address: "Assets/Textures/0605/Character interface/\u63D0\u793A\u754C\u9762\u793A\u610F\u56FE.png"
     m_ReadOnly: 0
@@ -2857,6 +2892,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a36cd6d0c1b722547b570cc7183d9cba
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/overlay_bomb.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a4a34eb6d77ad6342afd7127b050f2fd
     m_Address: "Assets/Textures/0605/backpack/\u9975\u6599\u9875\u9762\u793A\u610F.png"
@@ -3365,6 +3405,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ba9a753ef415d64468e1854bf16547de
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/1.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bb13a471372825747aa827b2bc777ecd
     m_Address: Assets/Textures/0712/fish basket/2.png
     m_ReadOnly: 0
@@ -3424,6 +3469,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bddcc976e3a02b34586878b2ef63ff48
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/2.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: be0c45dc76fa00344bdc1795bb107fd5
     m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5201.png
     m_ReadOnly: 0
@@ -3441,6 +3491,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: be52108910c4bab48848c7be6c14d15a
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/3.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: be5c366ac772df14db374922feafa93d
     m_Address: "Assets/Textures/0712/Other/\u9C7C\u7EBF\u9875\u9762\u793A\u610F\u56FE.png"
@@ -3994,6 +4049,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e38f777e7000c744eb8f0643e886e9d1
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/overlay_line.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e3abd0d50c067494998c5131af38ac82
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u7D2B\u8272.png"

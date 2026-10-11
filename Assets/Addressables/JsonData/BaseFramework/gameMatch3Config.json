@@ -1,0 +1,26 @@
+{
+    "board": {
+        "rows": 8,
+        "cols": 8,
+        "colorCount": 5
+    },
+    "time": {
+        "initialTime": 60.0,
+        "timeAddSeconds": 30.0
+    },
+    "score": {
+        "baseMatch3": 30,
+        "extraPerTile": 15,
+        "comboMultiplier": 0.5
+    },
+    "specialTiles": {
+        "lineMultiplier": 1.5,
+        "bombMultiplier": 2.0,
+        "magicBirdMultiplier": 2.5
+    },
+    "props": {
+        "hintBaseCount": 1,
+        "refreshBaseCount": 1,
+        "timeAddBaseCount": 1
+    }
+}
