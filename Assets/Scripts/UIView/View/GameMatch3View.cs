@@ -1,16 +1,21 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 消消乐棋盘表现层
+/// 消消乐棋盘表现层（状态机版 · 无协程）
 /// 
-/// 输入逻辑：
-///   - PointerDown：记录 _pressTile，视觉高亮
-///   - PointerExit：若位移超过阈值 → 立即判断方向 → 触发 OnTileSwapped，并结束本次操作
-///   - PointerUp：若操作已结束则忽略；否则视为轻点 → 触发 OnTileClicked
+/// 动画系统：
+///   - 单槽位动画（同一时刻只播一个动画）
+///   - Update 驱动，完成后回调
+///   - 零协程、零 GC
+/// 
+/// 优化：
+///   - 对象池（ResetForReuse / CleanupForPool）
+///   - _tileIndex 字典 O(1)
+///   - AA 资源只加载一次
+///   - Text 更新带缓存
 /// </summary>
 public class GameMatch3View : MonoBehaviour
 {
@@ -81,8 +86,17 @@ public class GameMatch3View : MonoBehaviour
     // ============================================================
 
     [Header("===== 输入参数 =====")]
-    [Tooltip("屏幕位移小于该像素值视为点击，大于则视为滑动")]
     [SerializeField] private float dragThreshold = 20f;
+
+    // ============================================================
+    // 动画参数
+    // ============================================================
+
+    [Header("===== 动画参数 =====")]
+    [SerializeField] private float swapDuration = 0.15f;
+    [SerializeField] private float invalidSwapDuration = 0.20f;
+    [SerializeField] private float destroyDuration = 0.15f;
+    [SerializeField] private float comboShowDuration = 0.8f;
 
     // ============================================================
     // 事件
@@ -103,6 +117,16 @@ public class GameMatch3View : MonoBehaviour
     private UI_GameMatch3GridPrefab[,] _tiles;
     private int _rows, _cols;
 
+    // 字典 O(1)
+    private readonly Dictionary<UI_GameMatch3GridPrefab, Vector2Int> _tileIndex =
+        new Dictionary<UI_GameMatch3GridPrefab, Vector2Int>();
+
+    // 对象池
+    private readonly Queue<UI_GameMatch3GridPrefab> _tilePool =
+        new Queue<UI_GameMatch3GridPrefab>();
+
+    // 美术资源
+    private bool _artLoaded;
     private Sprite[] _tileSprites;
     private Sprite _lineOverlayH;
     private Sprite _lineOverlayV;
@@ -111,11 +135,36 @@ public class GameMatch3View : MonoBehaviour
     private Sprite _highlight;
     private Sprite _select;
 
-    private Coroutine _comboCoroutine;
+    // 文字缓存
+    private int _lastTimeSec = -1;
+    private int _lastScore = int.MinValue;
+    private int _lastLevel = int.MinValue;
+    private int _lastHint = int.MinValue;
+    private int _lastRefresh = int.MinValue;
+    private int _lastTimeAdd = int.MinValue;
+
+    // Combo
+    private float _comboTimer;
 
     // 输入
     private UI_GameMatch3GridPrefab _pressTile;
     private bool _inputLocked;
+
+    // ────────── 动画槽 ──────────
+    private enum AnimType { None, Swap, InvalidSwap, Destroy }
+
+    private AnimType _animType = AnimType.None;
+    private float _animElapsed;
+    private float _animDuration;
+    private Action _animOnComplete;
+
+    // Swap / InvalidSwap 共用参数
+    private UI_GameMatch3GridPrefab _animA, _animB;
+    private Vector2 _animPosA, _animPosB;
+    private int _animR1, _animC1, _animR2, _animC2;
+
+    // Destroy 参数（复用列表，零分配）
+    private readonly List<Vector2Int> _destroyPositions = new List<Vector2Int>();
 
     // ============================================================
     // 生命周期
@@ -123,26 +172,185 @@ public class GameMatch3View : MonoBehaviour
 
     private void Awake()
     {
-        if (hintBtn != null) hintBtn.onClick.AddListener(() => OnHintClicked?.Invoke());
-        if (refreshBtn != null) refreshBtn.onClick.AddListener(() => OnRefreshClicked?.Invoke());
-        if (timeAddBtn != null) timeAddBtn.onClick.AddListener(() => OnTimeAddClicked?.Invoke());
-        if (retryBtn != null) retryBtn.onClick.AddListener(() => OnRetryClicked?.Invoke());
-        if (closeBtn != null) closeBtn.onClick.AddListener(() => OnCloseClicked?.Invoke());
+        if (hintBtn != null) hintBtn.onClick.AddListener(OnHintBtnClick);
+        if (refreshBtn != null) refreshBtn.onClick.AddListener(OnRefreshBtnClick);
+        if (timeAddBtn != null) timeAddBtn.onClick.AddListener(OnTimeAddBtnClick);
+        if (retryBtn != null) retryBtn.onClick.AddListener(OnRetryBtnClick);
+        if (closeBtn != null) closeBtn.onClick.AddListener(OnCloseBtnClick);
 
         if (resultPanel != null) resultPanel.SetActive(false);
         if (comboText != null) comboText.gameObject.SetActive(false);
     }
 
-    public void SetInputLocked(bool locked)
-    {
-        _inputLocked = locked;
+    // 命名方法，避免 lambda 分配闭包
+    private void OnHintBtnClick() { OnHintClicked?.Invoke(); }
+    private void OnRefreshBtnClick() { OnRefreshClicked?.Invoke(); }
+    private void OnTimeAddBtnClick() { OnTimeAddClicked?.Invoke(); }
+    private void OnRetryBtnClick() { OnRetryClicked?.Invoke(); }
+    private void OnCloseBtnClick() { OnCloseClicked?.Invoke(); }
 
-        if (locked && _pressTile != null)
+    // ============================================================
+    // Update：驱动动画槽 + Combo 计时
+    // ============================================================
+
+    private void Update()
+    {
+        TickAnimation();
+
+        if (comboText != null && comboText.gameObject.activeSelf)
         {
-            _pressTile.SetSelected(false);
-            _pressTile.ForceEndPress();
-            _pressTile = null;
+            _comboTimer -= Time.deltaTime;
+            if (_comboTimer <= 0f) comboText.gameObject.SetActive(false);
         }
+    }
+
+    private void TickAnimation()
+    {
+        if (_animType == AnimType.None) return;
+
+        _animElapsed += Time.deltaTime;
+        float t = Mathf.Clamp01(_animElapsed / _animDuration);
+
+        switch (_animType)
+        {
+            case AnimType.Swap: TickSwapAnim(t); break;
+            case AnimType.InvalidSwap: TickInvalidSwapAnim(t); break;
+            case AnimType.Destroy: TickDestroyAnim(t); break;
+        }
+
+        if (t < 1f) return;
+
+        // 动画完成
+        if (_animType == AnimType.Swap)
+        {
+            // 同步交换数组引用和索引
+            _tiles[_animR1, _animC1] = _animB;
+            _tiles[_animR2, _animC2] = _animA;
+            _tileIndex[_animA] = new Vector2Int(_animR2, _animC2);
+            _tileIndex[_animB] = new Vector2Int(_animR1, _animC1);
+        }
+
+        var cb = _animOnComplete;
+        _animType = AnimType.None;
+        _animOnComplete = null;
+        cb?.Invoke();
+    }
+
+    private void TickSwapAnim(float t)
+    {
+        if (_animA == null || _animB == null) return;
+        float k = EaseInOutQuad(t);
+        _animA.Rect.anchoredPosition = Vector2.Lerp(_animPosA, _animPosB, k);
+        _animB.Rect.anchoredPosition = Vector2.Lerp(_animPosB, _animPosA, k);
+    }
+
+    private void TickInvalidSwapAnim(float t)
+    {
+        if (_animA == null || _animB == null) return;
+
+        const float half = 0.5f;
+        if (t < half)
+        {
+            float k = EaseInOutQuad(t / half);
+            _animA.Rect.anchoredPosition = Vector2.Lerp(_animPosA, _animPosB, k);
+            _animB.Rect.anchoredPosition = Vector2.Lerp(_animPosB, _animPosA, k);
+        }
+        else
+        {
+            float k = EaseInOutQuad((t - half) / half);
+            _animA.Rect.anchoredPosition = Vector2.Lerp(_animPosB, _animPosA, k);
+            _animB.Rect.anchoredPosition = Vector2.Lerp(_animPosA, _animPosB, k);
+        }
+    }
+
+    private void TickDestroyAnim(float t)
+    {
+        float k = 1f - t;
+        k = k * k; // 缓出，更快消失
+        float scale = Mathf.Max(0.01f, k);
+
+        for (int i = 0; i < _destroyPositions.Count; i++)
+        {
+            var tile = GetTile(_destroyPositions[i].x, _destroyPositions[i].y);
+            if (tile != null) tile.Rect.localScale = Vector3.one * scale;
+        }
+    }
+
+    private static float EaseInOutQuad(float t)
+        => t < 0.5f ? 2f * t * t : 1f - Mathf.Pow(-2f * t + 2f, 2f) * 0.5f;
+
+    // ============================================================
+    // 动画接口（供 Manager 调用）
+    // ============================================================
+
+    public void BeginSwapAnim(int r1, int c1, int r2, int c2, Action onComplete)
+    {
+        var a = GetTile(r1, c1);
+        var b = GetTile(r2, c2);
+        if (a == null || b == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        _animR1 = r1; _animC1 = c1; _animR2 = r2; _animC2 = c2;
+        _animA = a; _animB = b;
+        _animPosA = a.Rect.anchoredPosition;
+        _animPosB = b.Rect.anchoredPosition;
+
+        _animType = AnimType.Swap;
+        _animElapsed = 0f;
+        _animDuration = swapDuration;
+        _animOnComplete = onComplete;
+    }
+
+    public void BeginInvalidSwapAnim(int r1, int c1, int r2, int c2, Action onComplete)
+    {
+        var a = GetTile(r1, c1);
+        var b = GetTile(r2, c2);
+        if (a == null || b == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        _animR1 = r1; _animC1 = c1; _animR2 = r2; _animC2 = c2;
+        _animA = a; _animB = b;
+        _animPosA = a.Rect.anchoredPosition;
+        _animPosB = b.Rect.anchoredPosition;
+
+        _animType = AnimType.InvalidSwap;
+        _animElapsed = 0f;
+        _animDuration = invalidSwapDuration;
+        _animOnComplete = onComplete;
+    }
+
+    public void BeginDestroyAnim(List<Vector2Int> positions, Action onComplete)
+    {
+        _destroyPositions.Clear();
+        if (positions != null) _destroyPositions.AddRange(positions);
+
+        _animType = AnimType.Destroy;
+        _animElapsed = 0f;
+        _animDuration = destroyDuration;
+        _animOnComplete = onComplete;
+    }
+
+    /// <summary>
+    /// 立即更新所有 tile 的显示（下落后调用）
+    /// </summary>
+    public void UpdateAll(int[,] board)
+    {
+        if (_tiles == null) return;
+
+        for (int r = 0; r < _rows; r++)
+            for (int c = 0; c < _cols; c++)
+            {
+                var tile = _tiles[r, c];
+                if (tile == null) continue;
+                tile.Rect.localScale = Vector3.one;
+                tile.SetValue(board[r, c], GetIcon(board[r, c]), GetOverlay(board[r, c]), _magicBird);
+            }
     }
 
     // ============================================================
@@ -154,10 +362,12 @@ public class GameMatch3View : MonoBehaviour
         _rows = rows;
         _cols = cols;
 
+        if (_artLoaded) return;
+
         if (useTestSprites)
         {
             LoadTestSprites(colorCount);
-            LogDebug("使用测试 Sprite");
+            _artLoaded = true;
         }
         else
         {
@@ -186,7 +396,8 @@ public class GameMatch3View : MonoBehaviour
         _select = testSelect;
     }
 
-    private IEnumerator LoadArtCoroutine(int colorCount)
+    // 唯一的协程：加载 AA 资源（开局一次，不影响游戏循环）
+    private System.Collections.IEnumerator LoadArtCoroutine(int colorCount)
     {
         _tileSprites = new Sprite[colorCount + 1];
 
@@ -204,10 +415,10 @@ public class GameMatch3View : MonoBehaviour
         yield return StartCoroutine(LoadSpriteCoroutine(highlightPath, s => _highlight = s));
         yield return StartCoroutine(LoadSpriteCoroutine(selectPath, s => _select = s));
 
-        LogDebug("AA 美术资源加载完成");
+        _artLoaded = true;
     }
 
-    private IEnumerator LoadSpriteCoroutine(string path, Action<Sprite> onLoaded)
+    private System.Collections.IEnumerator LoadSpriteCoroutine(string path, Action<Sprite> onLoaded)
     {
         if (string.IsNullOrEmpty(path)) { onLoaded?.Invoke(null); yield break; }
 
@@ -227,14 +438,11 @@ public class GameMatch3View : MonoBehaviour
             yield return null;
         }
 
-        if (result == null)
-            Z_Logger.LogWarning($"[Match3View] AA 加载失败或超时: {path}");
-
         onLoaded?.Invoke(result);
     }
 
     // ============================================================
-    // 棋盘生成 / 刷新
+    // 棋盘生成 / 清理（对象池）
     // ============================================================
 
     public void BuildBoard(int[,] board)
@@ -253,47 +461,63 @@ public class GameMatch3View : MonoBehaviour
         {
             for (int c = 0; c < _cols; c++)
             {
-                var tile = Instantiate(tilePrefab, boardContainer);
+                var tile = GetTileFromPool();
                 tile.Init(HandlePointerDown, HandlePointerExit, HandlePointerUp);
                 tile.SetValue(board[r, c], GetIcon(board[r, c]), GetOverlay(board[r, c]), _magicBird);
                 tile.SetSelectSprite(_select);
                 _tiles[r, c] = tile;
+                _tileIndex[tile] = new Vector2Int(r, c);
             }
         }
     }
 
-    public void UpdateAll(int[,] board)
+    private UI_GameMatch3GridPrefab GetTileFromPool()
     {
-        if (_tiles == null) return;
+        UI_GameMatch3GridPrefab tile;
 
-        for (int r = 0; r < _rows; r++)
-            for (int c = 0; c < _cols; c++)
-            {
-                var tile = _tiles[r, c];
-                if (tile == null) continue;
-                tile.SetValue(board[r, c], GetIcon(board[r, c]), GetOverlay(board[r, c]), _magicBird);
-                tile.SetSelectSprite(_select);
-            }
+        if (_tilePool.Count > 0)
+        {
+            tile = _tilePool.Dequeue();
+        }
+        else
+        {
+            tile = Instantiate(tilePrefab, boardContainer);
+        }
+
+        tile.transform.SetParent(boardContainer, false);
+        tile.ResetForReuse();
+        tile.gameObject.SetActive(true);
+        return tile;
     }
 
-    private void ClearBoard()
+    private void ReturnTileToPool(UI_GameMatch3GridPrefab tile)
+    {
+        if (tile == null) return;
+
+        tile.CleanupForPool();
+        tile.gameObject.SetActive(false);
+        _tilePool.Enqueue(tile);
+    }
+
+    public void ClearBoard()
     {
         if (_tiles != null)
         {
             for (int r = 0; r < _rows; r++)
                 for (int c = 0; c < _cols; c++)
-                    if (_tiles[r, c] != null) Destroy(_tiles[r, c].gameObject);
+                    if (_tiles[r, c] != null)
+                        ReturnTileToPool(_tiles[r, c]);
+
+            _tiles = null;
         }
 
-        if (boardContainer != null)
-        {
-            for (int i = boardContainer.childCount - 1; i >= 0; i--)
-                Destroy(boardContainer.GetChild(i).gameObject);
-        }
-
-        _tiles = null;
+        _tileIndex.Clear();
         _pressTile = null;
     }
+
+    // ============================================================
+    // 美术资源查询
+    // ============================================================
 
     private Sprite GetIcon(int value)
     {
@@ -316,8 +540,20 @@ public class GameMatch3View : MonoBehaviour
     }
 
     // ============================================================
-    // 输入处理
+    // 输入
     // ============================================================
+
+    public void SetInputLocked(bool locked)
+    {
+        _inputLocked = locked;
+
+        if (locked && _pressTile != null)
+        {
+            _pressTile.SetSelected(false);
+            _pressTile.ForceEndPress();
+            _pressTile = null;
+        }
+    }
 
     private void HandlePointerDown(UI_GameMatch3GridPrefab tile)
     {
@@ -329,40 +565,30 @@ public class GameMatch3View : MonoBehaviour
         tile.SetSelected(true);
     }
 
-    /// <summary>
-    /// 指针移出该格子 → 若位移超阈值，立即判断方向触发交换
-    /// </summary>
     private void HandlePointerExit(UI_GameMatch3GridPrefab tile, Vector2 delta)
     {
         if (_inputLocked) return;
         if (_pressTile != tile) return;
-
-        // 位移不够 → 不动，等 PointerUp
         if (delta.magnitude < dragThreshold) return;
 
         var source = _pressTile;
         _pressTile = null;
         source.SetSelected(false);
-        source.ForceEndPress();   // 结束按下状态
+        source.ForceEndPress();
 
-        var coord = FindCoord(source);
-        if (coord == null) return;
+        if (!_tileIndex.TryGetValue(source, out var coord)) return;
 
         Vector2Int dir = GetDragDirection(delta);
         if (dir == Vector2Int.zero) return;
 
-        int tr = coord.Value.x + dir.x;
-        int tc = coord.Value.y + dir.y;
+        int tr = coord.x + dir.x;
+        int tc = coord.y + dir.y;
 
         if (tr < 0 || tr >= _rows || tc < 0 || tc >= _cols) return;
 
-        // 立即触发交换，本次操作结束
-        OnTileSwapped?.Invoke(coord.Value.x, coord.Value.y, tr, tc);
+        OnTileSwapped?.Invoke(coord.x, coord.y, tr, tc);
     }
 
-    /// <summary>
-    /// 松手 → 若操作还未结束，视为轻点
-    /// </summary>
     private void HandlePointerUp(UI_GameMatch3GridPrefab tile, Vector2 delta)
     {
         if (_pressTile != tile) return;
@@ -370,28 +596,15 @@ public class GameMatch3View : MonoBehaviour
         var source = _pressTile;
         _pressTile = null;
 
-        var coord = FindCoord(source);
-        if (coord == null)
+        if (!_tileIndex.TryGetValue(source, out var coord))
         {
             source.SetSelected(false);
             return;
         }
 
-        // 松手时位移小于阈值 → 视为点击（不清除选中，交给 Manager 决定）
-        OnTileClicked?.Invoke(coord.Value.x, coord.Value.y);
+        OnTileClicked?.Invoke(coord.x, coord.y);
     }
 
-    /// <summary>
-    /// 屏幕 delta → 网格方向
-    /// 
-    /// 网格坐标：row 向下增大，col 向右增大
-    /// 屏幕坐标：x 向右增大，y 向上增大
-    /// 
-    /// 屏幕 x > 0 → col + 1
-    /// 屏幕 x < 0 → col - 1
-    /// 屏幕 y > 0 → row - 1
-    /// 屏幕 y < 0 → row + 1
-    /// </summary>
     private Vector2Int GetDragDirection(Vector2 delta)
     {
         if (delta.magnitude < dragThreshold) return Vector2Int.zero;
@@ -403,112 +616,10 @@ public class GameMatch3View : MonoBehaviour
     }
 
     // ============================================================
-    // 动画
-    // ============================================================
-
-    public IEnumerator PlaySwapAnim(int r1, int c1, int r2, int c2)
-    {
-        var a = GetTile(r1, c1);
-        var b = GetTile(r2, c2);
-        if (a == null || b == null) yield break;
-
-        var posA = a.Rect.anchoredPosition;
-        var posB = b.Rect.anchoredPosition;
-
-        float duration = 0.15f;
-        float t = 0f;
-        while (t < duration)
-        {
-            t += Time.deltaTime;
-            float k = t / duration;
-            a.Rect.anchoredPosition = Vector2.Lerp(posA, posB, k);
-            b.Rect.anchoredPosition = Vector2.Lerp(posB, posA, k);
-            yield return null;
-        }
-        a.Rect.anchoredPosition = posB;
-        b.Rect.anchoredPosition = posA;
-
-        _tiles[r1, c1] = b;
-        _tiles[r2, c2] = a;
-    }
-
-    public IEnumerator PlayInvalidSwapAnim(int r1, int c1, int r2, int c2)
-    {
-        var a = GetTile(r1, c1);
-        var b = GetTile(r2, c2);
-        if (a == null || b == null) yield break;
-
-        var posA = a.Rect.anchoredPosition;
-        var posB = b.Rect.anchoredPosition;
-
-        float t = 0f;
-        float dur = 0.1f;
-        while (t < dur)
-        {
-            t += Time.deltaTime;
-            float k = t / dur;
-            a.Rect.anchoredPosition = Vector2.Lerp(posA, posB, k);
-            b.Rect.anchoredPosition = Vector2.Lerp(posB, posA, k);
-            yield return null;
-        }
-
-        t = 0f;
-        while (t < dur)
-        {
-            t += Time.deltaTime;
-            float k = t / dur;
-            a.Rect.anchoredPosition = Vector2.Lerp(posB, posA, k);
-            b.Rect.anchoredPosition = Vector2.Lerp(posA, posB, k);
-            yield return null;
-        }
-
-        a.Rect.anchoredPosition = posA;
-        b.Rect.anchoredPosition = posB;
-    }
-
-    public IEnumerator PlayDestroyAnim(List<Vector2Int> positions)
-    {
-        if (positions == null || positions.Count == 0) yield break;
-
-        float duration = 0.15f;
-        float t = 0f;
-        while (t < duration)
-        {
-            t += Time.deltaTime;
-            float k = 1f - (t / duration);
-            foreach (var p in positions)
-            {
-                var tile = GetTile(p.x, p.y);
-                if (tile != null) tile.Rect.localScale = Vector3.one * Mathf.Max(0.01f, k);
-            }
-            yield return null;
-        }
-
-        foreach (var p in positions)
-        {
-            var tile = GetTile(p.x, p.y);
-            if (tile != null) tile.Rect.localScale = Vector3.one;
-        }
-    }
-
-    public IEnumerator PlayDropRefillAnim(int[,] newBoard)
-    {
-        UpdateAll(newBoard);
-        yield return null;
-    }
-
-    public IEnumerator PlayShuffleAnim(int[,] newBoard)
-    {
-        UpdateAll(newBoard);
-        yield return null;
-    }
-
-    // ============================================================
     // 提示 / 选中 / Combo
     // ============================================================
 
     public void ShowHint(int r, int c) { GetTile(r, c)?.SetHighlight(true, _highlight); }
-
     public void ClearHint(int r, int c) { GetTile(r, c)?.SetHighlight(false, null); }
 
     public void ClearHints()
@@ -519,7 +630,8 @@ public class GameMatch3View : MonoBehaviour
                 _tiles[r, c]?.SetHighlight(false, null);
     }
 
-    public void SetTileSelected(int r, int c, bool selected) { GetTile(r, c)?.SetSelected(selected); }
+    public void SetTileSelected(int r, int c, bool selected)
+        => GetTile(r, c)?.SetSelected(selected);
 
     public void ClearAllSelected()
     {
@@ -534,37 +646,54 @@ public class GameMatch3View : MonoBehaviour
         if (comboText == null) return;
         comboText.text = $"Combo x{combo}";
         comboText.gameObject.SetActive(true);
-
-        if (_comboCoroutine != null) StopCoroutine(_comboCoroutine);
-        _comboCoroutine = StartCoroutine(HideComboRoutine());
+        _comboTimer = comboShowDuration;
     }
 
-    private IEnumerator HideComboRoutine()
+    // ============================================================
+    // UI 刷新（带缓存）
+    // ============================================================
+
+    public void SetScore(int score)
     {
-        yield return new WaitForSeconds(0.8f);
-        if (comboText != null) comboText.gameObject.SetActive(false);
+        if (scoreText == null || score == _lastScore) return;
+        _lastScore = score;
+        scoreText.text = score.ToString();
     }
-
-    // ============================================================
-    // UI 刷新
-    // ============================================================
-
-    public void SetScore(int score) { if (scoreText != null) scoreText.text = score.ToString(); }
 
     public void SetTime(float time)
     {
         if (timeText == null) return;
-        int total = Mathf.CeilToInt(time);
-        timeText.text = $"{total / 60:00}:{total % 60:00}";
+
+        int sec = Mathf.CeilToInt(time);
+        if (sec == _lastTimeSec) return;
+        _lastTimeSec = sec;
+        timeText.text = $"{sec / 60:00}:{sec % 60:00}";
     }
 
-    public void SetLevel(int level) { if (levelText != null) levelText.text = $"等级 {level}"; }
+    public void SetLevel(int level)
+    {
+        if (levelText == null || level == _lastLevel) return;
+        _lastLevel = level;
+        levelText.text = $"等级 {level}";
+    }
 
     public void SetProps(int hint, int refresh, int timeAdd)
     {
-        if (hintBtnText != null) hintBtnText.text = $"提示({hint})";
-        if (refreshBtnText != null) refreshBtnText.text = $"刷新({refresh})";
-        if (timeAddBtnText != null) timeAddBtnText.text = $"时间+({timeAdd})";
+        if (hintBtnText != null && hint != _lastHint)
+        {
+            _lastHint = hint;
+            hintBtnText.text = $"提示({hint})";
+        }
+        if (refreshBtnText != null && refresh != _lastRefresh)
+        {
+            _lastRefresh = refresh;
+            refreshBtnText.text = $"刷新({refresh})";
+        }
+        if (timeAddBtnText != null && timeAdd != _lastTimeAdd)
+        {
+            _lastTimeAdd = timeAdd;
+            timeAddBtnText.text = $"时间+({timeAdd})";
+        }
 
         if (hintBtn != null) hintBtn.interactable = hint > 0;
         if (refreshBtn != null) refreshBtn.interactable = refresh > 0;
@@ -592,15 +721,6 @@ public class GameMatch3View : MonoBehaviour
         if (_tiles == null) return null;
         if (r < 0 || r >= _rows || c < 0 || c >= _cols) return null;
         return _tiles[r, c];
-    }
-
-    private Vector2Int? FindCoord(UI_GameMatch3GridPrefab tile)
-    {
-        if (_tiles == null || tile == null) return null;
-        for (int r = 0; r < _rows; r++)
-            for (int c = 0; c < _cols; c++)
-                if (_tiles[r, c] == tile) return new Vector2Int(r, c);
-        return null;
     }
 
     private void LogDebug(string msg)

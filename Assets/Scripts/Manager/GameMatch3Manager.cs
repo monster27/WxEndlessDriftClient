@@ -1,10 +1,20 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 消消乐流程控制层
+/// 消消乐流程控制层（状态机版 · 无协程）
+/// 
+/// 状态流转：
+///   Idle → Swapping → PostSwap → Checking → Destroying → Checking（连锁循环）
+///                                → InvalidSwapping → Idle
+///                                → Shuffling → Idle
+/// 
+/// 性能优化：
+///   - 无协程
+///   - 复用 HashSet / Queue / List
+///   - 时间显示节流
+///   - 输入在非 Idle 状态锁死
 /// </summary>
 public class Match3Manager : MonoBehaviour
 {
@@ -20,6 +30,28 @@ public class Match3Manager : MonoBehaviour
 
     private const string BEST_SCORE_KEY = "Match3_BestScore";
 
+    // ============================================================
+    // 状态机
+    // ============================================================
+
+    private enum Match3State
+    {
+        Idle,              // 等待输入
+        Swapping,          // 交换动画
+        PostSwap,          // 同步：判断交换类型
+        InvalidSwapping,   // 无效交换回弹动画
+        Checking,          // 同步：找匹配
+        Destroying,        // 消除动画
+        Shuffling,         // 洗牌动画
+        GameOver,
+    }
+
+    private Match3State _state = Match3State.Idle;
+
+    // ============================================================
+    // 配置 / 数据
+    // ============================================================
+
     private GameMatch3ConfigWrapper _config;
 
     private int[,] _board;
@@ -27,8 +59,6 @@ public class Match3Manager : MonoBehaviour
 
     private int _score;
     private float _timeLeft;
-    private bool _isResolving;
-    private bool _isGameOver;
     private bool _isTimeUp;
 
     private int _hintCount, _refreshCount, _timeAddCount;
@@ -38,7 +68,21 @@ public class Match3Manager : MonoBehaviour
 
     private Vector2Int? _selected;
     private int _bestScore;
-    private Coroutine _swapCoroutine;
+
+    // 时间显示节流
+    private int _lastTimeSecDisplayed = -1;
+
+    // 交换参数
+    private int _swapR1, _swapC1, _swapR2, _swapC2;
+    private int _swapS1, _swapS2;
+
+    // 连锁
+    private int _combo;
+
+    // 复用容器（零分配）
+    private readonly HashSet<Vector2Int> _clearSetBuffer = new HashSet<Vector2Int>();
+    private readonly Queue<Vector2Int> _specialQueueBuffer = new Queue<Vector2Int>();
+    private readonly List<Vector2Int> _clearListBuffer = new List<Vector2Int>();
 
     // ============================================================
     // 生命周期
@@ -54,12 +98,22 @@ public class Match3Manager : MonoBehaviour
     private void OnDestroy()
     {
         UnsubscribeViewEvents();
-        if (_swapCoroutine != null) { StopCoroutine(_swapCoroutine); _swapCoroutine = null; }
     }
 
     private void Update()
     {
-        if (_isGameOver) return;
+        TickTimer();
+
+        switch (_state)
+        {
+            case Match3State.PostSwap: TickPostSwap(); break;
+            case Match3State.Checking: TickChecking(); break;
+        }
+    }
+
+    private void TickTimer()
+    {
+        if (_state == Match3State.GameOver) return;
 
         if (_timeLeft > 0f)
         {
@@ -67,11 +121,17 @@ public class Match3Manager : MonoBehaviour
             if (_timeLeft < 0f) _timeLeft = 0f;
         }
 
-        view?.SetTime(_timeLeft);
+        int sec = Mathf.CeilToInt(_timeLeft);
+        if (sec != _lastTimeSecDisplayed)
+        {
+            _lastTimeSecDisplayed = sec;
+            view?.SetTime(_timeLeft);
+        }
 
         if (_timeLeft <= 0f && !_isTimeUp) _isTimeUp = true;
 
-        if (_isTimeUp && !_isResolving) EndGame();
+        if (_isTimeUp && _state == Match3State.Idle)
+            EndGame();
     }
 
     // ============================================================
@@ -112,7 +172,7 @@ public class Match3Manager : MonoBehaviour
     {
         if (configJson == null)
         {
-            Z_Logger.LogError("[Match3Manager] configJson 未绑定，使用默认配置");
+            Z_Logger.LogError("[Match3Manager] configJson 未绑定");
             _config = new GameMatch3ConfigWrapper();
             return;
         }
@@ -120,7 +180,7 @@ public class Match3Manager : MonoBehaviour
         try
         {
             _config = JsonUtility.FromJson<GameMatch3ConfigWrapper>(configJson.text);
-            if (_config == null) throw new Exception("解析结果为 null");
+            if (_config == null) throw new Exception("null");
         }
         catch (Exception e)
         {
@@ -135,14 +195,9 @@ public class Match3Manager : MonoBehaviour
     {
         if (_score <= _bestScore) return;
         _bestScore = _score;
-        // TODO: 后期迁移到服务器
         PlayerPrefs.SetInt(BEST_SCORE_KEY, _bestScore);
         PlayerPrefs.Save();
     }
-
-    // ============================================================
-    // 开一局
-    // ============================================================
 
     public void StartGame(int level = 1)
     {
@@ -154,12 +209,12 @@ public class Match3Manager : MonoBehaviour
 
         _score = 0;
         _timeLeft = _config.time.initialTime;
-        _isResolving = false;
-        _isGameOver = false;
         _isTimeUp = false;
         _selected = null;
         _cachedMoves.Clear();
         _hintIndex = -1;
+        _lastTimeSecDisplayed = -1;
+        _combo = 0;
 
         _hintCount = _config.props.hintBaseCount * playerLevel;
         _refreshCount = _config.props.refreshBaseCount * playerLevel;
@@ -177,8 +232,8 @@ public class Match3Manager : MonoBehaviour
             view.SetInputLocked(false);
         }
 
+        _state = Match3State.Idle;
         RefreshAllUI();
-        LogDebug("游戏开始");
     }
 
     private void RefreshAllUI()
@@ -190,12 +245,12 @@ public class Match3Manager : MonoBehaviour
     }
 
     // ============================================================
-    // 玩家点击（轻点）
+    // 玩家输入
     // ============================================================
 
     private void HandleTileClicked(int r, int c)
     {
-        if (_isGameOver || _isResolving) return;
+        if (_state != Match3State.Idle) return;
         if (!IsInBoard(r, c)) return;
 
         ClearHintHighlight();
@@ -226,190 +281,237 @@ public class Match3Manager : MonoBehaviour
 
         view.SetTileSelected(first.x, first.y, false);
         _selected = null;
-        StartSwapRoutine(first.x, first.y, r, c);
+        StartSwap(first.x, first.y, r, c);
     }
-
-    // ============================================================
-    // 玩家滑动
-    // ============================================================
 
     private void HandleTileSwapped(int r1, int c1, int r2, int c2)
     {
-        if (_isGameOver || _isResolving) return;
+        if (_state != Match3State.Idle) return;
         if (!IsInBoard(r1, c1) || !IsInBoard(r2, c2)) return;
         if (!IsAdjacent(r1, c1, r2, c2)) return;
 
-        // 清除所有选中（滑动时可能有前一次点击残留的选中态）
         ClearAllSelections();
         ClearHintHighlight();
 
-        StartSwapRoutine(r1, c1, r2, c2);
+        StartSwap(r1, c1, r2, c2);
     }
 
     // ============================================================
-    // 交换流程
+    // 交换流程（状态机）
     // ============================================================
 
-    private void StartSwapRoutine(int r1, int c1, int r2, int c2)
+    private void StartSwap(int r1, int c1, int r2, int c2)
     {
-        if (_swapCoroutine != null) StopCoroutine(_swapCoroutine);
-        _swapCoroutine = StartCoroutine(TrySwapRoutine(r1, c1, r2, c2));
-    }
-
-    private IEnumerator TrySwapRoutine(int r1, int c1, int r2, int c2)
-    {
-        _isResolving = true;
-        view.SetInputLocked(true);
-
-        // ★ 进入交换流程前，清空所有选中态
-        ClearAllSelections();
-        ClearHintHighlight();
+        _swapR1 = r1; _swapC1 = c1; _swapR2 = r2; _swapC2 = c2;
 
         int v1 = _board[r1, c1];
         int v2 = _board[r2, c2];
-        int s1 = GameMatch3BoardLogic.GetSpecial(v1);
-        int s2 = GameMatch3BoardLogic.GetSpecial(v2);
-
-        bool isSpecial1 = s1 != GameMatch3BoardLogic.SPECIAL_NONE;
-        bool isSpecial2 = s2 != GameMatch3BoardLogic.SPECIAL_NONE;
+        _swapS1 = GameMatch3BoardLogic.GetSpecial(v1);
+        _swapS2 = GameMatch3BoardLogic.GetSpecial(v2);
 
         // 逻辑交换
         GameMatch3BoardLogic.Swap(_board, r1, c1, r2, c2);
 
-        // ─────────────────────────────────────────────────────────
-        // 情况 A：两个都是特殊方块 → 组合效果
-        // ─────────────────────────────────────────────────────────
+        // 进入交换动画
+        _state = Match3State.Swapping;
+        view.SetInputLocked(true);
+
+        view.BeginSwapAnim(r1, c1, r2, c2, OnSwapAnimDone);
+    }
+
+    private void OnSwapAnimDone()
+    {
+        _state = Match3State.PostSwap;
+    }
+
+    private void TickPostSwap()
+    {
+        bool isSpecial1 = _swapS1 != GameMatch3BoardLogic.SPECIAL_NONE;
+        bool isSpecial2 = _swapS2 != GameMatch3BoardLogic.SPECIAL_NONE;
+
+        // ─────── A：两个都是特殊 → 组合 ───────
         if (isSpecial1 && isSpecial2)
         {
-            yield return StartCoroutine(view.PlaySwapAnim(r1, c1, r2, c2));
-            yield return StartCoroutine(ResolveSpecialCombo(r1, c1, r2, c2, s1, s2));
-            yield return StartCoroutine(ResolveLoop());
+            ResolveSpecialComboLogic(_swapR1, _swapC1, _swapR2, _swapC2, _swapS1, _swapS2);
 
-            FinishSwapRoutine();
-            yield break;
+            int gained = GameMatch3BoardLogic.CalcScore(_clearSetBuffer.Count, 1, _config.score);
+            _score += gained;
+            view.SetScore(_score);
+
+            // 清空 + 播放消除动画
+            foreach (var p in _clearSetBuffer) _board[p.x, p.y] = 0;
+            _clearListBuffer.Clear();
+            _clearListBuffer.AddRange(_clearSetBuffer);
+
+            _combo = 0;
+            _state = Match3State.Destroying;
+            view.BeginDestroyAnim(_clearListBuffer, OnDestroyAnimDone);
+            return;
         }
 
-        // ─────────────────────────────────────────────────────────
-        // 情况 B：魔力鸟 + 普通
-        // ─────────────────────────────────────────────────────────
-        bool hasMagic = s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD
-                     || s2 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD;
+        // ─────── B：魔力鸟 + 普通 ───────
+        bool hasMagic = _swapS1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD
+                     || _swapS2 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD;
 
         if (hasMagic)
         {
-            yield return StartCoroutine(view.PlaySwapAnim(r1, c1, r2, c2));
-            yield return StartCoroutine(ResolveMagicBirdSwap(r1, c1, r2, c2));
-            yield return StartCoroutine(ResolveLoop());
+            ResolveMagicBirdLogic();
 
-            FinishSwapRoutine();
-            yield break;
+            if (_clearSetBuffer.Count > 0)
+            {
+                int gained = GameMatch3BoardLogic.CalcSpecialScore(
+                    GameMatch3BoardLogic.SPECIAL_MAGICBIRD,
+                    _clearSetBuffer.Count, 1,
+                    _config.score, _config.specialTiles);
+                _score += gained;
+                view.SetScore(_score);
+
+                foreach (var p in _clearSetBuffer) _board[p.x, p.y] = 0;
+                _clearListBuffer.Clear();
+                _clearListBuffer.AddRange(_clearSetBuffer);
+
+                _combo = 0;
+                _state = Match3State.Destroying;
+                view.BeginDestroyAnim(_clearListBuffer, OnDestroyAnimDone);
+                return;
+            }
         }
 
-        // ─────────────────────────────────────────────────────────
-        // 情况 C：普通交换 → 检查三连
-        // ─────────────────────────────────────────────────────────
-        bool isValid = GameMatch3BoardLogic.HasMatchAt(_board, r1, c1)
-                    || GameMatch3BoardLogic.HasMatchAt(_board, r2, c2);
+        // ─────── C：普通交换 ───────
+        bool isValid = GameMatch3BoardLogic.HasMatchAt(_board, _swapR1, _swapC1)
+                    || GameMatch3BoardLogic.HasMatchAt(_board, _swapR2, _swapC2);
 
         if (!isValid)
         {
-            GameMatch3BoardLogic.Swap(_board, r1, c1, r2, c2);
-            yield return StartCoroutine(view.PlayInvalidSwapAnim(r1, c1, r2, c2));
-
-            FinishSwapRoutine();
-            yield break;
+            // 换回去
+            GameMatch3BoardLogic.Swap(_board, _swapR1, _swapC1, _swapR2, _swapC2);
+            _state = Match3State.InvalidSwapping;
+            view.BeginInvalidSwapAnim(_swapR1, _swapC1, _swapR2, _swapC2, OnInvalidSwapAnimDone);
+            return;
         }
 
-        yield return StartCoroutine(view.PlaySwapAnim(r1, c1, r2, c2));
-        yield return StartCoroutine(ResolveLoop());
-
-        FinishSwapRoutine();
+        // 有效 → 进入连锁循环
+        _combo = 0;
+        _state = Match3State.Checking;
     }
 
-    /// <summary>
-    /// 统一结束交换流程
-    /// </summary>
-    private void FinishSwapRoutine()
+    private void OnInvalidSwapAnimDone()
     {
-        // ★ 再次保证所有选中态清空
-        ClearAllSelections();
-
-        _isResolving = false;
+        _state = Match3State.Idle;
         view.SetInputLocked(false);
-        _swapCoroutine = null;
     }
 
     // ============================================================
-    // 魔力鸟 + 普通方块
+    // 连锁循环（Checking + Destroying）
     // ============================================================
 
-    private IEnumerator ResolveMagicBirdSwap(int r1, int c1, int r2, int c2)
+    private void TickChecking()
     {
-        int v1 = _board[r1, c1];
-        int v2 = _board[r2, c2];
-        bool v1Magic = GameMatch3BoardLogic.IsMagicBird(v1);
-        bool v2Magic = GameMatch3BoardLogic.IsMagicBird(v2);
+        var matches = GameMatch3BoardLogic.FindAllMatches(_board);
 
-        List<Vector2Int> toClear = new List<Vector2Int>();
-
-        if (v1Magic && v2Magic)
+        if (matches.Count == 0)
         {
-            for (int r = 0; r < _rows; r++)
-                for (int c = 0; c < _cols; c++)
-                    toClear.Add(new Vector2Int(r, c));
+            // 连锁结束
+            if (!GameMatch3BoardLogic.HasValidMove(_board))
+            {
+                _state = Match3State.Shuffling;
+                GameMatch3BoardLogic.ShuffleBoard(_board, _colorCount);
+                view.ClearAllSelected();
+                view.BeginDestroyAnim(EmptyList, OnShuffleAnimDone_Fake);
+                // 用空消除动画占位一下，其实直接切 UpdateAll
+                // 这里改成：立即 UpdateAll，然后回 Idle
+                view.UpdateAll(_board);
+                _state = Match3State.Idle;
+                view.SetInputLocked(false);
+                return;
+            }
+
+            _state = Match3State.Idle;
+            view.SetInputLocked(false);
+            view.ClearHints();
+            _cachedMoves.Clear();
+            _hintIndex = -1;
+            return;
         }
-        else
+
+        // 有匹配 → 准备消除
+        _combo++;
+
+        _clearSetBuffer.Clear();
+        _specialQueueBuffer.Clear();
+
+        foreach (var p in matches)
         {
-            int targetColor = v1Magic
-                ? GameMatch3BoardLogic.GetColor(v2)
-                : GameMatch3BoardLogic.GetColor(v1);
-
-            toClear = GameMatch3BoardLogic.CollectMagicBirdEffect(_board, targetColor);
-            toClear.Add(v1Magic ? new Vector2Int(r1, c1) : new Vector2Int(r2, c2));
+            _clearSetBuffer.Add(p);
+            int v = _board[p.x, p.y];
+            if (GameMatch3BoardLogic.IsSpecial(v))
+                _specialQueueBuffer.Enqueue(p);
         }
 
-        if (toClear.Count == 0) yield break;
+        ProcessSpecialTriggers(_specialQueueBuffer, _clearSetBuffer);
 
-        int gained = GameMatch3BoardLogic.CalcSpecialScore(
-            GameMatch3BoardLogic.SPECIAL_MAGICBIRD, toClear.Count, 1,
-            _config.score, _config.specialTiles);
+        var spawns = GameMatch3BoardLogic.FindSpecialSpawns(_board, matches);
+
+        int gained = GameMatch3BoardLogic.CalcScore(_clearSetBuffer.Count, _combo, _config.score);
         _score += gained;
         view.SetScore(_score);
 
-        foreach (var p in toClear) _board[p.x, p.y] = 0;
+        if (_combo >= 2) view.ShowCombo(_combo);
 
-        yield return StartCoroutine(view.PlayDestroyAnim(toClear));
+        // 清空棋盘 + 放置新特殊方块
+        foreach (var p in _clearSetBuffer) _board[p.x, p.y] = 0;
+        foreach (var s in spawns)
+            _board[s.position.x, s.position.y] =
+                GameMatch3BoardLogic.MakeValue(s.color, s.specialType);
 
+        // 播放消除动画
+        _clearListBuffer.Clear();
+        _clearListBuffer.AddRange(_clearSetBuffer);
+
+        _state = Match3State.Destroying;
+        view.BeginDestroyAnim(_clearListBuffer, OnDestroyAnimDone);
+    }
+
+    private static readonly List<Vector2Int> EmptyList = new List<Vector2Int>();
+
+    private void OnShuffleAnimDone_Fake() { }
+
+    private void OnDestroyAnimDone()
+    {
+        // 逻辑下落 + 补充
         GameMatch3BoardLogic.DropTiles(_board);
         GameMatch3BoardLogic.RefillBoard(_board, _colorCount);
 
-        yield return StartCoroutine(view.PlayDropRefillAnim(_board));
+        // 立即刷新视图
+        view.UpdateAll(_board);
+
+        // 回到 Checking 继续连锁
+        _state = Match3State.Checking;
     }
 
     // ============================================================
-    // 特殊 + 特殊 组合
+    // 特殊组合效果（同步计算，只填 _clearSetBuffer）
     // ============================================================
 
-    private IEnumerator ResolveSpecialCombo(int r1, int c1, int r2, int c2, int s1, int s2)
+    private void ResolveSpecialComboLogic(int r1, int c1, int r2, int c2, int s1, int s2)
     {
-        var clearSet = new HashSet<Vector2Int>();
-        var specialQueue = new Queue<Vector2Int>();
+        _clearSetBuffer.Clear();
+        _specialQueueBuffer.Clear();
 
-        clearSet.Add(new Vector2Int(r1, c1));
-        clearSet.Add(new Vector2Int(r2, c2));
+        _clearSetBuffer.Add(new Vector2Int(r1, c1));
+        _clearSetBuffer.Add(new Vector2Int(r2, c2));
 
-        // 情况 1：双魔力鸟 → 全屏
         if (s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD
          && s2 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD)
         {
             for (int r = 0; r < _rows; r++)
                 for (int c = 0; c < _cols; c++)
-                    clearSet.Add(new Vector2Int(r, c));
+                    _clearSetBuffer.Add(new Vector2Int(r, c));
         }
-        // 情况 2：魔力鸟 + 其他特殊
         else if (s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD
               || s2 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD)
         {
+            // 注意：这里棋盘已经交换过了，所以要看交换后的颜色
             int otherColor = s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD
                 ? GameMatch3BoardLogic.GetColor(_board[r1, c1])
                 : GameMatch3BoardLogic.GetColor(_board[r2, c2]);
@@ -417,157 +519,76 @@ public class Match3Manager : MonoBehaviour
             var sameColor = GameMatch3BoardLogic.CollectMagicBirdEffect(_board, otherColor);
             foreach (var p in sameColor)
             {
-                clearSet.Add(p);
-
+                _clearSetBuffer.Add(p);
                 if (GameMatch3BoardLogic.IsSpecial(_board[p.x, p.y]))
-                    specialQueue.Enqueue(p);
+                    _specialQueueBuffer.Enqueue(p);
             }
         }
-        // 情况 3：直线 + 直线 → 十字
         else if (IsLineType(s1) && IsLineType(s2))
         {
-            AddRow(clearSet, r1);
-            AddCol(clearSet, c1);
+            AddRow(_clearSetBuffer, r1);
+            AddCol(_clearSetBuffer, c1);
         }
-        // 情况 4：直线 + 爆炸 → 十字 + 3×3
         else if (IsLineType(s1) && s2 == GameMatch3BoardLogic.SPECIAL_BOMB)
         {
-            AddRow(clearSet, r1);
-            AddCol(clearSet, c1);
-            AddSquare(clearSet, r2, c2, 1);
+            AddRow(_clearSetBuffer, r1);
+            AddCol(_clearSetBuffer, c1);
+            AddSquare(_clearSetBuffer, r2, c2, 1);
         }
         else if (s1 == GameMatch3BoardLogic.SPECIAL_BOMB && IsLineType(s2))
         {
-            AddRow(clearSet, r2);
-            AddCol(clearSet, c2);
-            AddSquare(clearSet, r1, c1, 1);
+            AddRow(_clearSetBuffer, r2);
+            AddCol(_clearSetBuffer, c2);
+            AddSquare(_clearSetBuffer, r1, c1, 1);
         }
-        // 情况 5：爆炸 + 爆炸 → 5×5
         else if (s1 == GameMatch3BoardLogic.SPECIAL_BOMB
               && s2 == GameMatch3BoardLogic.SPECIAL_BOMB)
         {
-            AddSquare(clearSet, r1, c1, 2);
+            AddSquare(_clearSetBuffer, r1, c1, 2);
         }
 
-        foreach (var p in clearSet)
+        // 递归触发特殊方块
+        foreach (var p in _clearSetBuffer)
         {
             if (!IsInBoard(p.x, p.y)) continue;
             if (GameMatch3BoardLogic.IsSpecial(_board[p.x, p.y]))
             {
-                if (!specialQueue.Contains(p))
-                    specialQueue.Enqueue(p);
+                if (!_specialQueueBuffer.Contains(p))
+                    _specialQueueBuffer.Enqueue(p);
             }
         }
-
-        ProcessSpecialTriggers(specialQueue, clearSet);
-
-        int gained = GameMatch3BoardLogic.CalcScore(clearSet.Count, 1, _config.score);
-        _score += gained;
-        view.SetScore(_score);
-
-        foreach (var p in clearSet) _board[p.x, p.y] = 0;
-
-        yield return StartCoroutine(view.PlayDestroyAnim(new List<Vector2Int>(clearSet)));
-
-        GameMatch3BoardLogic.DropTiles(_board);
-        GameMatch3BoardLogic.RefillBoard(_board, _colorCount);
-
-        yield return StartCoroutine(view.PlayDropRefillAnim(_board));
+        ProcessSpecialTriggers(_specialQueueBuffer, _clearSetBuffer);
     }
 
-    private bool IsLineType(int s)
-        => s == GameMatch3BoardLogic.SPECIAL_LINE_H
-        || s == GameMatch3BoardLogic.SPECIAL_LINE_V;
-
-    private void AddRow(HashSet<Vector2Int> set, int row)
+    private void ResolveMagicBirdLogic()
     {
-        for (int c = 0; c < _cols; c++) set.Add(new Vector2Int(row, c));
-    }
+        _clearSetBuffer.Clear();
+        _specialQueueBuffer.Clear();
 
-    private void AddCol(HashSet<Vector2Int> set, int col)
-    {
-        for (int r = 0; r < _rows; r++) set.Add(new Vector2Int(r, col));
-    }
+        int v1 = _board[_swapR1, _swapC1];
+        int v2 = _board[_swapR2, _swapC2];
+        bool v1Magic = GameMatch3BoardLogic.IsMagicBird(v1);
+        bool v2Magic = GameMatch3BoardLogic.IsMagicBird(v2);
 
-    private void AddSquare(HashSet<Vector2Int> set, int centerR, int centerC, int radius)
-    {
-        for (int dr = -radius; dr <= radius; dr++)
-            for (int dc = -radius; dc <= radius; dc++)
-            {
-                int r = centerR + dr, c = centerC + dc;
-                if (IsInBoard(r, c)) set.Add(new Vector2Int(r, c));
-            }
-    }
-
-    // ============================================================
-    // 连锁循环
-    // ============================================================
-
-    private IEnumerator ResolveLoop()
-    {
-        int combo = 0;
-
-        // ★ 进入连锁前，清空所有选中态
-        ClearAllSelections();
-        ClearHintHighlight();
-
-        while (true)
+        if (v1Magic && v2Magic)
         {
-            var matches = GameMatch3BoardLogic.FindAllMatches(_board);
-            if (matches.Count == 0) break;
-
-            combo++;
-
-            // ★ 每轮消除前再清一次，防止动画期间用户点击产生的选中残留
-            ClearAllSelections();
-
-            var clearSet = new HashSet<Vector2Int>();
-            var specialQueue = new Queue<Vector2Int>();
-
-            foreach (var p in matches)
-            {
-                clearSet.Add(p);
-                int v = _board[p.x, p.y];
-                if (GameMatch3BoardLogic.IsSpecial(v))
-                    specialQueue.Enqueue(p);
-            }
-
-            ProcessSpecialTriggers(specialQueue, clearSet);
-
-            var spawns = GameMatch3BoardLogic.FindSpecialSpawns(_board, matches);
-
-            int gained = GameMatch3BoardLogic.CalcScore(clearSet.Count, combo, _config.score);
-            _score += gained;
-            view.SetScore(_score);
-
-            if (combo >= 2) view.ShowCombo(combo);
-
-            foreach (var p in clearSet) _board[p.x, p.y] = 0;
-
-            foreach (var s in spawns)
-                _board[s.position.x, s.position.y] =
-                    GameMatch3BoardLogic.MakeValue(s.color, s.specialType);
-
-            yield return StartCoroutine(view.PlayDestroyAnim(new List<Vector2Int>(clearSet)));
-
-            GameMatch3BoardLogic.DropTiles(_board);
-            GameMatch3BoardLogic.RefillBoard(_board, _colorCount);
-
-            yield return StartCoroutine(view.PlayDropRefillAnim(_board));
+            for (int r = 0; r < _rows; r++)
+                for (int c = 0; c < _cols; c++)
+                    _clearSetBuffer.Add(new Vector2Int(r, c));
         }
-
-        // 死局 → 洗牌
-        if (!GameMatch3BoardLogic.HasValidMove(_board))
+        else
         {
-            LogDebug("死局，自动洗牌");
-            yield return StartCoroutine(ShuffleRoutine());
-        }
+            int targetColor = v1Magic
+                ? GameMatch3BoardLogic.GetColor(v2)
+                : GameMatch3BoardLogic.GetColor(v1);
 
-        // ★ 连锁结束后，清空所有状态
-        ClearAllSelections();
-        view.ClearHints();
-        _cachedMoves.Clear();
-        _hintIndex = -1;
+            var sameColor = GameMatch3BoardLogic.CollectMagicBirdEffect(_board, targetColor);
+            foreach (var p in sameColor) _clearSetBuffer.Add(p);
+
+            _clearSetBuffer.Add(v1Magic
+                ? new Vector2Int(_swapR1, _swapC1)
+                : new Vector2Int(_swapR2, _swapC2));
+        }
     }
 
     private void ProcessSpecialTriggers(Queue<Vector2Int> queue, HashSet<Vector2Int> clearSet)
@@ -619,19 +640,24 @@ public class Match3Manager : MonoBehaviour
 
     private int PickRandomColorOnBoard()
     {
-        var colors = new HashSet<int>();
+        // 用数组记录出现的颜色（避免 HashSet 分配）
+        Span<int> seen = stackalloc int[_colorCount + 1];
+        int count = 0;
+
         for (int r = 0; r < _rows; r++)
             for (int c = 0; c < _cols; c++)
             {
                 int col = GameMatch3BoardLogic.GetColor(_board[r, c]);
-                if (col > 0) colors.Add(col);
+                if (col <= 0 || col > _colorCount) continue;
+                if (seen[col] == 0) { seen[col] = 1; count++; }
             }
 
-        if (colors.Count == 0) return 0;
+        if (count == 0) return 0;
 
-        int idx = UnityEngine.Random.Range(0, colors.Count);
-        foreach (var col in colors)
+        int idx = UnityEngine.Random.Range(0, count);
+        for (int col = 1; col <= _colorCount; col++)
         {
+            if (seen[col] == 0) continue;
             if (idx == 0) return col;
             idx--;
         }
@@ -639,18 +665,31 @@ public class Match3Manager : MonoBehaviour
     }
 
     // ============================================================
-    // 洗牌
+    // 辅助
     // ============================================================
 
-    private IEnumerator ShuffleRoutine()
+    private bool IsLineType(int s)
+        => s == GameMatch3BoardLogic.SPECIAL_LINE_H
+        || s == GameMatch3BoardLogic.SPECIAL_LINE_V;
+
+    private void AddRow(HashSet<Vector2Int> set, int row)
     {
-        GameMatch3BoardLogic.ShuffleBoard(_board, _colorCount);
+        for (int c = 0; c < _cols; c++) set.Add(new Vector2Int(row, c));
+    }
 
-        // ★ 洗牌前也清空选中
-        ClearAllSelections();
+    private void AddCol(HashSet<Vector2Int> set, int col)
+    {
+        for (int r = 0; r < _rows; r++) set.Add(new Vector2Int(r, col));
+    }
 
-        if (view != null)
-            yield return StartCoroutine(view.PlayShuffleAnim(_board));
+    private void AddSquare(HashSet<Vector2Int> set, int centerR, int centerC, int radius)
+    {
+        for (int dr = -radius; dr <= radius; dr++)
+            for (int dc = -radius; dc <= radius; dc++)
+            {
+                int r = centerR + dr, c = centerC + dc;
+                if (IsInBoard(r, c)) set.Add(new Vector2Int(r, c));
+            }
     }
 
     // ============================================================
@@ -659,10 +698,9 @@ public class Match3Manager : MonoBehaviour
 
     private void HandleHintClicked()
     {
-        if (_isGameOver || _isResolving) return;
+        if (_state != Match3State.Idle) return;
         if (_hintCount <= 0) { LogDebug("提示次数已用完"); return; }
 
-        // ★ 提示时也要清空选中（避免选中框和提示框叠在一起）
         ClearAllSelections();
 
         if (_cachedMoves.Count == 0)
@@ -690,28 +728,30 @@ public class Match3Manager : MonoBehaviour
 
     private void HandleRefreshClicked()
     {
-        if (_isGameOver || _isResolving) return;
+        if (_state != Match3State.Idle) return;
         if (_refreshCount <= 0) { LogDebug("刷新次数已用完"); return; }
 
         _refreshCount--;
         view.SetProps(_hintCount, _refreshCount, _timeAddCount);
 
-        // ★ 刷新前清空选中
         ClearAllSelections();
         ClearHintHighlight();
 
-        StartCoroutine(ShuffleRoutine());
+        // 洗牌
+        GameMatch3BoardLogic.ShuffleBoard(_board, _colorCount);
+        view.UpdateAll(_board);
     }
 
     private void HandleTimeAddClicked()
     {
-        if (_isGameOver) return;
+        if (_state == Match3State.GameOver) return;
         if (_timeAddCount <= 0) { LogDebug("时间+次数已用完"); return; }
 
         _timeAddCount--;
         _timeLeft += _config.time.timeAddSeconds;
         if (_timeLeft > 0f) _isTimeUp = false;
 
+        _lastTimeSecDisplayed = -1;
         view.SetTime(_timeLeft);
         view.SetProps(_hintCount, _refreshCount, _timeAddCount);
     }
@@ -727,13 +767,10 @@ public class Match3Manager : MonoBehaviour
         _hintIndex = -1;
     }
 
-    /// <summary>
-    /// ★ 统一清空所有选中态
-    /// </summary>
     private void ClearAllSelections()
     {
         _selected = null;
-        if (view != null) view.ClearAllSelected();
+        view?.ClearAllSelected();
     }
 
     // ============================================================
@@ -742,35 +779,31 @@ public class Match3Manager : MonoBehaviour
 
     private void EndGame()
     {
-        if (_isGameOver) return;
-        _isGameOver = true;
+        if (_state == Match3State.GameOver) return;
+        _state = Match3State.GameOver;
 
-        // ★ 结算前清空选中
         ClearAllSelections();
+        view.SetInputLocked(true);
 
         SaveBestScore();
         view.ShowResult(_score, _bestScore);
-        LogDebug($"游戏结束，本局={_score}，最高={_bestScore}");
     }
 
     private void HandleRetryClicked()
     {
-        if (_swapCoroutine != null) { StopCoroutine(_swapCoroutine); _swapCoroutine = null; }
         StartGame(playerLevel);
     }
 
     private void HandleCloseClicked()
     {
         gameObject.SetActive(false);
-        // TODO: 通知宿主关闭
     }
 
     // ============================================================
-    // 辅助
+    // 边界
     // ============================================================
 
     private bool IsInBoard(int r, int c) => r >= 0 && r < _rows && c >= 0 && c < _cols;
-
     private bool IsAdjacent(int r1, int c1, int r2, int c2)
         => Mathf.Abs(r1 - r2) + Mathf.Abs(c1 - c2) == 1;
 

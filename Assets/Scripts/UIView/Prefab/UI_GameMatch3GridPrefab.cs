@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -7,14 +6,10 @@ using UnityEngine.EventSystems;
 /// <summary>
 /// 消消乐单个格子预制体
 /// 
-/// 事件：
-///   - PointerDown：按下，通知 View 选中
-///   - PointerExit：指针移出该格子，通知 View 判断方向（若位移超阈值，立即触发交换）
-///   - PointerUp：松开，通知 View（用于"轻点"判断）
-/// 
-/// 注意：
-///   - 位置由 GridLayoutGroup 控制，本脚本不修改位置
-///   - 不实现 IBeginDragHandler 等，避免跟手
+/// 性能优化：
+///   - SetValue / SetSelected / SetHighlight / SetSelectSprite 全部带变化检测
+///   - 呼吸灯用 Update 驱动，不用协程
+///   - 提供 ResetForReuse / CleanupForPool 支持对象池
 /// </summary>
 public class UI_GameMatch3GridPrefab : MonoBehaviour,
     IPointerDownHandler,
@@ -28,19 +23,41 @@ public class UI_GameMatch3GridPrefab : MonoBehaviour,
     [SerializeField] private Image highlightImage;
     [SerializeField] private Button clickBtn;
 
-    private int _value;
+    // ────────── 缓存（避免无意义赋值）──────────
+    private int _value = -1;
+    private Sprite _currentIcon;
+    private Sprite _currentOverlay;
+    private Sprite _currentSelectSprite;
+    private bool _isSelected;
+    private bool _isHighlighted;
+
+    // ────────── 呼吸灯 ──────────
+    private float _highlightTimer;
+
+    // ────────── 输入 ──────────
     private Action<UI_GameMatch3GridPrefab> _onPointerDown;
     private Action<UI_GameMatch3GridPrefab, Vector2> _onPointerExit;
     private Action<UI_GameMatch3GridPrefab, Vector2> _onPointerUp;
-
     private Vector2 _pointerDownScreenPos;
-    private bool _isPressed;          // 是否处于按下状态（还没结束操作）
-
-    private Coroutine _highlightCoroutine;
+    private bool _isPressed;
 
     public RectTransform Rect => transform as RectTransform;
     public int Value => _value;
     public bool IsPressed => _isPressed;
+
+    // ============================================================
+    // Update：驱动呼吸灯（只在激活时有效）
+    // ============================================================
+
+    private void Update()
+    {
+        if (!_isHighlighted || highlightImage == null) return;
+
+        _highlightTimer += Time.deltaTime;
+        float alpha = 0.3f + 0.5f * Mathf.Abs(Mathf.Sin(_highlightTimer * 2.5f));
+        var c = highlightImage.color;
+        highlightImage.color = new Color(c.r, c.g, c.b, alpha);
+    }
 
     // ============================================================
     // 初始化
@@ -60,8 +77,72 @@ public class UI_GameMatch3GridPrefab : MonoBehaviour,
 
         SetSelected(false);
         SetHighlight(false, null);
-        if (overlayImage != null) overlayImage.gameObject.SetActive(false);
     }
+
+    // ============================================================
+    // 对象池接口
+    // ============================================================
+
+    /// <summary>
+    /// 从池中取出时调用：重置位置 / 缩放 / 缓存 / 视觉
+    /// </summary>
+    public void ResetForReuse()
+    {
+        // 位置 / 缩放 / 旋转
+        var rect = Rect;
+        if (rect != null)
+        {
+            rect.anchoredPosition = Vector2.zero;
+            rect.localScale = Vector3.one;
+            rect.localRotation = Quaternion.identity;
+        }
+
+        // 缓存
+        _value = -1;
+        _currentIcon = null;
+        _currentOverlay = null;
+        _currentSelectSprite = null;
+        _isSelected = false;
+        _isHighlighted = false;
+        _highlightTimer = 0f;
+        _isPressed = false;
+
+        // 视觉
+        if (iconImage != null)
+        {
+            iconImage.sprite = null;
+            iconImage.gameObject.SetActive(false);
+        }
+        if (overlayImage != null)
+        {
+            overlayImage.sprite = null;
+            overlayImage.gameObject.SetActive(false);
+        }
+        if (selectImage != null)
+        {
+            selectImage.gameObject.SetActive(false);
+        }
+        if (highlightImage != null)
+        {
+            highlightImage.gameObject.SetActive(false);
+            var c = highlightImage.color;
+            highlightImage.color = new Color(c.r, c.g, c.b, 1f);
+        }
+    }
+
+    /// <summary>
+    /// 回收到池时调用：清理状态
+    /// </summary>
+    public void CleanupForPool()
+    {
+        _isPressed = false;
+        _isHighlighted = false;
+        _highlightTimer = 0f;
+    }
+
+    // ============================================================
+    // 显示更新（带变化检测）
+    // ============================================================
 
     public void SetValue(int value, Sprite icon, Sprite overlay, Sprite magicBird)
     {
@@ -69,43 +150,53 @@ public class UI_GameMatch3GridPrefab : MonoBehaviour,
 
         if (iconImage != null)
         {
-            iconImage.sprite = icon;
-            iconImage.gameObject.SetActive(icon != null);
+            if (_currentIcon != icon)
+            {
+                _currentIcon = icon;
+                iconImage.sprite = icon;
+            }
+            bool show = icon != null;
+            if (iconImage.gameObject.activeSelf != show)
+                iconImage.gameObject.SetActive(show);
         }
 
         if (overlayImage != null)
         {
-            bool hasOverlay = overlay != null;
-            overlayImage.sprite = overlay;
-            overlayImage.gameObject.SetActive(hasOverlay);
+            if (_currentOverlay != overlay)
+            {
+                _currentOverlay = overlay;
+                overlayImage.sprite = overlay;
+            }
+            bool show = overlay != null;
+            if (overlayImage.gameObject.activeSelf != show)
+                overlayImage.gameObject.SetActive(show);
         }
     }
 
-    // ============================================================
-    // 选中 / 高亮
-    // ============================================================
-
-    public void SetSelectSprite(Sprite selectSprite)
+    public void SetSelectSprite(Sprite sprite)
     {
-        if (selectImage == null) return;
-        if (selectSprite != null) selectImage.sprite = selectSprite;
+        if (selectImage == null || sprite == null) return;
+        if (_currentSelectSprite == sprite) return;
+
+        _currentSelectSprite = sprite;
+        selectImage.sprite = sprite;
     }
 
     public void SetSelected(bool selected)
     {
-        if (selectImage == null) return;
-        selectImage.gameObject.SetActive(selected);
+        if (_isSelected == selected) return;
+        _isSelected = selected;
+
+        if (selectImage != null)
+            selectImage.gameObject.SetActive(selected);
     }
 
-    public void SetHighlight(bool on, Sprite highlightSprite)
+    public void SetHighlight(bool on, Sprite sprite)
     {
         if (highlightImage == null) return;
+        if (_isHighlighted == on) return;
 
-        if (_highlightCoroutine != null)
-        {
-            StopCoroutine(_highlightCoroutine);
-            _highlightCoroutine = null;
-        }
+        _isHighlighted = on;
 
         if (!on)
         {
@@ -113,22 +204,9 @@ public class UI_GameMatch3GridPrefab : MonoBehaviour,
             return;
         }
 
-        if (highlightSprite != null) highlightImage.sprite = highlightSprite;
+        if (sprite != null) highlightImage.sprite = sprite;
+        _highlightTimer = 0f;
         highlightImage.gameObject.SetActive(true);
-        _highlightCoroutine = StartCoroutine(BreathRoutine());
-    }
-
-    private IEnumerator BreathRoutine()
-    {
-        float t = 0f;
-        while (true)
-        {
-            t += Time.deltaTime;
-            float alpha = 0.3f + 0.5f * Mathf.Abs(Mathf.Sin(t * 2.5f));
-            var c = highlightImage.color;
-            highlightImage.color = new Color(c.r, c.g, c.b, alpha);
-            yield return null;
-        }
     }
 
     // ============================================================
@@ -145,40 +223,26 @@ public class UI_GameMatch3GridPrefab : MonoBehaviour,
     public void OnPointerExit(PointerEventData eventData)
     {
         if (!_isPressed) return;
-
         Vector2 delta = eventData.position - _pointerDownScreenPos;
-        // 只要移出就通知 View，由 View 判断是否需要触发交换
         _onPointerExit?.Invoke(this, delta);
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (!_isPressed)
-        {
-            // 已经被 OnPointerExit 结束过，忽略
-            return;
-        }
+        if (!_isPressed) return;
 
         _isPressed = false;
         Vector2 delta = eventData.position - _pointerDownScreenPos;
         _onPointerUp?.Invoke(this, delta);
     }
 
-    /// <summary>
-    /// 外部调用：强制结束按下状态（例如 View 判定交换已触发）
-    /// </summary>
     public void ForceEndPress()
     {
         _isPressed = false;
     }
 
-    // ============================================================
-    // 生命周期
-    // ============================================================
-
     private void OnDestroy()
     {
         if (clickBtn != null) clickBtn.onClick.RemoveAllListeners();
-        if (_highlightCoroutine != null) StopCoroutine(_highlightCoroutine);
     }
 }
