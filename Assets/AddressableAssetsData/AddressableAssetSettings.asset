@@ -1,5 +1,5 @@
 %YAML 1.1
-%TAG !u! tag:yousandi.cn,2023:
+%TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61,7 +61,7 @@ MonoBehaviour:
       - m_Id: 3dd1b57a18527104d9dd1f1ea6230fa9
         m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
       - m_Id: 64f963ed18aea0842bd150986a2bb2f1
-        m_Value: https://a.unity.cn/client_api/v1/buckets/ecd936fa-2414-4570-bcf4-1ae5caa7e824/release_by_badge/Dev/content/
+        m_Value: '{UOS.cdn_url}/'
       - m_Id: 7fe45d00cfdea7444a84faa03581f08f
         m_Value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
       - m_Id: 8b96b59f3b658ec4d99d9e065800aa92

@@ -1,9 +1,9 @@
 fileFormatVersion: 2
-guid: B3IYvXuqW3kRzPYI8lLGceP2i9xsFWlkTe2MiSdMDSxXO7LYXzwCcCg=
+guid: 8878a782f4334ecbbcf683b3ac780966
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 14
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -22,9 +22,6 @@ TextureImporter:
     normalMapFilter: 0
     flipGreenChannel: 0
   isReadable: 0
-  webStreaming: 0
-  priorityLevel: 0
-  uploadedMode: 2
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
@@ -73,7 +70,6 @@ TextureImporter:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
     maxTextureSize: 512
-    maxPlaceholderSize: 32
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 0
@@ -87,7 +83,6 @@ TextureImporter:
   - serializedVersion: 3
     buildTarget: Standalone
     maxTextureSize: 512
-    maxPlaceholderSize: 32
     resizeAlgorithm: 0
     textureFormat: 12
     textureCompression: 1
@@ -101,7 +96,6 @@ TextureImporter:
   - serializedVersion: 3
     buildTarget: Android
     maxTextureSize: 512
-    maxPlaceholderSize: 32
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -115,7 +109,6 @@ TextureImporter:
   - serializedVersion: 3
     buildTarget: Windows Store Apps
     maxTextureSize: 512
-    maxPlaceholderSize: 32
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -129,7 +122,6 @@ TextureImporter:
   - serializedVersion: 3
     buildTarget: WebGL
     maxTextureSize: 512
-    maxPlaceholderSize: 32
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -143,7 +135,6 @@ TextureImporter:
   - serializedVersion: 3
     buildTarget: HMIAndroid
     maxTextureSize: 512
-    maxPlaceholderSize: 32
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -157,7 +148,6 @@ TextureImporter:
   - serializedVersion: 3
     buildTarget: OpenHarmony
     maxTextureSize: 512
-    maxPlaceholderSize: 32
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -171,7 +161,6 @@ TextureImporter:
   - serializedVersion: 3
     buildTarget: Server
     maxTextureSize: 512
-    maxPlaceholderSize: 32
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -185,7 +174,6 @@ TextureImporter:
   - serializedVersion: 3
     buildTarget: WeixinMiniGame
     maxTextureSize: 1024
-    maxPlaceholderSize: 32
     resizeAlgorithm: 0
     textureFormat: 50
     textureCompression: 1
@@ -212,8 +200,6 @@ TextureImporter:
     nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  doOverrideTextureManagerOperations: 0
-  platformOperationGroupSettings: 
   userData: 
   assetBundleName: 
   assetBundleVariant: 

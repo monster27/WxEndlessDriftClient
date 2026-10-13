@@ -16,7 +16,7 @@ using UnityEngine;
 ///   - 时间显示节流
 ///   - 输入在非 Idle 状态锁死
 /// </summary>
-public class Match3Manager : MonoBehaviour
+public class GameMatch3Manager : MonoBehaviour
 {
     [Header("===== 调试 =====")]
     [SerializeField] private bool enableDebugLog = false;
@@ -36,13 +36,13 @@ public class Match3Manager : MonoBehaviour
 
     private enum Match3State
     {
-        Idle,              // 等待输入
-        Swapping,          // 交换动画
-        PostSwap,          // 同步：判断交换类型
-        InvalidSwapping,   // 无效交换回弹动画
-        Checking,          // 同步：找匹配
-        Destroying,        // 消除动画
-        Shuffling,         // 洗牌动画
+        Idle,
+        Swapping,
+        PostSwap,
+        InvalidSwapping,
+        Checking,
+        Destroying,
+        Shuffling,
         GameOver,
     }
 
@@ -69,7 +69,6 @@ public class Match3Manager : MonoBehaviour
     private Vector2Int? _selected;
     private int _bestScore;
 
-    // 时间显示节流
     private int _lastTimeSecDisplayed = -1;
 
     // 交换参数
@@ -79,7 +78,7 @@ public class Match3Manager : MonoBehaviour
     // 连锁
     private int _combo;
 
-    // 复用容器（零分配）
+    // 复用容器
     private readonly HashSet<Vector2Int> _clearSetBuffer = new HashSet<Vector2Int>();
     private readonly Queue<Vector2Int> _specialQueueBuffer = new Queue<Vector2Int>();
     private readonly List<Vector2Int> _clearListBuffer = new List<Vector2Int>();
@@ -297,7 +296,7 @@ public class Match3Manager : MonoBehaviour
     }
 
     // ============================================================
-    // 交换流程（状态机）
+    // 交换流程
     // ============================================================
 
     private void StartSwap(int r1, int c1, int r2, int c2)
@@ -309,10 +308,8 @@ public class Match3Manager : MonoBehaviour
         _swapS1 = GameMatch3BoardLogic.GetSpecial(v1);
         _swapS2 = GameMatch3BoardLogic.GetSpecial(v2);
 
-        // 逻辑交换
         GameMatch3BoardLogic.Swap(_board, r1, c1, r2, c2);
 
-        // 进入交换动画
         _state = Match3State.Swapping;
         view.SetInputLocked(true);
 
@@ -334,19 +331,21 @@ public class Match3Manager : MonoBehaviour
         {
             ResolveSpecialComboLogic(_swapR1, _swapC1, _swapR2, _swapC2, _swapS1, _swapS2);
 
-            int gained = GameMatch3BoardLogic.CalcScore(_clearSetBuffer.Count, 1, _config.score);
-            _score += gained;
-            view.SetScore(_score);
+            if (_clearSetBuffer.Count > 0)
+            {
+                int gained = GameMatch3BoardLogic.CalcScore(_clearSetBuffer.Count, 1, _config.score);
+                _score += gained;
+                view.SetScore(_score);
 
-            // 清空 + 播放消除动画
-            foreach (var p in _clearSetBuffer) _board[p.x, p.y] = 0;
-            _clearListBuffer.Clear();
-            _clearListBuffer.AddRange(_clearSetBuffer);
+                foreach (var p in _clearSetBuffer) _board[p.x, p.y] = 0;
+                _clearListBuffer.Clear();
+                _clearListBuffer.AddRange(_clearSetBuffer);
 
-            _combo = 0;
-            _state = Match3State.Destroying;
-            view.BeginDestroyAnim(_clearListBuffer, OnDestroyAnimDone);
-            return;
+                _combo = 0;
+                _state = Match3State.Destroying;
+                view.BeginDestroyAnim(_clearListBuffer, OnDestroyAnimDone);
+                return;
+            }
         }
 
         // ─────── B：魔力鸟 + 普通 ───────
@@ -383,14 +382,12 @@ public class Match3Manager : MonoBehaviour
 
         if (!isValid)
         {
-            // 换回去
             GameMatch3BoardLogic.Swap(_board, _swapR1, _swapC1, _swapR2, _swapC2);
             _state = Match3State.InvalidSwapping;
             view.BeginInvalidSwapAnim(_swapR1, _swapC1, _swapR2, _swapC2, OnInvalidSwapAnimDone);
             return;
         }
 
-        // 有效 → 进入连锁循环
         _combo = 0;
         _state = Match3State.Checking;
     }
@@ -402,7 +399,7 @@ public class Match3Manager : MonoBehaviour
     }
 
     // ============================================================
-    // 连锁循环（Checking + Destroying）
+    // 连锁循环
     // ============================================================
 
     private void TickChecking()
@@ -411,15 +408,10 @@ public class Match3Manager : MonoBehaviour
 
         if (matches.Count == 0)
         {
-            // 连锁结束
             if (!GameMatch3BoardLogic.HasValidMove(_board))
             {
-                _state = Match3State.Shuffling;
                 GameMatch3BoardLogic.ShuffleBoard(_board, _colorCount);
                 view.ClearAllSelected();
-                view.BeginDestroyAnim(EmptyList, OnShuffleAnimDone_Fake);
-                // 用空消除动画占位一下，其实直接切 UpdateAll
-                // 这里改成：立即 UpdateAll，然后回 Idle
                 view.UpdateAll(_board);
                 _state = Match3State.Idle;
                 view.SetInputLocked(false);
@@ -434,7 +426,6 @@ public class Match3Manager : MonoBehaviour
             return;
         }
 
-        // 有匹配 → 准备消除
         _combo++;
 
         _clearSetBuffer.Clear();
@@ -458,13 +449,11 @@ public class Match3Manager : MonoBehaviour
 
         if (_combo >= 2) view.ShowCombo(_combo);
 
-        // 清空棋盘 + 放置新特殊方块
         foreach (var p in _clearSetBuffer) _board[p.x, p.y] = 0;
         foreach (var s in spawns)
             _board[s.position.x, s.position.y] =
                 GameMatch3BoardLogic.MakeValue(s.color, s.specialType);
 
-        // 播放消除动画
         _clearListBuffer.Clear();
         _clearListBuffer.AddRange(_clearSetBuffer);
 
@@ -472,63 +461,111 @@ public class Match3Manager : MonoBehaviour
         view.BeginDestroyAnim(_clearListBuffer, OnDestroyAnimDone);
     }
 
-    private static readonly List<Vector2Int> EmptyList = new List<Vector2Int>();
-
-    private void OnShuffleAnimDone_Fake() { }
-
     private void OnDestroyAnimDone()
     {
-        // 逻辑下落 + 补充
         GameMatch3BoardLogic.DropTiles(_board);
         GameMatch3BoardLogic.RefillBoard(_board, _colorCount);
 
-        // 立即刷新视图
         view.UpdateAll(_board);
-
-        // 回到 Checking 继续连锁
         _state = Match3State.Checking;
     }
 
     // ============================================================
-    // 特殊组合效果（同步计算，只填 _clearSetBuffer）
+    // ★ 特殊组合效果（重写 · 明确优先级）
     // ============================================================
 
+    /// <summary>
+    /// 两个特殊方块交换后的组合效果
+    /// 
+    /// 优先级（从上到下）：
+    ///   1. 双魔力鸟 → 全屏
+    ///   2. 魔力鸟 + 直线/爆炸 → 消同色 + 触发对方特殊效果
+    ///   3. 直线 + 直线 → 十字
+    ///   4. 直线 + 爆炸 → 十字 + 3×3
+    ///   5. 爆炸 + 爆炸 → 5×5
+    /// 
+    /// 输出：填 _clearSetBuffer（所有要消除的格子）
+    /// </summary>
     private void ResolveSpecialComboLogic(int r1, int c1, int r2, int c2, int s1, int s2)
     {
         _clearSetBuffer.Clear();
         _specialQueueBuffer.Clear();
 
-        _clearSetBuffer.Add(new Vector2Int(r1, c1));
-        _clearSetBuffer.Add(new Vector2Int(r2, c2));
-
+        // ══════════════════════════════════════════════
+        // 情况 1：双魔力鸟 → 全屏
+        // ══════════════════════════════════════════════
         if (s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD
          && s2 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD)
         {
             for (int r = 0; r < _rows; r++)
                 for (int c = 0; c < _cols; c++)
                     _clearSetBuffer.Add(new Vector2Int(r, c));
+            return;
         }
-        else if (s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD
-              || s2 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD)
-        {
-            // 注意：这里棋盘已经交换过了，所以要看交换后的颜色
-            int otherColor = s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD
-                ? GameMatch3BoardLogic.GetColor(_board[r1, c1])
-                : GameMatch3BoardLogic.GetColor(_board[r2, c2]);
 
+        // ══════════════════════════════════════════════
+        // 情况 2：魔力鸟 + 直线/爆炸
+        //   ① 消所有同色
+        //   ② 明确触发对方特殊方块
+        //   ③ 排除魔力鸟自己（避免又被随机消一次）
+        // ══════════════════════════════════════════════
+        if (s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD
+         || s2 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD)
+        {
+            // 交换前的位置
+            int magicOldR = (s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD) ? r1 : r2;
+            int magicOldC = (s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD) ? c1 : c2;
+            int otherOldR = (s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD) ? r2 : r1;
+            int otherOldC = (s1 == GameMatch3BoardLogic.SPECIAL_MAGICBIRD) ? c2 : c1;
+
+            // 交换后：
+            //   魔力鸟在 (otherOldR, otherOldC)
+            //   对方特殊方块在 (magicOldR, magicOldC)
+
+            // ★ ① 对方方块的颜色（交换后在 magicOld 位置）
+            int otherColor = GameMatch3BoardLogic.GetColor(_board[magicOldR, magicOldC]);
+
+            // ★ ② 消同色 + 把同色范围内的特殊方块加入队列（排除魔力鸟自己）
             var sameColor = GameMatch3BoardLogic.CollectMagicBirdEffect(_board, otherColor);
             foreach (var p in sameColor)
             {
                 _clearSetBuffer.Add(p);
+
+                // 排除魔力鸟自己
+                if (p.x == otherOldR && p.y == otherOldC) continue;
+
+                // 同色范围内的特殊方块触发（递归）
                 if (GameMatch3BoardLogic.IsSpecial(_board[p.x, p.y]))
-                    _specialQueueBuffer.Enqueue(p);
+                {
+                    if (!_specialQueueBuffer.Contains(p))
+                        _specialQueueBuffer.Enqueue(p);
+                }
             }
+
+            // ★ ③ 明确加入"对方特殊方块"并触发（不依赖同色扫描，防止颜色错位漏掉）
+            var otherPos = new Vector2Int(magicOldR, magicOldC);
+            _clearSetBuffer.Add(otherPos);
+            if (!_specialQueueBuffer.Contains(otherPos))
+                _specialQueueBuffer.Enqueue(otherPos);
+
+            // ★ ④ 递归触发所有加入队列的特殊方块
+            ProcessSpecialTriggers(_specialQueueBuffer, _clearSetBuffer);
+            return;
         }
-        else if (IsLineType(s1) && IsLineType(s2))
+
+        // ══════════════════════════════════════════════
+        // 情况 3~5：直线/爆炸 组合
+        // ══════════════════════════════════════════════
+        _clearSetBuffer.Add(new Vector2Int(r1, c1));
+        _clearSetBuffer.Add(new Vector2Int(r2, c2));
+
+        // 直线 + 直线 → 十字
+        if (IsLineType(s1) && IsLineType(s2))
         {
             AddRow(_clearSetBuffer, r1);
             AddCol(_clearSetBuffer, c1);
         }
+        // 直线 + 爆炸（或反过来）→ 十字 + 3×3
         else if (IsLineType(s1) && s2 == GameMatch3BoardLogic.SPECIAL_BOMB)
         {
             AddRow(_clearSetBuffer, r1);
@@ -541,13 +578,14 @@ public class Match3Manager : MonoBehaviour
             AddCol(_clearSetBuffer, c2);
             AddSquare(_clearSetBuffer, r1, c1, 1);
         }
+        // 爆炸 + 爆炸 → 5×5
         else if (s1 == GameMatch3BoardLogic.SPECIAL_BOMB
               && s2 == GameMatch3BoardLogic.SPECIAL_BOMB)
         {
             AddSquare(_clearSetBuffer, r1, c1, 2);
         }
 
-        // 递归触发特殊方块
+        // 通用遍历：范围内所有特殊方块触发
         foreach (var p in _clearSetBuffer)
         {
             if (!IsInBoard(p.x, p.y)) continue;
@@ -559,6 +597,10 @@ public class Match3Manager : MonoBehaviour
         }
         ProcessSpecialTriggers(_specialQueueBuffer, _clearSetBuffer);
     }
+
+    // ============================================================
+    // 魔力鸟 + 普通方块
+    // ============================================================
 
     private void ResolveMagicBirdLogic()
     {
@@ -575,21 +617,44 @@ public class Match3Manager : MonoBehaviour
             for (int r = 0; r < _rows; r++)
                 for (int c = 0; c < _cols; c++)
                     _clearSetBuffer.Add(new Vector2Int(r, c));
+            return;
         }
-        else
+
+        // 交换前魔力鸟的位置
+        int magicOldR = v1Magic ? _swapR1 : _swapR2;
+        int magicOldC = v1Magic ? _swapC1 : _swapC2;
+
+        // 交换后魔力鸟在对面
+        int magicNewR = v1Magic ? _swapR2 : _swapR1;
+        int magicNewC = v1Magic ? _swapC2 : _swapC1;
+
+        // 目标颜色 = 交换后 (magicOld) 位置的颜色（也就是原来对面对面的颜色）
+        int targetColor = GameMatch3BoardLogic.GetColor(_board[magicOldR, magicOldC]);
+
+        var sameColor = GameMatch3BoardLogic.CollectMagicBirdEffect(_board, targetColor);
+        foreach (var p in sameColor)
         {
-            int targetColor = v1Magic
-                ? GameMatch3BoardLogic.GetColor(v2)
-                : GameMatch3BoardLogic.GetColor(v1);
+            _clearSetBuffer.Add(p);
 
-            var sameColor = GameMatch3BoardLogic.CollectMagicBirdEffect(_board, targetColor);
-            foreach (var p in sameColor) _clearSetBuffer.Add(p);
-
-            _clearSetBuffer.Add(v1Magic
-                ? new Vector2Int(_swapR1, _swapC1)
-                : new Vector2Int(_swapR2, _swapC2));
+            // 同色范围内的特殊方块触发（排除魔力鸟自己）
+            if (p.x == magicNewR && p.y == magicNewC) continue;
+            if (GameMatch3BoardLogic.IsSpecial(_board[p.x, p.y]))
+            {
+                if (!_specialQueueBuffer.Contains(p))
+                    _specialQueueBuffer.Enqueue(p);
+            }
         }
+
+        // 魔力鸟自己也要进 clearSet（但它不再触发）
+        _clearSetBuffer.Add(new Vector2Int(magicNewR, magicNewC));
+
+        // 递归触发
+        ProcessSpecialTriggers(_specialQueueBuffer, _clearSetBuffer);
     }
+
+    // ============================================================
+    // 特殊方块递归触发
+    // ============================================================
 
     private void ProcessSpecialTriggers(Queue<Vector2Int> queue, HashSet<Vector2Int> clearSet)
     {
@@ -640,7 +705,6 @@ public class Match3Manager : MonoBehaviour
 
     private int PickRandomColorOnBoard()
     {
-        // 用数组记录出现的颜色（避免 HashSet 分配）
         Span<int> seen = stackalloc int[_colorCount + 1];
         int count = 0;
 
@@ -737,7 +801,6 @@ public class Match3Manager : MonoBehaviour
         ClearAllSelections();
         ClearHintHighlight();
 
-        // 洗牌
         GameMatch3BoardLogic.ShuffleBoard(_board, _colorCount);
         view.UpdateAll(_board);
     }

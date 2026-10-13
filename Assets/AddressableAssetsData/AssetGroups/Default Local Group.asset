@@ -1,5 +1,5 @@
 %YAML 1.1
-%TAG !u! tag:yousandi.cn,2023:
+%TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2294,6 +2294,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8082ea2d25565904fbccc93b70ac15ff
+    m_Address: Assets/Addressables/Prefabs/UI_GameMatch3GridBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 80c84ea0159e1b1438b3917a1b37e03f
     m_Address: Assets/Textures/0605/Collection/orange.png
     m_ReadOnly: 0
@@ -2531,6 +2536,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8e5aff25e4156d745aedcd05e7a9f8b0
+    m_Address: Assets/Addressables/JsonData/BaseFramework/gameMatch3Config.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8f7719d98ddbfa547bfb8861c0d0b928
     m_Address: Assets/Textures/0605/Homepage/Right icon/email.png
