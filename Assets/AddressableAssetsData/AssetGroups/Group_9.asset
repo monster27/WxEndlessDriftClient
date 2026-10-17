@@ -1,0 +1,115 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Group_9
+  m_EditorClassIdentifier: 
+  m_GroupName: Group_9
+  m_Data:
+    m_SerializedData: []
+  m_GUID: c96dfc776ffa6a6498b234125f470f5a
+  m_SerializeEntries:
+  - m_GUID: 0b1997d2bc1961544974289873cedc76
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/314.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0e61cec709b750849b9028e097edd813
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/306.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 100e427963bca6d4593ffb9bf644f40b
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/307.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 108b60a7b72fe23468bf5cbeb8877c78
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/316.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 210fb0fdc28891240bb96f30ac267650
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/303.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2d55fc6a406dddb47bf5ca3d9af42736
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/0.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3a1aba5cd7d91bb4e8c7622134fe45c0
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/304.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3a65f1bd99ac3e7449dd8ffdfbc4ccab
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/305.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 676b1b7ddd2415e469f6e753e4ee78a9
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/309.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 793f50a55b99b5441b87d89cb2d6b390
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/312.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 92cb80af08a5ce24abeb00f49a943a40
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/302.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 976718cc938ab1b4d9008e8a0a87556a
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/main_tq_bangwan.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a31b294e80d700d4db62d320eb594b99
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/311.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b4b435179075ca14aaf5da2b1dfe7725
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/310.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b5652a9c412a5b944969dfae80260f28
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/313.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bb4941d9be4190b4bb133e148fe1630d
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/315.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e5a883943529f924f82e6c9570265869
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/301.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: efbe77dba6f29db40b22c2aeaf8ddb8d
+    m_Address: Assets/Addressables/UI/Icon/WeatherIcon/308.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 7c08c1b0081a68f4595344dbabc356c9, type: 2}
+    - {fileID: 11400000, guid: 3e5a98e503ae69241bbd428f4fb10018, type: 2}

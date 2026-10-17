@@ -20,7 +20,7 @@ public class StartManager : MonoBehaviour
     public Image testImage;          // 在 Inspector 中拖入一个 Image 组件
 
     // ✅ 场景 Key 与 Addressables 里的 Address 完全一致（完整路径）
-    private const string LoadingSceneKey = "Assets/Scenes/LoadingScene.unity";
+    private const string LoadingSceneKey = "Assets/Addressables/Scenes/LoadingScene.unity";
 
     private AsyncOperationHandle<Sprite> _imageHandle;
 

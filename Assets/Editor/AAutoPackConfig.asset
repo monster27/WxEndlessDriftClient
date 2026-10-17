@@ -1,0 +1,361 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 529c97a62334eae4389b2a86730fece7, type: 3}
+  m_Name: AAutoPackConfig
+  m_EditorClassIdentifier: 
+  minBundleKB: 500
+  idealMaxKB: 4096
+  hardMaxKB: 8192
+  scanRoots:
+  - Assets/Addressables
+  atlasScanRoots:
+  - Assets/Textures
+  - Assets/Addressables
+  atlasExcludes:
+  - Assets/Addressables/Atlases
+  viewPerPrefab: 1
+  viewFolderPath: Assets/Addressables/UI/View/
+  remoteBuildPath: ServerData/[BuildTarget]
+  remoteLoadPath: https://endlessdriftfish.top/aa/WebGL/[BuildTarget]
+  webglOutput: Build/WebGL
+  folderLabels:
+  - folderPath: Assets/Addressables/GameScene/Player/Ani/3401/
+    label: 0
+  - folderPath: Assets/Addressables/GameScene/Player/Ani/3402/
+    label: 0
+  - folderPath: Assets/Addressables/GameScene/Player/NestBaitsAni/
+    label: 0
+  - folderPath: Assets/Addressables/GameScene/Scene/101/
+    label: 0
+  - folderPath: Assets/Addressables/GameScene/Scene/102/
+    label: 0
+  - folderPath: Assets/Addressables/GameScene/Static/
+    label: 0
+  - folderPath: Assets/Addressables/JsonData/Ability/
+    label: 0
+  - folderPath: Assets/Addressables/JsonData/BaseFramework/
+    label: 0
+  - folderPath: Assets/Addressables/JsonData/Game/BagItem/
+    label: 0
+  - folderPath: Assets/Addressables/JsonData/Game/GameFramework/
+    label: 0
+  - folderPath: Assets/Addressables/JsonData/Game/Items/
+    label: 0
+  - folderPath: Assets/Addressables/JsonData/Game/SceneTransData/
+    label: 0
+  - folderPath: Assets/Addressables/JsonData/Game/Shop/
+    label: 0
+  - folderPath: Assets/Addressables/Prefabs/
+    label: 0
+  - folderPath: Assets/Addressables/Scenes/
+    label: 0
+  - folderPath: Assets/Addressables/Scenes/GameScene.unity
+    label: 0
+  - folderPath: Assets/Addressables/TTF/
+    label: 0
+  - folderPath: Assets/Addressables/UI/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/BaitIcons/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/Collection/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/CollectionIcons/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/Common/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/EggIcons/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/Equipment/Character/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/Equipment/Hook/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/Equipment/Level/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/Equipment/Line/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/Equipment/Rod/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/Equipment/Skill/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/FishIcons/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/FishIcons/102/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/FishTankDecIcons/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/GameMatch3Icons/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/IndoorSkinIcons/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/InsectIcons/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/IslandInfoIcons/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/NestBaitIcons/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/OutdoorSkinIcons/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/PetIcons/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/RarityBackground/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/StarRating/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/TimeIcon/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/TrashIcons/
+    label: 0
+  - folderPath: Assets/Addressables/UI/Icon/WeatherIcon/
+    label: 0
+  - folderPath: Assets/Addressables/UI/View/
+    label: 0
+  - folderPath: Assets/Addressables/UI/View/AdvertisingView.prefab
+    label: 0
+  - folderPath: Assets/Addressables/UI/View/BagView.prefab
+    label: 0
+  - folderPath: Assets/Addressables/UI/View/CollectionView.prefab
+    label: 0
+  - folderPath: Assets/Addressables/UI/View/EggView.prefab
+    label: 0
+  - folderPath: Assets/Addressables/UI/View/EquipmentView.prefab
+    label: 0
+  - folderPath: Assets/Addressables/UI/View/FishBagView.prefab
+    label: 0
+  - folderPath: Assets/Addressables/UI/View/FishTankView.prefab
+    label: 0
+  - folderPath: Assets/Addressables/UI/View/GameMatch3View.prefab
+    label: 0
+  - folderPath: Assets/Addressables/UI/View/MallView.prefab
+    label: 0
+  - folderPath: Assets/Addressables/UI/View/MapView.prefab
+    label: 0
+  - folderPath: Assets/Addressables/UI/View/PetView.prefab
+    label: 0
+  groupMappings:
+  - groupName: Group_0
+    folderUnits:
+    - Assets/Addressables/TTF/
+    estimatedSize: 9753388
+  - groupName: Group_1
+    folderUnits:
+    - Assets/Addressables/UI/Icon/FishIcons/
+    estimatedSize: 4307283
+  - groupName: Group_2
+    folderUnits:
+    - Assets/Addressables/UI/Icon/IndoorSkinIcons/
+    estimatedSize: 3476372
+  - groupName: Group_3
+    folderUnits:
+    - Assets/Addressables/GameScene/Scene/102/
+    estimatedSize: 2959906
+  - groupName: Group_4
+    folderUnits:
+    - Assets/Addressables/GameScene/Player/Ani/3401/
+    - Assets/Addressables/GameScene/Player/Ani/3402/
+    estimatedSize: 2618228
+  - groupName: Group_5
+    folderUnits:
+    - Assets/Addressables/GameScene/Scene/101/
+    estimatedSize: 2323796
+  - groupName: Group_6
+    folderUnits:
+    - Assets/Addressables/UI/Icon/FishIcons/102/
+    estimatedSize: 2148895
+  - groupName: Group_7
+    folderUnits:
+    - Assets/Addressables/UI/
+    - Assets/Addressables/Scenes/
+    - Assets/Addressables/Prefabs/
+    estimatedSize: 1807974
+  - groupName: Group_View_EquipmentView
+    folderUnits:
+    - Assets/Addressables/UI/View/EquipmentView.prefab
+    estimatedSize: 868529
+  - groupName: Group_8
+    folderUnits:
+    - Assets/Addressables/UI/Icon/FishTankDecIcons/
+    estimatedSize: 802259
+  - groupName: Group_9
+    folderUnits:
+    - Assets/Addressables/UI/Icon/WeatherIcon/
+    estimatedSize: 783000
+  - groupName: Group_View_PetView
+    folderUnits:
+    - Assets/Addressables/UI/View/PetView.prefab
+    estimatedSize: 435474
+  - groupName: Group_10
+    folderUnits:
+    - Assets/Addressables/UI/Icon/Equipment/Skill/
+    - Assets/Addressables/GameScene/Static/
+    - Assets/Addressables/UI/Icon/Equipment/Rod/
+    - Assets/Addressables/UI/Icon/Equipment/Character/
+    - Assets/Addressables/UI/Icon/Equipment/Level/
+    - Assets/Addressables/UI/Icon/Equipment/Hook/
+    - Assets/Addressables/UI/Icon/Equipment/Line/
+    estimatedSize: 2019987
+  - groupName: Group_View_BagView
+    folderUnits:
+    - Assets/Addressables/UI/View/BagView.prefab
+    estimatedSize: 393836
+  - groupName: Group_View_FishTankView
+    folderUnits:
+    - Assets/Addressables/UI/View/FishTankView.prefab
+    estimatedSize: 332186
+  - groupName: Group_View_FishBagView
+    folderUnits:
+    - Assets/Addressables/UI/View/FishBagView.prefab
+    estimatedSize: 316499
+  - groupName: Group_11
+    folderUnits:
+    - Assets/Addressables/UI/Icon/OutdoorSkinIcons/
+    - Assets/Addressables/UI/Icon/BaitIcons/
+    - Assets/Addressables/UI/Icon/RarityBackground/
+    estimatedSize: 534306
+  - groupName: Group_View_CollectionView
+    folderUnits:
+    - Assets/Addressables/UI/View/CollectionView.prefab
+    estimatedSize: 166213
+  - groupName: Group_View_EggView
+    folderUnits:
+    - Assets/Addressables/UI/View/EggView.prefab
+    estimatedSize: 113870
+  - groupName: Group_View_MallView
+    folderUnits:
+    - Assets/Addressables/UI/View/MallView.prefab
+    estimatedSize: 97578
+  - groupName: Group_12
+    folderUnits:
+    - Assets/Addressables/JsonData/Ability/
+    - Assets/Addressables/UI/Icon/TrashIcons/
+    - Assets/Addressables/GameScene/Player/NestBaitsAni/
+    - Assets/Addressables/UI/Icon/NestBaitIcons/
+    - Assets/Addressables/JsonData/Game/Items/
+    - Assets/Addressables/UI/Icon/StarRating/
+    - Assets/Addressables/JsonData/BaseFramework/
+    - Assets/Addressables/UI/Icon/GameMatch3Icons/
+    - Assets/Addressables/JsonData/Game/BagItem/
+    - Assets/Addressables/JsonData/Game/SceneTransData/
+    - Assets/Addressables/UI/Icon/EggIcons/
+    - Assets/Addressables/UI/Icon/Collection/
+    - Assets/Addressables/Atlases/Textures/UI/Common/
+    - Assets/Addressables/UI/Icon/PetIcons/
+    - Assets/Addressables/UI/Icon/InsectIcons/
+    - Assets/Addressables/JsonData/Game/GameFramework/
+    estimatedSize: 517683
+  - groupName: Group_View_GameMatch3View
+    folderUnits:
+    - Assets/Addressables/UI/View/GameMatch3View.prefab
+    estimatedSize: 63142
+  - groupName: Group_View_AdvertisingView
+    folderUnits:
+    - Assets/Addressables/UI/View/AdvertisingView.prefab
+    estimatedSize: 27108
+  - groupName: Group_View_MapView
+    folderUnits:
+    - Assets/Addressables/UI/View/MapView.prefab
+    estimatedSize: 19226
+  - groupName: Group_13
+    folderUnits:
+    - Assets/Addressables/JsonData/Game/Shop/
+    - Assets/Addressables/UI/Icon/CollectionIcons/
+    - Assets/Addressables/UI/Icon/Common/
+    - Assets/Addressables/UI/Icon/TimeIcon/
+    - Assets/Addressables/Atlases/Textures/0605/Character interface/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/FishIcons/
+    - Assets/Addressables/Atlases/Textures/UI/main/
+    - Assets/Addressables/Atlases/Textures/0605/Collection/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/IndoorSkinIcons/
+    - Assets/Addressables/Atlases/Textures/0605/backpack/
+    - Assets/Addressables/Atlases/Textures/0605/fish basket/
+    - Assets/Addressables/UI/Icon/IslandInfoIcons/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/FishIcons/102/
+    - Assets/Addressables/Atlases/Textures/UI/main/tq/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/WeatherIcon/
+    - Assets/Addressables/Atlases/Textures/UI/Tujian/
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u80CC\u5305\u754C\u9762/"
+    - Assets/Addressables/Atlases/Textures/0605/store/
+    - Assets/Addressables/Atlases/Textures/UI/pack/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/BaitIcons/
+    - Assets/Addressables/Atlases/Textures/UI/Yulou/
+    - Assets/Addressables/Atlases/Textures/UI/Character/
+    - Assets/Addressables/Atlases/Textures/0712/fish basket/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/GameMatch3Icons/
+    - "Assets/Addressables/Atlases/Textures/0605/Character interface/\u9C7C\u7AFF\u4FE1\u606F\u9875\u9762/"
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/RightTopUI/"
+    - Assets/Addressables/Atlases/Textures/0605/Homepage/
+    - Assets/Addressables/Atlases/Textures/0605/Homepage/Right icon/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/FishTankDecIcons/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/Equipment/Level/
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/"
+    - Assets/Addressables/Atlases/Textures/EquipmentSample/
+    - Assets/Addressables/Atlases/Textures/0605/Character interface/Common/
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5546\u57CE\u754C\u9762/"
+    - Assets/Addressables/Atlases/Textures/0712/Other/
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u706B\u5C71\u5730\u9762\u7269\u54C1/"
+    - Assets/Addressables/Atlases/Textures/0605/fish tank/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/Equipment/Hook/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/Equipment/Skill/
+    - Assets/Addressables/Atlases/Textures/0605/Homepage/bottom icon/
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/BottomUI/"
+    - Assets/Addressables/Atlases/Textures/PreUI/MainPlayScene/Demo/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/OutdoorSkinIcons/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/RarityBackground/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/EggIcons/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/PetIcons/
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7BD3\u754C\u9762/"
+    - Assets/Addressables/Atlases/Textures/0605/Homepage/Fish icon/
+    - Assets/Addressables/Atlases/Textures/UI/store/
+    - Assets/Addressables/Atlases/Addressables/GameScene/Scene/102/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/InsectIcons/
+    - Assets/Addressables/Atlases/Addressables/GameScene/Player/Ani/3401/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/Equipment/Rod/
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5927\u56FE\u663E\u793A/"
+    - Assets/Addressables/Atlases/Textures/Common/
+    - "Assets/Addressables/Atlases/Textures/0605/Character interface/\u9C7C\u94A9\u4FE1\u606F\u9875\u9762/"
+    - Assets/Addressables/Atlases/Textures/0712/
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/LeftTopUI/"
+    - Assets/Addressables/Atlases/Textures/0605/Common/
+    - Assets/Addressables/Atlases/Textures/0605/Homepage/weather/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/StarRating/
+    - Assets/Addressables/Atlases/Textures/UI/Skill/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/CollectionIcons/
+    - Assets/Addressables/Atlases/Addressables/GameScene/Scene/101/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/Equipment/Character/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/TimeIcon/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/Equipment/Line/
+    - Assets/Addressables/Atlases/Addressables/GameScene/Static/
+    - "Assets/Addressables/Atlases/Textures/0712/fish basket/\u5347\u7EA7\u793A\u610F\u56FE/"
+    - "Assets/Addressables/Atlases/Textures/0722/\u7CD6\u679C/"
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u4E0A\u9C7C\u9876\u90E8\u5C0F\u5F39\u7A97/"
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/LeftMiddleUI/"
+    - Assets/Addressables/Atlases/Textures/0605/Homepage/Left icon/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/NestBaitIcons/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/TrashIcons/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/Collection/
+    - Assets/Addressables/Atlases/Addressables/GameScene/Player/Ani/3402/
+    - "Assets/Addressables/Atlases/Textures/0722/\u9ED8\u8BA4/"
+    - Assets/Addressables/Atlases/Textures/0712/fish finder/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/IslandInfoIcons/
+    - Assets/Addressables/Atlases/Textures/0605/Ani/
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u7194\u5CA9\u706B\u5C71\u5927\u6D77/"
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7C7B/\u5F02\u8272\u95EA\u5149\u77F3\u6591/"
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7C7B/\u77F3\u6591\u9C7C/"
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7C7B/\u91D1\u67AA\u9C7C/"
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/"
+    - "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7C7B/\u9CAF\u9CC5/"
+    - Assets/Addressables/Atlases/Textures/PreUI/MainPlayScene/
+    - Assets/Addressables/Atlases/Addressables/GameScene/Player/NestBaitsAni/
+    - Assets/Addressables/Atlases/Addressables/UI/Icon/Common/
+    - Assets/Addressables/Atlases/Addressables/UI/
+    - Assets/Addressables/Atlases/Textures/Env/
+    - Assets/Addressables/Atlases/Textures/PreUI/Common/
+    estimatedSize: 288958

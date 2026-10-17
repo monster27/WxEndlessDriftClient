@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Tujian
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 0
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: bc3dae5b10f92e24c9fc6bf3d53989fb, type: 3}
+    - {fileID: 2800000, guid: 1b8926321790b7444a4809c0c73ec363, type: 3}
+    - {fileID: 2800000, guid: e5fac2c1db2cd5046b41a302c8ad2943, type: 3}
+    - {fileID: 2800000, guid: 985154653f7c32944805fc5dcd6baf49, type: 3}
+    - {fileID: 2800000, guid: 93631eb9591c4174d91a0c60a34c0f23, type: 3}
+    - {fileID: 2800000, guid: 01b38007d4a05c94582a558e2d7caad5, type: 3}
+    - {fileID: 2800000, guid: 699dc52debc0ace46aa5aba05e7212df, type: 3}
+    - {fileID: 2800000, guid: dceeeaae28f7f2042a3e53e28e6c6688, type: 3}
+    - {fileID: 2800000, guid: 26e50ca8f5a9c9e48b3500dc13be1513, type: 3}
+    - {fileID: 2800000, guid: 386e1b625f15cff4293bda88887d2ce1, type: 3}
+    - {fileID: 2800000, guid: 55c8e57b87d868c4aadb37bdec7de57c, type: 3}
+    - {fileID: 2800000, guid: e399de74aebe1814c89fe1de8bf1866f, type: 3}
+    - {fileID: 2800000, guid: 56a28f0991879f14f86d878a306ef930, type: 3}
+    - {fileID: 2800000, guid: d9a4594acb11f444e8a2d336a96904dc, type: 3}
+    - {fileID: 2800000, guid: 7ce9149384e479f46bb8df0166bab547, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - e5fac2c1db2cd5046b41a302c8ad2943: 21300000
+    - 1b8926321790b7444a4809c0c73ec363: 21300000
+    - 386e1b625f15cff4293bda88887d2ce1: 21300000
+    - 7ce9149384e479f46bb8df0166bab547: 21300000
+    - e399de74aebe1814c89fe1de8bf1866f: 21300000
+    - 985154653f7c32944805fc5dcd6baf49: 21300000
+    - 01b38007d4a05c94582a558e2d7caad5: 21300000
+    - 26e50ca8f5a9c9e48b3500dc13be1513: 21300000
+    - 56a28f0991879f14f86d878a306ef930: 21300000
+    - 93631eb9591c4174d91a0c60a34c0f23: 21300000
+    - d9a4594acb11f444e8a2d336a96904dc: 21300000
+    - bc3dae5b10f92e24c9fc6bf3d53989fb: 21300000
+    - 55c8e57b87d868c4aadb37bdec7de57c: 21300000
+    - 699dc52debc0ace46aa5aba05e7212df: 21300000
+    - dceeeaae28f7f2042a3e53e28e6c6688: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: e5fac2c1db2cd5046b41a302c8ad2943, type: 3}
+  - {fileID: 21300000, guid: 1b8926321790b7444a4809c0c73ec363, type: 3}
+  - {fileID: 21300000, guid: 386e1b625f15cff4293bda88887d2ce1, type: 3}
+  - {fileID: 21300000, guid: 7ce9149384e479f46bb8df0166bab547, type: 3}
+  - {fileID: 21300000, guid: e399de74aebe1814c89fe1de8bf1866f, type: 3}
+  - {fileID: 21300000, guid: 985154653f7c32944805fc5dcd6baf49, type: 3}
+  - {fileID: 21300000, guid: 01b38007d4a05c94582a558e2d7caad5, type: 3}
+  - {fileID: 21300000, guid: 26e50ca8f5a9c9e48b3500dc13be1513, type: 3}
+  - {fileID: 21300000, guid: 56a28f0991879f14f86d878a306ef930, type: 3}
+  - {fileID: 21300000, guid: 93631eb9591c4174d91a0c60a34c0f23, type: 3}
+  - {fileID: 21300000, guid: d9a4594acb11f444e8a2d336a96904dc, type: 3}
+  - {fileID: 21300000, guid: bc3dae5b10f92e24c9fc6bf3d53989fb, type: 3}
+  - {fileID: 21300000, guid: 55c8e57b87d868c4aadb37bdec7de57c, type: 3}
+  - {fileID: 21300000, guid: 699dc52debc0ace46aa5aba05e7212df, type: 3}
+  - {fileID: 21300000, guid: dceeeaae28f7f2042a3e53e28e6c6688, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Tujian_bg_003
+  - Tujian_bg_002
+  - Tujian_btn_pressed_001
+  - Tujian_btn_pressed_006
+  - Tujian_btn_pressed_003
+  - Tujian_btn_normal_001
+  - Tujian_btn_normal_003
+  - Tujian_btn_normal_006
+  - Tujian_btn_pressed_004
+  - Tujian_btn_normal_002
+  - Tujian_btn_pressed_005
+  - Tujian_bg_001
+  - Tujian_btn_pressed_002
+  - Tujian_btn_normal_004
+  - Tujian_btn_normal_005
+  m_RenderDataMap: {}
+  m_Tag: Tujian
+  m_IsVariant: 0

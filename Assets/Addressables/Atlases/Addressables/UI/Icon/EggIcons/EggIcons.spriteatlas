@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: EggIcons
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 0
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: 7eaa581fd8329b040a97cd366c772886, type: 3}
+    - {fileID: 2800000, guid: fed19afdf7a0d0e4fb4f6c1d1dd57c82, type: 3}
+    - {fileID: 2800000, guid: 982ebba8befbe764ab14f13088ba17e2, type: 3}
+    - {fileID: 2800000, guid: 835a4c2554dd93b4fb447630c1098da0, type: 3}
+    - {fileID: 2800000, guid: 2d95efc309e422048acb10ca322d80f1, type: 3}
+    - {fileID: 2800000, guid: 77481e8b6efeea8498db88915140b0df, type: 3}
+    - {fileID: 2800000, guid: e5f7fd3991a4de446950508427749e67, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - 2d95efc309e422048acb10ca322d80f1: 21300000
+    - 835a4c2554dd93b4fb447630c1098da0: 21300000
+    - 982ebba8befbe764ab14f13088ba17e2: 21300000
+    - e5f7fd3991a4de446950508427749e67: 21300000
+    - 77481e8b6efeea8498db88915140b0df: 21300000
+    - fed19afdf7a0d0e4fb4f6c1d1dd57c82: 21300000
+    - 7eaa581fd8329b040a97cd366c772886: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 2d95efc309e422048acb10ca322d80f1, type: 3}
+  - {fileID: 21300000, guid: 835a4c2554dd93b4fb447630c1098da0, type: 3}
+  - {fileID: 21300000, guid: 982ebba8befbe764ab14f13088ba17e2, type: 3}
+  - {fileID: 21300000, guid: e5f7fd3991a4de446950508427749e67, type: 3}
+  - {fileID: 21300000, guid: 77481e8b6efeea8498db88915140b0df, type: 3}
+  - {fileID: 21300000, guid: fed19afdf7a0d0e4fb4f6c1d1dd57c82, type: 3}
+  - {fileID: 21300000, guid: 7eaa581fd8329b040a97cd366c772886, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - 10204
+  - 10203
+  - 10202
+  - 10206
+  - 10205
+  - 10201
+  - 0
+  m_RenderDataMap: {}
+  m_Tag: EggIcons
+  m_IsVariant: 0

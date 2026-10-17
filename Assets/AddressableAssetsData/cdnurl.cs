@@ -1,1 +1,0 @@
-class UOS { public static string cdn_url = "https://a.unity.cn/client_api/v1/buckets/ecd936fa-2414-4570-bcf4-1ae5caa7e824/release_by_badge/latest/content"; }

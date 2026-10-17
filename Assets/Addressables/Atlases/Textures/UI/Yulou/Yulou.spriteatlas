@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Yulou
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 0
+      compressionQuality: 0
+      maxTextureSize: 0
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 0
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 0
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: d4738560ed2b1604c815a7fa12e4557d, type: 3}
+    - {fileID: 2800000, guid: 7569586821a9f23439a5634232c0474e, type: 3}
+    - {fileID: 2800000, guid: 7f94184048c18aa43964c1c40b235015, type: 3}
+    - {fileID: 2800000, guid: e61dff81d4bf79f4690f79b5adc0ba07, type: 3}
+    - {fileID: 2800000, guid: dc1be760dc15d0a48a4a4ce5957daa16, type: 3}
+    - {fileID: 2800000, guid: e20403319eea05b48b25493b758c7dd2, type: 3}
+    - {fileID: 2800000, guid: 0006eb70b86cd5249b8b92198e487254, type: 3}
+    - {fileID: 2800000, guid: 507deb1ad67ff3c4aa5a72514aced953, type: 3}
+    - {fileID: 2800000, guid: b1a02b80f227fe24bbe2e153748a4b13, type: 3}
+    - {fileID: 2800000, guid: 5a2e828d882a97649850ab2ccbd20b8f, type: 3}
+    - {fileID: 2800000, guid: b6616eec317a0da41a04976bc2ab3f07, type: 3}
+    - {fileID: 2800000, guid: 3b55d064dacd82e4ba5a3b8dc0fbb27e, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - 7f94184048c18aa43964c1c40b235015: 21300000
+    - d4738560ed2b1604c815a7fa12e4557d: 21300000
+    - dc1be760dc15d0a48a4a4ce5957daa16: 21300000
+    - 0006eb70b86cd5249b8b92198e487254: 21300000
+    - b1a02b80f227fe24bbe2e153748a4b13: 21300000
+    - e20403319eea05b48b25493b758c7dd2: 21300000
+    - e61dff81d4bf79f4690f79b5adc0ba07: 21300000
+    - 3b55d064dacd82e4ba5a3b8dc0fbb27e: 21300000
+    - 7569586821a9f23439a5634232c0474e: 21300000
+    - 507deb1ad67ff3c4aa5a72514aced953: 21300000
+    - b6616eec317a0da41a04976bc2ab3f07: 21300000
+    - 5a2e828d882a97649850ab2ccbd20b8f: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 7f94184048c18aa43964c1c40b235015, type: 3}
+  - {fileID: 21300000, guid: d4738560ed2b1604c815a7fa12e4557d, type: 3}
+  - {fileID: 21300000, guid: dc1be760dc15d0a48a4a4ce5957daa16, type: 3}
+  - {fileID: 21300000, guid: 0006eb70b86cd5249b8b92198e487254, type: 3}
+  - {fileID: 21300000, guid: b1a02b80f227fe24bbe2e153748a4b13, type: 3}
+  - {fileID: 21300000, guid: e20403319eea05b48b25493b758c7dd2, type: 3}
+  - {fileID: 21300000, guid: e61dff81d4bf79f4690f79b5adc0ba07, type: 3}
+  - {fileID: 21300000, guid: 3b55d064dacd82e4ba5a3b8dc0fbb27e, type: 3}
+  - {fileID: 21300000, guid: 7569586821a9f23439a5634232c0474e, type: 3}
+  - {fileID: 21300000, guid: 507deb1ad67ff3c4aa5a72514aced953, type: 3}
+  - {fileID: 21300000, guid: b6616eec317a0da41a04976bc2ab3f07, type: 3}
+  - {fileID: 21300000, guid: 5a2e828d882a97649850ab2ccbd20b8f, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Yulou_bg_003
+  - Yulou_bg_001
+  - Yulou_btn_normal_001
+  - Yulou_btn_normal_003
+  - Yulou_btn_pressed_001
+  - Yulou_btn_normal_002
+  - Yulou_bg_004
+  - Yulou_btn_pressed_004
+  - Yulou_bg_002
+  - Yulou_btn_normal_004
+  - Yulou_btn_pressed_003
+  - Yulou_btn_pressed_002
+  m_RenderDataMap: {}
+  m_Tag: Yulou
+  m_IsVariant: 0

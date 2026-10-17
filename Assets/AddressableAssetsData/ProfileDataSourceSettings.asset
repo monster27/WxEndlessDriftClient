@@ -1,5 +1,5 @@
 %YAML 1.1
-%TAG !u! tag:yousandi.cn,2023:
+%TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12,19 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e3976da977cb49238499ea3b4c237ae, type: 3}
   m_Name: ProfileDataSourceSettings
   m_EditorClassIdentifier: 
-  profileGroupTypes:
-  - m_GroupTypePrefix: Built-In
-    m_Variables:
-    - m_Suffix: BuildPath
-      m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
-    - m_Suffix: LoadPath
-      m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
-  - m_GroupTypePrefix: Editor Hosted
-    m_Variables:
-    - m_Suffix: BuildPath
-      m_Value: ServerData/[BuildTarget]
-    - m_Suffix: LoadPath
-      m_Value: http://[PrivateIpAddress]:[HostingServicePort]
+  profileGroupTypes: []
   environments: []
   currentEnvironment:
     id: 

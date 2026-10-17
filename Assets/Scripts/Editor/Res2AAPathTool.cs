@@ -8,7 +8,7 @@ using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 
 /// <summary>
-/// 批量将 Resources/ 路径替换为 Addressables/，并标记文件夹内所有资源为 Addressable
+/// 批量将 Resources/ 路径替换为 Addressables/，以及重置 Addressable 路径
 /// </summary>
 public class Res2AAPathTool : EditorWindow
 {
@@ -192,212 +192,8 @@ public class Res2AAPathTool : EditorWindow
         return count;
     }
 
-    private static string NormalizeFolderPath(string path)
-    {
-        if (string.IsNullOrEmpty(path))
-            return path;
-
-        path = path.TrimStart('/', '\\');
-
-        while (path.StartsWith("Assets/Assets/"))
-        {
-            path = path.Substring("Assets/".Length);
-        }
-
-        if (path.StartsWith("Assets"))
-        {
-            return "Assets/" + path.Substring("Assets".Length).TrimStart('/', '\\');
-        }
-
-        return "Assets/" + path.TrimStart('/', '\\');
-    }
-
-    private static string GetSelectedFolderPath()
-    {
-        var objs = Selection.GetFiltered<Object>(SelectionMode.Assets);
-        if (objs == null || objs.Length == 0) return "";
-
-        string path = AssetDatabase.GetAssetPath(objs[0]);
-        if (!AssetDatabase.IsValidFolder(path))
-        {
-            path = Path.GetDirectoryName(path);
-        }
-        return NormalizeFolderPath(path);
-    }
-
     [MenuItem("Assets/文本替换 Res→AA", true)]
     private static bool ValidateReplacePath()
-    {
-        return !string.IsNullOrEmpty(GetSelectedFolderPath());
-    }
-
-    // ==================== 标记为 Addressable ====================
-
-    [MenuItem("Assets/标记文件夹为 Addressable", false, 31)]
-    public static void MarkFolderAsAddressable()
-    {
-        string folderPath = GetSelectedFolderPath();
-
-        if (string.IsNullOrEmpty(folderPath))
-        {
-            EditorUtility.DisplayDialog("提示", "请先选中一个文件夹！", "确定");
-            return;
-        }
-
-        if (!EditorUtility.DisplayDialog(
-            "确认操作",
-            $"将把文件夹中的所有资源标记为 Addressable：\n\n📁 {folderPath}\n\n" +
-            "⚠️ 包括子文件夹中的所有资源都会被标记！",
-            "确认",
-            "取消"))
-        {
-            return;
-        }
-
-        ProcessMarkFolder(folderPath);
-    }
-
-    private static void ProcessMarkFolder(string folderPath)
-    {
-        folderPath = NormalizeFolderPath(folderPath);
-
-        AddressableAssetSettings settings = AddressableAssetSettingsDefaultObject.Settings;
-        if (settings == null)
-        {
-            EditorUtility.DisplayDialog("错误", "未找到 Addressable 设置！\n请先初始化 Addressables", "确定");
-            return;
-        }
-
-        settings.SetDirty(AddressableAssetSettings.ModificationEvent.BatchModification, null, true, true);
-        AssetDatabase.SaveAssets();
-
-        string fullPath = Path.Combine(Application.dataPath, folderPath.Replace("Assets/", ""));
-
-        if (!Directory.Exists(fullPath))
-        {
-            EditorUtility.DisplayDialog("错误", $"目录不存在：\n{fullPath}", "确定");
-            return;
-        }
-
-        string[] allFiles = Directory.GetFiles(fullPath, "*.*", SearchOption.AllDirectories);
-
-        List<string> assetPaths = new List<string>();
-        int skippedCount = 0;
-
-        foreach (string file in allFiles)
-        {
-            string relativePath = file.Replace(Application.dataPath, "Assets").Replace('\\', '/');
-
-            // 跳过 .meta 文件
-            if (file.EndsWith(".meta"))
-            {
-                skippedCount++;
-                continue;
-            }
-
-            // ⚠️ 只跳过脚本和程序集定义文件，不跳过 .json
-            if (file.EndsWith(".cs"))
-            {
-                skippedCount++;
-                continue;
-            }
-            if (file.EndsWith(".asmdef"))
-            {
-                skippedCount++;
-                continue;
-            }
-            if (file.EndsWith(".asmref"))
-            {
-                skippedCount++;
-                continue;
-            }
-            if (file.EndsWith(".DS_Store"))
-            {
-                skippedCount++;
-                continue;
-            }
-
-            // ✅ 其他所有文件（包括 .json）都尝试标记
-            Object obj = AssetDatabase.LoadAssetAtPath<Object>(relativePath);
-            if (obj != null)
-            {
-                assetPaths.Add(relativePath);
-            }
-            else
-            {
-                skippedCount++;
-                Debug.LogWarning($"[Addressable标记] ⚠️ 无法加载: {relativePath}");
-            }
-        }
-
-        if (assetPaths.Count == 0)
-        {
-            EditorUtility.DisplayDialog("提示",
-                $"未找到可标记的资源文件！\n\n" +
-                $"总文件数: {allFiles.Length}\n" +
-                $"跳过的文件: {skippedCount} (包括 .meta、脚本等)",
-                "确定");
-            return;
-        }
-
-        int addedCount = 0;
-        int existingCount = 0;
-
-        AddressableAssetGroup group = settings.DefaultGroup;
-        if (group == null)
-        {
-            group = settings.CreateGroup("Default Local Group", false, false, true, null);
-        }
-
-        settings.SetDirty(AddressableAssetSettings.ModificationEvent.BatchModification, null, true, true);
-
-        for (int i = 0; i < assetPaths.Count; i++)
-        {
-            string assetPath = assetPaths[i];
-            string guid = AssetDatabase.AssetPathToGUID(assetPath);
-
-            EditorUtility.DisplayProgressBar(
-                "标记 Addressable",
-                $"处理: {Path.GetFileName(assetPath)} ({i + 1}/{assetPaths.Count})",
-                (float)i / assetPaths.Count
-            );
-
-            AddressableAssetEntry existingEntry = settings.FindAssetEntry(guid);
-            if (existingEntry != null)
-            {
-                existingCount++;
-                Debug.Log($"[Addressable标记] 已存在: {assetPath}");
-                continue;
-            }
-
-            Debug.Log($"[Addressable标记] ✅ 新增: {assetPath}");
-            settings.CreateOrMoveEntry(guid, group, false, false);
-            addedCount++;
-        }
-
-        settings.SetDirty(AddressableAssetSettings.ModificationEvent.BatchModification, null, true, true);
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-
-        EditorUtility.ClearProgressBar();
-
-        string msg = $"✅ 标记完成！\n\n" +
-                     $"📁 {folderPath}\n" +
-                     $"📄 新增标记: {addedCount} 个资源\n" +
-                     $"📄 已存在: {existingCount} 个资源\n" +
-                     $"⏭️ 跳过: {skippedCount} 个文件\n";
-
-        Debug.Log($"[Addressable标记] ===== 完成 =====\n" +
-                  $"  文件夹: {folderPath}\n" +
-                  $"  新增: {addedCount} 个\n" +
-                  $"  已存在: {existingCount} 个\n" +
-                  $"  跳过: {skippedCount} 个");
-
-        EditorUtility.DisplayDialog("标记完成", msg, "确定");
-    }
-
-    [MenuItem("Assets/标记文件夹为 Addressable", true)]
-    private static bool ValidateMarkFolder()
     {
         return !string.IsNullOrEmpty(GetSelectedFolderPath());
     }
@@ -554,17 +350,11 @@ public class Res2AAPathTool : EditorWindow
         EditorUtility.DisplayDialog("重置完成", msg, "确定");
     }
 
-    /// <summary>
-    /// 根据资源路径生成 Addressable 地址
-    /// 直接返回完整的资源路径（包含 Assets/ 前缀和扩展名）
-    /// 例如：Assets/Addressables/UI/Icon/NestBaitIcons/2501.png
-    /// </summary>
     private static string GenerateAddressFromPath(string assetPath)
     {
         if (string.IsNullOrEmpty(assetPath))
             return assetPath;
 
-        // 统一使用 / 分隔符，直接返回完整路径
         return assetPath.Replace('\\', '/');
     }
 
@@ -572,6 +362,41 @@ public class Res2AAPathTool : EditorWindow
     private static bool ValidateResetAddressablePaths()
     {
         return !string.IsNullOrEmpty(GetSelectedFolderPath());
+    }
+
+    // ==================== 通用辅助方法 ====================
+
+    private static string NormalizeFolderPath(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+            return path;
+
+        path = path.TrimStart('/', '\\');
+
+        while (path.StartsWith("Assets/Assets/"))
+        {
+            path = path.Substring("Assets/".Length);
+        }
+
+        if (path.StartsWith("Assets"))
+        {
+            return "Assets/" + path.Substring("Assets".Length).TrimStart('/', '\\');
+        }
+
+        return "Assets/" + path.TrimStart('/', '\\');
+    }
+
+    private static string GetSelectedFolderPath()
+    {
+        var objs = Selection.GetFiltered<Object>(SelectionMode.Assets);
+        if (objs == null || objs.Length == 0) return "";
+
+        string path = AssetDatabase.GetAssetPath(objs[0]);
+        if (!AssetDatabase.IsValidFolder(path))
+        {
+            path = Path.GetDirectoryName(path);
+        }
+        return NormalizeFolderPath(path);
     }
 
     // ==================== 窗口版 ====================
@@ -658,7 +483,6 @@ public class Res2AAPathTool : EditorWindow
 
         EditorGUILayout.Space();
 
-        // 操作按钮
         EditorGUILayout.BeginHorizontal();
         GUI.backgroundColor = new Color(0.4f, 0.7f, 1f);
         if (GUILayout.Button("替换路径", GUILayout.Height(30)))
@@ -676,23 +500,6 @@ public class Res2AAPathTool : EditorWindow
                 return;
             }
             ProcessFolder(normalized);
-        }
-        GUI.backgroundColor = new Color(0.2f, 0.8f, 0.4f);
-        if (GUILayout.Button("标记 Addressable", GUILayout.Height(30)))
-        {
-            if (string.IsNullOrEmpty(targetFolder))
-            {
-                EditorUtility.DisplayDialog("提示", "请选择文件夹！", "确定");
-                return;
-            }
-            string normalized = NormalizeFolderPath(targetFolder);
-            string fullPath = Path.Combine(Application.dataPath, normalized.Replace("Assets/", ""));
-            if (!Directory.Exists(fullPath))
-            {
-                EditorUtility.DisplayDialog("错误", $"目录不存在：\n{normalized}", "确定");
-                return;
-            }
-            ProcessMarkFolder(normalized);
         }
         GUI.backgroundColor = new Color(1f, 0.7f, 0.2f);
         if (GUILayout.Button("重置路径", GUILayout.Height(30)))
@@ -719,7 +526,6 @@ public class Res2AAPathTool : EditorWindow
         EditorGUILayout.HelpBox(
             "📌 右键菜单说明：\n" +
             "• 路径替换 Resources→Addressables：替换脚本中的路径字符串\n" +
-            "• 标记文件夹为 Addressable：将文件夹内所有资源标记为 Addressable（包含 .json）\n" +
             "• 重置 Addressable 路径：将地址重置为完整资源路径（含 Assets/ 前缀和扩展名）",
             MessageType.Info
         );

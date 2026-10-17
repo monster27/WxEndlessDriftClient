@@ -1,0 +1,415 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Group_12
+  m_EditorClassIdentifier: 
+  m_GroupName: Group_12
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 48aa3a8dd74c1fc428102c4bcf01d6b0
+  m_SerializeEntries:
+  - m_GUID: 0019d1f324aa95d4287011f28701a043
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/trash.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 02c5bb281efcad7469a4dd6f72139160
+    m_Address: Assets/Addressables/JsonData/BaseFramework/timeSlots.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 02e94f730af88f54aa2174a7ef51ec43
+    m_Address: Assets/Addressables/JsonData/BaseFramework/character_skills.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 077944a06d71fd348a956d75321950f9
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/5.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 08a5dc8bad211dd48be2874469b7754c
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/4.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b56b6ce6480f0d438b467fad97ccb56
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/10104.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0ee22b6f9cfd33340a176803010f0356
+    m_Address: Assets/Addressables/UI/Icon/InsectIcons/10003.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0ef68169c11af184a8997eaaa77af0fe
+    m_Address: Assets/Addressables/JsonData/Ability/abilities.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 121bfacffbfeaa44f96e8e67390fd69b
+    m_Address: Assets/Addressables/JsonData/Game/Items/items.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 14cb7b365e4e3a649a88cc42fc7554d8
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/fishes.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 198c707a682d20a4499ac761a43dd891
+    m_Address: Assets/Addressables/JsonData/BaseFramework/collection.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1bb10026f896bf144ba0b4bb0acdd4ea
+    m_Address: Assets/Addressables/JsonData/BaseFramework/fishSpecies.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1c6a5cb9d2bf3284b9cdac792072cae0
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/select.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1da08e70f7f1b0f459334597bbc6965c
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/10102.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1f9e7714a65a5f14590fee399b159ea4
+    m_Address: Assets/Addressables/JsonData/BaseFramework/starRatings.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 259c0c9dafa9e954caeb3777f4d7fc68
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/outdoorSkin.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2743e858657c94040b3a36009d869ad8
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/10103.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 292275d5dcb0a1b4394bae97d3250637
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/overlay_line_v.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2cee3d0a1073dfb469aa55e292b69583
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/itemCategories.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2d95efc309e422048acb10ca322d80f1
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/10204.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2fdaadb7301f2ac4e9090d2540cd4c4e
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/highlight.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2fe7a20169277b64fb899e9ed563ce4f
+    m_Address: Assets/Addressables/JsonData/BaseFramework/fishTankConfig.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3311bcf2945c43f4c927f54f0254cd5c
+    m_Address: Assets/Addressables/UI/Icon/StarRating/star_501.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 33c4c456c0ef29f4696b9e645976f0fe
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/islandInfo.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3573665658ce9e54fb3409aeb19d16a6
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/fishBagLevels.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3a426887e066f1f49a3e71f6e8cc05a9
+    m_Address: Assets/Addressables/GameScene/Player/NestBaitsAni/2501.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3b189257974f85542a51275935ab558a
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/10106.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 41e55a9ae26996e4cb0cf07f89fa350e
+    m_Address: Assets/Addressables/JsonData/BaseFramework/rarities.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4a2660b74c623e945a77c6eaaeb6fdd3
+    m_Address: Assets/Addressables/JsonData/BaseFramework/level_up_exp_config.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4e10ce6ffc9dad54599529a75018ecfe
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/nestBaits.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 50903dbcdf12dd240abd18b6bee80eb0
+    m_Address: Assets/Addressables/UI/Icon/StarRating/star_502.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5124443f4f59e3c45ba68a01ab5d47c2
+    m_Address: Assets/Addressables/UI/Icon/TrashIcons/9002.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 574ced2a940aa8b44bba48fc0c350bb1
+    m_Address: Assets/Addressables/JsonData/BaseFramework/insects.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5913e6538f4f5aa438d917979273c816
+    m_Address: Assets/Addressables/JsonData/BaseFramework/weathers.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5f939f8b59c8bac478cb94c6c3b77fb7
+    m_Address: Assets/Addressables/UI/Icon/InsectIcons/10002.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 65008181fe8f46240a47f05d95a9b9f0
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/petStorage.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 66ae1ca728259b54dbe8b0572b36d785
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/10101.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6c5f991f590832146809366be50ccf09
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/overlay_line_h.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6e324a3d2a757864b94f8999e0130064
+    m_Address: Assets/Addressables/JsonData/BaseFramework/eggs.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6f04dca8ae9d25741a8927dfa1082d04
+    m_Address: Assets/Addressables/Atlases/Textures/UI/Common/Common.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7058c74b77dc81b4a9771d4f0cb0970e
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/fishTankDec.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 77481e8b6efeea8498db88915140b0df
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/10205.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7a13138f179bbe147872ea75ec928f43
+    m_Address: Assets/Addressables/UI/Icon/TrashIcons/9001.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d223ce798bf90b48a17ab6ce815acb1
+    m_Address: Assets/Addressables/JsonData/Game/SceneTransData/islandsTransData.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7eaa581fd8329b040a97cd366c772886
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/0.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 801f1f7869993444aa110ea5b9caf04b
+    m_Address: Assets/Addressables/UI/Icon/InsectIcons/10005.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 835a4c2554dd93b4fb447630c1098da0
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/10203.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8668b743978cc2e478de7ba7e0bb3dfa
+    m_Address: Assets/Addressables/UI/Icon/InsectIcons/10004.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 868a20e8d4803ee4d865a964d754a728
+    m_Address: Assets/Addressables/JsonData/Ability/fishing_components.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8cfc84b6e5ae6fc488940e26261cfb19
+    m_Address: Assets/Addressables/UI/Icon/NestBaitIcons/2501.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8e5aff25e4156d745aedcd05e7a9f8b0
+    m_Address: Assets/Addressables/JsonData/BaseFramework/gameMatch3Config.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 91e49fc50fdb93b458c67a568ec92e3e
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/magicbird.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 92cfdfd6506d26d4a93c203a44b8fb4c
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/petFeedConfig.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 96327964fba424746b043afb4c9a38ff
+    m_Address: Assets/Addressables/UI/Icon/Collection/1.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 97963687aa4ee74448f0172ba39085ab
+    m_Address: Assets/Addressables/UI/Icon/InsectIcons/10001.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 982ebba8befbe764ab14f13088ba17e2
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/10202.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 99b9efb3d9208204ba5f0b8aca99eace
+    m_Address: Assets/Addressables/UI/Icon/NestBaitIcons/2502.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9c12c7d83b07d8d46917a9096494a0ce
+    m_Address: Assets/Addressables/UI/Icon/InsectIcons/10006.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a36cd6d0c1b722547b570cc7183d9cba
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/overlay_bomb.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a77328ad436544d42a39fc8f9efbe6b0
+    m_Address: Assets/Addressables/JsonData/BaseFramework/pets.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: aa5ba55087c8ebe4e8d27e564deced9d
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/0.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ad22dd40c870c624ea5b98f71596687b
+    m_Address: Assets/Addressables/UI/Icon/NestBaitIcons/2503.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ad41bc3f2bd116a42845258838cb1e0e
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/uiTexts.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b4cc6e638dff53041ab510533a3e0e43
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/baits.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ba1742e6065f8434da0c4c0b63bc0f32
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/indoorSkin.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ba9a753ef415d64468e1854bf16547de
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/1.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bb8b1b25379fb5f4ab0a8960d1d71343
+    m_Address: Assets/Addressables/UI/Icon/StarRating/star_504.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bddcc976e3a02b34586878b2ef63ff48
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/2.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: be52108910c4bab48848c7be6c14d15a
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/3.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dfcdf7a8e8133e441b4d909d61bae687
+    m_Address: Assets/Addressables/UI/Icon/PetIcons/10105.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e38f777e7000c744eb8f0643e886e9d1
+    m_Address: Assets/Addressables/UI/Icon/GameMatch3Icons/overlay_line.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e51071f4ca33eb84aa9eaf85a5b2bbab
+    m_Address: Assets/Addressables/UI/Icon/TrashIcons/9003.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e5d1d3158f2444d469dbbfd84d09ebdd
+    m_Address: Assets/Addressables/UI/Icon/Collection/2.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e5f7fd3991a4de446950508427749e67
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/10206.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f2f7b1db94e6f4e45804811327f2aec8
+    m_Address: Assets/Addressables/UI/Icon/Collection/3.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f55ebda4b0caad54db5423894083a996
+    m_Address: Assets/Addressables/UI/Icon/StarRating/star_503.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb7a69601fcef644db676e7b41559bbe
+    m_Address: Assets/Addressables/JsonData/BaseFramework/characters.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fed19afdf7a0d0e4fb4f6c1d1dd57c82
+    m_Address: Assets/Addressables/UI/Icon/EggIcons/10201.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 59742dec84b66fb4085f61c3e5587c19, type: 2}
+    - {fileID: 11400000, guid: bb973f65994385d4999c61748cbaa0ac, type: 2}

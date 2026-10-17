@@ -22,7 +22,7 @@ public class LoadingManager : MonoBehaviour
     public Button skipButton;
     
     // ✅ 场景 Key 与 Addressables 里的 Address 完全一致（完整路径）
-    private string gameSceneName = "Assets/Scenes/GameScene.unity";
+    private string gameSceneName = "Assets/Addressables/Scenes/GameScene.unity";
     private float minLoadTime = 1.5f;
 
     // 加载步骤定义
@@ -213,6 +213,16 @@ public class LoadingManager : MonoBehaviour
             yield break;
         }
 
+        // ★★★ 新增：加载场景前触发 tier1 预下载 ★★★
+        // PreloadManager 会自动创建（SingletonMono），DontDestroyOnLoad 跨场景保留
+        // 预下载跑在 PreloadManager 上，不受 LoadingScene 卸载影响
+        if (PreloadManager.Instance != null)
+        {
+            PreloadManager.Instance.StartTier1();
+            Z_Logger.Log("[LoadingManager] 已触发 tier1 预下载（与场景加载并行）");
+        }
+        // ★★★★★★★★★★★★★★★★★★★★★★★
+
         // Addressables 异步加载场景（Single 模式：替换当前场景）
         var handle = Addressables.LoadSceneAsync(sceneName, LoadSceneMode.Single);
 
@@ -249,7 +259,6 @@ public class LoadingManager : MonoBehaviour
         bool fallbackOk = false;
         string shortName = Path.GetFileNameWithoutExtension(sceneName);
 
-        // 先尝试按名称（不带路径）加载
         try
         {
             SceneManager.LoadScene(shortName);
@@ -272,7 +281,6 @@ public class LoadingManager : MonoBehaviour
             UpdateStatus("跳转失败", fullError);
         }
 
-        // 输出最终场景状态
         Z_Logger.Log($"[LoadingManager] === 最终场景状态 ===");
         Z_Logger.Log($"[LoadingManager]   场景数: {SceneManager.sceneCount}");
         for (int i = 0; i < SceneManager.sceneCount; i++)
@@ -283,6 +291,7 @@ public class LoadingManager : MonoBehaviour
         Z_Logger.Log($"[LoadingManager]   活跃场景: {SceneManager.GetActiveScene().name}");
         Z_Logger.Log("[LoadingManager] ====================");
     }
+
 
     // ========== 加载 LoadDataManager ==========
     private IEnumerator LoadLoadDataManager()
