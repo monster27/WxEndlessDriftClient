@@ -26,6 +26,8 @@ public class SetFontTool : EditorWindow
     private List<ReferenceInfo> foundReferences = new List<ReferenceInfo>();
     private List<string> operationLogs = new List<string>();
 
+    private const string DEFAULT_FONT_LABEL = "★ 系统默认字体";
+
     [MenuItem("Tools/设置选中字体")]
     private static void SetSelectedFonts()
     {
@@ -45,54 +47,86 @@ public class SetFontTool : EditorWindow
         window.Show();
     }
 
+    /// <summary>
+    /// 获取 Unity 内置的默认字体（跨版本兼容）
+    /// Unity 2022.2+ : LegacyRuntime.ttf
+    /// Unity 2022.1- : Arial.ttf
+    /// </summary>
+    private Font GetUnityDefaultFont()
+    {
+        Font font = null;
+
+        // Unity 2022.2+ 使用 LegacyRuntime.ttf
+        try { font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); } catch { }
+        if (font != null) return font;
+
+        // 旧版本使用 Arial.ttf
+        try { font = Resources.GetBuiltinResource<Font>("Arial.ttf"); } catch { }
+
+        return font;
+    }
+
     private void LoadFonts()
     {
+        // ===== 拿到 Unity 内置默认字体 =====
+        Font unityDefaultFont = GetUnityDefaultFont();
+
         // ===== 加载旧版 Text 字体（编辑器用同步加载） =====
         string[] fontGuids = AssetDatabase.FindAssets("t:Font");
         List<Font> validFonts = new List<Font>();
+        List<string> validNames = new List<string>();
+
+        // 首位插入"系统默认字体"
+        if (unityDefaultFont != null)
+        {
+            validFonts.Add(unityDefaultFont);
+            validNames.Add($"{DEFAULT_FONT_LABEL} ({unityDefaultFont.name})");
+        }
 
         foreach (string guid in fontGuids)
         {
             string path = AssetDatabase.GUIDToAssetPath(guid);
             Font font = AssetDatabase.LoadAssetAtPath<Font>(path);
 
-            if (font != null && !string.IsNullOrEmpty(font.name))
-            {
-                if (!font.name.StartsWith("Arial") && !font.name.StartsWith("Legacy"))
-                {
-                    validFonts.Add(font);
-                }
-            }
+            if (font == null || string.IsNullOrEmpty(font.name)) continue;
+            if (font == unityDefaultFont) continue; // 去重
+            if (font.name.StartsWith("Arial") || font.name.StartsWith("Legacy")) continue;
+
+            validFonts.Add(font);
+            validNames.Add(font.name);
         }
 
         fonts = validFonts.ToArray();
-        fontNames = new string[fonts.Length];
-        for (int i = 0; i < fonts.Length; i++)
-        {
-            fontNames[i] = fonts[i].name;
-        }
+        fontNames = validNames.ToArray();
 
         // ===== 加载 TMP 字体资源 =====
+        TMP_FontAsset tmpDefaultFont = TMP_Settings.defaultFontAsset;
+
         string[] tmpGuids = AssetDatabase.FindAssets("t:TMP_FontAsset");
         List<TMP_FontAsset> validTMPFonts = new List<TMP_FontAsset>();
+        List<string> validTMPNames = new List<string>();
+
+        // 首位插入 TMP 默认字体
+        if (tmpDefaultFont != null)
+        {
+            validTMPFonts.Add(tmpDefaultFont);
+            validTMPNames.Add($"{DEFAULT_FONT_LABEL} ({tmpDefaultFont.name})");
+        }
 
         foreach (string guid in tmpGuids)
         {
             string path = AssetDatabase.GUIDToAssetPath(guid);
             TMP_FontAsset tmpFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(path);
 
-            if (tmpFont != null && !string.IsNullOrEmpty(tmpFont.name))
-            {
-                validTMPFonts.Add(tmpFont);
-            }
+            if (tmpFont == null || string.IsNullOrEmpty(tmpFont.name)) continue;
+            if (tmpFont == tmpDefaultFont) continue; // 去重
+
+            validTMPFonts.Add(tmpFont);
+            validTMPNames.Add(tmpFont.name);
         }
 
         tmpFontAssets = validTMPFonts.ToArray();
-        tmpFontNames = new string[tmpFontAssets.Length];
-        for (int i = 0; i < tmpFontAssets.Length; i++)
-        {
-            tmpFontNames[i] = tmpFontAssets[i].name;
-        }
+        tmpFontNames = validTMPNames.ToArray();
 
         Z_Logger.Log($"找到 {fonts.Length} 个旧版字体，{tmpFontAssets.Length} 个 TMP 字体资源。");
     }
@@ -167,6 +201,21 @@ public class SetFontTool : EditorWindow
         GUI.enabled = true;
 
         EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.Space();
+
+        // ===== 一键恢复系统默认字体 =====
+        if (GUILayout.Button("★ 一键恢复为系统默认字体", GUILayout.Height(28)))
+        {
+            Font def = GetUnityDefaultFont();
+            if (def == null)
+            {
+                EditorUtility.DisplayDialog("错误", "无法获取系统默认字体！", "确定");
+                return;
+            }
+            ApplyFontToAllTexts(targetObjects, def);
+            Close();
+        }
 
         EditorGUILayout.Space();
 

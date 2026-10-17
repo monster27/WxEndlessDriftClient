@@ -1,5 +1,5 @@
 %YAML 1.1
-%TAG !u! tag:yousandi.cn,2023:
+%TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34,9 +34,9 @@ MonoBehaviour:
   m_RedirectLimit: -1
   m_RetryCount: 0
   m_BuildPath:
-    m_Id: 3dd1b57a18527104d9dd1f1ea6230fa9
+    m_Id: 8b96b59f3b658ec4d99d9e065800aa92
   m_LoadPath:
-    m_Id: f1d2b4f9467f022439948195548e1ac2
+    m_Id: 64f963ed18aea0842bd150986a2bb2f1
   m_BundleMode: 0
   m_AssetBundleProviderType:
     m_AssemblyName: Unity.ResourceManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null

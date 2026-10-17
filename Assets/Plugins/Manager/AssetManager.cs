@@ -8,6 +8,17 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 /// <summary>
+/// 资源分类（用于缓存管理）
+/// </summary>
+public enum AssetCategory
+{
+    Other = 0,
+    UI = 1,
+    Audio = 2,
+    Config = 3,
+}
+
+/// <summary>
 /// 统一资源管理器
 /// </summary>
 public class AssetManager : MonoBehaviour
@@ -31,28 +42,31 @@ public class AssetManager : MonoBehaviour
     //  📦 缓存系统
     // ============================================================
 
-    /// <summary>
-    /// 资源缓存字典：key -> 缓存条目
-    /// </summary>
     private static readonly Dictionary<string, CacheEntry> _assetCache = new Dictionary<string, CacheEntry>();
 
-    /// <summary>
-    /// 缓存条目
-    /// </summary>
+    // ✅ 加载去重：key -> 等待回调列表
+    private static readonly Dictionary<string, List<Action<UnityEngine.Object, AsyncOperationHandle>>> _loadingCallbacks
+        = new Dictionary<string, List<Action<UnityEngine.Object, AsyncOperationHandle>>>();
+
+    // ✅ 正在加载的 key
+    private static readonly HashSet<string> _loadingKeys = new HashSet<string>();
+
     private class CacheEntry
     {
         public UnityEngine.Object Asset;
         public AsyncOperationHandle Handle;
         public int RefCount;
         public Type AssetType;
+        public AssetCategory Category;
         public DateTime LastAccessTime;
 
-        public CacheEntry(UnityEngine.Object asset, AsyncOperationHandle handle, Type type)
+        public CacheEntry(UnityEngine.Object asset, AsyncOperationHandle handle, Type type, AssetCategory category)
         {
             Asset = asset;
             Handle = handle;
             RefCount = 1;
             AssetType = type;
+            Category = category;
             LastAccessTime = DateTime.Now;
         }
 
@@ -70,22 +84,13 @@ public class AssetManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 获取缓存 Key（使用规范化后的路径）
-    /// </summary>
     private static string GetCacheKey(string key)
     {
         if (string.IsNullOrEmpty(key))
             return key;
-
-        // 使用规范化后的 key 作为缓存 key
-        string normalized = NormalizeAddressableKeyInternal(key);
-        return normalized;
+        return NormalizeAddressableKeyInternal(key);
     }
 
-    /// <summary>
-    /// 内部规范化方法（不输出日志，用于缓存 key 生成）
-    /// </summary>
     private static string NormalizeAddressableKeyInternal(string key)
     {
         if (string.IsNullOrEmpty(key))
@@ -118,9 +123,6 @@ public class AssetManager : MonoBehaviour
         return "Assets/Addressables/" + result;
     }
 
-    /// <summary>
-    /// 从缓存中获取资源（如果存在）
-    /// </summary>
     private static bool TryGetFromCache<T>(string key, out T asset) where T : UnityEngine.Object
     {
         string cacheKey = GetCacheKey(key);
@@ -131,12 +133,10 @@ public class AssetManager : MonoBehaviour
             {
                 entry.AddRef();
                 asset = entry.Asset as T;
-                //Z_Logger.Log($"[AssetManager] 💾 缓存命中: {cacheKey} (类型: {typeof(T).Name}, 引用计数: {entry.RefCount})");
                 return true;
             }
             else
             {
-                // 资源已被销毁，移除缓存
                 _assetCache.Remove(cacheKey);
                 Z_Logger.LogWarning($"[AssetManager] ⚠️ 缓存中的资源已销毁，移除: {cacheKey}");
             }
@@ -146,10 +146,7 @@ public class AssetManager : MonoBehaviour
         return false;
     }
 
-    /// <summary>
-    /// 添加到缓存
-    /// </summary>
-    private static void AddToCache<T>(string key, T asset, AsyncOperationHandle handle) where T : UnityEngine.Object
+    private static void AddToCache<T>(string key, T asset, AsyncOperationHandle handle, AssetCategory category) where T : UnityEngine.Object
     {
         if (asset == null)
             return;
@@ -158,22 +155,17 @@ public class AssetManager : MonoBehaviour
 
         if (_assetCache.TryGetValue(cacheKey, out CacheEntry existingEntry))
         {
-            // 如果已经存在，增加引用计数
             existingEntry.AddRef();
             Z_Logger.Log($"[AssetManager] 💾 缓存已存在，增加引用: {cacheKey} (引用计数: {existingEntry.RefCount})");
         }
         else
         {
-            // 新条目
-            var entry = new CacheEntry(asset, handle, typeof(T));
+            var entry = new CacheEntry(asset, handle, typeof(T), category);
             _assetCache[cacheKey] = entry;
-            Z_Logger.Log($"[AssetManager] 💾 添加到缓存: {cacheKey} (类型: {typeof(T).Name})");
+            Z_Logger.Log($"[AssetManager] 💾 添加到缓存: {cacheKey} (类型: {typeof(T).Name}, 分类: {category})");
         }
     }
 
-    /// <summary>
-    /// 清理未使用的缓存（引用计数为 0 且超过指定时间未访问）
-    /// </summary>
     public static void CleanupCache(int maxAgeSeconds = 300)
     {
         DateTime now = DateTime.Now;
@@ -203,8 +195,32 @@ public class AssetManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 释放缓存中的资源
+    /// ✅ 内存压力响应：按分类清理缓存
     /// </summary>
+    public static void CleanupByMemoryPressure(long memoryThresholdBytes)
+    {
+        long currentMem = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong();
+        if (currentMem < memoryThresholdBytes) return;
+
+        Z_Logger.LogWarning($"[AssetManager] ⚠️ 内存超阈值 ({currentMem / 1024 / 1024}MB)，清理引用为 0 的缓存");
+
+        List<string> toRemove = new List<string>();
+        foreach (var kvp in _assetCache)
+        {
+            if (kvp.Value.RefCount <= 0)
+            {
+                toRemove.Add(kvp.Key);
+            }
+        }
+
+        foreach (string key in toRemove)
+        {
+            ReleaseCachedAsset(key);
+        }
+
+        Z_Logger.Log($"[AssetManager] 🧹 内存压力清理：释放 {toRemove.Count} 个资源");
+    }
+
     private static void ReleaseCachedAsset(string cacheKey)
     {
         if (_assetCache.TryGetValue(cacheKey, out CacheEntry entry))
@@ -221,9 +237,6 @@ public class AssetManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 手动释放某个缓存的引用（减少引用计数）
-    /// </summary>
     public static void ReleaseCachedReference(string key)
     {
         string cacheKey = GetCacheKey(key);
@@ -232,7 +245,6 @@ public class AssetManager : MonoBehaviour
         {
             if (entry.Release())
             {
-                // 引用计数为 0，立即释放
                 ReleaseCachedAsset(cacheKey);
                 Z_Logger.Log($"[AssetManager] 🔓 引用归零，释放资源: {cacheKey}");
             }
@@ -248,8 +260,17 @@ public class AssetManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 清空所有缓存
+    /// ✅ 批量释放：每个 key 引用计数 -1
     /// </summary>
+    public static void ReleaseKeys(List<string> keys)
+    {
+        if (keys == null) return;
+        foreach (string key in keys)
+        {
+            ReleaseCachedReference(key);
+        }
+    }
+
     public static void ClearAllCache()
     {
         List<string> keys = new List<string>(_assetCache.Keys);
@@ -258,12 +279,11 @@ public class AssetManager : MonoBehaviour
             ReleaseCachedAsset(key);
         }
         _assetCache.Clear();
+        _loadingCallbacks.Clear();
+        _loadingKeys.Clear();
         Z_Logger.Log($"[AssetManager] 🧹 已清空所有缓存");
     }
 
-    /// <summary>
-    /// 获取缓存统计信息
-    /// </summary>
     public static string GetCacheStats()
     {
         int totalCount = _assetCache.Count;
@@ -276,7 +296,7 @@ public class AssetManager : MonoBehaviour
     }
 
     // ============================================================
-    //  📦 Resources 方法（同步，从主包加载）
+    //  📦 Resources 方法
     // ============================================================
 
     public static T LoadFromResources<T>(string path) where T : UnityEngine.Object
@@ -322,29 +342,24 @@ public class AssetManager : MonoBehaviour
     }
 
     // ============================================================
-    //  ☁️ Addressables 方法（异步，从 CDN 加载，支持热更）
+    //  ☁️ Addressables 方法
     // ============================================================
 
     private static string InferFileExtension(string path)
     {
-        if (string.IsNullOrEmpty(path))
-            return "";
+        if (string.IsNullOrEmpty(path)) return "";
 
         string[] knownExtensions = { ".json", ".txt", ".ttf", ".png", ".jpg", ".jpeg",
                                      ".asset", ".prefab", ".mat", ".fbx", ".mp3", ".wav",
                                      ".mp4", ".avi", ".unity", ".anim" };
         foreach (string ext in knownExtensions)
         {
-            if (path.EndsWith(ext))
-                return "";
+            if (path.EndsWith(ext)) return "";
         }
 
         foreach (var kvp in FolderExtensionMap)
         {
-            if (path.Contains(kvp.Key))
-            {
-                return kvp.Value;
-            }
+            if (path.Contains(kvp.Key)) return kvp.Value;
         }
 
         return "";
@@ -352,40 +367,31 @@ public class AssetManager : MonoBehaviour
 
     private static string GetFileExtension(string path)
     {
-        if (string.IsNullOrEmpty(path))
-            return "";
+        if (string.IsNullOrEmpty(path)) return "";
 
         string[] knownExtensions = { ".json", ".txt", ".ttf", ".png", ".jpg", ".jpeg",
                                      ".asset", ".prefab", ".mat", ".fbx", ".mp3", ".wav",
                                      ".mp4", ".avi", ".unity", ".anim" };
         foreach (string ext in knownExtensions)
         {
-            if (path.EndsWith(ext))
-                return ext;
+            if (path.EndsWith(ext)) return ext;
         }
         return "";
     }
 
     private static string NormalizeAddressableKey(string key)
     {
-        if (string.IsNullOrEmpty(key))
-            return key;
+        if (string.IsNullOrEmpty(key)) return key;
 
         string result = key;
 
         if (result.StartsWith("Assets/Addressables/"))
-        {
             result = result.Substring("Assets/Addressables/".Length);
-        }
         else if (result.StartsWith("Assets/"))
-        {
             result = result.Substring("Assets/".Length);
-        }
 
         if (result.StartsWith("/"))
-        {
             result = result.Substring(1);
-        }
 
         string currentExt = GetFileExtension(result);
         string inferredExt = InferFileExtension(result);
@@ -398,14 +404,14 @@ public class AssetManager : MonoBehaviour
 
         string finalKey = "Assets/Addressables/" + result;
         Z_Logger.Log($"[AssetManager] 🔄 规范化 Key: {key} -> {finalKey}");
-
         return finalKey;
     }
 
-    /// <summary>
-    /// 从 Addressables 异步加载（回调方式）- 带缓存
-    /// </summary>
-    public static void LoadFromAddressables<T>(string key, Action<T, AsyncOperationHandle<T>> onLoaded) where T : UnityEngine.Object
+    // ============================================================
+    //  ✅ 统一的内部加载入口（带去重）
+    // ============================================================
+
+    private static void LoadInternal<T>(string key, Action<T, AsyncOperationHandle<T>> onLoaded, AssetCategory category) where T : UnityEngine.Object
     {
         if (string.IsNullOrEmpty(key))
         {
@@ -414,81 +420,122 @@ public class AssetManager : MonoBehaviour
             return;
         }
 
-        // 1. 先检查缓存
+        // 1. 缓存命中
         if (TryGetFromCache(key, out T cachedAsset))
         {
             onLoaded?.Invoke(cachedAsset, default);
             return;
         }
 
+        string cacheKey = GetCacheKey(key);
+
+        // 2. 正在加载中，追加等待
+        if (_loadingKeys.Contains(cacheKey))
+        {
+            if (!_loadingCallbacks.TryGetValue(cacheKey, out var list))
+            {
+                list = new List<Action<UnityEngine.Object, AsyncOperationHandle>>();
+                _loadingCallbacks[cacheKey] = list;
+            }
+
+            list.Add((obj, h) =>
+            {
+                onLoaded?.Invoke(obj as T, h is AsyncOperationHandle<T> typed ? typed : default);
+            });
+
+            Z_Logger.Log($"[AssetManager] ⏳ 已有加载请求进行中，追加等待: {cacheKey}");
+            return;
+        }
+
+        // 3. 发起新加载
         string normalizedKey = NormalizeAddressableKey(key);
-        Z_Logger.Log($"[AssetManager] 📥 开始加载 Addressables: {normalizedKey} (类型: {typeof(T).Name})");
+        _loadingKeys.Add(cacheKey);
+
+        Z_Logger.Log($"[AssetManager] 📥 开始加载: {normalizedKey} (类型: {typeof(T).Name}, 分类: {category})");
 
         var handle = Addressables.LoadAssetAsync<T>(normalizedKey);
         handle.Completed += (op) =>
         {
+            _loadingKeys.Remove(cacheKey);
+
             if (op.Status == AsyncOperationStatus.Succeeded)
             {
-                Z_Logger.Log($"[AssetManager] ✅✅✅ 加载成功: {normalizedKey} (类型: {typeof(T).Name})");
-
-                // 2. 添加到缓存
-                AddToCache(key, op.Result, op);
+                Z_Logger.Log($"[AssetManager] ✅✅✅ 加载成功: {normalizedKey}");
+                AddToCache(key, op.Result, op, category);
 
                 onLoaded?.Invoke(op.Result, op);
+
+                if (_loadingCallbacks.TryGetValue(cacheKey, out var list))
+                {
+                    foreach (var cb in list) cb?.Invoke(op.Result, op);
+                    _loadingCallbacks.Remove(cacheKey);
+                }
             }
             else
             {
                 Z_Logger.LogError($"[AssetManager] ❌❌❌ 加载失败: {normalizedKey}, 错误: {op.OperationException?.Message}");
                 onLoaded?.Invoke(null, default);
+
+                if (_loadingCallbacks.TryGetValue(cacheKey, out var list))
+                {
+                    foreach (var cb in list) cb?.Invoke(null, default);
+                    _loadingCallbacks.Remove(cacheKey);
+                }
             }
         };
     }
 
-    /// <summary>
-    /// 从 Addressables 异步加载（协程方式）- 带缓存
-    /// </summary>
-    public static IEnumerator LoadFromAddressablesCoroutine<T>(string key, Action<T, AsyncOperationHandle<T>> onLoaded) where T : UnityEngine.Object
+    // ============================================================
+    //  ✅ 三个对外加载接口
+    // ============================================================
+
+    public static void LoadFromAddressables<T>(string key, AssetCategory category, Action<T, AsyncOperationHandle<T>> onLoaded) where T : UnityEngine.Object
     {
-        if (string.IsNullOrEmpty(key))
-        {
-            Z_Logger.LogError("[AssetManager] Addressables key 为空");
-            onLoaded?.Invoke(null, default);
-            yield break;
-        }
-
-        // 1. 先检查缓存
-        if (TryGetFromCache(key, out T cachedAsset))
-        {
-            onLoaded?.Invoke(cachedAsset, default);
-            yield break;
-        }
-
-        string normalizedKey = NormalizeAddressableKey(key);
-        Z_Logger.Log($"[AssetManager] 📥 协程开始加载: {normalizedKey}");
-
-        var handle = Addressables.LoadAssetAsync<T>(normalizedKey);
-        yield return handle;
-
-        if (handle.Status == AsyncOperationStatus.Succeeded)
-        {
-            Z_Logger.Log($"[AssetManager] ✅✅✅ 协程加载成功: {normalizedKey}");
-
-            // 2. 添加到缓存
-            AddToCache(key, handle.Result, handle);
-
-            onLoaded?.Invoke(handle.Result, handle);
-        }
-        else
-        {
-            Z_Logger.LogError($"[AssetManager] ❌❌❌ 协程加载失败: {normalizedKey}, 错误: {handle.OperationException?.Message}");
-            onLoaded?.Invoke(null, default);
-        }
+        LoadInternal(key, onLoaded, category);
     }
 
-    /// <summary>
-    /// 从 Addressables 异步加载（async/await 方式）- 带缓存
-    /// </summary>
-    public static async System.Threading.Tasks.Task<(T Result, AsyncOperationHandle<T> Handle)> LoadFromAddressablesAsync<T>(string key) where T : UnityEngine.Object
+    public static void LoadFromAddressables<T>(string key, Action<T, AsyncOperationHandle<T>> onLoaded) where T : UnityEngine.Object
+    {
+        LoadInternal(key, onLoaded, AssetCategory.Other);
+    }
+
+    public static IEnumerator LoadFromAddressablesCoroutine<T>(string key, Action<T, AsyncOperationHandle<T>> onLoaded) where T : UnityEngine.Object
+    {
+        bool done = false;
+        T result = null;
+        AsyncOperationHandle<T> resultHandle = default;
+
+        LoadInternal<T>(key, (asset, handle) =>
+        {
+            result = asset;
+            resultHandle = handle;
+            done = true;
+        }, AssetCategory.Other);
+
+        while (!done) yield return null;
+
+        onLoaded?.Invoke(result, resultHandle);
+    }
+
+    public static IEnumerator LoadFromAddressablesCoroutine<T>(string key, AssetCategory category, Action<T, AsyncOperationHandle<T>> onLoaded) where T : UnityEngine.Object
+    {
+        bool done = false;
+        T result = null;
+        AsyncOperationHandle<T> resultHandle = default;
+
+        LoadInternal<T>(key, (asset, handle) =>
+        {
+            result = asset;
+            resultHandle = handle;
+            done = true;
+        }, category);
+
+        while (!done) yield return null;
+
+        onLoaded?.Invoke(result, resultHandle);
+    }
+
+    public static async System.Threading.Tasks.Task<(T Result, AsyncOperationHandle<T> Handle)> LoadFromAddressablesAsync<T>(string key, AssetCategory category) where T : UnityEngine.Object
     {
         if (string.IsNullOrEmpty(key))
         {
@@ -496,108 +543,82 @@ public class AssetManager : MonoBehaviour
             return (null, default);
         }
 
-        // 1. 先检查缓存
         if (TryGetFromCache(key, out T cachedAsset))
         {
             return (cachedAsset, default);
         }
 
+        string cacheKey = GetCacheKey(key);
+
+        if (_loadingKeys.Contains(cacheKey))
+        {
+            var tcs = new System.Threading.Tasks.TaskCompletionSource<(T, AsyncOperationHandle<T>)>();
+
+            if (!_loadingCallbacks.TryGetValue(cacheKey, out var list))
+            {
+                list = new List<Action<UnityEngine.Object, AsyncOperationHandle>>();
+                _loadingCallbacks[cacheKey] = list;
+            }
+
+            list.Add((obj, h) =>
+            {
+                tcs.TrySetResult((obj as T, h is AsyncOperationHandle<T> typed ? typed : default));
+            });
+
+            return await tcs.Task;
+        }
+
         string normalizedKey = NormalizeAddressableKey(key);
-        Z_Logger.Log($"[AssetManager] 📥 Async 开始加载: {normalizedKey} (类型: {typeof(T).Name})");
+        _loadingKeys.Add(cacheKey);
 
         try
         {
             var handle = Addressables.LoadAssetAsync<T>(normalizedKey);
             await handle.Task;
 
+            _loadingKeys.Remove(cacheKey);
+
             if (handle.Status == AsyncOperationStatus.Succeeded)
             {
-                Z_Logger.Log($"[AssetManager] ✅✅✅ Async 加载成功: {normalizedKey} (类型: {typeof(T).Name})");
+                Z_Logger.Log($"[AssetManager] ✅✅✅ Async 加载成功: {normalizedKey}");
+                AddToCache(key, handle.Result, handle, category);
 
-                // 2. 添加到缓存
-                AddToCache(key, handle.Result, handle);
+                if (_loadingCallbacks.TryGetValue(cacheKey, out var list))
+                {
+                    foreach (var cb in list) cb?.Invoke(handle.Result, handle);
+                    _loadingCallbacks.Remove(cacheKey);
+                }
 
                 return (handle.Result, handle);
             }
             else
             {
-                Z_Logger.LogError($"[AssetManager] ❌❌❌ Async 加载失败: {normalizedKey}, 错误: {handle.OperationException?.Message}");
+                Z_Logger.LogError($"[AssetManager] ❌❌❌ Async 加载失败: {normalizedKey}, {handle.OperationException?.Message}");
+
+                if (_loadingCallbacks.TryGetValue(cacheKey, out var list))
+                {
+                    foreach (var cb in list) cb?.Invoke(null, default);
+                    _loadingCallbacks.Remove(cacheKey);
+                }
+
                 return (null, default);
             }
         }
         catch (Exception ex)
         {
+            _loadingKeys.Remove(cacheKey);
             Z_Logger.LogError($"[AssetManager] ❌❌❌ Async 加载异常: {normalizedKey}, {ex.Message}");
             return (null, default);
         }
     }
 
-    /// <summary>
-    /// 从 Addressables 加载并实例化预制体（带缓存检测）
-    /// </summary>
-    public static void InstantiateFromAddressables<T>(string key, Action<T, AsyncOperationHandle> onInstantiated) where T : UnityEngine.Object
+    public static System.Threading.Tasks.Task<(T Result, AsyncOperationHandle<T> Handle)> LoadFromAddressablesAsync<T>(string key) where T : UnityEngine.Object
     {
-        if (string.IsNullOrEmpty(key))
-        {
-            Z_Logger.LogError("[AssetManager] Addressables key 为空");
-            onInstantiated?.Invoke(null, default);
-            return;
-        }
-
-        // 对于实例化，我们检查缓存中是否有资源，如果有则直接实例化
-        if (TryGetFromCache(key, out T cachedAsset))
-        {
-            // 直接实例化缓存的资源
-            if (cachedAsset is GameObject prefab)
-            {
-                GameObject instance = GameObject.Instantiate(prefab);
-                Z_Logger.Log($"[AssetManager] 🎯 从缓存实例化成功: {key}");
-                onInstantiated?.Invoke(instance as T, default);
-                return;
-            }
-            else
-            {
-                Z_Logger.LogWarning($"[AssetManager] ⚠️ 缓存资源不是预制体: {key}");
-                // 继续走正常加载流程
-            }
-        }
-
-        string normalizedKey = NormalizeAddressableKey(key);
-        Z_Logger.Log($"[AssetManager] 📥 开始实例化: {normalizedKey}");
-
-        var handle = Addressables.InstantiateAsync(normalizedKey);
-        handle.Completed += (op) =>
-        {
-            if (op.Status == AsyncOperationStatus.Succeeded)
-            {
-                Z_Logger.Log($"[AssetManager] ✅✅✅ 实例化成功: {normalizedKey}");
-
-                // 注意：实例化本身不缓存实例，但我们可以缓存原始资源
-                // 检查原始资源是否已经在缓存中
-                if (!_assetCache.ContainsKey(GetCacheKey(key)))
-                {
-                    // 尝试获取原始资源并缓存（使用 LoadAssetAsync 来缓存原始资源）
-                    Addressables.LoadAssetAsync<T>(normalizedKey).Completed += (loadOp) =>
-                    {
-                        if (loadOp.Status == AsyncOperationStatus.Succeeded)
-                        {
-                            AddToCache(key, loadOp.Result, loadOp);
-                        }
-                    };
-                }
-
-                onInstantiated?.Invoke(op.Result as T, op);
-            }
-            else
-            {
-                Z_Logger.LogError($"[AssetManager] ❌❌❌ 实例化失败: {normalizedKey}, 错误: {op.OperationException?.Message}");
-                onInstantiated?.Invoke(null, default);
-            }
-        };
+        return LoadFromAddressablesAsync<T>(key, AssetCategory.Other);
     }
 
     // ============================================================
-    //  🧹 释放资源
+    //  🧹 释放
     // ============================================================
 
     public static void ReleaseAddressable<T>(AsyncOperationHandle<T> handle)
@@ -650,8 +671,7 @@ public class AssetManager : MonoBehaviour
 #if UNITY_EDITOR
     public static bool AddressableExists(string key)
     {
-        if (string.IsNullOrEmpty(key))
-            return false;
+        if (string.IsNullOrEmpty(key)) return false;
 
         string normalizedKey = NormalizeAddressableKey(key);
         try

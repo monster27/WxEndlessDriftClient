@@ -17,9 +17,9 @@ public static class Z_Logger
 
     // ==================== Log ====================
 
-    public static void Log(string message)
+    public static void Log(string message) 
     {
-        //Debug.Log(FormatMessage(message));  // ✅ 直接调用 Debug.Log
+        Debug.Log(FormatMessage(message));  // ✅ 直接调用 Debug.Log
     }
 
     public static void Log(string format, params object[] args)

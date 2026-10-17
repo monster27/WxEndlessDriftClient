@@ -107,6 +107,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0471016fea041b646bc816c90704f48e
+    m_Address: Assets/Addressables/UI/View/MallView.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0497d488597b8ec40990866d6562d100
     m_Address: Assets/Addressables/UI/Icon/CollectionIcons/7101.png
     m_ReadOnly: 0
@@ -649,6 +654,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1fa4150422f696a43a48e15f672fcb3b
+    m_Address: Assets/Addressables/UI/View/MapView.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 210fb0fdc28891240bb96f30ac267650
     m_Address: Assets/Addressables/UI/Icon/WeatherIcon/303.png
     m_ReadOnly: 0
@@ -831,12 +841,6 @@ MonoBehaviour:
   - m_GUID: 2b5e9ae96c5644d8bae932f8b4ca68a2
     m_Address: Assets/TextMesh Pro/Examples & Extras/Textures/Wipe Pattern - Radial
       Quad.psd
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 2b859e6251a89a44b8cacf6a1da36340
-    m_Address: Assets/Addressables/UI/DefaultIcon.png
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
@@ -1060,6 +1064,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 38471789f2e4837478595f921d59b362
+    m_Address: Assets/Addressables/UI/View/GameMatch3View.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 38e6705bd470a1f4ea2eafde106b4989
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u706B\u5C71\u5730\u9762\u7269\u54C1/\u9A6C\u6876.png"
@@ -1871,11 +1880,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 68026c171bc211d49907d4fbb4f682c6
-    m_Address: "Assets/Addressables/TTF/\u6C5F\u57CE\u5706\u4F53 700W.ttf"
-    m_ReadOnly: 0
-    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6810a3ddc00a70b4eb0f0284e5bd53c1
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u754C\u9762\u793A\u610F.png"
@@ -2777,11 +2781,6 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 9d358b58406d078448ef6334544454ab
-    m_Address: Assets/Addressables/TTF/700w SDF.asset
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9d93cc59500489d48ae33f421dc8f3d2
     m_Address: Assets/Textures/0605/fish basket/1.png
     m_ReadOnly: 0
@@ -3008,11 +3007,10 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a9658ca74afec214d80864207d9aa490
-    m_Address: Assets/WX-WASM-SDK-V2/Runtime/wechat-default/images/background.jpg
+  - m_GUID: a978991b47acd1f419dc674b57fa44aa
+    m_Address: Assets/Addressables/UI/View/EquipmentView.prefab
     m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a97ca0b99ece2d94aaaf59653feb45dd
     m_Address: Assets/Plugins/IngameDebugConsole/Sprites/Unused/IconErrorHighRes.psd
@@ -3059,6 +3057,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: acd484de44e69a344b9796489e3c4ed7
+    m_Address: Assets/Addressables/UI/View/FishTankView.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: acd6a883375b5bb449149e0eedc2fec8
     m_Address: Assets/Textures/0605/Character interface/level.png
@@ -3129,7 +3132,8 @@ MonoBehaviour:
   - m_GUID: af64fc436ee7cf24298eb2fef752a0b6
     m_Address: Assets/Addressables/TTF/simhei.ttf
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - default
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: af6c8f3d559f21b4a8fe88b0983d2389
     m_Address: "Assets/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7C7B/\u5F02\u8272\u95EA\u5149\u77F3\u6591/\u9C7C.png"
@@ -3161,6 +3165,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b086a6e1f16215749aa05645775044f9
     m_Address: Assets/Addressables/Prefabs/UI_EggBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b13a50c75101b184486167245f7890b5
+    m_Address: Assets/Addressables/UI/View/PetView.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -3252,6 +3261,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b450e135f6b50664894bdea13c3c42f7
+    m_Address: Assets/Addressables/UI/View/BagView.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b457eeb66fa6c8441809aa0654d5b1de
     m_Address: Assets/Textures/0605/Homepage/Fish Coin.png
@@ -3426,6 +3440,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bb336423972ce4341b7cbc76b41fa41f
+    m_Address: Assets/Addressables/UI/View/CollectionView.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bb4941d9be4190b4bb133e148fe1630d
     m_Address: Assets/Addressables/UI/Icon/WeatherIcon/315.png
     m_ReadOnly: 0
@@ -3579,6 +3598,11 @@ MonoBehaviour:
     m_SerializedLabels:
     - default
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c3c28647952461e459160844386808d9
+    m_Address: Assets/Addressables/UI/View/EggView.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c43408bc83e7dac45a5ab1fc6cd8fd0c
     m_Address: Assets/Textures/0605/Character interface/Bottom layer of characters.png
     m_ReadOnly: 0
@@ -3640,6 +3664,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c8c294e1aac04da469de2b2d73804e83
+    m_Address: Assets/Addressables/UI/View/AdvertisingView.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c8e7aba8923c7e54296295ed66867247
     m_Address: Assets/Textures/0605/Homepage/Right icon/hide.png
@@ -3918,12 +3947,6 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: dc3d2a31005cd39449756bf77cee3292
     m_Address: Assets/Addressables/UI/Icon/TimeIcon/401.png
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - default
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: dd57ac7e2d7e42e41a9fc45387c6267e
-    m_Address: Assets/Addressables/TTF/700w.ttf
     m_ReadOnly: 0
     m_SerializedLabels:
     - default
@@ -4316,6 +4339,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f3755ec8938f9ab4da4dc12c8c726f53
     m_Address: Assets/Addressables/Prefabs/UI_FishTankStoreBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f3b017087253df4418090af68accd070
+    m_Address: Assets/Addressables/UI/View/FishBagView.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

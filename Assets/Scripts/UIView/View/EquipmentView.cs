@@ -3,26 +3,18 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 //using SharedModels;
 
-public class EquipmentView : MonoBehaviour
+public class EquipmentView : BaseView
 {
-    public Button maskBtn;
-    public Button closeBtn;
-
-    public MainEquipmentView mainEquipmentView;
-    public FishingEquipView fishingEquipView;
-    public EquipPlayerView equipPlayerView;
-    public InfoSkillView infoSkillView;
-    public InfoFishEquipView infoFishEquipView;
+    public MainEquipmentPanel mainEquipmentView;
+    public FishingEquipmentPanel fishingEquipView;
+    public EquipPlayerEquipmentPanel equipPlayerView;
+    public InfoSkillEquipmentPanel infoSkillView;
+    public InfoFishEquipmentPanel infoFishEquipView;
 
     private Dictionary<int, Sprite> iconCache = new Dictionary<int, Sprite>();
     private MonoBehaviour currentSubView;
     private bool _isRefreshing = false;
 
-    void Start()
-    {
-        if (maskBtn != null) maskBtn.onClick.AddListener(OnMaskClick);
-        if (closeBtn != null) closeBtn.onClick.AddListener(OnCloseClick);
-    }
 
     void OnEnable()
     {
@@ -217,18 +209,6 @@ public class EquipmentView : MonoBehaviour
         {
             _isRefreshing = false;
         }
-    }
-
-    private void OnMaskClick()
-    {
-        Z_Logger.Log("[EquipmentView] OnMaskClick - 点击遮罩关闭");
-        Hide();
-    }
-
-    private void OnCloseClick()
-    {
-        Z_Logger.Log("[EquipmentView] OnCloseClick - 点击关闭按钮");
-        Hide();
     }
 
     private void OnMainEquipmentCallback(string eventName, params object[] args)

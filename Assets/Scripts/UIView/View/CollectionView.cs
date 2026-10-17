@@ -11,6 +11,7 @@ public class CollectionView : BaseView
     [Header("UI组件")]
     public Text pageNameText;
     public Text completionText;
+    public Slider completionSlider;
     public Button rewardButton;
     public Toggle[] categoryToggles = new Toggle[6];
     public Button prevPageButton;
@@ -213,6 +214,7 @@ public class CollectionView : BaseView
                 pageNameText.text = "";
             }
             completionText.text = "0";
+            completionSlider.value = 0;
             pageInfoText.text = "0/0";
             rewardButton.interactable = false;
         }
@@ -252,6 +254,7 @@ public class CollectionView : BaseView
         }
 
         completionText.text = Mathf.FloorToInt(completion).ToString();
+        completionSlider.value = completion / 100f;
     }
 
     private float CalculatePageCompletion(CollectionPage page)

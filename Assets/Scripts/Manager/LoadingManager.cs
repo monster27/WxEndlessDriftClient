@@ -1,13 +1,16 @@
 // ============================================
 // 文件: LoadingManager.cs
 // 功能: 加载场景管理器 - 整合所有管理器初始化进度
+//       场景跳转全部使用 Addressables
 // ============================================
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 using System.IO;
-//using Z_Logger = Utils.Z_Logger;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceProviders;
 
 public class LoadingManager : MonoBehaviour
 {
@@ -17,11 +20,10 @@ public class LoadingManager : MonoBehaviour
     public Text statusText;
     public Text detailText;
     public Button skipButton;
-
-    [Header("设置")]
-    [SerializeField] private string gameSceneName = "GameScene";
-    [SerializeField] private int gameSceneIndex = 2;
-    [SerializeField] private float minLoadTime = 1.5f;
+    
+    // ✅ 场景 Key 与 Addressables 里的 Address 完全一致（完整路径）
+    private string gameSceneName = "Assets/Scenes/GameScene.unity";
+    private float minLoadTime = 1.5f;
 
     // 加载步骤定义
     private enum LoadStep
@@ -95,21 +97,18 @@ public class LoadingManager : MonoBehaviour
         }
 
         Z_Logger.Log("[LoadingManager] 所有系统加载完成，跳转到游戏场景");
-        StartCoroutine(LoadSceneWithFallback(gameSceneName, gameSceneIndex));
+        yield return StartCoroutine(LoadSceneWithFallback(gameSceneName));
     }
 
     public void ForceJumpToNextScene()
     {
         Z_Logger.Log("[LoadingManager] 用户点击强制跳转按钮");
         StopAllCoroutines();
-        StartCoroutine(LoadSceneWithFallback(gameSceneName, gameSceneIndex));
+        StartCoroutine(LoadSceneWithFallback(gameSceneName));
     }
 
-    // ========== 增强版场景加载诊断 ==========
+    // ========== 场景诊断 ==========
 
-    /// <summary>
-    /// 诊断并打印 Build Settings 中的所有场景信息
-    /// </summary>
     private void LogBuildSettingsScenes()
     {
         int sceneCount = SceneManager.sceneCountInBuildSettings;
@@ -129,46 +128,19 @@ public class LoadingManager : MonoBehaviour
         Z_Logger.Log("[LoadingManager] ============================================");
     }
 
-    /// <summary>
-    /// 诊断场景的加载方式（内嵌 vs AssetBundle）
-    /// </summary>
-    private void DiagnoseSceneLoading(string sceneName, int sceneIndex)
+    private void DiagnoseSceneLoading(string sceneName)
     {
-        Z_Logger.Log($"[LoadingManager] === 场景加载诊断: '{sceneName}' (索引={sceneIndex}) ===");
+        Z_Logger.Log($"[LoadingManager] === 场景加载诊断 (Addressables): '{sceneName}' ===");
 
         // 1. 检查 Build Settings 中的场景
-        string scenePath = SceneUtility.GetScenePathByBuildIndex(sceneIndex);
-        if (!string.IsNullOrEmpty(scenePath))
+        int sceneCount = SceneManager.sceneCountInBuildSettings;
+        for (int i = 0; i < sceneCount; i++)
         {
-            Z_Logger.Log($"[LoadingManager]   场景路径: {scenePath}");
-            Z_Logger.Log($"[LoadingManager]   场景名称: {Path.GetFileNameWithoutExtension(scenePath)}");
-
-            // 检查场景文件是否存在
-            string fullPath = Path.Combine(Application.dataPath, "..", scenePath);
-            if (File.Exists(fullPath))
+            string path = SceneUtility.GetScenePathByBuildIndex(i);
+            if (string.IsNullOrEmpty(path)) continue;
+            if (Path.GetFileNameWithoutExtension(path) == sceneName)
             {
-                Z_Logger.Log($"[LoadingManager]   场景文件存在: {fullPath}");
-
-                // 获取文件大小，判断是否可能被 AssetBundle 化
-                FileInfo fileInfo = new FileInfo(fullPath);
-                Z_Logger.Log($"[LoadingManager]   文件大小: {fileInfo.Length} bytes");
-            }
-            else
-            {
-                Z_Logger.LogWarning($"[LoadingManager]   场景文件不存在: {fullPath}");
-            }
-        }
-        else
-        {
-            Z_Logger.LogError($"[LoadingManager]   索引 {sceneIndex} 在 Build Settings 中不存在!");
-            // 尝试通过名称查找
-            for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
-            {
-                string path = SceneUtility.GetScenePathByBuildIndex(i);
-                if (!string.IsNullOrEmpty(path) && Path.GetFileNameWithoutExtension(path) == sceneName)
-                {
-                    Z_Logger.Log($"[LoadingManager]   通过名称找到场景: 索引 {i} -> {path}");
-                }
+                Z_Logger.LogWarning($"[LoadingManager]   ⚠️ 场景 '{sceneName}' 同时存在于 Build Settings (索引 {i})，建议从 Build Settings 移除");
             }
         }
 
@@ -180,11 +152,12 @@ public class LoadingManager : MonoBehaviour
             Z_Logger.Log($"[LoadingManager]     已加载[{i}]: '{scene.name}' (路径: {scene.path}, 有效: {scene.IsValid()})");
         }
 
-        // 3. 检查是否是 Addressable 资源
 #if UNITY_EDITOR
+        // 3. 检查 Addressable 配置
         try
         {
             var settings = UnityEditor.AddressableAssets.AddressableAssetSettingsDefaultObject.Settings;
+            bool found = false;
             if (settings != null)
             {
                 foreach (var group in settings.groups)
@@ -192,14 +165,23 @@ public class LoadingManager : MonoBehaviour
                     if (group == null) continue;
                     foreach (var entry in group.entries)
                     {
-                        if (entry != null && entry.AssetPath.Contains(sceneName))
+                        if (entry == null) continue;
+                        if (entry.AssetPath == sceneName ||
+                            entry.address == sceneName ||
+                            Path.GetFileNameWithoutExtension(entry.AssetPath) == Path.GetFileNameWithoutExtension(sceneName))
                         {
-                            Z_Logger.LogWarning($"[LoadingManager]   ⚠️ 场景 '{sceneName}' 在 Addressable Group '{group.Name}' 中!");
-                            Z_Logger.LogWarning($"[LoadingManager]     地址: {entry.address}");
-                            Z_Logger.LogWarning($"[LoadingManager]     这会导致场景通过 AssetBundle 加载!");
+                            found = true;
+                            Z_Logger.Log($"[LoadingManager]   ✅ 场景 '{sceneName}' 在 Addressable Group '{group.Name}' 中");
+                            Z_Logger.Log($"[LoadingManager]      AssetPath: {entry.AssetPath}");
+                            Z_Logger.Log($"[LoadingManager]      Address:   {entry.address}");
                         }
                     }
                 }
+            }
+
+            if (!found)
+            {
+                Z_Logger.LogError($"[LoadingManager]   ❌ 场景 '{sceneName}' 未在任何 Addressable Group 中找到，请先标记为 Addressable");
             }
         }
         catch (System.Exception ex)
@@ -211,28 +193,19 @@ public class LoadingManager : MonoBehaviour
         Z_Logger.Log("[LoadingManager] ============================================");
     }
 
-    // ========== 场景加载（修复 try-catch 中 yield 的问题） ==========
+    // ========== 场景加载（Addressables） ==========
 
-    /// <summary>
-    /// 增强版场景跳转 - 包含详细诊断
-    /// </summary>
-    private IEnumerator LoadSceneWithFallback(string sceneName, int sceneIndex)
+    private IEnumerator LoadSceneWithFallback(string sceneName)
     {
         Z_Logger.Log($"[LoadingManager] ============================================");
-        Z_Logger.Log($"[LoadingManager] 开始场景跳转，目标: '{sceneName}' (索引={sceneIndex})");
+        Z_Logger.Log($"[LoadingManager] 使用 Addressables 加载场景: '{sceneName}'");
         UpdateStatus("正在跳转场景...", $"目标: {sceneName}");
 
-        // 先打印 Build Settings 中的所有场景
         LogBuildSettingsScenes();
+        DiagnoseSceneLoading(sceneName);
 
-        // 诊断当前场景加载情况
-        DiagnoseSceneLoading(sceneName, sceneIndex);
-
-        // ===== 方案1：直接按索引加载 =====
-        Z_Logger.Log($"[LoadingManager] 尝试方案1: SceneManager.LoadScene({sceneIndex})");
-
-        // 在加载前检查场景是否已存在
-        Scene existingScene = SceneManager.GetSceneByName(sceneName);
+        // 若目标场景已加载，直接激活
+        Scene existingScene = SceneManager.GetSceneByPath(sceneName);
         if (existingScene.IsValid() && existingScene.isLoaded)
         {
             Z_Logger.Log($"[LoadingManager]   场景 '{sceneName}' 已加载，直接激活");
@@ -240,207 +213,64 @@ public class LoadingManager : MonoBehaviour
             yield break;
         }
 
-        // 尝试按索引加载 - 将加载调用放在 try-catch 外部
-        bool loadSuccess = false;
-        string loadError = null;
+        // Addressables 异步加载场景（Single 模式：替换当前场景）
+        var handle = Addressables.LoadSceneAsync(sceneName, LoadSceneMode.Single);
 
-        try
-        {
-            Z_Logger.Log($"[LoadingManager]   执行 SceneManager.LoadScene({sceneIndex})");
-            SceneManager.LoadScene(sceneIndex);
-            Z_Logger.Log($"[LoadingManager]   ✅ 加载调用成功，等待场景切换...");
-            loadSuccess = true;
-        }
-        catch (System.Exception ex)
-        {
-            loadError = ex.Message;
-            Z_Logger.LogError($"[LoadingManager]   ❌ 索引加载失败: {ex.Message}");
-        }
+        float startTime = Time.time;
+        float timeout = 30f;
 
-        // 等待场景切换（在 try-catch 外部进行 yield）
-        if (loadSuccess)
+        while (!handle.IsDone)
         {
-            float waitTime = 0f;
-            while (waitTime < 5f && SceneManager.GetActiveScene().name != sceneName)
+            UpdateProgress(handle.PercentComplete);
+            Z_Logger.Log($"[LoadingManager]   加载进度: {handle.PercentComplete * 100:F1}%");
+            yield return null;
+
+            if (Time.time - startTime > timeout)
             {
-                yield return new WaitForSeconds(0.1f);
-                waitTime += 0.1f;
-            }
-
-            Scene activeScene = SceneManager.GetActiveScene();
-            if (activeScene.name == sceneName)
-            {
-                Z_Logger.Log($"[LoadingManager]   ✅ 场景切换成功: '{activeScene.name}'");
-                yield break;
-            }
-            else
-            {
-                Z_Logger.LogWarning($"[LoadingManager]   场景切换后仍然是: '{activeScene.name}'，可能加载失败");
-            }
-        }
-
-        yield return null;
-
-        // ===== 方案2：使用场景名称加载 =====
-        Z_Logger.Log($"[LoadingManager] 尝试方案2: SceneManager.LoadScene(\"{sceneName}\")");
-        loadSuccess = false;
-        loadError = null;
-
-        try
-        {
-            SceneManager.LoadScene(sceneName);
-            Z_Logger.Log($"[LoadingManager]   ✅ 名称加载调用成功");
-            loadSuccess = true;
-        }
-        catch (System.Exception ex)
-        {
-            loadError = ex.Message;
-            Z_Logger.LogError($"[LoadingManager]   ❌ 名称加载失败: {ex.Message}");
-        }
-
-        if (loadSuccess)
-        {
-            float waitTime = 0f;
-            while (waitTime < 5f && SceneManager.GetActiveScene().name != sceneName)
-            {
-                yield return new WaitForSeconds(0.1f);
-                waitTime += 0.1f;
-            }
-
-            Scene activeScene = SceneManager.GetActiveScene();
-            if (activeScene.name == sceneName)
-            {
-                Z_Logger.Log($"[LoadingManager]   ✅ 场景切换成功: '{activeScene.name}'");
-                yield break;
-            }
-        }
-
-        yield return null;
-
-        // ===== 方案3：异步按索引加载 =====
-        Z_Logger.Log($"[LoadingManager] 尝试方案3: SceneManager.LoadSceneAsync({sceneIndex})");
-        AsyncOperation asyncOp = null;
-
-        try
-        {
-            asyncOp = SceneManager.LoadSceneAsync(sceneIndex);
-        }
-        catch (System.Exception ex)
-        {
-            Z_Logger.LogError($"[LoadingManager]   ❌ 异步索引加载失败: {ex.Message}");
-        }
-
-        if (asyncOp != null)
-        {
-            Z_Logger.Log($"[LoadingManager]   异步加载已启动，等待完成...");
-            while (!asyncOp.isDone)
-            {
-                UpdateProgress(asyncOp.progress);
-                Z_Logger.Log($"[LoadingManager]   加载进度: {asyncOp.progress * 100:F1}%");
-                yield return null;
-            }
-            Z_Logger.Log($"[LoadingManager]   ✅ 异步加载完成");
-            yield break;
-        }
-
-        yield return null;
-
-        // ===== 方案4：异步名称加载 =====
-        Z_Logger.Log($"[LoadingManager] 尝试方案4: SceneManager.LoadSceneAsync(\"{sceneName}\")");
-        asyncOp = null;
-
-        try
-        {
-            asyncOp = SceneManager.LoadSceneAsync(sceneName);
-        }
-        catch (System.Exception ex)
-        {
-            Z_Logger.LogError($"[LoadingManager]   ❌ 异步名称加载失败: {ex.Message}");
-        }
-
-        if (asyncOp != null)
-        {
-            Z_Logger.Log($"[LoadingManager]   异步名称加载已启动，等待完成...");
-            while (!asyncOp.isDone)
-            {
-                UpdateProgress(asyncOp.progress);
-                yield return null;
-            }
-            Z_Logger.Log($"[LoadingManager]   ✅ 异步名称加载完成");
-            yield break;
-        }
-
-        yield return null;
-
-        // ===== 方案5：Additive 模式加载 =====
-        Z_Logger.Log($"[LoadingManager] 尝试方案5: LoadSceneAsync Additive 模式");
-        AsyncOperation additiveOp = null;
-
-        try
-        {
-            additiveOp = SceneManager.LoadSceneAsync(sceneIndex, LoadSceneMode.Additive);
-        }
-        catch (System.Exception ex)
-        {
-            Z_Logger.LogError($"[LoadingManager]   ❌ Additive 加载失败: {ex.Message}");
-        }
-
-        if (additiveOp != null)
-        {
-            yield return additiveOp;
-
-            Scene newScene = SceneManager.GetSceneByBuildIndex(sceneIndex);
-            if (newScene.IsValid())
-            {
-                Z_Logger.Log($"[LoadingManager]   ✅ Additive 加载成功: '{newScene.name}'");
-                SceneManager.SetActiveScene(newScene);
-
-                // 卸载 Loading 场景
-                Scene currentScene = SceneManager.GetSceneAt(0);
-                if (currentScene.IsValid() && currentScene.name != gameSceneName)
-                {
-                    Z_Logger.Log($"[LoadingManager]   卸载加载场景: '{currentScene.name}'");
-                    SceneManager.UnloadSceneAsync(currentScene);
-                }
-                yield break;
-            }
-            else
-            {
-                Z_Logger.LogWarning($"[LoadingManager]   Additive 加载的场景无效");
-            }
-        }
-
-        yield return null;
-
-        // ===== 方案6：尝试使用 Resources 加载 =====
-        Z_Logger.Log($"[LoadingManager] 尝试方案6: 紧急降级 - 检查场景是否存在");
-        bool sceneExists = false;
-
-        for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
-        {
-            string path = SceneUtility.GetScenePathByBuildIndex(i);
-            if (!string.IsNullOrEmpty(path) && Path.GetFileNameWithoutExtension(path) == sceneName)
-            {
-                sceneExists = true;
-                Z_Logger.Log($"[LoadingManager]   场景 '{sceneName}' 在 Build Settings 中，索引 {i}");
+                Z_Logger.LogError($"[LoadingManager] ❌ 场景 '{sceneName}' 加载超时 ({timeout}s)");
                 break;
             }
         }
 
-        if (!sceneExists)
+        if (handle.Status == AsyncOperationStatus.Succeeded)
         {
-            Z_Logger.LogError($"[LoadingManager]   ❌ 场景 '{sceneName}' 不在 Build Settings 中!");
-            Z_Logger.LogError($"[LoadingManager]   请检查 Build Settings > Scenes In Build");
+            UpdateProgress(1f);
+            Z_Logger.Log($"[LoadingManager] ✅ 场景 '{sceneName}' 加载成功");
+            yield break;
         }
 
-        // ===== 所有方案均失败 =====
-        string fullError = $"场景跳转失败！请检查:\n" +
-                           $"1. Build Settings 中是否包含 '{sceneName}'\n" +
-                           $"2. '{sceneName}' 的索引是否为 {sceneIndex}\n" +
-                           $"3. 场景文件是否损坏或被移动\n" +
-                           $"4. 是否有 Addressable 配置干扰加载";
-        Z_Logger.LogError($"[LoadingManager] ❌ {fullError}");
-        UpdateStatus("跳转失败", fullError);
+        // ==== 失败降级：尝试 SceneManager 按名称加载 ====
+        string err = handle.OperationException != null
+            ? handle.OperationException.Message
+            : "未知错误";
+        Z_Logger.LogError($"[LoadingManager] ❌ Addressables 加载场景失败: {err}");
+        UpdateStatus("Addressables 加载失败", "尝试降级到 SceneManager");
+
+        bool fallbackOk = false;
+        string shortName = Path.GetFileNameWithoutExtension(sceneName);
+
+        // 先尝试按名称（不带路径）加载
+        try
+        {
+            SceneManager.LoadScene(shortName);
+            fallbackOk = true;
+            Z_Logger.Log($"[LoadingManager]   降级到 SceneManager.LoadScene(\"{shortName}\") 成功");
+        }
+        catch (System.Exception ex)
+        {
+            Z_Logger.LogWarning($"[LoadingManager] 按名称降级失败: {ex.Message}");
+        }
+
+        if (!fallbackOk)
+        {
+            string fullError = $"场景跳转失败！请检查:\n" +
+                               $"1. 场景 '{sceneName}' 是否已标记为 Addressable\n" +
+                               $"2. Address 是否为 '{sceneName}'\n" +
+                               $"3. 场景是否已从 Build Settings 移除\n" +
+                               $"4. Catalog 是否已更新并上传到服务器";
+            Z_Logger.LogError($"[LoadingManager] ❌ {fullError}");
+            UpdateStatus("跳转失败", fullError);
+        }
 
         // 输出最终场景状态
         Z_Logger.Log($"[LoadingManager] === 最终场景状态 ===");

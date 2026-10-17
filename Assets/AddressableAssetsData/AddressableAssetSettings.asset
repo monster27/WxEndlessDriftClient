@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: 4c11910e7c6955247ae94571cde274cf
   m_currentHash:
     serializedVersion: 2
-    Hash: 00000000000000000000000000000000
+    Hash: 9b7237d7b1f4a9f539f48141402c6955
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 1
   m_BundleLocalCatalog: 0
@@ -44,6 +44,8 @@ MonoBehaviour:
   m_BuildAddressablesWithPlayerBuild: 0
   m_overridePlayerVersion: 0.1
   m_GroupAssets:
+  - {fileID: 11400000, guid: b9dcadba9f51198428af57d603bcd398, type: 2}
+  - {fileID: 11400000, guid: 3259a5e8bdc36664caa0c2c7d839ff50, type: 2}
   - {fileID: 11400000, guid: eacdd0446b2dfc34f937cf54dde42cf0, type: 2}
   - {fileID: 11400000, guid: 026a95803bc16fd4bbd86f15564446d2, type: 2}
   - {fileID: 11400000, guid: bb05a69fb08aaa643886226c1441624f, type: 2}
@@ -61,7 +63,21 @@ MonoBehaviour:
       - m_Id: 3dd1b57a18527104d9dd1f1ea6230fa9
         m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
       - m_Id: 64f963ed18aea0842bd150986a2bb2f1
-        m_Value: '{UOS.cdn_url}/'
+        m_Value: https://endlessdriftfish.top/aa/[BuildTarget]
+      - m_Id: 7fe45d00cfdea7444a84faa03581f08f
+        m_Value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
+      - m_Id: 8b96b59f3b658ec4d99d9e065800aa92
+        m_Value: ServerData/[BuildTarget]
+      - m_Id: f1d2b4f9467f022439948195548e1ac2
+        m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
+    - m_InheritedParent: 
+      m_Id: 838392357583950498d265c7dcda1ae5
+      m_ProfileName: New Profile
+      m_Values:
+      - m_Id: 3dd1b57a18527104d9dd1f1ea6230fa9
+        m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
+      - m_Id: 64f963ed18aea0842bd150986a2bb2f1
+        m_Value: https://endlessdriftfish.top/aa/[BuildTarget]
       - m_Id: 7fe45d00cfdea7444a84faa03581f08f
         m_Value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
       - m_Id: 8b96b59f3b658ec4d99d9e065800aa92
@@ -88,6 +104,8 @@ MonoBehaviour:
   m_LabelTable:
     m_LabelNames:
     - default
+    - ZPP
+    - Scenes
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: d40057f5c93346b4d802f76e6fc4d7ee, type: 2}

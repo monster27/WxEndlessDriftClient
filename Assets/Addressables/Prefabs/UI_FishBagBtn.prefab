@@ -1,18 +1,17 @@
 %YAML 1.1
-%TAG !u! tag:yousandi.cn,2023:
+%TAG !u! tag:unity3d.com,2011:
 --- !u!1 &1644812264724768713
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 1903724501268765082}
   - component: {fileID: 8245080768154048173}
   - component: {fileID: 8866113294948342819}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: NameText (Legacy)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -86,13 +85,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 5783592297490407222}
   - component: {fileID: 8242035112015492127}
   - component: {fileID: 7991141896876011442}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: 'PriceText (Legacy) '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -166,13 +164,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 6037420951758956433}
   - component: {fileID: 4977116644853116262}
   - component: {fileID: 7829123358901398364}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: Checkmark
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -242,14 +239,13 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 7188479441778713324}
   - component: {fileID: 1228262634876331229}
   - component: {fileID: 3267996356528929370}
   - component: {fileID: 4374360422949482608}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: ShinyImg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -332,13 +328,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 1000764884220061540}
   - component: {fileID: 8741660452491748208}
   - component: {fileID: 6295720675111886097}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: Bg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -408,13 +403,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 986905556723955245}
   - component: {fileID: 3663816880407757099}
   - component: {fileID: 7092113211970711450}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: StarImg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -439,7 +433,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: -21.7, y: -12.7}
-  m_SizeDelta: {x: 61, y: 69}
+  m_SizeDelta: {x: 72, y: 56}
   m_Pivot: {x: -0.09411856, y: 0.5}
 --- !u!222 &3663816880407757099
 CanvasRenderer:
@@ -485,13 +479,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 3964659243486198999}
   - component: {fileID: 192345666618164578}
   - component: {fileID: 4692816503035311945}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -562,13 +555,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 6356736633459858636}
   - component: {fileID: 2341798485393605978}
   - component: {fileID: 5507787842975515297}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: NewImg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -592,7 +584,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: -11.9}
-  m_SizeDelta: {x: 103, y: 74}
+  m_SizeDelta: {x: 82, y: 56}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2341798485393605978
 CanvasRenderer:
@@ -622,7 +614,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 98e9b78a293ff4a4e91186e99b82fe21, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 96cfffd33f716b84f817942c37c27ac3, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -638,13 +630,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 3043948918748796304}
   - component: {fileID: 4317661433876238972}
   - component: {fileID: 7081302739589486303}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: QuantityText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -718,13 +709,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 4645492568885644665}
   - component: {fileID: 8212941275756384978}
   - component: {fileID: 483565195830377681}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: Text (Legacy)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -798,12 +788,11 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 557064450633077121}
   - component: {fileID: 5580415180907195649}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: IsSelectToggle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -884,13 +873,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 1778104981367324700}
   - component: {fileID: 3672411142288354599}
   - component: {fileID: 8493131254954333991}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: LockedImg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -961,7 +949,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 5527810653080243636}
   - component: {fileID: 8626789314978186604}
@@ -969,7 +957,6 @@ GameObject:
   - component: {fileID: 8187244172349789704}
   - component: {fileID: 9084570865305899470}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: UI_FishBagBtn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1121,13 +1108,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 2566936562908714075}
   - component: {fileID: 6181429972590217163}
   - component: {fileID: 7478317130085548384}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: GoldImg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1197,13 +1183,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 5537366197905584467}
   - component: {fileID: 2978850971863233637}
   - component: {fileID: 2991775709010227245}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: StarText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1277,13 +1262,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 7075106478390842227}
   - component: {fileID: 7277836015222467441}
   - component: {fileID: 5245720761850273756}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: StarText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1357,13 +1341,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 3764739723116383797}
   - component: {fileID: 1286229034479765141}
   - component: {fileID: 3985714901364927596}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: SelectImg
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1417,7 +1400,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 74e8938e41e27ee438a7a47d02d4b9ea, type: 3}
+  m_Sprite: {fileID: 21300000, guid: eded9f4d08eceed42a39f437773ebbd2, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1433,13 +1416,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 9011023293292995367}
   - component: {fileID: 8598942905673245980}
   - component: {fileID: 7617651716581094698}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: Icon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1509,13 +1491,12 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 7
+  serializedVersion: 6
   m_Component:
   - component: {fileID: 495046983140446656}
   - component: {fileID: 8527919253290427369}
   - component: {fileID: 3868006977390331326}
   m_Layer: 5
-  m_HasEditorInfo: 1
   m_Name: WeightText (Legacy)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

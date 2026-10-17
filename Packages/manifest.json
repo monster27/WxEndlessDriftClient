@@ -1,8 +1,5 @@
 {
   "dependencies": {
-    "cn.unity.uos.cdn": "https://cnb.cool/unity/uos/UosCdnSDK.git",
-    "cn.unity.uos.launcher": "https://cnb.cool/unity/uos/UOSLauncher.git",
-    "com.mister91jiao.conver-tuanjie-to-unity-tool": "https://github.com/mister91jiao/ConverTuanjieToUnity.git",
     "com.qq.weixin.minigame": "https://gitee.com/wechat-minigame/minigame-tuanjie-transform-sdk.git",
     "com.unity.addressables": "1.22.3",
     "com.unity.collab-proxy": "2.7.1",

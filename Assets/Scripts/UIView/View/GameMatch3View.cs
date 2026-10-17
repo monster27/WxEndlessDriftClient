@@ -17,7 +17,7 @@ using UnityEngine.UI;
 ///   - AA 资源只加载一次
 ///   - Text 更新带缓存
 /// </summary>
-public class GameMatch3View : MonoBehaviour
+public class GameMatch3View : BaseView
 {
     // ============================================================
     // 引用
@@ -48,7 +48,7 @@ public class GameMatch3View : MonoBehaviour
     [SerializeField] private Text resultScoreText;
     [SerializeField] private Text resultBestText;
     [SerializeField] private Button retryBtn;
-    [SerializeField] private Button closeBtn;
+    //[SerializeField] private Button closeBtn;
 
     [Header("===== Combo 提示 =====")]
     [SerializeField] private Text comboText;
@@ -170,8 +170,9 @@ public class GameMatch3View : MonoBehaviour
     // 生命周期
     // ============================================================
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         if (hintBtn != null) hintBtn.onClick.AddListener(OnHintBtnClick);
         if (refreshBtn != null) refreshBtn.onClick.AddListener(OnRefreshBtnClick);
         if (timeAddBtn != null) timeAddBtn.onClick.AddListener(OnTimeAddBtnClick);

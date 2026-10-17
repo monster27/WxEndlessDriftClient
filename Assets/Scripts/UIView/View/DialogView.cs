@@ -7,9 +7,8 @@ public enum DialogType
     Info
 }
 
-public class DialogView : MonoBehaviour
+public class DialogView : BaseView
 {
-    public Button maskBtn;
     public Button confirmBtn;
     public Button cancelBtn;
     public Text dialogText;
@@ -20,12 +19,9 @@ public class DialogView : MonoBehaviour
     private System.Action onConfirmCallback;
     private DialogType currentDialogType;
 
-    private void Start()
+    protected override void Start()
     {
-        if (maskBtn != null)
-        {
-            maskBtn.onClick.AddListener(OnCancelClick);
-        }
+        base.Start();
 
         if (confirmBtn != null)
         {

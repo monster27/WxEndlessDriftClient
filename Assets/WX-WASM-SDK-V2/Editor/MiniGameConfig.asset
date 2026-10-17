@@ -1,5 +1,5 @@
 %YAML 1.1
-%TAG !u! tag:yousandi.cn,2023:
+%TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15,15 +15,15 @@ MonoBehaviour:
   ProjectConf:
     projectName: "\u65E0\u5C3D\u6F02\u6D41"
     Appid: wxcb84fd0603979214
-    CDN: https://a.unity.cn/client_api/v1/buckets/ecd936fa-2414-4570-bcf4-1ae5caa7e824/release_by_badge/Dev/content
+    CDN: https://endlessdriftfish.top/content
     assetLoadType: 0
-    compressDataPackage: 0
+    compressDataPackage: 1
     VideoUrl: 
-    relativeDST: Build\wx\Test
-    DST: E:\TuanjieProject\WxEndlessDriftClient\Build\wx\Test
+    relativeDST: Build\wx\EndlessDrift
+    DST: E:\TuanjieProject\WxEndlessDriftClient\Build\wx\EndlessDrift
     StreamCDN: 
     bundleHashLength: 32
-    bundlePathIdentifier: StreamingAssets;AS;CUS/CustomAB;
+    bundlePathIdentifier: StreamingAssets;
     bundleExcludeExtensions: json;
     AssetsUrl: 
     MemorySize: 256
@@ -31,7 +31,7 @@ MonoBehaviour:
     preloadFiles: 
     Orientation: 0
     bgImageSrc: Assets/WX-WASM-SDK-V2/Runtime/wechat-default/images/background.jpg
-    dataFileSubPrefix: CUS
+    dataFileSubPrefix: 
     maxStorage: 200
     defaultReleaseSize: 31457280
     texturesHashLength: 8
@@ -54,12 +54,12 @@ MonoBehaviour:
     Il2CppOptimizeSize: 1
     profilingFuncs: 1
     Webgl2: 1
-    fbslim: 0
+    fbslim: 1
     DeleteStreamingAssets: 1
     ProfilingMemory: 0
-    CleanBuild: 0
+    CleanBuild: 1
     CustomNodePath: 
-    autoAdaptScreen: 1
+    autoAdaptScreen: 0
     showMonitorSuggestModal: 1
     enableProfileStats: 0
     enableRenderAnalysis: 0

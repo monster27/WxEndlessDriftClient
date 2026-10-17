@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using System.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceProviders;
 
 public class StartManager : MonoBehaviour
 {
@@ -18,19 +19,19 @@ public class StartManager : MonoBehaviour
     public Button loginButton;
     public Image testImage;          // 在 Inspector 中拖入一个 Image 组件
 
-    private AsyncOperationHandle<Font> _fontHandle;
-    private AsyncOperationHandle<Sprite> _imageHandle;  // ✅ 新增
+    // ✅ 场景 Key 与 Addressables 里的 Address 完全一致（完整路径）
+    private const string LoadingSceneKey = "Assets/Scenes/LoadingScene.unity";
+
+    private AsyncOperationHandle<Sprite> _imageHandle;
 
     private void OnDestroy()
     {
-        AssetManager.ReleaseAddressable(_fontHandle);
-        AssetManager.ReleaseAddressable(_imageHandle);  // ✅ 释放图片句柄
+        AssetManager.ReleaseAddressable(_imageHandle);
     }
 
     private void Start()
     {
-        LoadTestImage();  // ✅ 新增：加载测试图片
-        LoadFont700w();
+        LoadTestImage();
 
         UpdateModeButton();
 
@@ -197,33 +198,45 @@ public class StartManager : MonoBehaviour
         }
     }
 
+    // ========== 使用 Addressables 跳转 LoadingScene ==========
+
     private void LoadLoadingScene()
     {
-        Z_Logger.Log("[StartManager] 跳转到加载场景: LoadingScene");
-        SceneManager.LoadScene("LoadingScene");
+        Z_Logger.Log($"[StartManager] 使用 Addressables 跳转到加载场景: {LoadingSceneKey}");
+        StartCoroutine(LoadSceneByAddressables(LoadingSceneKey));
     }
 
-    public async void LoadFont700w()
+    private IEnumerator LoadSceneByAddressables(string sceneKey)
     {
-        // ✅ 使用完整路径
-        var (font, handle) = await AssetManager.LoadFromAddressablesAsync<Font>("Assets/Addressables/TTF/700w.ttf");
-        _fontHandle = handle;
-        if (font == null)
+        var handle = Addressables.LoadSceneAsync(sceneKey, LoadSceneMode.Single);
+
+        while (!handle.IsDone)
         {
-            Z_Logger.LogError("加载字体 700w 失败！请检查路径: Assets/Addressables/TTF/700w.ttf");
+            yield return null;
+        }
+
+        if (handle.Status == AsyncOperationStatus.Succeeded)
+        {
+            Z_Logger.Log($"[StartManager] ✅ 场景 '{sceneKey}' 加载成功");
         }
         else
         {
-            Z_Logger.Log("加载字体 江城园体700w 成功！");
+            string err = handle.OperationException != null
+                ? handle.OperationException.Message
+                : "未知错误";
+            Z_Logger.LogError($"[StartManager] ❌ 场景 '{sceneKey}' 加载失败: {err}");
         }
-    }/// <summary>
-     /// ✅ 加载测试图片，验证 Addressables 是否正常工作
-     /// </summary>
+    }
+
+    /// <summary>
+    /// ✅ 加载测试图片，验证 Addressables 是否正常工作
+    /// </summary>
     private async void LoadTestImage()
     {
         Z_Logger.Log("[StartManager] ⏳ 开始加载测试图片...");
 
-        // 使用默认图标
+        // ✅ 使用带文件夹前缀的 key，让 AssetManager 规范化后能得到
+        //    Assets/Addressables/UI/DefaultIcon.png
         var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>("UI/DefaultIcon");
         _imageHandle = handle;
 

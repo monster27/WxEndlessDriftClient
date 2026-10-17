@@ -4,10 +4,10 @@ using UnityEngine;
 using UnityEngine.UI;
 //using SharedModels;
 
-public class MallView : MonoBehaviour
+public class MallView : BaseView   // ✅ 继承 BaseView
 {
-    public Button maskBtn;
-    public Button closeBtn;
+    // ❌ 删除 maskBtn 和 closeBtn 的声明，BaseView 里已有
+
     public Text goldText;
     public Transform contentTransform;
     public GameObject mallItemPrefab;
@@ -19,17 +19,12 @@ public class MallView : MonoBehaviour
     private Dictionary<int, ItemData> itemDataMap;
     private bool isMallOpen = false;
 
-    void Start()
-    {
-        if (maskBtn != null)
-        {
-            maskBtn.onClick.AddListener(OnMaskClick);
-        }
+    // ========== 生命周期 ==========
 
-        if (closeBtn != null)
-        {
-            closeBtn.onClick.AddListener(CloseMall);
-        }
+    protected override void Start()
+    {
+        // ✅ BaseView.Start 会调用 BaseViewInit → BindBtns
+        base.Start();
 
         CommunicateEvent.Register<int>("Mall_ItemClicked", OnMallItemClicked);
 
@@ -43,17 +38,27 @@ public class MallView : MonoBehaviour
         }
     }
 
+    // ✅ 在 BindBtns 里绑定自己的按钮（本类没有额外按钮，留空即可）
+    protected override void BindBtns()
+    {
+        base.BindBtns();
+        // MallView 没有额外按钮需要绑定
+    }
+
+    // ✅ 重写关闭按钮处理：mask 和 close 都会调用这里
+    protected override void OnCloseButtonClick()
+    {
+        Z_Logger.Log("[MallView] 关闭按钮被点击");
+        CloseMall();
+    }
+
+    // ❌ 删除 OnMaskClick，BaseView 已接管
+
     private void OnDestroy()
     {
         CommunicateEvent.Unregister<int>("Mall_ItemClicked", OnMallItemClicked);
         CommunicateEvent.Unregister<Dictionary<string, object>>(CommunicateEvent.EVENT_GOLD_CHANGED, OnGoldChanged);
         CommunicateEvent.Unregister<Dictionary<int, MallItemData>>(CommunicateEvent.EVENT_MALL_DATA_CHANGED, OnMallDataChanged);
-    }
-
-    private void OnMaskClick()
-    {
-        Z_Logger.Log("[MallView] OnMaskClick - 点击遮罩关闭");
-        CloseMall();
     }
 
     private void OnMallItemClicked(int itemId)
@@ -85,10 +90,12 @@ public class MallView : MonoBehaviour
         }
     }
 
+    // ========== 打开 / 关闭 ==========
+
     public void OpenMall()
     {
         isMallOpen = true;
-        gameObject.SetActive(true);
+        ShowView();  // ✅ 用 BaseView 的 ShowView 代替 gameObject.SetActive(true)
         RefreshMallData();
         CommunicateEvent.Modify("Mall_Open");
     }
@@ -97,9 +104,11 @@ public class MallView : MonoBehaviour
     {
         Z_Logger.Log("[MallView] CloseMall - 关闭商城");
         isMallOpen = false;
-        gameObject.SetActive(false);
+        HideView();  // ✅ 用 BaseView 的 HideView 代替 gameObject.SetActive(false)
         CommunicateEvent.Modify("Mall_Close");
     }
+
+    // ========== 数据事件 ==========
 
     private void OnGoldChanged(Dictionary<string, object> data)
     {
@@ -164,6 +173,8 @@ public class MallView : MonoBehaviour
             Z_Logger.Log("[MallView] 商城未打开，数据已缓存，下次打开时生效");
         }
     }
+
+    // ========== 刷新 / 更新 ==========
 
     public void RefreshMallData()
     {

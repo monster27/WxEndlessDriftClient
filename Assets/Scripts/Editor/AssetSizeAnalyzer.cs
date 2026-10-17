@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.AddressableAssets;
+using UnityEditor.AddressableAssets.Settings;
+using UnityEditor.AddressableAssets.Settings.GroupSchemas;
 using UnityEngine;
 
 /// <summary>
@@ -1956,3 +1959,81 @@ public class AssetSizeAnalyzerWindow : EditorWindow
     private void ShowMsg(string msg) => EditorUtility.DisplayDialog("提示", msg, "确定");
 }
 #endif
+
+
+
+public static class AnalyzeLocalGroups
+{
+    [MenuItem("Tools/Addressables/Analyze Local Group Size")]
+    private static void Analyze()
+    {
+        var settings = AddressableAssetSettingsDefaultObject.Settings;
+        if (settings == null)
+        {
+            Debug.LogError("找不到 AddressableAssetSettings，请确认 Addressables 已初始化。");
+            return;
+        }
+
+        long totalSize = 0;
+        var details = new List<string>();
+
+        foreach (var group in settings.groups)
+        {
+            var schema = group.GetSchema<BundledAssetGroupSchema>();
+            if (schema == null) continue;
+
+            // 获取 BuildPath 解析后的实际字符串值
+            string buildPathValue = schema.BuildPath.GetValue(settings);
+            // 获取 LoadPath 解析后的实际字符串值
+            string loadPathValue = schema.LoadPath.GetValue(settings);
+
+            // 判断是否为本地组：BuildPath 解析结果中不包含 "ServerData" 且不包含 "Remote"
+            bool isLocal = !buildPathValue.Contains("ServerData") && !buildPathValue.Contains("Remote");
+
+            long groupSize = 0;
+            var assetSizes = new List<(string path, long size)>();
+
+            foreach (var entry in group.entries)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(entry.guid);
+                if (string.IsNullOrEmpty(assetPath)) continue;
+
+                // 跳过 Packages 内的资源，它们通常不是项目内的实际文件
+                if (assetPath.StartsWith("Packages/")) continue;
+
+                var fileInfo = new FileInfo(assetPath);
+                if (fileInfo.Exists)
+                {
+                    groupSize += fileInfo.Length;
+                    assetSizes.Add((assetPath, fileInfo.Length));
+                }
+            }
+
+            if (groupSize > 0)
+            {
+                totalSize += groupSize;
+                string tag = isLocal ? "[本地/首包]" : "[远程]";
+                details.Add($"{tag} 组: {group.Name} — 大小: {FormatSize(groupSize)}");
+
+                // 对组内资源按大小降序排序，列出最大的前 10 个
+                foreach (var (path, size) in assetSizes.OrderByDescending(x => x.size).Take(10))
+                {
+                    details.Add($"    {FormatSize(size),8}  {path}");
+                }
+            }
+        }
+
+        Debug.Log($"===== Local 组总大小: {FormatSize(totalSize)} =====");
+        foreach (var line in details)
+        {
+            Debug.Log(line);
+        }
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024f:F1} KB";
+        return $"{bytes / (1024f * 1024f):F2} MB";
+    }
+}
