@@ -15,27 +15,31 @@ MonoBehaviour:
   m_GroupName: Group_5
   m_Data:
     m_SerializedData: []
-  m_GUID: d45a553a2c4879a48899688c82a1cf32
+  m_GUID: c151ce81617ae61448510a80205bb842
   m_SerializeEntries:
   - m_GUID: 214cce0dc2a1b124e9e9b904f5dc5354
     m_Address: Assets/Addressables/GameScene/Scene/101/NPC.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5aeaf83390efa574a8a702fba66f1a9a
     m_Address: Assets/Addressables/GameScene/Scene/101/EnvBg.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5f67c237e3c382e49ad96d00f16a3694
     m_Address: Assets/Addressables/GameScene/Scene/101/EnvTreasureBox.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8d637ed26cf354a47a26463c88f15ca1
     m_Address: Assets/Addressables/GameScene/Scene/101/EnvElement.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}

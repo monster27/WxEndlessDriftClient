@@ -15,57 +15,67 @@ MonoBehaviour:
   m_GroupName: Group_8
   m_Data:
     m_SerializedData: []
-  m_GUID: f9609d3521887be42a5e8a1c5feab46b
+  m_GUID: 5953d7f42e7355045a25fb993aeb271e
   m_SerializeEntries:
   - m_GUID: 1aff6c7c70c613c44acf73a565906edb
     m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8402.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4d37d4f168b90244c88d7a5851a417d3
     m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8601.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5104a873ea39f40409cce04444083666
     m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8602.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6659de16f25ff5748b7094ee6fb515c7
     m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8202.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7fad74dc1ee16ab4f95f6b164bca0198
     m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8401.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8d756264ded379b4b80c54afa5bc2c7d
     m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8002.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bbc4a146630f166419302416708f095e
     m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8201.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e7239ee3465c64f4db3352327d9e701d
     m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8001.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: eef3448c3e9a5ea4f93d4d0f4f08b7cd
     m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8801.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f6c22f719daa8e647aa357ff9d79cd8b
     m_Address: Assets/Addressables/UI/Icon/FishTankDecIcons/8802.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}

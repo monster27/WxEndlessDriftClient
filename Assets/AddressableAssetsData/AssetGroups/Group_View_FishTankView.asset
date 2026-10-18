@@ -15,12 +15,13 @@ MonoBehaviour:
   m_GroupName: Group_View_FishTankView
   m_Data:
     m_SerializedData: []
-  m_GUID: 00ccd22a153be694ca1fdad5be76140b
+  m_GUID: a45cab2de6b95f9448863b8c2238c3d0
   m_SerializeEntries:
   - m_GUID: acd484de44e69a344b9796489e3c4ed7
     m_Address: Assets/Addressables/UI/View/FishTankView.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}

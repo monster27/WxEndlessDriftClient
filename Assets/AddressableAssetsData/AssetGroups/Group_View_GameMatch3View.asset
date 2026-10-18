@@ -15,12 +15,13 @@ MonoBehaviour:
   m_GroupName: Group_View_GameMatch3View
   m_Data:
     m_SerializedData: []
-  m_GUID: edb426db95c253f49bb995efbb96228c
+  m_GUID: 9529a07078a16b94591eda4ffbffad91
   m_SerializeEntries:
   - m_GUID: 38471789f2e4837478595f921d59b362
     m_Address: Assets/Addressables/UI/View/GameMatch3View.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}

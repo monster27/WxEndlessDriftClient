@@ -15,12 +15,13 @@ MonoBehaviour:
   m_GroupName: Group_View_FishBagView
   m_Data:
     m_SerializedData: []
-  m_GUID: 69a6284256630424bb92e84eda48ff27
+  m_GUID: 4dc02c7e3073e8a48a87c1f436da9557
   m_SerializeEntries:
   - m_GUID: f3b017087253df4418090af68accd070
     m_Address: Assets/Addressables/UI/View/FishBagView.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}

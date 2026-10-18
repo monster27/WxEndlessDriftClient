@@ -15,12 +15,13 @@ MonoBehaviour:
   m_GroupName: Group_View_AdvertisingView
   m_Data:
     m_SerializedData: []
-  m_GUID: 96cbc75499c331943bb99642d82d9451
+  m_GUID: 4d4b8e7412b8aa84daff8431f0bdd87c
   m_SerializeEntries:
   - m_GUID: c8c294e1aac04da469de2b2d73804e83
     m_Address: Assets/Addressables/UI/View/AdvertisingView.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}

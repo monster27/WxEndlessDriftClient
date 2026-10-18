@@ -21,13 +21,12 @@ namespace AAEditor
         public LabelOption label = LabelOption.Inherit;
     }
 
-    // ★ 新增：用于存储 Group 与 文件夹单元 的映射关系
     [Serializable]
     public class GroupMappingEntry
     {
         public string groupName;
-        public List<string> folderUnits = new List<string>(); // 记录的单元路径（如 Assets/Addressables/UI/Icon/BaitIcons/）
-        public long estimatedSize; // 预估大小，用于验证
+        public List<string> folderUnits = new List<string>();
+        public long estimatedSize;
     }
 
     [CreateAssetMenu(fileName = "AAutoPackConfig", menuName = "AA/AutoPackConfig")]
@@ -56,13 +55,23 @@ namespace AAEditor
         [Header("WebGL 输出")]
         public string webglOutput = "Build/WebGL";
 
+        [Header("Build 文件夹路径（相对项目根目录，或绝对路径）")]
+        public string buildFolderPath = "Build";
+
+        [Header("打包设置 (持久化)")]
+        public bool autoOpenBuildFolder = false;
+        public bool autoOpenWebGLFolder = false;
+
+        [Header("微信转换菜单路径 (如果转换未执行，请修改此处)")]
+        public string wechatConvertMenu = "微信小程序/转换小游戏/生成并转换";
+
         [Header("文件夹 Label 配置")]
         public List<FolderLabelEntry> folderLabels = new List<FolderLabelEntry>();
 
-        // ★ 新增：存储智能分组的结果
-        [Header("Group 映射配置 (按钮3生成)")]
+        [Header("Group 映射配置 (按钮4生成)")]
         public List<GroupMappingEntry> groupMappings = new List<GroupMappingEntry>();
 
+        // ... 以下原有 GetLabelForPath / GetOrCreate 等方法保持不变 ...
         public LabelOption GetLabelForPath(string assetPath)
         {
             if (string.IsNullOrEmpty(assetPath)) return LabelOption.Tier3_OnDemand;

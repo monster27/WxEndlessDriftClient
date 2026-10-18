@@ -15,12 +15,13 @@ MonoBehaviour:
   m_GroupName: Group_View_EquipmentView
   m_Data:
     m_SerializedData: []
-  m_GUID: efff37df3aa29774090b3f20e900e6bd
+  m_GUID: df58ece07c6f73648b8a348d31abc539
   m_SerializeEntries:
   - m_GUID: a978991b47acd1f419dc674b57fa44aa
     m_Address: Assets/Addressables/UI/View/EquipmentView.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}

@@ -15,12 +15,13 @@ MonoBehaviour:
   m_GroupName: Group_View_MallView
   m_Data:
     m_SerializedData: []
-  m_GUID: 1ca537011134471408a22f09e126903b
+  m_GUID: 4393b51083516f243a78c7492612bf2e
   m_SerializeEntries:
   - m_GUID: 0471016fea041b646bc816c90704f48e
     m_Address: Assets/Addressables/UI/View/MallView.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}

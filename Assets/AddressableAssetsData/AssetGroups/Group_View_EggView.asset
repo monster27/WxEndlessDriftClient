@@ -15,12 +15,13 @@ MonoBehaviour:
   m_GroupName: Group_View_EggView
   m_Data:
     m_SerializedData: []
-  m_GUID: 6ca8f35cae4323e4aa921d701fc74c4e
+  m_GUID: 6530f3f5bd4564c4bbf84addd43f54c6
   m_SerializeEntries:
   - m_GUID: c3c28647952461e459160844386808d9
     m_Address: Assets/Addressables/UI/View/EggView.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}

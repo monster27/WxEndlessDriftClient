@@ -15,12 +15,13 @@ MonoBehaviour:
   m_GroupName: Group_View_PetView
   m_Data:
     m_SerializedData: []
-  m_GUID: 72c43ac31cedf9d4e84b053a3dac7b1b
+  m_GUID: 0e018b9398bef8b4b9a1b6f88d36a00c
   m_SerializeEntries:
   - m_GUID: b13a50c75101b184486167245f7890b5
     m_Address: Assets/Addressables/UI/View/PetView.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}

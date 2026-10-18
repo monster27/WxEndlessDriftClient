@@ -15,52 +15,61 @@ MonoBehaviour:
   m_GroupName: Group_4
   m_Data:
     m_SerializedData: []
-  m_GUID: d363dddff29d6044ab985dedebeafe45
+  m_GUID: 7fa9e939b94d7f24e965f559fc656b2a
   m_SerializeEntries:
   - m_GUID: 005c941afd890d247bff05a22e59df43
     m_Address: Assets/Addressables/GameScene/Player/Ani/3401/Reel.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0780c771810879240833f1277d31624c
     m_Address: Assets/Addressables/GameScene/Player/Ani/3401/Idle_Stand.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1c0d1084a837f1549bc079cffaaf691b
     m_Address: Assets/Addressables/GameScene/Player/Ani/3401/Reel_Stand.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 623f4f88e4a29734d9e86a60a8af61de
     m_Address: Assets/Addressables/GameScene/Player/Ani/3402/Reel.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 745cb17a8ff36e9489c3d80551450adf
     m_Address: Assets/Addressables/GameScene/Player/Ani/3401/Lazy.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 86957f0bea0035a44b670ff76d2cf3b6
     m_Address: Assets/Addressables/GameScene/Player/Ani/3401/Idle.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b5da203e1e15f6e46ad7517642383e86
     m_Address: Assets/Addressables/GameScene/Player/Ani/3401/Lazy_Stand.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: eb7e99d2cd31b924eaf9fb4b3b3be77c
     m_Address: Assets/Addressables/GameScene/Player/Ani/3402/Lazy.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fdc44126fec091148ad1a7ae54ab2e81
     m_Address: Assets/Addressables/GameScene/Player/Ani/3402/Idle.png
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}

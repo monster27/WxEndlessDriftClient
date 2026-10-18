@@ -15,12 +15,13 @@ MonoBehaviour:
   m_GroupName: Group_View_BagView
   m_Data:
     m_SerializedData: []
-  m_GUID: 4d3eeaeb8916f154b83b7a8e62612541
+  m_GUID: 24c3e0097edd8cf428e014008e4e2f4c
   m_SerializeEntries:
   - m_GUID: b450e135f6b50664894bdea13c3c42f7
     m_Address: Assets/Addressables/UI/View/BagView.prefab
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}

@@ -25,8 +25,11 @@ MonoBehaviour:
   viewPerPrefab: 1
   viewFolderPath: Assets/Addressables/UI/View/
   remoteBuildPath: ServerData/[BuildTarget]
-  remoteLoadPath: https://endlessdriftfish.top/aa/WebGL/[BuildTarget]
+  remoteLoadPath: https://endlessdriftfish.top/aa/WebGL/
   webglOutput: Build/WebGL
+  autoOpenBuildFolder: 1
+  autoOpenWebGLFolder: 1
+  wechatConvertMenu: "\u5FAE\u4FE1\u5C0F\u7A0B\u5E8F/\u8F6C\u6362\u5C0F\u6E38\u620F/\u751F\u6210\u5E76\u8F6C\u6362"
   folderLabels:
   - folderPath: Assets/Addressables/GameScene/Player/Ani/3401/
     label: 0
