@@ -514,8 +514,9 @@ public partial class NetServerManager
 
     private void ProcessAutoSellFishBagUpdate()
     {
-        var fishBagView = GameUIManager.Instance?.fishBagView;
-        if (fishBagView != null && fishBagView.gameObject.activeSelf)
+        // ✅ 统一判据：只有 Showing 且可响应才刷新
+        var fishBagView = GameUIManager.Instance?.GetReadyView<FishBagView>("FishBagView");
+        if (fishBagView != null)
         {
             StartCoroutine(FetchAutoSellTimerAndUpdateFishBag());
         }
@@ -525,8 +526,8 @@ public partial class NetServerManager
     {
         yield return StartCoroutine(FetchFishInventoryFromServer());
         yield return null;
-        var fishBagView = GameUIManager.Instance?.fishBagView;
-        if (fishBagView != null && fishBagView.gameObject.activeSelf)
+        var fishBagView = GameUIManager.Instance?.GetReadyView<FishBagView>("FishBagView");
+        if (fishBagView != null)
         {
             fishBagView.RefreshItems();
         }
@@ -586,8 +587,10 @@ public partial class NetServerManager
             struggleStartTime = 0f;
             currentStruggleTime = 0f;
             NotifySyncInventoryFromServer();
-            if (GameUIManager.Instance?.fishBagView != null && GameUIManager.Instance.fishBagView.gameObject.activeSelf)
-                GameUIManager.Instance.fishBagView.RefreshItems();
+
+            // ✅ 统一判据
+            var fishBagView = GameUIManager.Instance?.GetReadyView<FishBagView>("FishBagView");
+            if (fishBagView != null) fishBagView.RefreshItems();
 
             // ✅ 收杆动画结束后，执行待处理的动画请求
             ExecutePendingAnimationRequest();
@@ -774,15 +777,21 @@ public partial class NetServerManager
     {
         if (PlayerDataManager.Instance == null) return;
         PlayerDataManager.Instance.SyncInventoryFromServer();
-        if (GameUIManager.Instance?.fishBagView != null && GameUIManager.Instance.fishBagView.gameObject.activeSelf)
+
+        // ✅ 统一判据
+        var fishBagView = GameUIManager.Instance?.GetReadyView<FishBagView>("FishBagView");
+        if (fishBagView != null)
             PlayerAniManager.Instance.StartCoroutine(DelayedRefreshFishBag());
+
         GameUIManager.Instance?.UpdateGoldDisplay(playerGold);
     }
 
     private IEnumerator DelayedRefreshFishBag()
     {
         yield return null;
-        GameUIManager.Instance?.fishBagView?.RefreshItems();
+        // ✅ 统一判据
+        var fishBagView = GameUIManager.Instance?.GetReadyView<FishBagView>("FishBagView");
+        if (fishBagView != null) fishBagView.RefreshItems();
     }
 
     // ========== 辅助数据类 ==========

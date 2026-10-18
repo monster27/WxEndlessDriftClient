@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Group_Atlas_5
+  m_EditorClassIdentifier: 
+  m_GroupName: Group_Atlas_5
+  m_Data:
+    m_SerializedData: []
+  m_GUID: d2929f2c2852b274fb4283352b68052b
+  m_SerializeEntries:
+  - m_GUID: 3ac0c8bd484d3a14783132fa7e5bdecb
+    m_Address: "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7C7B/\u9CAF\u9CC5/\u9CAF\u9CC5.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8b4c2b31c548dbe41ac0a000f3b59124
+    m_Address: Assets/Addressables/Atlases/Textures/0605/backpack/backpack.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ad4394673fd63824892ede0e00b03aef
+    m_Address: Assets/Addressables/Atlases/Addressables/UI/Icon/IndoorSkinIcons/IndoorSkinIcons.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 914a4f575da61684eac315bc09394fc0, type: 2}
+    - {fileID: 11400000, guid: abe1957935db7b648845c67e077594d3, type: 2}

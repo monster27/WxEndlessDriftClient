@@ -27,51 +27,46 @@ namespace AAEditor
         public string groupName;
         public List<string> folderUnits = new List<string>();
         public long estimatedSize;
+
+        // ★ 新增：持久化 Label 选择（0=无标签,1=Local,2=Tier1,3=Tier2,4=Tier3）
+        public int labelIndex = 4;
     }
 
     [CreateAssetMenu(fileName = "AAutoPackConfig", menuName = "AA/AutoPackConfig")]
     public class AAutoPackConfig : ScriptableObject
     {
-        [Header("阈值（KB）")]
-        public long minBundleKB = 500;
-        public long idealMaxKB = 4096;
-        public long hardMaxKB = 8192;
+        [Header("普通资源装箱阈值（KB，≈未压缩体积）")]
+        public long minBundleKB = 512;
+        public long idealMaxKB = 2048;
+        public long hardMaxKB = 4096;
 
-        [Header("扫描根")]
-        public List<string> scanRoots = new List<string> { "Assets/Addressables" };
-
-        [Header("打图集扫描")]
-        public List<string> atlasScanRoots = new List<string> { "Assets/Textures", "Assets/Addressables" };
-        public List<string> atlasExcludes = new List<string> { "Assets/Addressables/Atlases" };
-
-        [Header("View")]
-        public bool viewPerPrefab = true;
-        public string viewFolderPath = "Assets/Addressables/UI/View/";
+        [Header("图集装箱阈值（KB，未压缩体积）")]
+        public long atlasIdealMaxKB = 6144;
+        public long atlasHardMaxKB = 12288;
 
         [Header("远程路径")]
         public string remoteBuildPath = "ServerData/[BuildTarget]";
         public string remoteLoadPath = "https://endlessdriftfish.top/aa/WebGL/[BuildTarget]";
 
-        [Header("WebGL 输出")]
-        public string webglOutput = "Build/WebGL";
-
-        [Header("Build 文件夹路径（相对项目根目录，或绝对路径）")]
+        [Header("Build 文件夹路径")]
         public string buildFolderPath = "Build";
 
-        [Header("打包设置 (持久化)")]
+        [Header("打包设置")]
         public bool autoOpenBuildFolder = false;
-        public bool autoOpenWebGLFolder = false;
 
-        [Header("微信转换菜单路径 (如果转换未执行，请修改此处)")]
-        public string wechatConvertMenu = "微信小程序/转换小游戏/生成并转换";
+        [Header("独立打包列表 (强制单独成组，不参与合并)")]
+        [Tooltip("填入资源的 Asset 路径，例如 Assets/Addressables/Scenes/GameScene.unity")]
+        public List<string> standaloneAssets = new List<string>()
+        {
+            "Assets/Addressables/Scenes/GameScene.unity"
+        };
 
         [Header("文件夹 Label 配置")]
         public List<FolderLabelEntry> folderLabels = new List<FolderLabelEntry>();
 
-        [Header("Group 映射配置 (按钮4生成)")]
+        [Header("Group 映射配置")]
         public List<GroupMappingEntry> groupMappings = new List<GroupMappingEntry>();
 
-        // ... 以下原有 GetLabelForPath / GetOrCreate 等方法保持不变 ...
         public LabelOption GetLabelForPath(string assetPath)
         {
             if (string.IsNullOrEmpty(assetPath)) return LabelOption.Tier3_OnDemand;
@@ -88,14 +83,12 @@ namespace AAEditor
                 int slash = cur.LastIndexOf('/');
                 if (slash <= 0) break;
                 cur = cur.Substring(0, slash + 1);
-
                 foreach (var e in folderLabels)
                 {
                     if (e.label == LabelOption.Inherit) continue;
                     if (e.folderPath == cur) return e.label;
                 }
             }
-
             return LabelOption.Tier3_OnDemand;
         }
 
@@ -111,10 +104,7 @@ namespace AAEditor
             }
         }
 
-        public bool IsLocal(string assetPath)
-        {
-            return GetLabelForPath(assetPath) == LabelOption.Local;
-        }
+        public bool IsLocal(string assetPath) => GetLabelForPath(assetPath) == LabelOption.Local;
 
         public static AAutoPackConfig GetOrCreate()
         {

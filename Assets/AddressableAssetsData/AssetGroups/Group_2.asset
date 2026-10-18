@@ -15,148 +15,334 @@ MonoBehaviour:
   m_GroupName: Group_2
   m_Data:
     m_SerializedData: []
-  m_GUID: 0811dca4dd5b1664d8f80fb0e35628e6
+  m_GUID: cd90f9476f9320c4aa0196397ad0ee1a
   m_SerializeEntries:
-  - m_GUID: 02295a88bbddef54d9431ad46fb8d948
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5052.png
+  - m_GUID: 0019d1f324aa95d4287011f28701a043
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/trash.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 0c83017ef543b0a4b8f2679f0028dc8a
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5202.png
+  - m_GUID: 0077cac15d62e1d4baec59e6e4ef0e03
+    m_Address: Assets/Addressables/Scenes/LoadingScene.unity
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 177c2716d60eb7c4bbe28075257afe93
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5051.png
+  - m_GUID: 02c5bb281efcad7469a4dd6f72139160
+    m_Address: Assets/Addressables/JsonData/BaseFramework/timeSlots.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1807e686845ec0f479d9aedf5d445a9a
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5251.png
+  - m_GUID: 02e94f730af88f54aa2174a7ef51ec43
+    m_Address: Assets/Addressables/JsonData/BaseFramework/character_skills.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 21aec17e649da7e418bf78c1ba384bc9
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5501.png
+  - m_GUID: 0ef68169c11af184a8997eaaa77af0fe
+    m_Address: Assets/Addressables/JsonData/Ability/abilities.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 2e2e99af2ea9b2f43a4f467cad26eaa8
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5552.png
+  - m_GUID: 11814aabd02e61146a621c72a9c72223
+    m_Address: Assets/Addressables/Prefabs/Game_FishFlyInPrefab.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 3cc0f97337680584da4314878f4100d6
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5401.png
+  - m_GUID: 12077830e32991848a92e90f513433a0
+    m_Address: Assets/Addressables/Prefabs/UI_MallBtn.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 459b1c29e870dff41aa54b6b69f79e17
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5102.png
+  - m_GUID: 121bfacffbfeaa44f96e8e67390fd69b
+    m_Address: Assets/Addressables/JsonData/Game/Items/items.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4665eaf4c31fa0249a2b90eb0bcbb6b2
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5452.png
+  - m_GUID: 1344b734fbb87f14f916c8c0b9b95436
+    m_Address: Assets/Addressables/Prefabs/Game_FishTankDecOperaPrefab.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 61aec5e18ad78f74799714ebe731af1a
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5001.png
+  - m_GUID: 14cb7b365e4e3a649a88cc42fc7554d8
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/fishes.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 62291e18224c65745850a9470957eec9
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5252.png
+  - m_GUID: 198c707a682d20a4499ac761a43dd891
+    m_Address: Assets/Addressables/JsonData/BaseFramework/collection.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 64de3bce4f45fd546824ff0d7dc2f7e1
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5551.png
+  - m_GUID: 1bb10026f896bf144ba0b4bb0acdd4ea
+    m_Address: Assets/Addressables/JsonData/BaseFramework/fishSpecies.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 71ecf62adfd915043b5ed26b61cc22c9
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5502.png
+  - m_GUID: 1f9e7714a65a5f14590fee399b159ea4
+    m_Address: Assets/Addressables/JsonData/BaseFramework/starRatings.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 82b37daf84195694bb30303e90e033da
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5402.png
+  - m_GUID: 21b582ddfde1db44ba0f41c66c81682f
+    m_Address: Assets/Addressables/Prefabs/Game_FishTankFishPrefab.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 8d3667c4980f35c4ebe2bcc04cca44f7
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5351.png
+  - m_GUID: 259c0c9dafa9e954caeb3777f4d7fc68
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/outdoorSkin.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 8dd2694c933a48c4a8de3a77571957cf
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5151.png
+  - m_GUID: 2cee3d0a1073dfb469aa55e292b69583
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/itemCategories.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 953099fc48d76ca47ad6e4febd9ec51e
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5152.png
+  - m_GUID: 2fe7a20169277b64fb899e9ed563ce4f
+    m_Address: Assets/Addressables/JsonData/BaseFramework/fishTankConfig.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 9a2cb781dd5f9684b8db2fafeb29b009
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5352.png
+  - m_GUID: 318bae72b50cbf942aa9d732ced02fcb
+    m_Address: Assets/Addressables/Prefabs/UI_Mapbtn.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 9e3bccd3ad89d6742a3f18411f4636f5
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5302.png
+  - m_GUID: 33c4c456c0ef29f4696b9e645976f0fe
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/islandInfo.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: afcabe1c2b7e3d548b920e916f78751e
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5101.png
+  - m_GUID: 3573665658ce9e54fb3409aeb19d16a6
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/fishBagLevels.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b23745b952c3c0a46af11f76d34ee9d5
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5002.png
+  - m_GUID: 3cb3f3a04ef00504eb8466645696972b
+    m_Address: Assets/Addressables/Prefabs/Game_FishTankBaitPrefab.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: be0c45dc76fa00344bdc1795bb107fd5
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5201.png
+  - m_GUID: 41e55a9ae26996e4cb0cf07f89fa350e
+    m_Address: Assets/Addressables/JsonData/BaseFramework/rarities.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: cf08292d6191c904181c05e356b56155
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5301.png
+  - m_GUID: 45d27eb1e18ecb34f99e7d771af2f053
+    m_Address: Assets/Addressables/Prefabs/UI_FishTankFish.prefab
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: ecff2cb293ca71344891c3eb446c3f41
-    m_Address: Assets/Addressables/UI/Icon/IndoorSkinIcons/5451.png
+  - m_GUID: 4a2660b74c623e945a77c6eaaeb6fdd3
+    m_Address: Assets/Addressables/JsonData/BaseFramework/level_up_exp_config.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4b0b173319adb96469143a8d3b9ee4e2
+    m_Address: Assets/Addressables/Prefabs/UI_CollectionBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4e10ce6ffc9dad54599529a75018ecfe
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/nestBaits.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 52b18d63acf520c4cbe85b08ae92cc2b
+    m_Address: Assets/Addressables/Prefabs/UI_FishTankDec.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 574ced2a940aa8b44bba48fc0c350bb1
+    m_Address: Assets/Addressables/JsonData/BaseFramework/insects.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5913e6538f4f5aa438d917979273c816
+    m_Address: Assets/Addressables/JsonData/BaseFramework/weathers.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 65008181fe8f46240a47f05d95a9b9f0
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/petStorage.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6b6e5dca8f157a04fb6a5c8e14a1cb75
+    m_Address: Assets/Addressables/Prefabs/UI_FishTankDecBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6e324a3d2a757864b94f8999e0130064
+    m_Address: Assets/Addressables/JsonData/BaseFramework/eggs.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7058c74b77dc81b4a9771d4f0cb0970e
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/fishTankDec.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d223ce798bf90b48a17ab6ce815acb1
+    m_Address: Assets/Addressables/JsonData/Game/SceneTransData/islandsTransData.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8082ea2d25565904fbccc93b70ac15ff
+    m_Address: Assets/Addressables/Prefabs/UI_GameMatch3GridBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 868a20e8d4803ee4d865a964d754a728
+    m_Address: Assets/Addressables/JsonData/Ability/fishing_components.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8e5aff25e4156d745aedcd05e7a9f8b0
+    m_Address: Assets/Addressables/JsonData/BaseFramework/gameMatch3Config.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 92cfdfd6506d26d4a93c203a44b8fb4c
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/petFeedConfig.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a77328ad436544d42a39fc8f9efbe6b0
+    m_Address: Assets/Addressables/JsonData/BaseFramework/pets.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a844f126cd9e11b49b0ac4c021bc9dda
+    m_Address: Assets/Addressables/Prefabs/UI_FishTankDecOperator.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a992184ed764b6b438c447e877305c68
+    m_Address: Assets/Addressables/Prefabs/Game_FishTankDecPrefab.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ad41bc3f2bd116a42845258838cb1e0e
+    m_Address: Assets/Addressables/JsonData/Game/GameFramework/uiTexts.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: afc40b2749b42f847b1fdbb1b47ca85f
+    m_Address: Assets/Addressables/Prefabs/UI_BagBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b086a6e1f16215749aa05645775044f9
+    m_Address: Assets/Addressables/Prefabs/UI_EggBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b4cc6e638dff53041ab510533a3e0e43
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/baits.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b763a22ec2353c54cbe84e9dbff65af0
+    m_Address: Assets/Addressables/Prefabs/UI_Tip.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b8e5ef8d66e54f8409666a5c4ac8449c
+    m_Address: Assets/Addressables/JsonData/Game/Shop/shopItems.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b95ae6a8ff17825428dcbda5a5c41c0f
+    m_Address: Assets/Addressables/Prefabs/UI_PetFeedBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ba1742e6065f8434da0c4c0b63bc0f32
+    m_Address: Assets/Addressables/JsonData/Game/BagItem/indoorSkin.json
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ccd2ba2d47a0e504585f2e2f50af6216
+    m_Address: Assets/Addressables/Prefabs/UI_EquipFishSkillBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cebc5e3a544d2b84c907e38ba09f36e0
+    m_Address: Assets/Addressables/Prefabs/UI_FishTankBait.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d0cada410cc469740a4b5441a7b67895
+    m_Address: Assets/Addressables/Prefabs/UI_PetBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e820fc1d3ac1e0042893332394caaa94
+    m_Address: Assets/Addressables/Prefabs/UI_FishBagBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f3755ec8938f9ab4da4dc12c8c726f53
+    m_Address: Assets/Addressables/Prefabs/UI_FishTankStoreBtn.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb7a69601fcef644db676e7b41559bbe
+    m_Address: Assets/Addressables/JsonData/BaseFramework/characters.json
     m_ReadOnly: 0
     m_SerializedLabels:
     - tier3_ondemand

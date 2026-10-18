@@ -2,10 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 
-public class AdvertisingView : MonoBehaviour
+public class AdvertisingView : BaseView
 {
-    public Button maskBtn;
-    public Button closeBtn;
     public Text infoText;
     public Button actionBtn;
     public Text actionBtnText;
@@ -16,8 +14,9 @@ public class AdvertisingView : MonoBehaviour
     private Action<bool> onActionCallbackWithResult;
     private Action onCloseCallback;
 
-    void Start()
+    protected override void Start()
     {
+        base.Start();
         if (maskBtn != null)
         {
             maskBtn.onClick.AddListener(OnMaskClick);

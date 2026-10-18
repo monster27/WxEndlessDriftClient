@@ -992,27 +992,29 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     {
         Z_Logger.Log("[LoadDataManager] 接收到背包打开事件");
         if (!isDataLoaded) LoadAllData();
-        if (GameUIManager.Instance != null && GameUIManager.Instance.bagView != null)
-            GameUIManager.Instance.bagView.InitBag();
+        var bag = GameUIManager.Instance?.GetReadyView<BagView>("BagView");
+        if (bag != null) bag.InitBag();
     }
 
     public void HandleFishBagOpenEvent()
     {
         Z_Logger.Log("[LoadDataManager] 接收到鱼篓打开事件");
         if (!isDataLoaded) LoadAllData();
-        if (GameUIManager.Instance != null && GameUIManager.Instance.fishBagView != null)
-            GameUIManager.Instance.fishBagView.InitFishBag();
+        var fishBag = GameUIManager.Instance?.GetReadyView<FishBagView>("FishBagView");
+        if (fishBag != null) fishBag.InitFishBag();
     }
 
     public void HandleBagInitEvent()
     {
         Z_Logger.Log("[LoadDataManager] 接收到背包初始化事件");
         if (!isDataLoaded) LoadAllData();
-        if (GameUIManager.Instance != null && GameUIManager.Instance.bagView != null && PlayerDataManager.Instance != null)
+
+        var bag = GameUIManager.Instance?.GetReadyView<BagView>("BagView");
+        if (bag != null && PlayerDataManager.Instance != null)
         {
             var inventory = PlayerDataManager.Instance.GetInventory();
             var itemDataMap = GetItemDataMap();
-            GameUIManager.Instance.bagView.UpdateBagItems(inventory, itemDataMap);
+            bag.UpdateBagItems(inventory, itemDataMap);
         }
     }
 
@@ -1020,11 +1022,17 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     {
         Z_Logger.Log("[LoadDataManager] 接收到背包刷新事件");
         if (!isDataLoaded) LoadAllData();
-        if (GameUIManager.Instance != null && GameUIManager.Instance.bagView != null && PlayerDataManager.Instance != null)
+
+        var bag = GameUIManager.Instance?.GetReadyView<BagView>("BagView");
+        if (bag != null && PlayerDataManager.Instance != null)
         {
             var inventory = PlayerDataManager.Instance.GetInventory();
             var itemDataMap = GetItemDataMap();
-            GameUIManager.Instance.bagView.UpdateBagItems(inventory, itemDataMap);
+            bag.UpdateBagItems(inventory, itemDataMap);
+        }
+        else
+        {
+            Z_Logger.Log("[LoadDataManager] 背包未打开，跳过刷新（事件已收到，数据已缓存）");
         }
     }
 
@@ -1032,12 +1040,14 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     {
         Z_Logger.Log("[LoadDataManager] 接收到鱼篓初始化事件");
         if (!isDataLoaded) LoadAllData();
-        if (GameUIManager.Instance != null && GameUIManager.Instance.fishBagView != null && PlayerDataManager.Instance != null)
+
+        var fishBag = GameUIManager.Instance?.GetReadyView<FishBagView>("FishBagView");
+        if (fishBag != null && PlayerDataManager.Instance != null)
         {
             var fishInventory = PlayerDataManager.Instance.GetFishInventory();
             var itemDataMap = GetItemDataMap();
             var fishDetailData = PlayerDataManager.Instance.GetFishDetailData();
-            GameUIManager.Instance.fishBagView.UpdateFishItems(fishInventory, itemDataMap, fishDetailData);
+            fishBag.UpdateFishItems(fishInventory, itemDataMap, fishDetailData);
         }
     }
 
@@ -1045,16 +1055,18 @@ public class LoadDataManager : SingletonMono<LoadDataManager>
     {
         Z_Logger.Log("[LoadDataManager] 接收到鱼篓刷新事件");
         if (!isDataLoaded) LoadAllData();
-        if (GameUIManager.Instance != null && GameUIManager.Instance.fishBagView != null && PlayerDataManager.Instance != null)
+
+        var fishBag = GameUIManager.Instance?.GetReadyView<FishBagView>("FishBagView");
+        if (fishBag != null && PlayerDataManager.Instance != null)
         {
             var fishInventory = PlayerDataManager.Instance.GetFishInventory();
             var itemDataMap = GetItemDataMap();
             var fishDetailData = PlayerDataManager.Instance.GetFishDetailData();
-            GameUIManager.Instance.fishBagView.UpdateFishItems(fishInventory, itemDataMap, fishDetailData);
+            fishBag.UpdateFishItems(fishInventory, itemDataMap, fishDetailData);
         }
         else
         {
-            Z_Logger.LogWarning("[LoadDataManager] 鱼篓刷新失败: UIManager或PlayerDataManager未初始化");
+            Z_Logger.Log("[LoadDataManager] 鱼篓未打开，跳过刷新（事件已收到，数据已缓存）");
         }
     }
 

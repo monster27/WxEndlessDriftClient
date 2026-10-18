@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Group_Atlas_10
+  m_EditorClassIdentifier: 
+  m_GroupName: Group_Atlas_10
+  m_Data:
+    m_SerializedData: []
+  m_GUID: f23cab520a1744c45b0c779e06c8d43e
+  m_SerializeEntries:
+  - m_GUID: 06ca1b384a75ac34b898e8d6573bb13b
+    m_Address: "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u80CC\u5305\u754C\u9762/\u80CC\u5305\u754C\u9762.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2b2a54ee0480e6b48a59bcafa39ada2b
+    m_Address: Assets/Addressables/Atlases/Textures/0605/Homepage/Left icon/Left
+      icon.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4b66a6d9f74aa3841a1d9fda72b28cce
+    m_Address: Assets/Addressables/Atlases/Addressables/UI/Icon/InsectIcons/InsectIcons.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5ad870431b00061479ae1cbee9c11057
+    m_Address: "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u5927\u56FE\u663E\u793A/\u5927\u56FE\u663E\u793A.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bf1445e4273ebd840bb1459395c4c92b
+    m_Address: Assets/Addressables/Atlases/Textures/0605/Homepage/Fish icon/Fish
+      icon.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: f56d8afcb7f69a142905a5cb03915445, type: 2}
+    - {fileID: 11400000, guid: 41ad86bd39b81844eb46a0663eac80bb, type: 2}

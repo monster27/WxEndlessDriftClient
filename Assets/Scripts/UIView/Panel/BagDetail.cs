@@ -496,7 +496,7 @@ namespace View.Detail
 
             if (prefab != null)
             {
-                prefab.gameObject.SetActive(true);
+                prefab.gameObject.SetActive(true); 
                 itemPrefabs[itemId].Add(prefab);
             }
         }

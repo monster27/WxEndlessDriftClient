@@ -9677,6 +9677,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   contentTransform: {fileID: 7172497846874857494}
+  fishBagItemPrefab: {fileID: 7248877238520889670, guid: e820fc1d3ac1e0042893332394caaa94, type: 3}
 --- !u!1 &8719149524340905078
 GameObject:
   m_ObjectHideFlags: 0

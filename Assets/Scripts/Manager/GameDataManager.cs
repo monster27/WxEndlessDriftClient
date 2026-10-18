@@ -112,15 +112,16 @@ public class GameDataManager : SingletonMono<GameDataManager>
             PlayerDataManager.Instance.AddFishToInventory(itemId, 1);
         }
     }
-    
+
     private void UpdateFishBagUI()
     {
-        if (GameUIManager.Instance != null && GameUIManager.Instance.fishBagView != null)
+        var fishBagView = GameUIManager.Instance?.GetReadyView<FishBagView>("FishBagView");
+        if (fishBagView != null)
         {
-            GameUIManager.Instance.fishBagView.RefreshItems();
+            fishBagView.RefreshItems();
         }
     }
-    
+
     public int GetCurrentSceneId()
     {
         return EnvManager.Instance.currentSceneId;

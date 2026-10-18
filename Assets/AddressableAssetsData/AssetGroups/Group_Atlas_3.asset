@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Group_Atlas_3
+  m_EditorClassIdentifier: 
+  m_GroupName: Group_Atlas_3
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 22790ab7ae6982f498d4921ee5210e3f
+  m_SerializeEntries:
+  - m_GUID: 03893a6ea637aa7478ef5a3650d6fa7f
+    m_Address: Assets/Addressables/Atlases/Textures/0605/fish basket/fish basket.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 287ae61d2c908874eb1e3505dbe97b3b
+    m_Address: Assets/Addressables/Atlases/Addressables/UI/Icon/FishIcons/FishIcons.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7b7606ab15c350044b8a0121461c8a04
+    m_Address: "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/MainViewUI/\u4E0A\u9C7C\u9876\u90E8\u5C0F\u5F39\u7A97/\u4E0A\u9C7C\u9876\u90E8\u5C0F\u5F39\u7A97.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: ffbb624d45b623a42ba02459aea56e05, type: 2}
+    - {fileID: 11400000, guid: 75612a0bd8ccfc14791996af26cd6f46, type: 2}

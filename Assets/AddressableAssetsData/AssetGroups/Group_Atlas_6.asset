@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Group_Atlas_6
+  m_EditorClassIdentifier: 
+  m_GroupName: Group_Atlas_6
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 9a52c20c58bbe6247bb5e56303ec0248
+  m_SerializeEntries:
+  - m_GUID: 0c88f935217e355419b175fd20ec463e
+    m_Address: "Assets/Addressables/Atlases/Textures/0605/Character interface/\u9C7C\u7AFF\u4FE1\u606F\u9875\u9762/\u9C7C\u7AFF\u4FE1\u606F\u9875\u9762.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6c86bd2c3b84ad54faa6ad8756e90ec0
+    m_Address: "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7C7B/\u5F02\u8272\u95EA\u5149\u77F3\u6591/\u5F02\u8272\u95EA\u5149\u77F3\u6591.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 84d2b93f54577f0468fb7f0a0be120d2
+    m_Address: Assets/Addressables/Atlases/Addressables/UI/Icon/RarityBackground/RarityBackground.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c972b947699fc5341bfca027a28b3509
+    m_Address: Assets/Addressables/Atlases/Textures/PreUI/MainPlayScene/Demo/Demo.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: fa3229fd2ee11a14084349851f200df4, type: 2}
+    - {fileID: 11400000, guid: 965ae9cb8b0fb7b48a7e06a710d25607, type: 2}

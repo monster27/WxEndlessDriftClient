@@ -15,13 +15,13 @@ MonoBehaviour:
   m_GroupName: Group_0
   m_Data:
     m_SerializedData: []
-  m_GUID: 5371030dfb2407045b4712865fa76b38
+  m_GUID: 2e939f74e4067f340b600797d000a6ef
   m_SerializeEntries:
   - m_GUID: af64fc436ee7cf24298eb2fef752a0b6
     m_Address: Assets/Addressables/TTF/simhei.ttf
     m_ReadOnly: 0
     m_SerializedLabels:
-    - tier3_ondemand
+    - tier2_idle
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}

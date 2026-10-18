@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Group_Atlas_1
+  m_EditorClassIdentifier: 
+  m_GroupName: Group_Atlas_1
+  m_Data:
+    m_SerializedData: []
+  m_GUID: f2a6aeca25ee5074882111751f02b5ca
+  m_SerializeEntries:
+  - m_GUID: 4c7b77d24d934f34a904ad03aaa27143
+    m_Address: Assets/Addressables/Atlases/Textures/0712/0712.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 9950d6c285489a0458120c44aab7ec39, type: 2}
+    - {fileID: 11400000, guid: 73604d04fecec0c4db2469d40fcca14b, type: 2}

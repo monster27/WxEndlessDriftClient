@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Group_Atlas_11
+  m_EditorClassIdentifier: 
+  m_GroupName: Group_Atlas_11
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 244ada2b5b7541944882c9d8d13060a8
+  m_SerializeEntries:
+  - m_GUID: d65e8b547286ae646a853adeb99c36ce
+    m_Address: Assets/Addressables/Atlases/Textures/0605/Homepage/Homepage.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e183ccec80d1f3d439b42c847128498b
+    m_Address: Assets/Addressables/Atlases/Addressables/GameScene/Scene/101/101.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f5362ccc05cc4f94b986b29dd4e3dff4
+    m_Address: Assets/Addressables/Atlases/Addressables/UI/Icon/FishIcons/102/102.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 222f5a711142637449619b38f8bca112, type: 2}
+    - {fileID: 11400000, guid: 39d801e6596f040459e982669ba81628, type: 2}

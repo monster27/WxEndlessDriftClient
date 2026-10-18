@@ -285,19 +285,22 @@ public partial class PlayerDataManager : SingletonMono<PlayerDataManager>
             CommunicateEvent.Modify("FishBagDataUpdated");
             CommunicateEvent.Modify("Bag_RefreshItems");
 
-            if (GameUIManager.Instance?.fishBagView != null && GameUIManager.Instance.fishBagView.gameObject.activeSelf)
+            // ✅ 统一判据：只有 Showing 且可响应的实例才刷新
+            var fishBag = GameUIManager.Instance?.GetReadyView<FishBagView>("FishBagView");
+            if (fishBag != null)
             {
-                GameUIManager.Instance.fishBagView.RefreshItems();
+                fishBag.RefreshItems();
                 Z_Logger.Log("[PlayerDataManager] 已刷新鱼篓UI");
             }
 
-            if (GameUIManager.Instance?.bagView != null && GameUIManager.Instance.bagView.gameObject.activeSelf)
+            var bag = GameUIManager.Instance?.GetReadyView<BagView>("BagView");
+            if (bag != null)
             {
                 var bagInventory = GetInventory();
                 var itemDataMap = LoadDataManager.Instance?.GetItemDataMap();
                 if (bagInventory != null && itemDataMap != null)
                 {
-                    GameUIManager.Instance.bagView.UpdateBagItems(bagInventory, itemDataMap);
+                    bag.UpdateBagItems(bagInventory, itemDataMap);
                     Z_Logger.Log("[PlayerDataManager] 已刷新背包UI");
                 }
             }
@@ -313,11 +316,6 @@ public partial class PlayerDataManager : SingletonMono<PlayerDataManager>
 
         Z_Logger.Log("[PlayerDataManager] ===== 背包数据同步完成 =====");
     }
-
-    /// <summary>
-    /// 用服务器返回的背包数据直接覆盖本地数据（事件驱动更新，避免额外网络请求）
-    /// </summary>
-    // PlayerDataManager.cs - 修改 UpdateInventoryFromServer 方法
 
     /// <summary>
     /// 用服务器返回的背包数据直接覆盖本地数据（事件驱动更新，避免额外网络请求）
@@ -343,13 +341,14 @@ public partial class PlayerDataManager : SingletonMono<PlayerDataManager>
         // ✅ 再触发装备刷新事件（确保所有装备UI都能刷新）
         CommunicateEvent.Modify("Equipment_Refresh");
 
-        // 更新背包UI
-        if (GameUIManager.Instance?.bagView != null && GameUIManager.Instance.bagView.gameObject.activeSelf)
+        // ✅ 更新背包UI（统一判据）
+        var bag = GameUIManager.Instance?.GetReadyView<BagView>("BagView");
+        if (bag != null)
         {
             var itemDataMap = LoadDataManager.Instance?.GetItemDataMap();
             if (itemDataMap != null)
             {
-                GameUIManager.Instance.bagView.UpdateBagItems(playerInventory, itemDataMap);
+                bag.UpdateBagItems(playerInventory, itemDataMap);
                 Z_Logger.Log("[PlayerDataManager] 已刷新背包UI");
             }
         }
@@ -367,11 +366,6 @@ public partial class PlayerDataManager : SingletonMono<PlayerDataManager>
                 result.AddRange(kvp.Value);
             }
         }
-
-        //foreach (var kvp in _fishBagData)
-        //{
-        //    result.Add(kvp.Value);
-        //}
 
         // ✅ 鱼缸数据（来自 _fishTankData，包含正确的 location 和 tankId）
         foreach (var kvp in _fishTankData)
@@ -587,10 +581,6 @@ public partial class PlayerDataManager : SingletonMono<PlayerDataManager>
         return fishDetailData != null ? new Dictionary<int, List<FishDetailData>>(fishDetailData) : new Dictionary<int, List<FishDetailData>>();
     }
 
-    //public void UpdateFishDetailData(Dictionary<int, List<FishDetailData>> newDetailData)
-    //{
-    //    fishDetailData = newDetailData ?? new Dictionary<int, List<FishDetailData>>();
-    //}
     public void UpdateFishDetailData(Dictionary<int, List<FishDetailData>> newDetailData)
     {
         fishDetailData = newDetailData ?? new Dictionary<int, List<FishDetailData>>();
@@ -722,17 +712,12 @@ public partial class PlayerDataManager : SingletonMono<PlayerDataManager>
 
     public void RefreshUI()
     {
-        if (GameUIManager.Instance != null)
-        {
-            if (GameUIManager.Instance.bagView != null)
-            {
-                GameUIManager.Instance.bagView.RefreshItems();
-            }
-            if (GameUIManager.Instance.fishBagView != null)
-            {
-                GameUIManager.Instance.fishBagView.RefreshItems();
-            }
-        }
+        // ✅ 统一判据，替换 != null
+        var bag = GameUIManager.Instance?.GetReadyView<BagView>("BagView");
+        if (bag != null) bag.RefreshItems();
+
+        var fishBag = GameUIManager.Instance?.GetReadyView<FishBagView>("FishBagView");
+        if (fishBag != null) fishBag.RefreshItems();
     }
 
     public int FishBagCapacity => fishBagCapacity;
@@ -751,25 +736,6 @@ public partial class PlayerDataManager : SingletonMono<PlayerDataManager>
         }
         return total;
     }
-    //public int GetTotalFishCount()
-    //{
-    //    int total = 0;
-    //    if (fishDetailData != null && fishDetailData.Count > 0)
-    //    {
-    //        foreach (var kvp in fishDetailData)
-    //        {
-    //            total += kvp.Value.Count;
-    //        }
-    //    }
-    //    else if (fishInventory != null)
-    //    {
-    //        foreach (var kvp in fishInventory)
-    //        {
-    //            total += kvp.Value;
-    //        }
-    //    }
-    //    return total;
-    //}
 
     public bool IsFishBagFull()
     {

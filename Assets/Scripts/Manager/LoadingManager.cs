@@ -232,7 +232,7 @@ public class LoadingManager : MonoBehaviour
         while (!handle.IsDone)
         {
             UpdateProgress(handle.PercentComplete);
-            Z_Logger.Log($"[LoadingManager]   加载进度: {handle.PercentComplete * 100:F1}%");
+            //Z_Logger.Log($"[LoadingManager]   加载进度: {handle.PercentComplete * 100:F1}%");
             yield return null;
 
             if (Time.time - startTime > timeout)

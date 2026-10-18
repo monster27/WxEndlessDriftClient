@@ -10,7 +10,7 @@ namespace View.Detail
     public class FishDetail : MonoBehaviour
     {
         public Transform contentTransform;
-        private GameObject fishBagItemPrefab;
+        public GameObject fishBagItemPrefab;
 
         private Dictionary<int, List<UI_FishBagPrefab>> fishPrefabs = new Dictionary<int, List<UI_FishBagPrefab>>();
 

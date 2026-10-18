@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Group_Atlas_12
+  m_EditorClassIdentifier: 
+  m_GroupName: Group_Atlas_12
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 668334ecf3dc6814d8da6db6349b17f6
+  m_SerializeEntries:
+  - m_GUID: 0513a2a633c33524d972ae08262dcaa9
+    m_Address: Assets/Addressables/Atlases/Textures/0712/fish basket/fish basket.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4510849be57d58c4bb10c4e5978c8e85
+    m_Address: Assets/Addressables/Atlases/Textures/0605/fish tank/fish tank.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 915243d331052264e8c67422d603d4d9
+    m_Address: Assets/Addressables/Atlases/Addressables/UI/Icon/StarRating/StarRating.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 99d32f865e3d8494f8e8f868d41913c4
+    m_Address: Assets/Addressables/Atlases/Textures/UI/main/main.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a63a6447ea75e5344a0695c025122112
+    m_Address: "Assets/Addressables/Atlases/Textures/426\u6E38\u620F\u5207\u56FE\u5BFC\u51FA/\u9C7C\u7BD3\u754C\u9762/\u9C7C\u7BD3\u754C\u9762.spriteatlas"
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - tier3_ondemand
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 99800aeac738b564dab1351c9efeb15f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 6d4d46d0c50abf34487675e883c4d6ba, type: 2}
+    - {fileID: 11400000, guid: 2e01921802cdc044898ec24c499a0cde, type: 2}

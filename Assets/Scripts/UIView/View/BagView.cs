@@ -40,8 +40,44 @@ public class BagView : BaseView
 
     private Dictionary<int, CategoryConfig> categoryIdToConfig = new Dictionary<int, CategoryConfig>();
 
+    // ============================================================
+    // [Check] 诊断日志辅助（只读，不影响任何逻辑）
+    // ============================================================
+    private string DumpState()
+    {
+        return $"iid={GetInstanceID()}, " +
+               $"activeSelf={gameObject.activeSelf}, " +
+               $"activeInHierarchy={gameObject.activeInHierarchy}, " +
+               $"scene='{gameObject.scene.name}', " +
+               $"sceneValid={gameObject.scene.IsValid()}, " +
+               $"t={Time.time:F3}";
+    }
+
+    private string GetHierarchyPath(Transform t)
+    {
+        if (t == null) return "null";
+        var sb = new System.Text.StringBuilder(t.name);
+        var cur = t.parent;
+        while (cur != null)
+        {
+            sb.Insert(0, cur.name + "/");
+            cur = cur.parent;
+        }
+        return sb.ToString();
+    }
+
+    // ============================================================
+    // 初始化
+    // ============================================================
     public override void BaseViewInit()
     {
+        // ✅ 关键诊断：打印调用堆栈，用来定位"谁创建了这个 BagView 实例"
+        Z_Logger.Log($"[BagView] [Check] BaseViewInit 被调用\n" +
+                     $"  状态: {DumpState()}\n" +
+                     $"  isInitialized={isInitialized}\n" +
+                     $"  对象路径: {GetHierarchyPath(transform)}\n" +
+                     $"  调用堆栈:\n{System.Environment.StackTrace}");
+
         if (isInitialized) return;
         base.BaseViewInit();
         InitCategoryMappings();
@@ -50,22 +86,30 @@ public class BagView : BaseView
         InitDefaultSkinState();
         RegisterEvents();
         isInitialized = true;
+
+        Z_Logger.Log($"[BagView] [Check] BaseViewInit 完成, {DumpState()}");
     }
 
     private void RegisterEvents()
     {
         CommunicateEvent.Register(CommunicateEvent.EVENT_REFRESH_BAG, OnBagRefresh);
-        Z_Logger.Log("[BagView] 注册背包刷新事件监听");
+        Z_Logger.Log($"[BagView] [Check] 注册背包刷新事件监听, {DumpState()}");
     }
 
     private void OnDestroy()
     {
+        Z_Logger.Log($"[BagView] [Check] OnDestroy 触发, {DumpState()}, 路径={GetHierarchyPath(transform)}");
         CommunicateEvent.Unregister(CommunicateEvent.EVENT_REFRESH_BAG, OnBagRefresh);
+        Z_Logger.Log($"[BagView] [Check] OnDestroy 解除监听完成, {DumpState()}");
     }
 
+    // ============================================================
+    // 事件回调
+    // ============================================================
     private void OnBagRefresh()
     {
-        Z_Logger.Log("[BagView] 收到背包刷新事件，调用 RefreshItems");
+        Z_Logger.Log($"[BagView] [Check] OnBagRefresh 收到刷新事件, {DumpState()}, 路径={GetHierarchyPath(transform)}");
+
         // ✅ 保险：确保刷新前 SkinManager 已同步最新皮肤数据
         if (SkinManager.Instance != null)
         {
@@ -96,6 +140,7 @@ public class BagView : BaseView
                 categoryIdToConfig[config.categoryId] = config;
             }
         }
+        Z_Logger.Log($"[BagView] [Check] InitCategoryMappings 完成, 分类数={categoryIdToConfig.Count}, {DumpState()}");
     }
 
     private void InitToggleListeners()
@@ -113,6 +158,7 @@ public class BagView : BaseView
                 });
             }
         }
+        Z_Logger.Log($"[BagView] [Check] InitToggleListeners 完成, {DumpState()}");
     }
 
     private void InitSkinToggleListeners()
@@ -138,6 +184,7 @@ public class BagView : BaseView
                 }
             });
         }
+        Z_Logger.Log($"[BagView] [Check] InitSkinToggleListeners 完成, {DumpState()}");
     }
 
     private void ShowIndoorSkin()
@@ -150,7 +197,7 @@ public class BagView : BaseView
         {
             outdoorSkinObj.SetActive(false);
         }
-        Z_Logger.Log("[BagView] 切换到室内皮肤");
+        Z_Logger.Log($"[BagView] [Check] 切换到室内皮肤, {DumpState()}");
     }
 
     private void ShowOutdoorSkin()
@@ -163,11 +210,13 @@ public class BagView : BaseView
         {
             indoorSkinObj.SetActive(false);
         }
-        Z_Logger.Log("[BagView] 切换到室外皮肤");
+        Z_Logger.Log($"[BagView] [Check] 切换到室外皮肤, {DumpState()}");
     }
 
     private void OnCategoryToggle(CategoryConfig config)
     {
+        Z_Logger.Log($"[BagView] [Check] OnCategoryToggle 开始, categoryId={config?.categoryId}, {DumpState()}");
+
         foreach (CategoryConfig cfg in categoryConfigs)
         {
             if (cfg != null)
@@ -207,19 +256,26 @@ public class BagView : BaseView
                 var itemDataMap = LoadDataManager.Instance.GetItemDataMap();
                 if (inventory != null && itemDataMap != null)
                 {
+                    Z_Logger.Log($"[BagView] [Check] OnCategoryToggle 即将刷新分类详情, categoryId={config.categoryId}, {DumpState()}");
                     UpdateSingleCategoryDetails(config, inventory, itemDataMap);
                 }
             }
         }
+
+        Z_Logger.Log($"[BagView] [Check] OnCategoryToggle 完成, categoryId={config?.categoryId}, {DumpState()}");
     }
 
+    // ============================================================
+    // 对外接口
+    // ============================================================
     public void OpenBag()
     {
-        Z_Logger.Log("[BagView] OpenBag - 打开背包");
+        Z_Logger.Log($"[BagView] [Check] OpenBag 开始, {DumpState()}, 路径={GetHierarchyPath(transform)}");
 
         // ✅ 确保初始化已完成（首次打开时 Start() 可能还未执行，导致 RegisterEvents 未调用）
         if (!isInitialized)
         {
+            Z_Logger.Log($"[BagView] [Check] OpenBag 检测到 isInitialized=False，调用 BaseViewInit, {DumpState()}");
             BaseViewInit();
         }
 
@@ -230,12 +286,15 @@ public class BagView : BaseView
             SkinManager.Instance.EnsureSkinsSynced();
         }
 
+        Z_Logger.Log($"[BagView] [Check] OpenBag 即将 SetActive(true), {DumpState()}");
         gameObject.SetActive(true);
+        Z_Logger.Log($"[BagView] [Check] OpenBag SetActive(true) 完成, {DumpState()}");
 
         // ✅ 优化：只更新当前可见分类，避免全量刷新所有分类导致卡顿
         RefreshVisibleCategory();
 
         SendEvent();
+        Z_Logger.Log($"[BagView] [Check] OpenBag 完成, {DumpState()}");
     }
 
     /// <summary>
@@ -243,7 +302,7 @@ public class BagView : BaseView
     /// </summary>
     private void RefreshVisibleCategory()
     {
-        Z_Logger.Log("[BagView] RefreshVisibleCategory - 只刷新可见分类");
+        Z_Logger.Log($"[BagView] [Check] RefreshVisibleCategory 开始, {DumpState()}");
 
         if (PlayerDataManager.Instance != null && LoadDataManager.Instance != null)
         {
@@ -257,34 +316,38 @@ public class BagView : BaseView
                 // ✅ 确认装备缓存已就绪
                 if (NetServerManager.Instance != null)
                 {
-                    Z_Logger.Log($"[BagView] RefreshVisibleCategory - 物品定义数: {itemDataMap.Count}, 背包物品数: {inventory.Count}, 装备缓存就绪: true");
+                    Z_Logger.Log($"[BagView] [Check] RefreshVisibleCategory 数据就绪, 物品定义数={itemDataMap.Count}, 背包物品数={inventory.Count}, {DumpState()}");
                 }
 
                 // 只更新当前选中的分类
                 CategoryConfig currentCategory = GetCurrentCategory();
                 if (currentCategory != null)
                 {
+                    Z_Logger.Log($"[BagView] [Check] RefreshVisibleCategory 当前分类 categoryId={currentCategory.categoryId}, {DumpState()}");
                     UpdateSingleCategoryDetails(currentCategory, inventory, itemDataMap);
                 }
                 else
                 {
                     // 没有选中的分类，点击第一个有效分类
+                    Z_Logger.Log($"[BagView] [Check] RefreshVisibleCategory 无选中分类，ClickFirstValidCategory, {DumpState()}");
                     ClickFirstValidCategory();
                     currentCategory = GetCurrentCategory();
                     if (currentCategory != null)
                     {
+                        Z_Logger.Log($"[BagView] [Check] RefreshVisibleCategory 切换后 categoryId={currentCategory.categoryId}, {DumpState()}");
                         UpdateSingleCategoryDetails(currentCategory, inventory, itemDataMap);
                     }
                 }
 
                 // 通知其他模块（EquipPlayerView 等）
                 CommunicateEvent.Modify("Bag_RefreshItems");
+                Z_Logger.Log($"[BagView] [Check] RefreshVisibleCategory 完成（正常路径）, {DumpState()}");
                 return;
             }
         }
 
         // 降级：数据管理器未就绪
-        Z_Logger.LogWarning("[BagView] RefreshVisibleCategory - 数据管理器未就绪，降级为事件刷新");
+        Z_Logger.LogWarning($"[BagView] [Check] RefreshVisibleCategory 数据管理器未就绪，降级为事件刷新, {DumpState()}");
         CommunicateEvent.Modify("Bag_RefreshItems");
     }
 
@@ -295,38 +358,65 @@ public class BagView : BaseView
     {
         if (config == null) return;
 
+        Z_Logger.Log($"[BagView] [Check] UpdateSingleCategoryDetails 开始, categoryId={config.categoryId}, 小分类数={config.subCategoryConfigs?.Count ?? 0}, {DumpState()}");
+
         foreach (SubCategoryConfig subCfg in config.subCategoryConfigs)
         {
             if (subCfg != null && subCfg.bagDetail != null)
             {
+                Z_Logger.Log($"[BagView] [Check] UpdateSingleCategoryDetails -> BagDetail.UpdateItemsBySingleCategory, " +
+                             $"subCategoryId={subCfg.subCategoryId}, " +
+                             $"bagDetailPath={GetHierarchyPath(subCfg.bagDetail.transform)}, " +
+                             $"bagDetailActiveInHierarchy={subCfg.bagDetail.gameObject.activeInHierarchy}, " +
+                             $"bagDetailScene='{subCfg.bagDetail.gameObject.scene.name}', " +
+                             $"bagDetailSceneValid={subCfg.bagDetail.gameObject.scene.IsValid()}, " +
+                             $"{DumpState()}");
                 subCfg.bagDetail.UpdateItemsBySingleCategory(itemDataMap, inventory, subCfg.subCategoryId);
             }
         }
+
+        Z_Logger.Log($"[BagView] [Check] UpdateSingleCategoryDetails 完成, categoryId={config.categoryId}, {DumpState()}");
     }
 
     private void SendEvent()
     {
         CommunicateEvent.Modify("Bag_Open");
+        Z_Logger.Log($"[BagView] [Check] SendEvent: Bag_Open, {DumpState()}");
     }
 
     public void InitBag()
     {
+        Z_Logger.Log($"[BagView] [Check] InitBag 被调用, {DumpState()}");
         CommunicateEvent.Modify("Bag_Init");
     }
 
     public void UpdateBagItems(Dictionary<int, int> inventory, Dictionary<int, ItemData> itemDataMap)
     {
-        Z_Logger.Log($"[BagView] UpdateBagItems - 物品数: {inventory?.Count ?? 0}");
+        Z_Logger.Log($"[BagView] [Check] UpdateBagItems 开始, 物品数={inventory?.Count ?? 0}, {DumpState()}, 路径={GetHierarchyPath(transform)} , {gameObject.name}");
+
+        Z_Logger.Log($"[BagView] [Check] UpdateBagItems 被调用\n" +
+     $"  iid={GetInstanceID()}\n" +
+     $"  name='{name}'\n" +
+     $"  equals null? {gameObject == null}\n" +
+     $"  ReferenceEquals null? {ReferenceEquals(gameObject, null)}\n" +
+     $"  parent={(transform.parent == null ? "null" : transform.parent.name)}\n" +
+     $"  root={transform.root.name}\n" +
+     $"  scene='{gameObject.scene.name}'\n" +
+     $"  scene.IsValid={gameObject.scene.IsValid()}\n" +
+     $"  scene.isLoaded={gameObject.scene.isLoaded}\n" +
+     $"  activeSelf={gameObject.activeSelf}\n" +
+     $"  activeInHierarchy={gameObject.activeInHierarchy}\n" +
+     $"  childCount={transform.childCount}");
 
         if (inventory == null || inventory.Count == 0)
         {
-            Z_Logger.LogWarning("[BagView] UpdateBagItems - 数据为空");
+            Z_Logger.LogWarning($"[BagView] [Check] UpdateBagItems 数据为空, {DumpState()}");
             return;
         }
 
         foreach (var item in inventory)
         {
-            Z_Logger.Log($"[BagView] UpdateBagItems - 物品ID: {item.Key}, 数量: {item.Value}");
+            Z_Logger.Log($"[BagView] [Check] UpdateBagItems - 物品ID: {item.Key}, 数量: {item.Value}");
         }
 
         UpdateAllBagDetails(inventory, itemDataMap);
@@ -334,12 +424,16 @@ public class BagView : BaseView
         CategoryConfig currentCategory = GetCurrentCategory();
         if (currentCategory != null)
         {
+            Z_Logger.Log($"[BagView] [Check] UpdateBagItems -> OnCategoryToggle, categoryId={currentCategory.categoryId}, {DumpState()}");
             OnCategoryToggle(currentCategory);
         }
         else
         {
+            Z_Logger.Log($"[BagView] [Check] UpdateBagItems -> ClickFirstValidCategory, {DumpState()}");
             ClickFirstValidCategory();
         }
+
+        Z_Logger.Log($"[BagView] [Check] UpdateBagItems 完成, {DumpState()}");
     }
 
     private CategoryConfig GetCurrentCategory()
@@ -362,6 +456,7 @@ public class BagView : BaseView
             {
                 OnCategoryToggle(config);
                 config.categoryToggle.isOn = true;
+                Z_Logger.Log($"[BagView] [Check] ClickFirstValidCategory 选择 categoryId={config.categoryId}, {DumpState()}");
                 break;
             }
         }
@@ -369,6 +464,8 @@ public class BagView : BaseView
 
     private void UpdateAllBagDetails(Dictionary<int, int> inventory, Dictionary<int, ItemData> itemDataMap)
     {
+        Z_Logger.Log($"[BagView] [Check] UpdateAllBagDetails 开始, 分类数={categoryConfigs?.Count ?? 0}, {DumpState()}");
+
         foreach (CategoryConfig config in categoryConfigs)
         {
             if (config != null)
@@ -377,16 +474,25 @@ public class BagView : BaseView
                 {
                     if (subCfg != null && subCfg.bagDetail != null)
                     {
+                        Z_Logger.Log($"[BagView] [Check] UpdateAllBagDetails -> BagDetail.UpdateItemsBySingleCategory, " +
+                                     $"categoryId={config.categoryId}, subCategoryId={subCfg.subCategoryId}, " +
+                                     $"bagDetailPath={GetHierarchyPath(subCfg.bagDetail.transform)}, " +
+                                     $"bagDetailActiveInHierarchy={subCfg.bagDetail.gameObject.activeInHierarchy}, " +
+                                     $"bagDetailScene='{subCfg.bagDetail.gameObject.scene.name}', " +
+                                     $"bagDetailSceneValid={subCfg.bagDetail.gameObject.scene.IsValid()}, " +
+                                     $"{DumpState()}");
                         subCfg.bagDetail.UpdateItemsBySingleCategory(itemDataMap, inventory, subCfg.subCategoryId);
                     }
                 }
             }
         }
+
+        Z_Logger.Log($"[BagView] [Check] UpdateAllBagDetails 完成, {DumpState()}");
     }
 
     public void RefreshItems()
     {
-        Z_Logger.Log("[BagView] RefreshItems 被调用");
+        Z_Logger.Log($"[BagView] [Check] RefreshItems 开始, {DumpState()}, 路径={GetHierarchyPath(transform)}");
 
         // ✅ 优先直接获取数据并更新（不依赖事件链，修复首次打开时装备状态显示异常）
         if (PlayerDataManager.Instance != null && LoadDataManager.Instance != null)
@@ -396,22 +502,25 @@ public class BagView : BaseView
 
             if (inventory != null && itemDataMap != null)
             {
-                Z_Logger.Log($"[BagView] RefreshItems - 直接更新，物品数: {inventory.Count}");
+                Z_Logger.Log($"[BagView] [Check] RefreshItems 数据就绪，直接更新, 物品数={inventory.Count}, {DumpState()}");
                 UpdateBagItems(inventory, itemDataMap);
                 // 通知其他模块（EquipPlayerView 等）
                 CommunicateEvent.Modify("Bag_RefreshItems");
+                Z_Logger.Log($"[BagView] [Check] RefreshItems 完成（正常路径）, {DumpState()}");
                 return;
             }
         }
 
         // 降级：数据管理器未就绪，通过事件让 LoadDataManager 间接处理
-        Z_Logger.LogWarning("[BagView] RefreshItems - 数据管理器未就绪，降级为事件刷新");
+        Z_Logger.LogWarning($"[BagView] [Check] RefreshItems 数据管理器未就绪，降级为事件刷新, {DumpState()}");
         CommunicateEvent.Modify("Bag_RefreshItems");
     }
 
     public void UpdateBagWithInventory(Dictionary<int, int> inventory, Dictionary<int, ItemData> itemDataMap)
     {
+        Z_Logger.Log($"[BagView] [Check] UpdateBagWithInventory 开始, {DumpState()}");
         UpdateAllBagDetails(inventory, itemDataMap);
+        Z_Logger.Log($"[BagView] [Check] UpdateBagWithInventory 完成, {DumpState()}");
     }
 
     /// <summary>
