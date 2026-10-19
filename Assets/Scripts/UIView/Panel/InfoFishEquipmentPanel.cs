@@ -136,12 +136,20 @@ public class InfoFishEquipmentPanel : MonoBehaviour
         levelIconCache.Clear();
         for (int i = 1; i <= 10; i++)
         {
-            string path = $"UI/Icon/Equipment/Level/{i}";
-            Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
-            if (sprite != null)
+            int levelIndex = i; // 闭包捕获，避免所有回调都拿到 10
+            string path = $"Assets/Addressables/UI/Icon/Equipment/Level/{levelIndex}.png";
+
+            AssetManager.LoadFromAddressables<Sprite>(path, (sprite, handle) =>
             {
-                levelIconCache[i] = sprite;
-            }
+                if (sprite != null)
+                {
+                    levelIconCache[levelIndex] = sprite;
+                }
+                else
+                {
+                    Z_Logger.LogWarning($"[LoadLevelIcons] 加载失败: {path}");
+                }
+            });
         }
     }
 
@@ -203,29 +211,53 @@ public class InfoFishEquipmentPanel : MonoBehaviour
         if (currentEquipId <= 0) return;
 
         string iconPath = GetIconPath(currentType, currentEquipId);
-        Sprite icon = AssetManager.LoadFromResources<Sprite>(iconPath);
 
-        bool useLongIcon = currentType == FishingEquipType.Rod;
+        // 捕获本次请求的标识，回调回来时用来判断"装备是否已切"
+        int requestEquipId = currentEquipId;
+        FishingEquipType requestType = currentType;
+        bool useLongIcon = requestType == FishingEquipType.Rod;
 
+        // 先切显隐（不依赖 icon 是否回来）
         if (longIcon != null)
-        {
             longIcon.gameObject.SetActive(useLongIcon);
-            if (useLongIcon && icon != null)
-            {
-                longIcon.sprite = icon;
-                longIcon.color = Color.white;
-            }
+        if (shortIcon != null)
+            shortIcon.gameObject.SetActive(!useLongIcon);
+
+        if (string.IsNullOrEmpty(iconPath))
+        {
+            Z_Logger.LogWarning($"[UpdateIconDisplay] iconPath 为空: type={requestType}, id={requestEquipId}");
+            return;
         }
 
-        if (shortIcon != null)
+        AssetManager.LoadFromAddressables<Sprite>(iconPath, (icon, handle) =>
         {
-            shortIcon.gameObject.SetActive(!useLongIcon);
-            if (!useLongIcon && icon != null)
+            // ✅ 竞态保护：回调回来时，装备可能已经切走了，丢弃过期结果
+            if (requestEquipId != currentEquipId || requestType != currentType)
+                return;
+
+            if (icon == null)
             {
-                shortIcon.sprite = icon;
-                shortIcon.color = Color.white;
+                Z_Logger.LogWarning($"[UpdateIconDisplay] 加载失败: {iconPath}");
+                return;
             }
-        }
+
+            if (useLongIcon)
+            {
+                if (longIcon != null)
+                {
+                    longIcon.sprite = icon;
+                    longIcon.color = Color.white;
+                }
+            }
+            else
+            {
+                if (shortIcon != null)
+                {
+                    shortIcon.sprite = icon;
+                    shortIcon.color = Color.white;
+                }
+            }
+        });
     }
 
     private string GetIconPath(FishingEquipType type, int equipId)

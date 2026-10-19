@@ -255,45 +255,66 @@ public class MainGameView : BaseView
         Z_Logger.Log($"[MainGameView] 更新显示");
     }
 
+    private int _weatherRequestToken = 0;
+    private int _timeRequestToken = 0;
+
     private void UpdateWeatherIcon(int weatherId)
     {
         if (weatherIcon == null) return;
-        string path = $"UI/Icon/WeatherIcon/{weatherId}";
-        Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
-        if (sprite != null)
+
+        string path = $"Assets/Addressables/UI/Icon/WeatherIcon/{weatherId}.png";
+
+        int myToken = ++_weatherRequestToken;
+
+        AssetManager.LoadFromAddressables<Sprite>(path, (sprite, handle) =>
         {
-            weatherIcon.sprite = sprite;
-        }
-        else
-        {
-            Z_Logger.LogWarning($"[MainGameView] 未找到天气图标: {path}");
-        }
+            // ✅ 竞态保护：不是最新一次请求，丢弃
+            if (myToken != _weatherRequestToken) return;
+            if (weatherIcon == null) return;
+
+            if (sprite != null)
+            {
+                weatherIcon.sprite = sprite;
+            }
+            else
+            {
+                Z_Logger.LogWarning($"[MainGameView] 未找到天气图标: {path}");
+            }
+        });
     }
 
     private void UpdateTimeIcon(int timeSlotId)
     {
         if (timeIcon == null) return;
 
-        string path = $"UI/Icon/TimeIcon/{timeSlotId}";
-        Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
+        string path = $"Assets/Addressables/UI/Icon/TimeIcon/{timeSlotId}.png";
 
-        if (sprite != null)
+        int myToken = ++_timeRequestToken;
+
+        AssetManager.LoadFromAddressables<Sprite>(path, (sprite, handle) =>
         {
-            if (timeIcon.sprite != sprite)
+            // ✅ 竞态保护：不是最新一次请求，丢弃
+            if (myToken != _timeRequestToken) return;
+            if (timeIcon == null) return;
+
+            if (sprite != null)
             {
-                timeIcon.sprite = sprite;
-                TimeTextFadeOutText();
-                Z_Logger.Log($"[MainGameView] 时段图标已更新: {timeSlotId}");
+                if (timeIcon.sprite != sprite)
+                {
+                    timeIcon.sprite = sprite;
+                    TimeTextFadeOutText();
+                    Z_Logger.Log($"[MainGameView] 时段图标已更新: {timeSlotId}");
+                }
+                else
+                {
+                    Z_Logger.Log($"[MainGameView] 时段图标未变化: {timeSlotId}");
+                }
             }
             else
             {
-                Z_Logger.Log($"[MainGameView] 时段图标未变化: {timeSlotId}");
+                Z_Logger.LogWarning($"[MainGameView] 未找到时段图标: {path}");
             }
-        }
-        else
-        {
-            Z_Logger.LogWarning($"[MainGameView] 未找到时段图标: {path}");
-        }
+        });
     }
 
     private void OnMenuOpenBtnClick()

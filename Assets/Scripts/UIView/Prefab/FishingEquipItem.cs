@@ -42,17 +42,33 @@ public class FishingEquipItem : MonoBehaviour
         LoadLevelIcons();
     }
 
-    private void LoadLevelIcons()
+    private void LoadLevelIcons(System.Action onComplete = null)
     {
         levelIconCache.Clear();
-        for (int i = 1; i <= 10; i++)
+
+        const int total = 10;
+        int pending = total;
+        if (pending == 0) { onComplete?.Invoke(); return; }
+
+        for (int i = 1; i <= total; i++)
         {
-            string path = $"UI/Icon/Equipment/Level/{i}";
-            Sprite sprite = AssetManager.LoadFromResources<Sprite>(path);
-            if (sprite != null)
+            int levelIndex = i; // 闭包捕获，避免所有回调都拿到 11
+            string path = $"Assets/Addressables/UI/Icon/Equipment/Level/{levelIndex}.png";
+
+            AssetManager.LoadFromAddressables<Sprite>(path, (sprite, handle) =>
             {
-                levelIconCache[i] = sprite;
-            }
+                if (sprite != null)
+                {
+                    levelIconCache[levelIndex] = sprite;
+                }
+                else
+                {
+                    Z_Logger.LogWarning($"[LoadLevelIcons] 加载失败: {path}");
+                }
+
+                pending--;
+                if (pending == 0) onComplete?.Invoke();
+            });
         }
     }
 
