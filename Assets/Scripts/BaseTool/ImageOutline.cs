@@ -7,7 +7,7 @@ public class ImageOutline : MonoBehaviour
     private static readonly int OutlineColorID = Shader.PropertyToID("_OutlineColor");
     private static readonly int OutlineWidthID = Shader.PropertyToID("_OutlineWidth");
 
-    public Color outlineColor = new Color(249,241,229);
+    public Color outlineColor = new Color32(249, 241, 229, 255);
     [Range(0, 10)] public float outlineWidth = 2f;
 
     private Image _image;

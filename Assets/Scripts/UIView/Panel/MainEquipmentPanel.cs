@@ -102,7 +102,7 @@ public class MainEquipmentPanel : MonoBehaviour
     void OnEnable()
     {
         RegisterCharacterEvents();
-        
+
         // 主动请求一次人物数据，确保显示最新状态
         RefreshCharacterData();
     }
@@ -162,13 +162,13 @@ public class MainEquipmentPanel : MonoBehaviour
 
         if (characterSlider != null)
         {
-            characterSlider.value =  (float)currentExp/ (float)requiredExp;
+            characterSlider.value = requiredExp > 0 ? (float)currentExp / requiredExp : 0f;
         }
     }
 
     private void UpdateCharacterLevelDisplay()
     {
-        int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_CHARACTER_LEVEL, 0);
+        int level = RequestCharacterLevel();
         UpdateCharacterLevelDisplay(level);
     }
 
@@ -180,27 +180,35 @@ public class MainEquipmentPanel : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 主动刷新人物数据
-    /// </summary>
+    /// <summary>主动刷新人物数据</summary>
     private void RefreshCharacterData()
     {
-        // 请求人物等级
-        int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_CHARACTER_LEVEL, 0);
+        // ⚠️ 外部依赖：NetServerManager 未初始化时 Request 返回 default
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogWarning("[装备界面诊断] MainEquipmentPanel.RefreshCharacterData - ⚠️ NetServerManager 未初始化，人物数据可能为 0");
+            UpdateCharacterLevelDisplay(0);
+            UpdateCharacterExpDisplay(0, 0);
+            return;
+        }
+
+        int level = RequestCharacterLevel();
         UpdateCharacterLevelDisplay(level);
-        
-        // 请求人物经验数据
-        var charData = CommunicateEvent.Request<int, PlayerCharacterData>("CharacterServerManager_GetPlayerData", 0);
+
+        var charData = RequestPlayerData();
         if (charData != null)
         {
-            int requiredExp = CommunicateEvent.Request<int, int>("CharacterServerManager_GetExpToNextLevel", 0);
+            int requiredExp = RequestExpToNextLevel();
             UpdateCharacterExpDisplay(charData.currentExp, requiredExp);
-            
-            // 更新缓存
+
             cachedLevel = level;
             cachedCurrentExp = charData.currentExp;
             cachedRequiredExp = requiredExp;
             hasCachedData = true;
+        }
+        else
+        {
+            Z_Logger.LogWarning("[装备界面诊断] MainEquipmentPanel.RefreshCharacterData - ⚠️ 获取人物数据失败，等级/经验显示可能为 0");
         }
     }
 
@@ -211,9 +219,15 @@ public class MainEquipmentPanel : MonoBehaviour
 
     public void Init()
     {
+        // ⚠️ 外部依赖：LoadDataManager 未加载完时，GetComponentName 会返回"未知组件"
+        if (LoadDataManager.Instance == null || !LoadDataManager.Instance.isDataLoaded)
+        {
+            Z_Logger.LogWarning("[装备界面诊断] MainEquipmentPanel.Init - ⚠️ LoadDataManager 尚未加载完成，组件名称可能显示为'未知组件'");
+        }
         LoadAllIcons();
     }
 
+    // 问题3：加载完主动刷新
     private async void LoadAllIcons()
     {
         iconCache.Clear();
@@ -228,13 +242,12 @@ public class MainEquipmentPanel : MonoBehaviour
             {
                 string path = kvp.Value;
                 var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(path);
-                if (sprite != null)
-                {
-                    iconCache[kvp.Key] = sprite;
-                }
+                if (sprite != null) iconCache[kvp.Key] = sprite;
+                else Z_Logger.LogWarning($"[装备界面诊断] MainEquipmentPanel 图标加载失败: id={kvp.Key}, path={path}");
                 AssetManager.ReleaseAddressable(handle);
             }
         }
+        else Z_Logger.LogWarning("[装备界面诊断] MainEquipmentPanel - fishing_components 配置加载失败");
 
         // ✅ 从 Addressables 异步加载人物配置
         var characterConfig = await CharacterConfigListExtensions.LoadFromAddressablesAsync("JsonData/BaseFramework/characters");
@@ -245,10 +258,8 @@ public class MainEquipmentPanel : MonoBehaviour
             {
                 string path = $"UI/Icon/Equipment/Character/{id}";
                 var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(path);
-                if (sprite != null)
-                {
-                    iconCache[id] = sprite;
-                }
+                if (sprite != null) iconCache[id] = sprite;
+                else Z_Logger.LogWarning($"[装备界面诊断] MainEquipmentPanel 人物图标加载失败: id={id}, path={path}");
                 AssetManager.ReleaseAddressable(handle);
             }
         }
@@ -258,29 +269,26 @@ public class MainEquipmentPanel : MonoBehaviour
         {
             string path = $"UI/Icon/Equipment/Level/{i}";
             var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(path);
-            if (sprite != null)
-            {
-                levelIconCache[i] = sprite;
-            }
+            if (sprite != null) levelIconCache[i] = sprite;
+            else Z_Logger.LogWarning($"[装备界面诊断] MainEquipmentPanel 等级图标加载失败: level={i}, path={path}");
             AssetManager.ReleaseAddressable(handle);
         }
+
+        Z_Logger.Log($"[装备界面诊断] MainEquipmentPanel 图标加载完成: icon={iconCache.Count}, levelIcon={levelIconCache.Count}");
+
+        // 问题3：加载完补一次刷新，避免首次打开图标全空
+        if (this != null && gameObject.activeInHierarchy) UpdateDisplay();
     }
 
     private Sprite GetLevelIcon(int level)
     {
-        if (levelIconCache.TryGetValue(level, out Sprite sprite))
-        {
-            return sprite;
-        }
+        if (levelIconCache.TryGetValue(level, out Sprite sprite)) return sprite;
         return null;
     }
 
     private Sprite GetIcon(int id)
     {
-        if (iconCache.TryGetValue(id, out Sprite sprite))
-        {
-            return sprite;
-        }
+        if (iconCache.TryGetValue(id, out Sprite sprite)) return sprite;
         return null;
     }
 
@@ -297,12 +305,12 @@ public class MainEquipmentPanel : MonoBehaviour
 
     public void UpdateDisplay()
     {
-        int rodId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.FishingRod);
-        int lineId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.FishingLine);
-        int hookId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.FishingHook);
-        int skill1Id = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Skill1);
-        int skill2Id = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Skill2);
-        int characterId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Character);
+        int rodId = RequestEquipped(EquipmentSlotType.FishingRod);
+        int lineId = RequestEquipped(EquipmentSlotType.FishingLine);
+        int hookId = RequestEquipped(EquipmentSlotType.FishingHook);
+        int skill1Id = RequestEquipped(EquipmentSlotType.Skill1);
+        int skill2Id = RequestEquipped(EquipmentSlotType.Skill2);
+        int characterId = RequestEquipped(EquipmentSlotType.Character);
 
         UpdateFishingRodDisplay(rodId);
         UpdateFishingLineDisplay(lineId);
@@ -312,159 +320,166 @@ public class MainEquipmentPanel : MonoBehaviour
         UpdateCharacterDisplay(characterId);
     }
 
+    private int RequestEquipped(EquipmentSlotType slot)
+    {
+        // ⚠️ 外部依赖：NetServerManager 未注册时 Request 返回 0，装备状态全部显示"未装备"
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogWarning($"[装备界面诊断] ⚠️ 请求装备槽 {slot} 时 NetServerManager 未初始化，返回 0（显示为未装备）");
+            return 0;
+        }
+        return CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, slot);
+    }
+
+    private int RequestLevel(int id)
+    {
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogWarning($"[装备界面诊断] ⚠️ 请求等级时 NetServerManager 未初始化，id={id} 返回 1");
+            return 1;
+        }
+        return CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, id);
+    }
+
+    private string RequestName(int id)
+    {
+        var name = LoadDataManager.Instance?.GetComponentName(id);
+        if (string.IsNullOrEmpty(name) || name == "未知组件")
+        {
+            Z_Logger.LogWarning($"[装备界面诊断] ⚠️ GetComponentName({id}) 返回'未知组件'，LoadDataManager.isDataLoaded={LoadDataManager.Instance?.isDataLoaded}");
+            return $"未知({id})";
+        }
+        return name;
+    }
+
+    private int RequestCharacterLevel()
+    {
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized) return 0;
+        return CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_CHARACTER_LEVEL, 0);
+    }
+
+    private PlayerCharacterData RequestPlayerData()
+    {
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized) return null;
+        // ✅ 统一使用 CharacterManager_* 前缀（NetServerManager 里两套 key 都注册了，选一套避免混淆）
+        return CommunicateEvent.Request<int, PlayerCharacterData>("CharacterManager_GetPlayerData", 0);
+    }
+
+    private int RequestExpToNextLevel()
+    {
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized) return 0;
+        return CommunicateEvent.Request<int, int>("CharacterManager_GetExpToNextLevel", 0);
+    }
+
+    /// <summary>图标找不到时明确清空，避免残留旧 sprite</summary>
+    private void SetIconOrClear(Image img, int id)
+    {
+        if (img == null) return;
+        var sprite = GetIcon(id);
+        if (sprite != null)
+        {
+            img.sprite = sprite;
+            img.color = Color.white;
+        }
+        else
+        {
+            img.sprite = null;
+            img.color = new Color(1, 1, 1, 0);
+        }
+    }
+
+    private void SetLevelIconOrHide(Image img, int level)
+    {
+        if (img == null) return;
+        var levelIcon = GetLevelIcon(level);
+        if (levelIcon != null)
+        {
+            img.sprite = levelIcon;
+            img.color = Color.white;
+            img.gameObject.SetActive(true);
+        }
+        else
+        {
+            img.gameObject.SetActive(false);
+        }
+    }
+
     private void UpdateFishingRodDisplay(int rodId)
     {
         bool isEquipped = rodId > 0;
 
-        if (fishingRodEquippedObj != null)
-        {
-            fishingRodEquippedObj.SetActive(isEquipped);
-        }
-        if (fishingRodUnequippedObj != null)
-        {
-            fishingRodUnequippedObj.SetActive(!isEquipped);
-        }
+        if (fishingRodEquippedObj != null) fishingRodEquippedObj.SetActive(isEquipped);
+        if (fishingRodUnequippedObj != null) fishingRodUnequippedObj.SetActive(!isEquipped);
 
         if (rodId <= 0) return;
 
-        if (fishingRodIcon != null)
-        {
-            Sprite icon = GetIcon(rodId);
-            if (icon != null)
-            {
-                fishingRodIcon.sprite = icon;
-                fishingRodIcon.color = Color.white;
-            }
-        }
+        SetIconOrClear(fishingRodIcon, rodId);
 
         if (fishingRodName != null)
         {
-            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, rodId);
-            string name = LoadDataManager.Instance.GetComponentName(rodId);
-            fishingRodName.text = $"{name} Lv.{level}";
+            int level = RequestLevel(rodId);
+            fishingRodName.text = $"{RequestName(rodId)} Lv.{level}";
         }
 
-        if (fishingRodLevelIcon != null)
-        {
-            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, rodId);
-            Sprite levelIcon = GetLevelIcon(level);
-            if (levelIcon != null)
-            {
-                fishingRodLevelIcon.sprite = levelIcon;
-                fishingRodLevelIcon.color = Color.white;
-                fishingRodLevelIcon.gameObject.SetActive(true);
-            }
-            else
-            {
-                fishingRodLevelIcon.gameObject.SetActive(false);
-            }
-        }
+        SetLevelIconOrHide(fishingRodLevelIcon, RequestLevel(rodId));
     }
 
     private void UpdateFishingLineDisplay(int lineId)
     {
         bool isEquipped = lineId > 0;
 
-        if (fishingLineEquippedObj != null)
-        {
-            fishingLineEquippedObj.SetActive(isEquipped);
-        }
-        if (fishingLineUnequippedObj != null)
-        {
-            fishingLineUnequippedObj.SetActive(!isEquipped);
-        }
+        if (fishingLineEquippedObj != null) fishingLineEquippedObj.SetActive(isEquipped);
+        if (fishingLineUnequippedObj != null) fishingLineUnequippedObj.SetActive(!isEquipped);
 
         if (lineId <= 0) return;
 
-        if (fishingLineIcon != null)
-        {
-            Sprite icon = GetIcon(lineId);
-            if (icon != null)
-            {
-                fishingLineIcon.sprite = icon;
-                fishingLineIcon.color = Color.white;
-            }
-        }
+        SetIconOrClear(fishingLineIcon, lineId);
 
         if (fishingLineName != null)
         {
-            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, lineId);
-            string name = LoadDataManager.Instance.GetComponentName(lineId);
-            fishingLineName.text = $"{name} Lv.{level}";
+            int level = RequestLevel(lineId);
+            fishingLineName.text = $"{RequestName(lineId)} Lv.{level}";
         }
 
-        if (fishingLineLevelIcon != null)
-        {
-            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, lineId);
-            Sprite levelIcon = GetLevelIcon(level);
-            if (levelIcon != null)
-            {
-                fishingLineLevelIcon.sprite = levelIcon;
-                fishingLineLevelIcon.color = Color.white;
-                fishingLineLevelIcon.gameObject.SetActive(true);
-            }
-            else
-            {
-                fishingLineLevelIcon.gameObject.SetActive(false);
-            }
-        }
+        SetLevelIconOrHide(fishingLineLevelIcon, RequestLevel(lineId));
     }
 
     private void UpdateFishingHookDisplay(int hookId)
     {
         bool isEquipped = hookId > 0;
 
-        if (fishingHookEquippedObj != null)
-        {
-            fishingHookEquippedObj.SetActive(isEquipped);
-        }
-        if (fishingHookUnequippedObj != null)
-        {
-            fishingHookUnequippedObj.SetActive(!isEquipped);
-        }
+        if (fishingHookEquippedObj != null) fishingHookEquippedObj.SetActive(isEquipped);
+        if (fishingHookUnequippedObj != null) fishingHookUnequippedObj.SetActive(!isEquipped);
 
         if (hookId <= 0) return;
 
-        if (fishingHookIcon != null)
-        {
-            Sprite icon = GetIcon(hookId);
-            if (icon != null)
-            {
-                fishingHookIcon.sprite = icon;
-                fishingHookIcon.color = Color.white;
-            }
-        }
+        SetIconOrClear(fishingHookIcon, hookId);
 
         if (fishingHookName != null)
         {
-            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, hookId);
-            string name = LoadDataManager.Instance.GetComponentName(hookId);
-            fishingHookName.text = $"{name} Lv.{level}";
+            int level = RequestLevel(hookId);
+            fishingHookName.text = $"{RequestName(hookId)} Lv.{level}";
         }
 
-        if (fishingHookLevelIcon != null)
-        {
-            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, hookId);
-            Sprite levelIcon = GetLevelIcon(level);
-            if (levelIcon != null)
-            {
-                fishingHookLevelIcon.sprite = levelIcon;
-                fishingHookLevelIcon.color = Color.white;
-                fishingHookLevelIcon.gameObject.SetActive(true);
-            }
-            else
-            {
-                fishingHookLevelIcon.gameObject.SetActive(false);
-            }
-        }
+        SetLevelIconOrHide(fishingHookLevelIcon, RequestLevel(hookId));
     }
 
     private void UpdateSkill1Display(int skillId)
     {
+        // ⚠️ 外部依赖：NetServerManager 未初始化时 Request 返回 false
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogWarning("[装备界面诊断] ⚠️ 技能1判断时 NetServerManager 未初始化，显示为未解锁");
+            if (skill1LockedObj != null) skill1LockedObj.SetActive(true);
+            if (skill1EquippedObj != null) skill1EquippedObj.SetActive(false);
+            if (skill1UnequippedObj != null) skill1UnequippedObj.SetActive(false);
+            if (skill1Name != null) skill1Name.text = "未知";
+            return;
+        }
+
         bool isSlotUnlocked = CommunicateEvent.Request<int, bool>("EVENT_IS_SKILL_SLOT_UNLOCKED", 1);
 
-        if (skill1LockedObj != null)
-            skill1LockedObj.SetActive(!isSlotUnlocked);
+        if (skill1LockedObj != null) skill1LockedObj.SetActive(!isSlotUnlocked);
 
         if (!isSlotUnlocked)
         {
@@ -476,64 +491,44 @@ public class MainEquipmentPanel : MonoBehaviour
 
         bool isEquipped = skillId > 0;
 
-        if (skill1EquippedObj != null)
-        {
-            skill1EquippedObj.SetActive(isEquipped);
-        }
-        if (skill1UnequippedObj != null)
-        {
-            skill1UnequippedObj.SetActive(!isEquipped);
-        }
+        if (skill1EquippedObj != null) skill1EquippedObj.SetActive(isEquipped);
+        if (skill1UnequippedObj != null) skill1UnequippedObj.SetActive(!isEquipped);
 
         if (skillId <= 0)
         {
             if (skill1Name != null)
             {
-                skill1Name.text = LoadDataManager.Instance.GetEquipmentUIText("notEquipped");
+                skill1Name.text = LoadDataManager.Instance?.GetEquipmentUIText("notEquipped") ?? "未装备";
             }
             return;
         }
 
-        if (skill1Icon != null)
-        {
-            Sprite icon = GetIcon(skillId);
-            if (icon != null)
-            {
-                skill1Icon.sprite = icon;
-                skill1Icon.color = Color.white;
-            }
-        }
+        SetIconOrClear(skill1Icon, skillId);
 
         if (skill1Name != null)
         {
-            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, skillId);
-            string name = LoadDataManager.Instance.GetComponentName(skillId);
-            skill1Name.text = $"{name} Lv.{level}";
+            int level = RequestLevel(skillId);
+            skill1Name.text = $"{RequestName(skillId)} Lv.{level}";
         }
 
-        if (skill1LevelIcon != null)
-        {
-            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, skillId);
-            Sprite levelIcon = GetLevelIcon(level);
-            if (levelIcon != null)
-            {
-                skill1LevelIcon.sprite = levelIcon;
-                skill1LevelIcon.color = Color.white;
-                skill1LevelIcon.gameObject.SetActive(true);
-            }
-            else
-            {
-                skill1LevelIcon.gameObject.SetActive(false);
-            }
-        }
+        SetLevelIconOrHide(skill1LevelIcon, RequestLevel(skillId));
     }
 
     private void UpdateSkill2Display(int skillId)
     {
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogWarning("[装备界面诊断] ⚠️ 技能2判断时 NetServerManager 未初始化，显示为未解锁");
+            if (skill2LockedObj != null) skill2LockedObj.SetActive(true);
+            if (skill2EquippedObj != null) skill2EquippedObj.SetActive(false);
+            if (skill2UnequippedObj != null) skill2UnequippedObj.SetActive(false);
+            if (skill2Name != null) skill2Name.text = "未知";
+            return;
+        }
+
         bool isSlotUnlocked = CommunicateEvent.Request<int, bool>("EVENT_IS_SKILL_SLOT_UNLOCKED", 2);
 
-        if (skill2LockedObj != null)
-            skill2LockedObj.SetActive(!isSlotUnlocked);
+        if (skill2LockedObj != null) skill2LockedObj.SetActive(!isSlotUnlocked);
 
         if (!isSlotUnlocked)
         {
@@ -545,101 +540,60 @@ public class MainEquipmentPanel : MonoBehaviour
 
         bool isEquipped = skillId > 0;
 
-        if (skill2EquippedObj != null)
-        {
-            skill2EquippedObj.SetActive(isEquipped);
-        }
-        if (skill2UnequippedObj != null)
-        {
-            skill2UnequippedObj.SetActive(!isEquipped);
-        }
+        if (skill2EquippedObj != null) skill2EquippedObj.SetActive(isEquipped);
+        if (skill2UnequippedObj != null) skill2UnequippedObj.SetActive(!isEquipped);
 
         if (skillId <= 0)
         {
             if (skill2Name != null)
             {
-                skill2Name.text = LoadDataManager.Instance.GetEquipmentUIText("notEquipped");
+                skill2Name.text = LoadDataManager.Instance?.GetEquipmentUIText("notEquipped") ?? "未装备";
             }
             return;
         }
 
-        if (skill2Icon != null)
-        {
-            Sprite icon = GetIcon(skillId);
-            if (icon != null)
-            {
-                skill2Icon.sprite = icon;
-                skill2Icon.color = Color.white;
-            }
-        }
+        SetIconOrClear(skill2Icon, skillId);
 
         if (skill2Name != null)
         {
-            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, skillId);
-            string name = LoadDataManager.Instance.GetComponentName(skillId);
-            skill2Name.text = $"{name} Lv.{level}";
+            int level = RequestLevel(skillId);
+            skill2Name.text = $"{RequestName(skillId)} Lv.{level}";
         }
 
-        if (skill2LevelIcon != null)
-        {
-            int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, skillId);
-            Sprite levelIcon = GetLevelIcon(level);
-            if (levelIcon != null)
-            {
-                skill2LevelIcon.sprite = levelIcon;
-                skill2LevelIcon.color = Color.white;
-                skill2LevelIcon.gameObject.SetActive(true);
-            }
-            else
-            {
-                skill2LevelIcon.gameObject.SetActive(false);
-            }
-        }
+        SetLevelIconOrHide(skill2LevelIcon, RequestLevel(skillId));
     }
 
     private void UpdateCharacterDisplay(int characterId)
     {
         bool isEquipped = characterId > 0;
 
-        if (characterEquippedObj != null)
-        {
-            characterEquippedObj.SetActive(isEquipped);
-        }
-        if (characterUnequippedObj != null)
-        {
-            characterUnequippedObj.SetActive(!isEquipped);
-        }
+        if (characterEquippedObj != null) characterEquippedObj.SetActive(isEquipped);
+        if (characterUnequippedObj != null) characterUnequippedObj.SetActive(!isEquipped);
 
         if (characterId <= 0) return;
 
-        if (characterIcon != null)
-        {
-            Sprite icon = GetIcon(characterId);
-            if (icon != null)
-            {
-                characterIcon.sprite = icon;
-                characterIcon.color = Color.white;
-            }
-        }
+        SetIconOrClear(characterIcon, characterId);
 
         if (characterName != null)
         {
-            characterName.text = LoadDataManager.Instance.GetComponentName(characterId);
+            characterName.text = RequestName(characterId);
         }
 
-        var playerData = CommunicateEvent.Request<int, PlayerCharacterData>("CharacterManager_GetPlayerData", 0);
+        var playerData = RequestPlayerData();
         if (playerData != null)
         {
-            if (characterLevelText != null)
-            {
-                characterLevelText.text = $"{playerData.currentLevel}";
-            }
+            if (characterLevelText != null) characterLevelText.text = $"{playerData.currentLevel}";
 
-            int requiredExp = CommunicateEvent.Request<int, int>("CharacterManager_GetExpToNextLevel", 0);
-            if (characterExpText != null)
-            {
-                characterExpText.text = $"{playerData.currentExp}/{requiredExp}";
-            }
+            int requiredExp = RequestExpToNextLevel();
+            if (characterExpText != null) characterExpText.text = $"{playerData.currentExp}/{requiredExp}";
+            if (characterSlider != null && requiredExp > 0) characterSlider.value = (float)playerData.currentExp / requiredExp;
+        }
+        else
+        {
+            Z_Logger.LogWarning("[装备界面诊断] ⚠️ UpdateCharacterDisplay 获取人物数据失败，等级/经验显示为 0");
+            if (characterLevelText != null) characterLevelText.text = "0";
+            if (characterExpText != null) characterExpText.text = "0/0";
+            if (characterSlider != null) characterSlider.value = 0f;
         }
     }
 
@@ -664,6 +618,12 @@ public class MainEquipmentPanel : MonoBehaviour
     private void OnSkillClick(int skillSlot)
     {
         Z_Logger.Log($"[MainEquipmentView] OnSkillClick - 点击技能按钮, skillSlot={skillSlot}");
+
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogError("[装备界面诊断] ⚠️ NetServerManager 未初始化，技能槽点击无响应");
+            return;
+        }
 
         // 检查技能槽位是否已解锁
         bool isSlotUnlocked = CommunicateEvent.Request<int, bool>("EVENT_IS_SKILL_SLOT_UNLOCKED", skillSlot);
@@ -704,11 +664,4 @@ public class MainEquipmentPanel : MonoBehaviour
         Z_Logger.Log("[MainEquipmentView] OnCharacterClick - 点击人物按钮");
         callback?.Invoke("OpenCharacter", null);
     }
-}
-
-public enum FishingEquipType
-{
-    Rod,
-    Line,
-    Hook
 }

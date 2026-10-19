@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 //using SharedModels;
 
 public class FishingEquipmentPanel : MonoBehaviour
@@ -46,26 +47,17 @@ public class FishingEquipmentPanel : MonoBehaviour
             }
         }
 
-        // 注册装备刷新事件监听器
-        CommunicateEvent.Register("Equipment_Refresh", OnEquipmentRefresh);
+        // ⚠️ 注意：这里不再注册 "Equipment_Refresh"。
+        // EquipmentView 已注册并会统一调 FishingEquipView.UpdateDisplay()，
+        // 重复注册会导致一次事件触发两层刷新（问题8）。
+        // 原代码（已移除）：
+        // CommunicateEvent.Register("Equipment_Refresh", OnEquipmentRefresh);
     }
 
     void OnDestroy()
     {
-        // 取消装备刷新事件监听器
-        CommunicateEvent.Unregister("Equipment_Refresh", OnEquipmentRefresh);
-    }
-
-    /// <summary>
-    /// 装备刷新事件处理
-    /// </summary>
-    /// <summary>
-    /// 装备刷新事件处理
-    /// </summary>
-    private void OnEquipmentRefresh()
-    {
-        Z_Logger.Log("[FishingEquipView] 收到装备刷新事件，更新显示");
-        UpdateDisplay();
+        // 原代码（已移除）：
+        // CommunicateEvent.Unregister("Equipment_Refresh", OnEquipmentRefresh);
     }
 
     public void SetCallback(System.Action<string, object[]> cb)
@@ -73,13 +65,17 @@ public class FishingEquipmentPanel : MonoBehaviour
         callback = cb;
     }
 
-    public void Init()
+    // 问题12：串行化 Init，避免 LoadEquipmentIds / LoadAllIcons 并发导致列表空/顺序乱
+    public async void Init()
     {
-        LoadEquipmentIds();
-        LoadAllIcons();
+        Z_Logger.Log("[装备界面诊断] FishingEquipmentPanel.Init 开始");
+        await LoadEquipmentIdsAsync();
+        await LoadAllIconsAsync();
+        if (this != null && gameObject.activeInHierarchy) UpdateDisplay();
+        Z_Logger.Log("[装备界面诊断] FishingEquipmentPanel.Init 完成");
     }
 
-    private async void LoadEquipmentIds()
+    private async Task LoadEquipmentIdsAsync()
     {
         rodIds.Clear();
         lineIds.Clear();
@@ -91,17 +87,20 @@ public class FishingEquipmentPanel : MonoBehaviour
         {
             foreach (var item in config.items)
             {
-                if (item.id >= 3001 && item.id <= 3099)
-                    rodIds.Add(item.id);
-                else if (item.id >= 3101 && item.id <= 3199)
-                    lineIds.Add(item.id);
-                else if (item.id >= 3201 && item.id <= 3299)
-                    hookIds.Add(item.id);
+                if (item.id >= 3001 && item.id <= 3099) rodIds.Add(item.id);
+                else if (item.id >= 3101 && item.id <= 3199) lineIds.Add(item.id);
+                else if (item.id >= 3201 && item.id <= 3299) hookIds.Add(item.id);
             }
         }
+        else
+        {
+            Z_Logger.LogWarning("[装备界面诊断] FishingEquipmentPanel - fishing_components 配置加载失败，装备列表将为空");
+        }
+
+        Z_Logger.Log($"[装备界面诊断] FishingEquipmentPanel 装备ID加载完成: Rod={rodIds.Count}, Line={lineIds.Count}, Hook={hookIds.Count}");
     }
 
-    private async void LoadAllIcons()
+    private async Task LoadAllIconsAsync()
     {
         iconCache.Clear();
 
@@ -114,21 +113,19 @@ public class FishingEquipmentPanel : MonoBehaviour
             {
                 string path = kvp.Value;
                 var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(path);
-                if (sprite != null)
-                {
-                    iconCache[kvp.Key] = sprite;
-                }
+                if (sprite != null) iconCache[kvp.Key] = sprite;
+                else Z_Logger.LogWarning($"[装备界面诊断] FishingEquipmentPanel 图标加载失败: id={kvp.Key}, path={path}");
                 AssetManager.ReleaseAddressable(handle);
             }
         }
+        else Z_Logger.LogWarning("[装备界面诊断] FishingEquipmentPanel - fishing_components 配置加载失败");
+
+        Z_Logger.Log($"[装备界面诊断] FishingEquipmentPanel 图标加载完成，共 {iconCache.Count} 个");
     }
 
     private Sprite GetIcon(int id)
     {
-        if (iconCache.TryGetValue(id, out Sprite sprite))
-        {
-            return sprite;
-        }
+        if (iconCache.TryGetValue(id, out Sprite sprite)) return sprite;
         return null;
     }
 
@@ -137,10 +134,7 @@ public class FishingEquipmentPanel : MonoBehaviour
         currentType = type;
         currentPage = 0;
 
-        if (equipItems != null)
-        {
-            itemsPerPage = equipItems.Count;
-        }
+        if (equipItems != null) itemsPerPage = equipItems.Count;
 
         UpdateDisplay();
         gameObject.SetActive(true);
@@ -167,7 +161,11 @@ public class FishingEquipmentPanel : MonoBehaviour
 
     private void UpdateEquipItems()
     {
-        if (equipItems == null || equipItems.Count == 0) return;
+        if (equipItems == null || equipItems.Count == 0)
+        {
+            Z_Logger.LogWarning("[装备界面诊断] FishingEquipmentPanel.UpdateEquipItems - equipItems 未挂载或为空");
+            return;
+        }
 
         List<int> currentIds = GetCurrentIds();
         totalCount = currentIds.Count;
@@ -188,24 +186,28 @@ public class FishingEquipmentPanel : MonoBehaviour
             {
                 int equipId = currentIds[dataIndex];
                 Sprite icon = GetIcon(equipId);
-                string name = LoadDataManager.Instance.GetComponentName(equipId);
+                string name = LoadDataManager.Instance?.GetComponentName(equipId) ?? $"未知({equipId})";
                 if (name == "未知组件")
                 {
+                    Z_Logger.LogWarning($"[装备界面诊断] FishingEquipmentPanel 组件名称为'未知组件', equipId={equipId}");
                     name = GetDefaultName(currentType);
                 }
 
-                // ⭐ 每次重新获取状态
                 EquipState state = GetEquipState(currentType, equipId);
 
                 // ✅ 获取装备等级
-                int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, equipId);
-                Z_Logger.Log($"[FishingEquipView] 获取装备等级 - equipId={equipId}, level={level}");
+                int level = 1;
+                if (NetServerManager.Instance != null && NetServerManager.Instance.IsInitialized)
+                {
+                    level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, equipId);
+                }
+                else
+                {
+                    Z_Logger.LogWarning($"[装备界面诊断] ⚠️ FishingEquipmentPanel 获取等级时 NetServerManager 未初始化, equipId={equipId} 返回 1");
+                }
 
                 item.SetData(currentType, equipId, icon, name, state, OnEquipItemClick, OnEquipAction, OnWatchAd, level);
                 item.gameObject.SetActive(true);
-
-                // ✅ 添加日志调试
-                Z_Logger.Log($"[FishingEquipView] 更新装备项: ID={equipId}, Name={name}, State={state}, Level={level}");
             }
             else
             {
@@ -218,14 +220,10 @@ public class FishingEquipmentPanel : MonoBehaviour
     {
         switch (type)
         {
-            case FishingEquipType.Rod:
-                return LoadDataManager.Instance.GetSubCategoryNameById(31);
-            case FishingEquipType.Line:
-                return LoadDataManager.Instance.GetSubCategoryNameById(32);
-            case FishingEquipType.Hook:
-                return LoadDataManager.Instance.GetSubCategoryNameById(33);
-            default:
-                return LoadDataManager.Instance.GetCategoryNameByFolderName("C");
+            case FishingEquipType.Rod: return LoadDataManager.Instance?.GetSubCategoryNameById(31) ?? "钓竿";
+            case FishingEquipType.Line: return LoadDataManager.Instance?.GetSubCategoryNameById(32) ?? "钓线";
+            case FishingEquipType.Hook: return LoadDataManager.Instance?.GetSubCategoryNameById(33) ?? "钓钩";
+            default: return LoadDataManager.Instance?.GetCategoryNameByFolderName("C") ?? "装备";
         }
     }
 
@@ -233,23 +231,37 @@ public class FishingEquipmentPanel : MonoBehaviour
     {
         EquipmentSlotType slotType = GetSlotType(type);
 
+        // ⚠️ 外部依赖：NetServerManager 未初始化时 Request 返回 0
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogWarning($"[装备界面诊断] ⚠️ GetEquipState 时 NetServerManager 未初始化, equipId={equipId} 返回 Locked");
+            return EquipState.Locked;
+        }
+
         // ✅ 从本地缓存获取装备ID
         int equippedId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, slotType);
+        if (equippedId == equipId) return EquipState.OwnerUse;
 
-        // ✅ 如果当前装备ID等于该物品ID，返回 OwnerUse
-        if (equippedId == equipId)
+        // ✅ 优先用 PlayerDataManager，避免 NetServerManager 内部字典被 Clear 的中间态（问题6）
+        Dictionary<int, int> inventory = null;
+        if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.IsReady)
         {
-            return EquipState.OwnerUse;
+            inventory = PlayerDataManager.Instance.GetInventory();
+        }
+        else
+        {
+            Z_Logger.LogWarning("[装备界面诊断] ⚠️ PlayerDataManager 未就绪，降级走 EVENT_GET_INVENTORY");
+            inventory = CommunicateEvent.Request<int, Dictionary<int, int>>(CommunicateEvent.EVENT_GET_INVENTORY, 0);
         }
 
-        // ✅ 检查背包中是否有该物品
-        var inventory = CommunicateEvent.Request<int, Dictionary<int, int>>(CommunicateEvent.EVENT_GET_INVENTORY, 0);
-        if (inventory != null && inventory.TryGetValue(equipId, out int count) && count > 0)
+        if (inventory == null)
         {
-            return EquipState.OwnerUnUse;
+            Z_Logger.LogWarning($"[装备界面诊断] ⚠️ GetEquipState 背包数据为 null, equipId={equipId}");
+            return EquipState.Locked;
         }
 
-        // ✅ 如果既没有装备，也不在背包中，返回 Locked
+        if (inventory.TryGetValue(equipId, out int count) && count > 0) return EquipState.OwnerUnUse;
+
         return EquipState.Locked;
     }
 
@@ -257,14 +269,10 @@ public class FishingEquipmentPanel : MonoBehaviour
     {
         switch (type)
         {
-            case FishingEquipType.Rod:
-                return EquipmentSlotType.FishingRod;
-            case FishingEquipType.Line:
-                return EquipmentSlotType.FishingLine;
-            case FishingEquipType.Hook:
-                return EquipmentSlotType.FishingHook;
-            default:
-                return EquipmentSlotType.FishingRod;
+            case FishingEquipType.Rod: return EquipmentSlotType.FishingRod;
+            case FishingEquipType.Line: return EquipmentSlotType.FishingLine;
+            case FishingEquipType.Hook: return EquipmentSlotType.FishingHook;
+            default: return EquipmentSlotType.FishingRod;
         }
     }
 
@@ -282,14 +290,10 @@ public class FishingEquipmentPanel : MonoBehaviour
     {
         switch (currentType)
         {
-            case FishingEquipType.Rod:
-                return rodIds;
-            case FishingEquipType.Line:
-                return lineIds;
-            case FishingEquipType.Hook:
-                return hookIds;
-            default:
-                return rodIds;
+            case FishingEquipType.Rod: return rodIds;
+            case FishingEquipType.Line: return lineIds;
+            case FishingEquipType.Hook: return hookIds;
+            default: return rodIds;
         }
     }
 
@@ -313,10 +317,7 @@ public class FishingEquipmentPanel : MonoBehaviour
         if (totalPages <= 1) return;
 
         currentPage--;
-        if (currentPage < 0)
-        {
-            currentPage = totalPages - 1;
-        }
+        if (currentPage < 0) currentPage = totalPages - 1;
         UpdateEquipItems();
         UpdatePageText();
     }
@@ -329,10 +330,7 @@ public class FishingEquipmentPanel : MonoBehaviour
         if (totalPages <= 1) return;
 
         currentPage++;
-        if (currentPage >= totalPages)
-        {
-            currentPage = 0;
-        }
+        if (currentPage >= totalPages) currentPage = 0;
         UpdateEquipItems();
         UpdatePageText();
     }
@@ -351,7 +349,7 @@ public class FishingEquipmentPanel : MonoBehaviour
     private void OnWatchAd(FishingEquipType type, int equipId)
     {
         Z_Logger.Log($"[FishingEquipView] OnWatchAd - type={type}, equipId={equipId}");
-        string componentName = LoadDataManager.Instance.GetComponentName(equipId);
+        string componentName = LoadDataManager.Instance?.GetComponentName(equipId) ?? $"未知({equipId})";
         string info = componentName != "未知组件" ? $"看广告解锁装备: {componentName}" : "看广告解锁装备";
         callback?.Invoke("OpenAd", new object[] { info, equipId, "看广告解锁", (System.Action)(() =>
         {

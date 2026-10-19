@@ -138,28 +138,34 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
 
     private void UpdateCharacterExpDisplay(int currentExp, int requiredExp)
     {
-        if (characterExpText != null)
-            characterExpText.text = $"{currentExp}/{requiredExp}";
-
-        if (characterExpSlider != null)
-            characterExpSlider.value = (float)currentExp / (float)requiredExp;
+        if (characterExpText != null) characterExpText.text = $"{currentExp}/{requiredExp}";
+        if (characterExpSlider != null && requiredExp > 0) characterExpSlider.value = (float)currentExp / requiredExp;
+        else if (characterExpSlider != null) characterExpSlider.value = 0f;
     }
 
     private void UpdateCharacterLevelDisplay(int level)
     {
-        if (characterLevelText != null)
-            characterLevelText.text = $"{level}";
+        if (characterLevelText != null) characterLevelText.text = $"{level}";
     }
 
     private void RefreshCharacterData()
     {
-        int level = CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_CHARACTER_LEVEL, 0);
+        // ⚠️ 外部依赖：NetServerManager 未初始化时 Request 返回 default
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogWarning("[装备界面诊断] EquipPlayerEquipmentPanel.RefreshCharacterData - ⚠️ NetServerManager 未初始化，人物数据可能为 0");
+            UpdateCharacterLevelDisplay(0);
+            UpdateCharacterExpDisplay(0, 0);
+            return;
+        }
+
+        int level = RequestCharacterLevel();
         UpdateCharacterLevelDisplay(level);
 
-        var charData = CommunicateEvent.Request<int, PlayerCharacterData>("CharacterServerManager_GetPlayerData", 0);
+        var charData = RequestPlayerData();
         if (charData != null)
         {
-            int requiredExp = CommunicateEvent.Request<int, int>("CharacterServerManager_GetExpToNextLevel", 0);
+            int requiredExp = RequestExpToNextLevel();
             UpdateCharacterExpDisplay(charData.currentExp, requiredExp);
 
             cachedLevel = level;
@@ -167,6 +173,42 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
             cachedRequiredExp = requiredExp;
             hasCachedData = true;
         }
+        else
+        {
+            Z_Logger.LogWarning("[装备界面诊断] EquipPlayerEquipmentPanel.RefreshCharacterData - ⚠️ 获取人物数据失败");
+        }
+    }
+
+    // ============================================================
+    // 辅助 Request 方法（补上，之前遗漏）
+    // ============================================================
+    private int RequestCharacterLevel()
+    {
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized) return 0;
+        return CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_CHARACTER_LEVEL, 0);
+    }
+
+    private PlayerCharacterData RequestPlayerData()
+    {
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized) return null;
+        // ✅ 统一用 CharacterManager_* 前缀
+        return CommunicateEvent.Request<int, PlayerCharacterData>("CharacterManager_GetPlayerData", 0);
+    }
+
+    private int RequestExpToNextLevel()
+    {
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized) return 0;
+        return CommunicateEvent.Request<int, int>("CharacterManager_GetExpToNextLevel", 0);
+    }
+
+    private int RequestEquipped(EquipmentSlotType slot)
+    {
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogWarning($"[装备界面诊断] ⚠️ 请求装备槽 {slot} 时 NetServerManager 未初始化，返回 0");
+            return 0;
+        }
+        return CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, slot);
     }
 
     public void SetCallback(System.Action<string, object[]> cb)
@@ -176,6 +218,11 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
 
     public void Init()
     {
+        // ⚠️ 外部依赖：LoadDataManager 未加载完时组件名会是"未知组件"
+        if (LoadDataManager.Instance == null || !LoadDataManager.Instance.isDataLoaded)
+        {
+            Z_Logger.LogWarning("[装备界面诊断] EquipPlayerEquipmentPanel.Init - ⚠️ LoadDataManager 尚未加载完成");
+        }
         LoadAllIcons();
     }
 
@@ -206,8 +253,12 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
                 }
             }
         }
+        else Z_Logger.LogWarning("[装备界面诊断] EquipPlayerEquipmentPanel - fishing_components 配置加载失败，技能图标可能为空");
 
-        Z_Logger.Log($"[EquipPlayerView] LoadAllIcons 完成，缓存了 {iconCache.Count} 个图标");
+        Z_Logger.Log($"[装备界面诊断] EquipPlayerEquipmentPanel.LoadAllIcons 完成，缓存了 {iconCache.Count} 个图标");
+
+        // 问题3：加载完补刷新
+        if (this != null && gameObject.activeInHierarchy) UpdateDisplay();
     }
 
     private async Task LoadCharacterIdsAsync()
@@ -217,21 +268,17 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
         if (config != null)
         {
             var ids = config.GetAllCharacterIds();
-            foreach (var id in ids)
-            {
-                characterIds.Add(id);
-            }
+            foreach (var id in ids) characterIds.Add(id);
         }
+        else Z_Logger.LogWarning("[装备界面诊断] EquipPlayerEquipmentPanel - characters 配置加载失败，人物列表将为空");
     }
 
     private async Task LoadCharacterIconAsync(int characterId)
     {
         string path = $"UI/Icon/Equipment/Character/{characterId}";
         var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(path);
-        if (sprite != null)
-        {
-            iconCache[characterId] = sprite;
-        }
+        if (sprite != null) iconCache[characterId] = sprite;
+        else Z_Logger.LogWarning($"[装备界面诊断] EquipPlayerEquipmentPanel 人物图标加载失败: id={characterId}, path={path}");
         AssetManager.ReleaseAddressable(handle);
     }
 
@@ -239,10 +286,8 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
     {
         string path = $"UI/Icon/Equipment/Skill/{skillId}";
         var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(path);
-        if (sprite != null)
-        {
-            iconCache[skillId] = sprite;
-        }
+        if (sprite != null) iconCache[skillId] = sprite;
+        else Z_Logger.LogWarning($"[装备界面诊断] EquipPlayerEquipmentPanel 技能图标加载失败: id={skillId}, path={path}");
         AssetManager.ReleaseAddressable(handle);
     }
 
@@ -257,7 +302,7 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
 
         NetServerManager.Instance?.SyncCharacterDataFromServer();
 
-        int equippedCharacterId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Character);
+        int equippedCharacterId = RequestEquipped(EquipmentSlotType.Character);
 
         currentIndex = 0;
         if (equippedCharacterId > 0)
@@ -284,7 +329,7 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
         {
             if (characterIds.Count == 0)
             {
-                Z_Logger.LogError("[EquipPlayerView] characterIds is EMPTY!");
+                Z_Logger.LogError("[装备界面诊断] EquipPlayerEquipmentPanel.UpdateDisplay - characterIds 为空！");
                 return;
             }
 
@@ -292,8 +337,8 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
             currentCharacterId = characterIds[currentIndex];
 
             // 获取背包数据
+            Dictionary<int, int> inventory = null;
             var playerData = PlayerDataManager.Instance;
-            Dictionary<int, int> inventory;
 
             if (playerData != null && playerData.IsReady)
             {
@@ -301,26 +346,23 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
             }
             else
             {
+                Z_Logger.LogWarning("[装备界面诊断] ⚠️ EquipPlayerEquipmentPanel.UpdateDisplay - PlayerDataManager 未就绪，降级走 EVENT_GET_INVENTORY");
                 inventory = CommunicateEvent.Request<int, Dictionary<int, int>>(CommunicateEvent.EVENT_GET_INVENTORY, 0);
             }
 
-            int equippedChar = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Character);
+            int equippedChar = RequestEquipped(EquipmentSlotType.Character);
 
-            bool hasCharacter = inventory.ContainsKey(currentCharacterId);
+            // 问题10：inventory 空判
+            bool hasCharacter = inventory != null && inventory.ContainsKey(currentCharacterId);
             bool isEquipped = equippedChar == currentCharacterId;
 
             // ✅ 使用 UIUseStatus 更新人物状态
-            if (characterStatus != null)
-                characterStatus.SetStatus(hasCharacter, isEquipped);
+            if (characterStatus != null) characterStatus.SetStatus(hasCharacter, isEquipped);
 
-            // 更新人物显示信息
             UpdateCharacterDisplayInfo();
             UpdatePageText();
         }
-        finally
-        {
-            _isRefreshing = false;
-        }
+        finally { _isRefreshing = false; }
     }
 
     private void UpdateCharacterDisplayInfo()
@@ -330,16 +372,19 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
         if (characterIcon != null)
         {
             Sprite icon = GetIcon(currentCharacterId);
-            if (icon != null)
-            {
-                characterIcon.sprite = icon;
-                characterIcon.color = Color.white;
-            }
+            if (icon != null) { characterIcon.sprite = icon; characterIcon.color = Color.white; }
+            else { characterIcon.sprite = null; characterIcon.color = new Color(1, 1, 1, 0); }
         }
 
         if (characterNameText != null)
         {
-            characterNameText.text = LoadDataManager.Instance.GetComponentName(currentCharacterId);
+            string name = LoadDataManager.Instance?.GetComponentName(currentCharacterId) ?? $"未知({currentCharacterId})";
+            if (name == "未知组件")
+            {
+                Z_Logger.LogWarning($"[装备界面诊断] EquipPlayerEquipmentPanel 人物名称为'未知组件', id={currentCharacterId}");
+                name = $"未知({currentCharacterId})";
+            }
+            characterNameText.text = name;
         }
 
         UpdateCharacterLevelAndExp();
@@ -348,39 +393,54 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
 
     private void UpdateCharacterLevelAndExp()
     {
-        var playerData = CommunicateEvent.Request<int, PlayerCharacterData>("CharacterManager_GetPlayerData", 0);
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogWarning("[装备界面诊断] ⚠️ UpdateCharacterLevelAndExp 时 NetServerManager 未初始化，显示为 0");
+            if (characterLevelText != null) characterLevelText.text = "0";
+            if (characterExpText != null) characterExpText.text = "0/0";
+            if (characterExpSlider != null) characterExpSlider.value = 0f;
+            return;
+        }
+
+        // ✅ 统一用 CharacterManager_* 前缀
+        var playerData = RequestPlayerData();
         if (playerData != null)
         {
             int level = playerData.currentLevel;
-            if (characterLevelText != null)
-                characterLevelText.text = $"{level}";
+            if (characterLevelText != null) characterLevelText.text = $"{level}";
 
-            int requiredExp = CommunicateEvent.Request<int, int>("CharacterManager_GetExpToNextLevel", 0);
-            if (characterExpText != null)
-                characterExpText.text = $"{playerData.currentExp}/{requiredExp}";
-            if (characterExpSlider != null)
-                characterExpSlider.value = (float)playerData.currentExp / (float)requiredExp;
+            int requiredExp = RequestExpToNextLevel();
+            if (characterExpText != null) characterExpText.text = $"{playerData.currentExp}/{requiredExp}";
+            if (characterExpSlider != null && requiredExp > 0) characterExpSlider.value = (float)playerData.currentExp / requiredExp;
         }
         else
         {
-            if (characterLevelText != null)
-                characterLevelText.text = $"{0}";
-            if (characterExpText != null)
-                characterExpText.text = $"{0}/{0}";
-            if (characterExpSlider != null)
-                characterExpSlider.value = (float)0 / (float)0;
+            Z_Logger.LogWarning("[装备界面诊断] ⚠️ UpdateCharacterLevelAndExp 获取人物数据失败，显示为 0");
+            if (characterLevelText != null) characterLevelText.text = "0";
+            if (characterExpText != null) characterExpText.text = "0/0";
+            if (characterExpSlider != null) characterExpSlider.value = 0f;
         }
     }
 
+    // 问题11：加请求令牌，翻页时旧回调丢弃
     private async void UpdateSkillDisplay()
     {
+        int requestCharacterId = currentCharacterId;
+
         var characterConfig = await CharacterConfigListExtensions.LoadFromAddressablesAsync("JsonData/BaseFramework/characters");
+        // ✅ 翻页了，丢弃旧结果
+        if (requestCharacterId != currentCharacterId) return;
+
         int skill1Id = 0;
         int skill2Id = 0;
 
         if (characterConfig != null)
         {
             (skill1Id, skill2Id) = characterConfig.GetCharacterSkillIds(currentCharacterId);
+        }
+        else
+        {
+            Z_Logger.LogWarning($"[装备界面诊断] ⚠️ UpdateSkillDisplay 加载 characters 配置失败, characterId={requestCharacterId}");
         }
 
         UpdateSkill1Display(skill1Id);
@@ -391,32 +451,39 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
     {
         if (skillId <= 0)
         {
-            if (skill1Status != null)
-                skill1Status.SetStatus(UIUseStatus.Status.Locked);
+            if (skill1Status != null) skill1Status.SetStatus(UIUseStatus.Status.Locked);
+            if (skill1NameText != null) skill1NameText.text = "";
             return;
         }
 
         if (skill1Icon != null)
         {
             Sprite icon = GetIcon(skillId);
-            if (icon != null)
-            {
-                skill1Icon.sprite = icon;
-                skill1Icon.color = Color.white;
-            }
+            if (icon != null) { skill1Icon.sprite = icon; skill1Icon.color = Color.white; }
+            else { skill1Icon.sprite = null; skill1Icon.color = new Color(1, 1, 1, 0); }
         }
 
         if (skill1NameText != null)
-            skill1NameText.text = LoadDataManager.Instance.GetComponentName(skillId);
+        {
+            string name = LoadDataManager.Instance?.GetComponentName(skillId) ?? $"未知({skillId})";
+            if (name == "未知组件") Z_Logger.LogWarning($"[装备界面诊断] 技能1名称为'未知组件', id={skillId}");
+            skill1NameText.text = name;
+        }
 
         // ✅ 使用 UIUseStatus
         if (skill1Status != null)
         {
+            if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+            {
+                Z_Logger.LogWarning("[装备界面诊断] ⚠️ 技能1状态判断时 NetServerManager 未初始化，显示为 Locked");
+                skill1Status.SetStatus(false, false);
+                return;
+            }
+
             bool hasSkill = CommunicateEvent.Request<int, bool>(CommunicateEvent.EVENT_IS_SKILL_OBTAINED, skillId);
             int equippedSkill1 = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Skill1);
             int equippedSkill2 = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Skill2);
             bool isEquipped = equippedSkill1 == skillId || equippedSkill2 == skillId;
-
             skill1Status.SetStatus(hasSkill, isEquipped);
         }
     }
@@ -425,32 +492,38 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
     {
         if (skillId <= 0)
         {
-            if (skill2Status != null)
-                skill2Status.SetStatus(UIUseStatus.Status.Locked);
+            if (skill2Status != null) skill2Status.SetStatus(UIUseStatus.Status.Locked);
+            if (skill2NameText != null) skill2NameText.text = "";
             return;
         }
 
         if (skill2Icon != null)
         {
             Sprite icon = GetIcon(skillId);
-            if (icon != null)
-            {
-                skill2Icon.sprite = icon;
-                skill2Icon.color = Color.white;
-            }
+            if (icon != null) { skill2Icon.sprite = icon; skill2Icon.color = Color.white; }
+            else { skill2Icon.sprite = null; skill2Icon.color = new Color(1, 1, 1, 0); }
         }
 
         if (skill2NameText != null)
-            skill2NameText.text = LoadDataManager.Instance.GetComponentName(skillId);
+        {
+            string name = LoadDataManager.Instance?.GetComponentName(skillId) ?? $"未知({skillId})";
+            if (name == "未知组件") Z_Logger.LogWarning($"[装备界面诊断] 技能2名称为'未知组件', id={skillId}");
+            skill2NameText.text = name;
+        }
 
-        // ✅ 使用 UIUseStatus
         if (skill2Status != null)
         {
+            if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+            {
+                Z_Logger.LogWarning("[装备界面诊断] ⚠️ 技能2状态判断时 NetServerManager 未初始化，显示为 Locked");
+                skill2Status.SetStatus(false, false);
+                return;
+            }
+
             bool hasSkill = CommunicateEvent.Request<int, bool>(CommunicateEvent.EVENT_IS_SKILL_OBTAINED, skillId);
             int equippedSkill1 = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Skill1);
             int equippedSkill2 = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Skill2);
             bool isEquipped = equippedSkill1 == skillId || equippedSkill2 == skillId;
-
             skill2Status.SetStatus(hasSkill, isEquipped);
         }
     }
@@ -461,17 +534,8 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
             pageText.text = $"{currentIndex + 1}/{Mathf.Max(1, characterIds.Count)}";
     }
 
-    // ========== 按钮事件 ==========
-
-    private void OnMaskClick()
-    {
-        callback?.Invoke("Back", null);
-    }
-
-    private void OnCloseClick()
-    {
-        callback?.Invoke("Back", null);
-    }
+    private void OnMaskClick() { callback?.Invoke("Back", null); }
+    private void OnCloseClick() { callback?.Invoke("Back", null); }
 
     private void OnLeftClick()
     {
@@ -522,7 +586,7 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
 
     private void OnWatchAdUnlockClick()
     {
-        string componentName = LoadDataManager.Instance.GetComponentName(currentCharacterId);
+        string componentName = LoadDataManager.Instance?.GetComponentName(currentCharacterId) ?? $"未知({currentCharacterId})";
         string info = componentName != "未知组件" ? $"看广告解锁人物: {componentName}" : "看广告解锁人物";
 
         callback?.Invoke("OpenAd", new object[] { info, currentCharacterId, "看广告解锁", (System.Action)(() =>
@@ -538,15 +602,33 @@ public class EquipPlayerEquipmentPanel : MonoBehaviour
     {
         Z_Logger.Log($"[EquipPlayerView] OnEquipClick - currentCharacterId={currentCharacterId}");
 
-        CommunicateEvent.Modify<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_ITEM, (EquipmentSlotType.Character, currentCharacterId));
-
-        RefreshPlayerAnimation(currentCharacterId);
-
-        UpdateDisplay();
-
-        string componentName = LoadDataManager.Instance.GetComponentName(currentCharacterId);
-        string successInfo = componentName != "未知组件" ? $"已装备 {componentName}！" : "已装备人物！";
-        CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+        // ✅ 走新版带回调接口，服务器返回完整 equipment 数据后刷新
+        if (NetServerManager.Instance != null)
+        {
+            GameUIManager.Instance?.ShowTip($"正在装备...");
+            NetServerManager.Instance.EquipItemWithCallback(EquipmentSlotType.Character, currentCharacterId, (success, message) =>
+            {
+                if (success)
+                {
+                    RefreshPlayerAnimation(currentCharacterId);
+                    UpdateDisplay();
+                    string componentName = LoadDataManager.Instance?.GetComponentName(currentCharacterId) ?? $"未知({currentCharacterId})";
+                    string successInfo = componentName != "未知组件" ? $"已装备 {componentName}！" : "已装备人物！";
+                    CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+                    // ✅ 兜底刷新（EVENT_EQUIP_CHANGED 类型不匹配时也能生效）
+                    callback?.Invoke("RefreshAllViews", null);
+                }
+                else
+                {
+                    Z_Logger.LogWarning($"[装备界面诊断] EquipPlayerEquipmentPanel 装备失败: {message}");
+                    GameUIManager.ShowWarningMessage(string.IsNullOrEmpty(message) ? "装备失败" : message);
+                }
+            });
+        }
+        else
+        {
+            Z_Logger.LogError("[装备界面诊断] ⚠️ NetServerManager 为空，无法装备人物");
+        }
     }
 
     private void RefreshPlayerAnimation(int characterId)

@@ -99,7 +99,7 @@ Shader "UI/ImageOutline"
             fixed4 frag(v2f IN) : SV_Target
             {
                 fixed4 col = tex2D(_MainTex, IN.texcoord) * IN.color;
-
+            
                 if (col.a > 0.01)
                 {
                     #ifdef UNITY_UI_CLIP_RECT
@@ -110,9 +110,9 @@ Shader "UI/ImageOutline"
                     #endif
                     return col;
                 }
-
+            
                 float2 offset = _MainTex_TexelSize.xy * _OutlineWidth;
-
+            
                 float a = 0;
                 a += tex2D(_MainTex, IN.texcoord + float2( offset.x,  0.0)).a;
                 a += tex2D(_MainTex, IN.texcoord + float2(-offset.x,  0.0)).a;
@@ -122,22 +122,22 @@ Shader "UI/ImageOutline"
                 a += tex2D(_MainTex, IN.texcoord + float2(-offset.x,  offset.y)).a;
                 a += tex2D(_MainTex, IN.texcoord + float2( offset.x, -offset.y)).a;
                 a += tex2D(_MainTex, IN.texcoord + float2(-offset.x, -offset.y)).a;
-
+            
                 if (a > 0.01)
                 {
                     fixed4 outlineCol = _OutlineColor;
-
+            
                     #ifdef UNITY_UI_CLIP_RECT
                     outlineCol.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
                     #endif
                     #ifdef UNITY_UI_ALPHACLIP
                     clip(outlineCol.a - 0.001);
                     #endif
-
+            
                     return outlineCol;
                 }
-
-                return fixed;
+            
+                return fixed4(0, 0, 0, 0);
             }
             ENDCG
         }

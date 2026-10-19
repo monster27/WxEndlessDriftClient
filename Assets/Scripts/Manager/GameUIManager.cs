@@ -186,6 +186,14 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         switch (rt.State)
         {
             case ViewState.Showing:
+                // ✅ 新增：实例不可用（被手动关闭/僵尸），当作 Loaded 重新显示
+                if (!IsUsableInstance(rt.Instance))
+                {
+                    Z_Logger.LogWarning($"[GameUIManager] ⚠️ Showing 但实例不可用，重新显示: {key}, active={rt.Instance?.activeInHierarchy}");
+                    rt.State = ViewState.Loaded;
+                    StartCoroutine(LoadAndShowCoroutine(key, meta, rt, onOpened));
+                    return;
+                }
                 onOpened?.Invoke(rt.Instance);
                 return;
 
@@ -404,8 +412,19 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         var baseView = instance.GetComponent<BaseView>();
         if (baseView != null)
         {
-            baseView.BaseViewInit();
-            baseView.ShowView();
+            // ✅ 注入 viewKey，供 BaseView.HideView 关闭时通知
+            baseView.RegisterViewKey(key);
+
+            try
+            {
+                baseView.BaseViewInit();
+                baseView.ShowView();
+            }
+            catch (System.Exception ex)
+            {
+                Z_Logger.LogError($"[GameUIManager] ❌ View {key} 生命周期抛异常: {ex}");
+                // 不改状态机，继续走，至少字段能赋值
+            }
         }
 
         // 字段语义：仅在实例可用时赋值
@@ -455,7 +474,14 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         if (rt.Instance == null) return;
 
         var baseView = rt.Instance.GetComponent<BaseView>();
-        if (baseView != null) baseView.HideView();
+        if (baseView != null)
+        {
+            // ✅ 标记：这是 Manager 主动调 HideView，HideView 内部不再发 UI_ViewSelfHide
+            baseView._isHidingByManager = true;
+            try { baseView.HideView(); }
+            catch (System.Exception ex) { Z_Logger.LogError($"[GameUIManager] ❌ View {key} HideView 抛异常: {ex}"); }
+            baseView._isHidingByManager = false;
+        }
 
         switch (meta.Type)
         {
@@ -770,6 +796,19 @@ public class GameUIManager : SingletonMonoFromScene<GameUIManager>
         CommunicateEvent.Register<CommunicateEvent.AdvertisingRequest>(CommunicateEvent.EVENT_UI_SHOW_ADVERTISING, OnShowAdvertisingRequest);
         CommunicateEvent.Register<Dictionary<string, object>>("SceneSwitchRequest", OnSceneSwitchRequest);
         CommunicateEvent.Register("FishTankDataUpdated", OnFishTankDataUpdated);
+
+        // ✅ 新增：BaseView 主动关闭时通知
+        CommunicateEvent.Register<string>("UI_ViewSelfHide", OnViewSelfHide);
+    }
+
+    private void OnViewSelfHide(string key)
+    {
+        if (string.IsNullOrEmpty(key)) return;
+
+        Z_Logger.Log($"[GameUIManager] 收到 View 主动关闭通知: '{key}'");
+
+        // 走标准 CloseView，状态机把 Showing → Hiding → Loaded，RefCount--
+        CloseView(key);
     }
 
     private void OnShowAdvertisingRequest(CommunicateEvent.AdvertisingRequest request)

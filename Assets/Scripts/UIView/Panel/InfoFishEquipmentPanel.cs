@@ -128,6 +128,11 @@ public class InfoFishEquipmentPanel : MonoBehaviour
 
     public void Init()
     {
+        // ⚠️ 外部依赖：LoadDataManager 未加载完时组件名会是"未知组件"
+        if (LoadDataManager.Instance == null || !LoadDataManager.Instance.isDataLoaded)
+        {
+            Z_Logger.LogWarning("[装备界面诊断] InfoFishEquipmentPanel.Init - ⚠️ LoadDataManager 尚未加载完成");
+        }
         LoadLevelIcons();
     }
 
@@ -137,7 +142,8 @@ public class InfoFishEquipmentPanel : MonoBehaviour
         for (int i = 1; i <= 10; i++)
         {
             int levelIndex = i; // 闭包捕获，避免所有回调都拿到 10
-            string path = $"Assets/Addressables/UI/Icon/Equipment/Level/{levelIndex}.png";
+            // ✅ 修正：统一成和 MainEquipmentPanel 一致的 key（问题9）
+            string path = $"UI/Icon/Equipment/Level/{levelIndex}";
 
             AssetManager.LoadFromAddressables<Sprite>(path, (sprite, handle) =>
             {
@@ -147,7 +153,7 @@ public class InfoFishEquipmentPanel : MonoBehaviour
                 }
                 else
                 {
-                    Z_Logger.LogWarning($"[LoadLevelIcons] 加载失败: {path}");
+                    Z_Logger.LogWarning($"[装备界面诊断] InfoFishEquipmentPanel.LoadLevelIcons 加载失败: {path}");
                 }
             });
         }
@@ -155,10 +161,7 @@ public class InfoFishEquipmentPanel : MonoBehaviour
 
     private Sprite GetLevelIcon(int level)
     {
-        if (levelIconCache.TryGetValue(level, out Sprite sprite))
-        {
-            return sprite;
-        }
+        if (levelIconCache.TryGetValue(level, out Sprite sprite)) return sprite;
         return null;
     }
 
@@ -218,10 +221,8 @@ public class InfoFishEquipmentPanel : MonoBehaviour
         bool useLongIcon = requestType == FishingEquipType.Rod;
 
         // 先切显隐（不依赖 icon 是否回来）
-        if (longIcon != null)
-            longIcon.gameObject.SetActive(useLongIcon);
-        if (shortIcon != null)
-            shortIcon.gameObject.SetActive(!useLongIcon);
+        if (longIcon != null) longIcon.gameObject.SetActive(useLongIcon);
+        if (shortIcon != null) shortIcon.gameObject.SetActive(!useLongIcon);
 
         if (string.IsNullOrEmpty(iconPath))
         {
@@ -232,8 +233,7 @@ public class InfoFishEquipmentPanel : MonoBehaviour
         AssetManager.LoadFromAddressables<Sprite>(iconPath, (icon, handle) =>
         {
             // ✅ 竞态保护：回调回来时，装备可能已经切走了，丢弃过期结果
-            if (requestEquipId != currentEquipId || requestType != currentType)
-                return;
+            if (requestEquipId != currentEquipId || requestType != currentType) return;
 
             if (icon == null)
             {
@@ -243,19 +243,11 @@ public class InfoFishEquipmentPanel : MonoBehaviour
 
             if (useLongIcon)
             {
-                if (longIcon != null)
-                {
-                    longIcon.sprite = icon;
-                    longIcon.color = Color.white;
-                }
+                if (longIcon != null) { longIcon.sprite = icon; longIcon.color = Color.white; }
             }
             else
             {
-                if (shortIcon != null)
-                {
-                    shortIcon.sprite = icon;
-                    shortIcon.color = Color.white;
-                }
+                if (shortIcon != null) { shortIcon.sprite = icon; shortIcon.color = Color.white; }
             }
         });
     }
@@ -264,14 +256,10 @@ public class InfoFishEquipmentPanel : MonoBehaviour
     {
         switch (type)
         {
-            case FishingEquipType.Rod:
-                return $"UI/Icon/Equipment/Rod/{equipId}";
-            case FishingEquipType.Line:
-                return $"UI/Icon/Equipment/Line/{equipId}";
-            case FishingEquipType.Hook:
-                return $"UI/Icon/Equipment/Hook/{equipId}";
-            default:
-                return $"UI/Icon/Equipment/Rod/{equipId}";
+            case FishingEquipType.Rod: return $"UI/Icon/Equipment/Rod/{equipId}";
+            case FishingEquipType.Line: return $"UI/Icon/Equipment/Line/{equipId}";
+            case FishingEquipType.Hook: return $"UI/Icon/Equipment/Hook/{equipId}";
+            default: return $"UI/Icon/Equipment/Rod/{equipId}";
         }
     }
 
@@ -279,25 +267,27 @@ public class InfoFishEquipmentPanel : MonoBehaviour
     {
         if (currentEquipId <= 0) return;
 
-        string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
+        string componentName = LoadDataManager.Instance?.GetComponentName(currentEquipId) ?? $"未知({currentEquipId})";
         if (componentName != "未知组件")
         {
-            if (equipNameText != null)
-            {
-                equipNameText.text = componentName;
-            }
+            if (equipNameText != null) equipNameText.text = componentName;
+        }
+        else
+        {
+            Z_Logger.LogWarning($"[装备界面诊断] InfoFishEquipmentPanel 组件名称为'未知组件', id={currentEquipId}");
+            if (equipNameText != null) equipNameText.text = $"未知({currentEquipId})";
         }
 
         int level = GetEquipLevel();
 
         if (currentLevelText != null)
         {
-            currentLevelText.text = $"{LoadDataManager.Instance.GetEquipmentUIText("currentLevel")}: {level}";
+            currentLevelText.text = $"{LoadDataManager.Instance?.GetEquipmentUIText("currentLevel") ?? "当前等级"}: {level}";
         }
 
         if (levelDescText != null)
         {
-            FishingComponentConfig config = LoadDataManager.Instance.GetComponentById(currentEquipId);
+            FishingComponentConfig config = LoadDataManager.Instance?.GetComponentById(currentEquipId);
             if (config != null && config.levelDataList != null)
             {
                 var currentLevelConfig = config.levelDataList.Find(l => l.level == level);
@@ -337,7 +327,7 @@ public class InfoFishEquipmentPanel : MonoBehaviour
 
         if (nextLevelDescText != null)
         {
-            FishingComponentConfig config = LoadDataManager.Instance.GetComponentById(currentEquipId);
+            FishingComponentConfig config = LoadDataManager.Instance?.GetComponentById(currentEquipId);
             if (config != null && config.levelDataList != null && level < config.maxLevel)
             {
                 var nextLevelConfig = config.levelDataList.Find(l => l.level == level + 1);
@@ -347,12 +337,12 @@ public class InfoFishEquipmentPanel : MonoBehaviour
                 }
                 else
                 {
-                    nextLevelDescText.text = LoadDataManager.Instance.GetEquipmentUIText("nextLevelEffect");
+                    nextLevelDescText.text = LoadDataManager.Instance?.GetEquipmentUIText("nextLevelEffect") ?? "";
                 }
             }
             else
             {
-                nextLevelDescText.text = LoadDataManager.Instance.GetEquipmentUIText("maxLevel");
+                nextLevelDescText.text = LoadDataManager.Instance?.GetEquipmentUIText("maxLevel") ?? "已满级";
             }
         }
     }
@@ -361,46 +351,19 @@ public class InfoFishEquipmentPanel : MonoBehaviour
     {
         EquipState state = GetEquipState();
 
-        if (ownerUseObj != null)
-        {
-            ownerUseObj.SetActive(state == EquipState.OwnerUse);
-        }
-        if (ownerUnUseObj != null)
-        {
-            ownerUnUseObj.SetActive(state == EquipState.OwnerUnUse);
-        }
-        if (lockedObj != null)
-        {
-            lockedObj.SetActive(state == EquipState.Locked);
-        }
+        if (ownerUseObj != null) ownerUseObj.SetActive(state == EquipState.OwnerUse);
+        if (ownerUnUseObj != null) ownerUnUseObj.SetActive(state == EquipState.OwnerUnUse);
+        if (lockedObj != null) lockedObj.SetActive(state == EquipState.Locked);
 
         bool isUnlocked = state != EquipState.Locked;
 
-        if (upgradeCostObj != null)
-        {
-            upgradeCostObj.SetActive(isUnlocked);
-        }
-        if (adUpgradeObj != null)
-        {
-            adUpgradeObj.SetActive(isUnlocked);
-        }
-        if (unlockObj != null)
-        {
-            unlockObj.SetActive(state == EquipState.Locked);
-        }
+        if (upgradeCostObj != null) upgradeCostObj.SetActive(isUnlocked);
+        if (adUpgradeObj != null) adUpgradeObj.SetActive(isUnlocked);
+        if (unlockObj != null) unlockObj.SetActive(state == EquipState.Locked);
 
-        if (upgradeBtn != null)
-        {
-            upgradeBtn.gameObject.SetActive(isUnlocked);
-        }
-        if (adUpgradeBtn != null)
-        {
-            adUpgradeBtn.gameObject.SetActive(isUnlocked);
-        }
-        if (unlockBtn != null)
-        {
-            unlockBtn.gameObject.SetActive(state == EquipState.Locked);
-        }
+        if (upgradeBtn != null) upgradeBtn.gameObject.SetActive(isUnlocked);
+        if (adUpgradeBtn != null) adUpgradeBtn.gameObject.SetActive(isUnlocked);
+        if (unlockBtn != null) unlockBtn.gameObject.SetActive(state == EquipState.Locked);
     }
 
     private void UpdateUpgradeCostDisplay()
@@ -418,19 +381,31 @@ public class InfoFishEquipmentPanel : MonoBehaviour
 
     private EquipState GetEquipState()
     {
+        // ⚠️ 外部依赖：NetServerManager 未初始化时 Request 返回 default
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogWarning($"[装备界面诊断] ⚠️ GetEquipState 时 NetServerManager 未初始化, equipId={currentEquipId} 返回 Locked");
+            return EquipState.Locked;
+        }
+
         EquipmentSlotType slotType = GetSlotType();
         int equippedId = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, slotType);
 
-        if (equippedId == currentEquipId)
+        if (equippedId == currentEquipId) return EquipState.OwnerUse;
+
+        // ✅ 优先用 PlayerDataManager（问题6）
+        Dictionary<int, int> inventory = null;
+        if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.IsReady)
         {
-            return EquipState.OwnerUse;
+            inventory = PlayerDataManager.Instance.GetInventory();
+        }
+        else
+        {
+            Z_Logger.LogWarning("[装备界面诊断] ⚠️ InfoFishEquipmentPanel.GetEquipState - PlayerDataManager 未就绪，降级走 EVENT_GET_INVENTORY");
+            inventory = CommunicateEvent.Request<int, Dictionary<int, int>>(CommunicateEvent.EVENT_GET_INVENTORY, 0);
         }
 
-        var inventory = CommunicateEvent.Request<int, Dictionary<int, int>>(CommunicateEvent.EVENT_GET_INVENTORY, 0);
-        if (inventory.ContainsKey(currentEquipId))
-        {
-            return EquipState.OwnerUnUse;
-        }
+        if (inventory != null && inventory.ContainsKey(currentEquipId)) return EquipState.OwnerUnUse;
 
         return EquipState.Locked;
     }
@@ -439,40 +414,31 @@ public class InfoFishEquipmentPanel : MonoBehaviour
     {
         switch (currentType)
         {
-            case FishingEquipType.Rod:
-                return EquipmentSlotType.FishingRod;
-            case FishingEquipType.Line:
-                return EquipmentSlotType.FishingLine;
-            case FishingEquipType.Hook:
-                return EquipmentSlotType.FishingHook;
-            default:
-                return EquipmentSlotType.FishingRod;
+            case FishingEquipType.Rod: return EquipmentSlotType.FishingRod;
+            case FishingEquipType.Line: return EquipmentSlotType.FishingLine;
+            case FishingEquipType.Hook: return EquipmentSlotType.FishingHook;
+            default: return EquipmentSlotType.FishingRod;
         }
     }
 
     private int GetEquipLevel()
     {
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized) return 1;
         return CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, currentEquipId);
     }
 
     private int CalculateUpgradeCost(int currentLevel)
     {
-        FishingComponentConfig config = LoadDataManager.Instance.GetComponentById(currentEquipId);
+        FishingComponentConfig config = LoadDataManager.Instance?.GetComponentById(currentEquipId);
         if (config != null && config.levelDataList != null)
         {
             var levelConfig = config.levelDataList.Find(l => l.level == currentLevel);
-            if (levelConfig != null)
-            {
-                return levelConfig.upgradeCost;
-            }
+            if (levelConfig != null) return levelConfig.upgradeCost;
         }
         return currentLevel * 50;
     }
 
-    private bool CanAffordUpgrade(int cost)
-    {
-        return currentGold >= cost;
-    }
+    private bool CanAffordUpgrade(int cost) => currentGold >= cost;
 
     private void OnMaskClick()
     {
@@ -493,24 +459,22 @@ public class InfoFishEquipmentPanel : MonoBehaviour
         int level = GetEquipLevel();
         int cost = CalculateUpgradeCost(level);
 
-        // 先检查金币是否足够
         if (currentGold < cost)
         {
-            GameUIManager.ShowWarningMessage(LoadDataManager.Instance.GetEquipmentUIText("notEnoughGold"));
+            GameUIManager.ShowWarningMessage(LoadDataManager.Instance?.GetEquipmentUIText("notEnoughGold") ?? "金币不足");
             Z_Logger.LogWarning($"[InfoFishEquipView] 金币不足, 当前: {currentGold}, 需要: {cost}");
             return;
         }
 
-        // 检查是否已经满级
-        FishingComponentConfig config = LoadDataManager.Instance.GetComponentById(currentEquipId);
+        FishingComponentConfig config = LoadDataManager.Instance?.GetComponentById(currentEquipId);
         int maxLevel = config != null ? config.maxLevel : 10;
         if (level >= maxLevel)
         {
-            GameUIManager.ShowWarningMessage(LoadDataManager.Instance.GetEquipmentUIText("maxLevel"));
+            GameUIManager.ShowWarningMessage(LoadDataManager.Instance?.GetEquipmentUIText("maxLevel") ?? "已满级");
             return;
         }
 
-        string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
+        string componentName = LoadDataManager.Instance?.GetComponentName(currentEquipId) ?? $"未知({currentEquipId})";
 
         if (NetServerManager.Instance != null)
         {
@@ -522,6 +486,8 @@ public class InfoFishEquipmentPanel : MonoBehaviour
                     UpdateDisplay();
                     string successInfo = componentName != "未知组件" ? $"{componentName} 升级成功！" : "装备升级成功！";
                     CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+                    // ✅ 兜底刷新
+                    callback?.Invoke("RefreshAllViews", null);
                 }
                 else
                 {
@@ -533,6 +499,7 @@ public class InfoFishEquipmentPanel : MonoBehaviour
         }
         else
         {
+            Z_Logger.LogError("[装备界面诊断] ⚠️ NetServerManager 为空，无法升级");
             CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "网络连接失败");
         }
     }
@@ -542,14 +509,13 @@ public class InfoFishEquipmentPanel : MonoBehaviour
         Z_Logger.Log("[InfoFishEquipView] OnAdUpgradeClick - 点击看广告升级");
         int level = GetEquipLevel();
 
-        // 检查是否已经满级（看广告升级有限制）
         if (level >= 10)
         {
             CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, "装备已满级！");
             return;
         }
 
-        string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
+        string componentName = LoadDataManager.Instance?.GetComponentName(currentEquipId) ?? $"未知({currentEquipId})";
         int levelBeforeAd = GetEquipLevel();
         string info = componentName != "未知组件" ? $"看广告升级装备: {componentName}" : "看广告升级装备";
         callback?.Invoke("OpenAd", new object[] { info, currentEquipId, "看广告升级", (System.Action)(() =>
@@ -558,27 +524,26 @@ public class InfoFishEquipmentPanel : MonoBehaviour
             CommunicateEvent.Modify("Equip_UpgradeByAd", currentEquipId);
             UpdateDisplay();
 
-            // 检查等级是否变化，根据结果判断是否升级成功
             int levelAfterAd = GetEquipLevel();
             if (levelAfterAd > levelBeforeAd)
             {
-                // 显示升级成功提示
                 string successInfo = componentName != "未知组件" ? $"{componentName} 升级成功！" : "装备升级成功！";
                 CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
             }
             else
             {
-                // 显示升级失败提示
                 string failInfo = componentName != "未知组件" ? $"{componentName} 升级失败" : "装备升级失败";
                 CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, failInfo);
             }
+            // ✅ 兜底刷新
+            callback?.Invoke("RefreshAllViews", null);
         })});
     }
 
     private void OnUnlockClick()
     {
         Z_Logger.Log("[InfoFishEquipView] OnUnlockClick - 点击看广告解锁");
-        string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
+        string componentName = LoadDataManager.Instance?.GetComponentName(currentEquipId) ?? $"未知({currentEquipId})";
         string info = componentName != "未知组件" ? $"看广告解锁装备: {componentName}" : "看广告解锁装备";
         callback?.Invoke("OpenAdWithResult", new object[] { info, currentEquipId, "看广告解锁", (System.Action<bool>)((bool success) =>
         {
@@ -589,24 +554,22 @@ public class InfoFishEquipmentPanel : MonoBehaviour
                 CommunicateEvent.Modify("Equip_Unlock", currentEquipId);
                 UpdateDisplay();
 
-                // 检查实际装备状态，根据结果显示不同提示
                 EquipState state = GetEquipState();
                 if (state != EquipState.Locked)
                 {
-                    // 显示解锁成功提示
                     string successInfo = componentName != "未知组件" ? $"恭喜解锁 {componentName}！" : "恭喜解锁装备！";
                     CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
                 }
                 else
                 {
-                    // 显示解锁失败提示
                     string failInfo = componentName != "未知组件" ? $"解锁 {componentName} 失败" : "解锁装备失败";
                     CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, failInfo);
                 }
+                // ✅ 兜底刷新
+                callback?.Invoke("RefreshAllViews", null);
             }
             else
             {
-                // 广告播放失败
                 string failInfo = componentName != "未知组件" ? $"观看广告失败，未能解锁 {componentName}" : "观看广告失败，未能解锁装备";
                 CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, failInfo);
             }
@@ -616,27 +579,26 @@ public class InfoFishEquipmentPanel : MonoBehaviour
     private void OnWatchAdClick()
     {
         Z_Logger.Log($"[InfoFishEquipView] OnWatchAdClick - currentEquipId={currentEquipId}");
-        string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
+        string componentName = LoadDataManager.Instance?.GetComponentName(currentEquipId) ?? $"未知({currentEquipId})";
         string info = componentName != "未知组件" ? $"看广告获取装备: {componentName}" : "看广告获取装备";
         callback?.Invoke("OpenAd", new object[] { info, currentEquipId, "看广告获取", (System.Action)(() =>
         {
             CommunicateEvent.Modify("Equip_Unlock", currentEquipId);
             UpdateDisplay();
 
-            // 检查实际装备状态，根据结果显示不同提示
             EquipState state = GetEquipState();
             if (state != EquipState.Locked)
             {
-                // 显示获取成功提示
                 string successInfo = componentName != "未知组件" ? $"成功获取 {componentName}！" : "成功获取装备！";
                 CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
             }
             else
             {
-                // 显示获取失败提示
                 string failInfo = componentName != "未知组件" ? $"获取 {componentName} 失败" : "获取装备失败";
                 CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, failInfo);
             }
+            // ✅ 兜底刷新
+            callback?.Invoke("RefreshAllViews", null);
         })});
     }
 
@@ -645,7 +607,7 @@ public class InfoFishEquipmentPanel : MonoBehaviour
         Z_Logger.Log($"[InfoFishEquipView] OnEquipClick - currentType={currentType}, currentEquipId={currentEquipId}");
 
         EquipmentSlotType slotType = GetSlotType();
-        string componentName = LoadDataManager.Instance.GetComponentName(currentEquipId);
+        string componentName = LoadDataManager.Instance?.GetComponentName(currentEquipId) ?? $"未知({currentEquipId})";
 
         if (NetServerManager.Instance != null)
         {
@@ -656,15 +618,12 @@ public class InfoFishEquipmentPanel : MonoBehaviour
                 if (success)
                 {
                     Z_Logger.Log($"[InfoFishEquipView] 装备成功: {slotType} -> {currentEquipId}");
-
-                    // ✅ 刷新显示
                     UpdateDisplay();
-
-                    // ✅ 触发全局刷新
                     CommunicateEvent.Modify("Equipment_Refresh");
-
                     string successInfo = componentName != "未知组件" ? $"已装备 {componentName}！" : "已装备装备！";
                     CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, successInfo);
+                    // ✅ 兜底刷新（EVENT_EQUIP_CHANGED 类型不匹配时也能生效）
+                    callback?.Invoke("RefreshAllViews", null);
                 }
                 else
                 {
@@ -673,6 +632,10 @@ public class InfoFishEquipmentPanel : MonoBehaviour
                     GameUIManager.ShowWarningMessage(failMessage);
                 }
             });
+        }
+        else
+        {
+            Z_Logger.LogError("[装备界面诊断] ⚠️ NetServerManager 为空，无法装备");
         }
     }
 }

@@ -80,7 +80,7 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
     {
         foreach (var item in skillItems)
         {
-            item.RefreshDisplay();
+            if (item != null) item.RefreshDisplay();
         }
     }
 
@@ -89,18 +89,25 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
         callback = cb;
     }
 
-    public void Init()
+    // 问题12：串行化 Init
+    public async void Init()
     {
-        LoadSkillIds();
-        LoadAllIcons();
+        Z_Logger.Log("[装备界面诊断] InfoSkillEquipmentPanel.Init 开始");
+        // ⚠️ 外部依赖：LoadDataManager 未加载完时组件名会是"未知组件"
+        if (LoadDataManager.Instance == null || !LoadDataManager.Instance.isDataLoaded)
+        {
+            Z_Logger.LogWarning("[装备界面诊断] InfoSkillEquipmentPanel.Init - ⚠️ LoadDataManager 尚未加载完成");
+        }
+        await LoadConfigAndIdsAsync();
+        await LoadAllIconsAsync();
         CreateSkillItems();
+        if (this != null && gameObject.activeInHierarchy) UpdateSkillList();
+        Z_Logger.Log("[装备界面诊断] InfoSkillEquipmentPanel.Init 完成");
     }
 
-    private async void LoadSkillIds()
+    private async Task LoadConfigAndIdsAsync()
     {
         skillIds.Clear();
-
-        // ✅ 从 Addressables 异步加载
         var config = await CompleteFishingSkillConfigExtensions.LoadFromAddressablesAsync("JsonData/Ability/fishing_components");
         if (config != null && config.items != null)
         {
@@ -112,14 +119,15 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
                 }
             }
         }
+        else Z_Logger.LogWarning("[装备界面诊断] InfoSkillEquipmentPanel - fishing_components 配置加载失败，技能列表将为空");
         skillIds.Sort();
+        Z_Logger.Log($"[装备界面诊断] InfoSkillEquipmentPanel 技能ID加载完成: {skillIds.Count} 个");
     }
 
-    private async void LoadAllIcons()
+    private async Task LoadAllIconsAsync()
     {
         iconCache.Clear();
 
-        // ✅ 从 Addressables 异步加载配置，然后遍历加载图标
         var config = await CompleteFishingSkillConfigExtensions.LoadFromAddressablesAsync("JsonData/Ability/fishing_components");
         if (config != null && config.items != null)
         {
@@ -129,46 +137,34 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
                 {
                     string path = $"UI/Icon/Equipment/Skill/{component.id}";
                     var (sprite, handle) = await AssetManager.LoadFromAddressablesAsync<Sprite>(path);
-                    if (sprite != null)
-                    {
-                        iconCache[component.id] = sprite;
-                    }
+                    if (sprite != null) iconCache[component.id] = sprite;
+                    else Z_Logger.LogWarning($"[装备界面诊断] InfoSkillEquipmentPanel 技能图标加载失败: id={component.id}, path={path}");
                     AssetManager.ReleaseAddressable(handle);
                 }
             }
         }
+
+        Z_Logger.Log($"[装备界面诊断] InfoSkillEquipmentPanel 图标加载完成，共 {iconCache.Count} 个");
     }
 
-    private async void CreateSkillItems()
+    private void CreateSkillItems()
     {
+        if (skillListParent == null)
+        {
+            Z_Logger.LogError("[装备界面诊断] InfoSkillEquipmentPanel.CreateSkillItems - skillListParent 未挂载！");
+            return;
+        }
+        if (skillPrefab == null)
+        {
+            Z_Logger.LogError("[装备界面诊断] InfoSkillEquipmentPanel.CreateSkillItems - skillPrefab 未挂载！");
+            return;
+        }
+
         foreach (Transform child in skillListParent)
         {
             Destroy(child.gameObject);
         }
         skillItems.Clear();
-
-        if (skillPrefab == null || skillListParent == null) return;
-
-        // ✅ 先确保 skillIds 已加载
-        if (skillIds.Count == 0)
-        {
-            await CompleteFishingSkillConfigExtensions.LoadFromAddressablesAsync("JsonData/Ability/fishing_components");
-            // LoadSkillIds 是 async void，需要等待结果
-            // 由于 LoadSkillIds 是 async void，这里重新加载
-            skillIds.Clear();
-            var config = await CompleteFishingSkillConfigExtensions.LoadFromAddressablesAsync("JsonData/Ability/fishing_components");
-            if (config != null && config.items != null)
-            {
-                foreach (var component in config.items)
-                {
-                    if (component.id >= 3301 && component.id <= 3399)
-                    {
-                        skillIds.Add(component.id);
-                    }
-                }
-                skillIds.Sort();
-            }
-        }
 
         foreach (int skillId in skillIds)
         {
@@ -180,24 +176,22 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
                 skillItems.Add(item);
             }
         }
+        Z_Logger.Log($"[装备界面诊断] InfoSkillEquipmentPanel 创建技能项完成: {skillItems.Count} 个");
     }
 
     private async Task<string> GetSkillDescriptionAsync(int skillId, int level)
     {
-        // ✅ 从 Addressables 异步加载
         var config = await CompleteFishingSkillConfigExtensions.LoadFromAddressablesAsync("JsonData/Ability/fishing_components");
         if (config == null || config.items == null) return "";
 
         var component = config.GetComponentById(skillId);
         if (component == null) return "";
 
-        // ✅ 使用静态调用避免歧义
         var levelData = FishingComponentConfigExtensions.GetLevelData(component, level);
         if (levelData != null && !string.IsNullOrEmpty(levelData.levelDescription))
         {
             return levelData.levelDescription;
         }
-
         return component.description;
     }
 
@@ -206,7 +200,7 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
         currentSkillSlot = skillSlot;
         SyncGoldFromServer();
         UpdateSkillList();
-        skillInfoView.Hide();
+        skillInfoView?.Hide();
         gameObject.SetActive(true);
     }
 
@@ -231,6 +225,12 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
 
     public void UpdateSkillList()
     {
+        // ⚠️ 外部依赖：NetServerManager 未初始化时 Request 返回 default
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogWarning("[装备界面诊断] InfoSkillEquipmentPanel.UpdateSkillList - ⚠️ NetServerManager 未初始化，技能状态可能全部显示为 Locked");
+        }
+
         for (int i = 0; i < skillItems.Count && i < skillIds.Count; i++)
         {
             UpdateSkillItem(skillItems[i], skillIds[i]);
@@ -242,9 +242,12 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
         if (item == null || skillId <= 0) return;
 
         Sprite icon = GetIcon(skillId);
-        string name = LoadDataManager.Instance.GetComponentName(skillId);
+        string name = LoadDataManager.Instance?.GetComponentName(skillId) ?? $"未知({skillId})";
+        if (name == "未知组件") Z_Logger.LogWarning($"[装备界面诊断] InfoSkillEquipmentPanel 技能名称为'未知组件', id={skillId}");
+
         int level = GetSkillLevel(skillId);
         string description = await GetSkillDescriptionAsync(skillId, level);
+        // ⚠️ 注意：这里 await 后可能已被下一次 UpdateSkillList 覆盖，但 UI_InfoSkillPrefab 内部应该幂等
         EquipState state = GetSkillState(skillId);
         string unlockCondition = GetSkillUnlockCondition(skillId);
 
@@ -254,39 +257,49 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
 
     private string GetSkillUnlockCondition(int skillId)
     {
-        // 获取技能的解锁条件（人物等级要求）
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized) return "";
         return CommunicateEvent.Request<int, string>("CharacterManager_GetSkillUnlockCondition", skillId);
     }
 
     private Sprite GetIcon(int id)
     {
-        if (iconCache.TryGetValue(id, out Sprite sprite))
-        {
-            return sprite;
-        }
+        if (iconCache.TryGetValue(id, out Sprite sprite)) return sprite;
         return null;
     }
 
     private EquipState GetSkillState(int skillId)
     {
-        if (!CommunicateEvent.Request<int, bool>(CommunicateEvent.EVENT_IS_SKILL_OBTAINED, skillId))
+        // ⚠️ 外部依赖：NetServerManager 未初始化时 Request 返回 false
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
         {
+            Z_Logger.LogWarning($"[装备界面诊断] ⚠️ GetSkillState 时 NetServerManager 未初始化, skillId={skillId} 返回 Locked");
             return EquipState.Locked;
         }
+
+        // ✅ 优先用 PlayerDataManager 判断"是否拥有"（问题6）
+        bool obtained = false;
+        if (PlayerDataManager.Instance != null && PlayerDataManager.Instance.IsReady)
+        {
+            var inventory = PlayerDataManager.Instance.GetInventory();
+            obtained = inventory != null && inventory.TryGetValue(skillId, out int c) && c > 0;
+        }
+        if (!obtained)
+        {
+            // 降级走原接口
+            obtained = CommunicateEvent.Request<int, bool>(CommunicateEvent.EVENT_IS_SKILL_OBTAINED, skillId);
+        }
+        if (!obtained) return EquipState.Locked;
 
         int equippedSkill1 = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Skill1);
         int equippedSkill2 = CommunicateEvent.Request<EquipmentSlotType, int>(CommunicateEvent.EVENT_GET_EQUIPPED_ITEM, EquipmentSlotType.Skill2);
 
-        if (equippedSkill1 == skillId || equippedSkill2 == skillId)
-        {
-            return EquipState.OwnerUse;
-        }
-
+        if (equippedSkill1 == skillId || equippedSkill2 == skillId) return EquipState.OwnerUse;
         return EquipState.OwnerUnUse;
     }
 
     private int GetSkillLevel(int skillId)
     {
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized) return 1;
         return CommunicateEvent.Request<int, int>(CommunicateEvent.EVENT_GET_COMPONENT_LEVEL, skillId);
     }
 
@@ -304,10 +317,7 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
 
     private void OnDetailClick(int skillId)
     {
-        if (skillInfoView != null)
-        {
-            skillInfoView.Show(skillId, currentSkillSlot);
-        }
+        skillInfoView?.Show(skillId, currentSkillSlot);
     }
 
     private void OnUpgradeClick(int skillId)
@@ -317,7 +327,7 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
 
         if (currentGold >= cost)
         {
-            string componentName = LoadDataManager.Instance.GetComponentName(skillId);
+            string componentName = LoadDataManager.Instance?.GetComponentName(skillId) ?? $"未知({skillId})";
 
             if (NetServerManager.Instance != null)
             {
@@ -327,6 +337,8 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
                     {
                         Z_Logger.Log($"[InfoSkillView] 技能升级成功: skillId={skillId}");
                         UpdateSkillList();
+                        // ✅ 兜底：NetServerManager 发的 EVENT_EQUIP_CHANGED 是 (int,int)，本 Panel 注册的也是 (int,int)，能收到；
+                        // 但为了保险，这里再主动回调一次 RefreshAllViews
                         callback?.Invoke("RefreshAllViews", null);
                         CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"{componentName} 升级成功！");
                     }
@@ -349,7 +361,7 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
 
     private void OnWatchAdClick(int skillId)
     {
-        string componentName = LoadDataManager.Instance.GetComponentName(skillId);
+        string componentName = LoadDataManager.Instance?.GetComponentName(skillId) ?? $"未知({skillId})";
         string info = componentName != "未知组件" ? $"看广告获取技能: {componentName}" : "看广告获取技能";
         callback?.Invoke("OpenAdWithResult", new object[] { info, skillId, "看广告获取", (System.Action<bool>)((bool success) =>
         {
@@ -390,6 +402,12 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
     {
         Z_Logger.Log($"[InfoSkillView] OnEquipClick - skillId={skillId}, currentSkillSlot={currentSkillSlot}");
 
+        if (NetServerManager.Instance == null || !NetServerManager.Instance.IsInitialized)
+        {
+            Z_Logger.LogError("[装备界面诊断] ⚠️ NetServerManager 未初始化，无法装备技能");
+            return;
+        }
+
         // 检查技能槽位是否已解锁
         bool isSlotUnlocked = CommunicateEvent.Request<int, bool>("EVENT_IS_SKILL_SLOT_UNLOCKED", currentSkillSlot);
         if (!isSlotUnlocked)
@@ -406,15 +424,25 @@ public class InfoSkillEquipmentPanel : MonoBehaviour
         }
 
         EquipmentSlotType slotType = currentSkillSlot == 1 ? EquipmentSlotType.Skill1 : EquipmentSlotType.Skill2;
-        CommunicateEvent.Modify<(EquipmentSlotType, int)>(CommunicateEvent.EVENT_EQUIP_ITEM, (slotType, skillId));
-
-        UpdateSkillList();
-
-        string componentName = LoadDataManager.Instance.GetComponentName(skillId);
+        string componentName = LoadDataManager.Instance?.GetComponentName(skillId) ?? $"未知({skillId})";
         string slotName = currentSkillSlot == 1 ? "技能1" : "技能2";
-        CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"已装备 {componentName} 到 {slotName}！");
 
-        callback?.Invoke("RefreshAllViews", null);
+        // ✅ 走新版带回调接口
+        NetServerManager.Instance.EquipItemWithCallback(slotType, skillId, (success, message) =>
+        {
+            if (success)
+            {
+                UpdateSkillList();
+                CommunicateEvent.Modify<string>(CommunicateEvent.EVENT_UI_SHOW_TIP, $"已装备 {componentName} 到 {slotName}！");
+                // ✅ 兜底刷新（EVENT_EQUIP_CHANGED 类型不匹配时也能生效）
+                callback?.Invoke("RefreshAllViews", null);
+            }
+            else
+            {
+                Z_Logger.LogWarning($"[装备界面诊断] InfoSkillEquipmentPanel 装备技能失败: {message}");
+                GameUIManager.ShowWarningMessage(string.IsNullOrEmpty(message) ? "装备失败" : message);
+            }
+        });
     }
 
     private void OnSkillInfoCallback(string eventName, object[] args)

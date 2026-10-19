@@ -10,6 +10,27 @@ public class BaseView : MonoBehaviour
 
     protected bool isInitialized = false;
 
+    // ============================================================
+    // ✅ 新增：View 标识（由 GameUIManager 在显示时注入）
+    // ============================================================
+    [HideInInspector] public string viewKey = "";
+
+    /// <summary>
+    /// GameUIManager 在显示实例时调用，注入 View 的唯一 key。
+    /// 之后 BaseView.HideView() 会通过事件通知 GameUIManager 走 CloseView 状态机。
+    /// </summary>
+    public void RegisterViewKey(string key)
+    {
+        viewKey = key;
+        Z_Logger.Log($"[BaseView] RegisterViewKey: {GetType().Name} <- '{key}'");
+    }
+
+    /// <summary>
+    /// GameUIManager.HideInstance 调用 HideView 前会置 true，
+    /// 避免 HideView 内部再发 UI_ViewSelfHide 导致 CloseView 递归。
+    /// </summary>
+    [HideInInspector] public bool _isHidingByManager = false;
+
     protected virtual void Awake()
     {
         FindAndBindMaskButton();
@@ -98,7 +119,7 @@ public class BaseView : MonoBehaviour
     {
         PreShow();
         gameObject.SetActive(true);
-        Z_Logger.Log($"[{GetType().Name}] ShowView");
+        Z_Logger.Log($"[{GetType().Name}] ShowView, viewKey='{viewKey}'");
     }
 
     /// <summary>
@@ -107,8 +128,20 @@ public class BaseView : MonoBehaviour
     public virtual void HideView()
     {
         PreHide();
+
+        // ============================================================
+        // ✅ 新增：关闭前通知 GameUIManager 走 CloseView 状态机
+        //    只在"外部主动调 HideView"时发；GameUIManager.HideInstance 调用时
+        //    _isHidingByManager == true，不发，避免 CloseView 递归。
+        // ============================================================
+        if (!string.IsNullOrEmpty(viewKey) && !_isHidingByManager)
+        {
+            Z_Logger.Log($"[BaseView] {GetType().Name} HideView 主动通知 GameUIManager.CloseView('{viewKey}')");
+            CommunicateEvent.Modify<string>("UI_ViewSelfHide", viewKey);
+        }
+
         gameObject.SetActive(false);
-        Z_Logger.Log($"[{GetType().Name}] HideView");
+        Z_Logger.Log($"[{GetType().Name}] HideView, viewKey='{viewKey}'");
     }
 
     /// <summary>
